@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>电销CRM - 数据看板</title>
+<script src="https://unpkg.com/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+:root{--pri:#1890ff;--pri-l:#e6f7ff;--pri-d:#096dd9;--suc:#52c41a;--suc-bg:#f6ffed;--war:#faad14;--war-bg:#fffbe6;--dan:#ff4d4f;--dan-bg:#fff2f0;--t1:#303133;--t2:#909399;--t3:#c0c4cc;--bg:#f5f7fa;--card:#fff;--bd:#e4e7ed;--sb:#001529}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--t1)}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:150px;background:var(--sb);flex-shrink:0;display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-logo{height:48px;display:flex;align-items:center;padding:0 14px;gap:8px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sidebar-logo .lc{width:28px;height:28px;background:var(--pri);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;font-weight:700}
+.sidebar-logo span{color:#fff;font-size:14px;font-weight:600}
+.ni{display:flex;align-items:center;gap:7px;padding:8px 14px;color:rgba(255,255,255,.6);font-size:12px;cursor:pointer;border-left:3px solid transparent;transition:all .15s}
+.ni:hover{color:#fff;background:rgba(255,255,255,.04)}
+.ni.act{color:#fff;background:rgba(24,144,255,.15);border-left-color:var(--pri)}
+.ni .bd{margin-left:auto;background:var(--dan);color:#fff;font-size:9px;padding:0 4px;border-radius:7px;line-height:14px}
+.ng{padding:6px 14px 3px;font-size:10px;color:rgba(255,255,255,.25);cursor:pointer}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.top{height:42px;background:#fff;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex-shrink:0;font-size:12px}
+.top .r{display:flex;align-items:center;gap:10px;color:var(--t2)}
+.top .av{width:24px;height:24px;border-radius:50%;background:var(--pri);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px}
+.pn{height:36px;background:#fff;border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0;font-size:12px;color:var(--t2)}
+.pn .pt{background:var(--pri-l);padding:3px 10px;border-radius:3px;color:var(--pri);font-size:11px}
+.ca{flex:1;overflow-y:auto}.ci{padding:14px}
+.mc{background:#fff;border-radius:6px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);overflow:hidden}
+.mh{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f5f5f5;font-size:11px}
+.mt{font-size:13px;font-weight:600}
+.mti{color:var(--t2);font-size:11px}
+.mb{padding:14px}
+.fs{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t2)}
+.fs select{padding:3px 8px;border:1px solid var(--bd);border-radius:4px;font-size:11px;cursor:pointer;background:#fff}
+.mp{padding:4px 10px;border:1px solid var(--bd);border-radius:4px;font-size:11px;white-space:nowrap;cursor:pointer;background:#fff}
+
+/* Filter bar */
+.fbar{background:#fff;border-radius:6px;padding:10px 14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.fbar select,.fbar input{padding:5px 10px;border:1px solid var(--bd);border-radius:4px;font-size:12px;cursor:pointer;background:#fff}
+.fbar label{font-size:11px;color:var(--t2)}
+
+/* Performance overview */
+.po{background:linear-gradient(135deg,#f0f5ff,#e6fffb);border-radius:6px;padding:14px 18px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.po .pv{font-size:13px;color:var(--t1)}
+.po .pv b{font-size:20px;color:var(--pri);font-weight:700}
+.po .pg{flex:1;min-width:150px}
+.po .pg .bar{height:10px;background:#e8e8e8;border-radius:5px;overflow:hidden;margin:4px 0}
+.po .pg .fill{height:100%;border-radius:5px;background:linear-gradient(90deg,#1890ff,#36cfc9);transition:width .6s}
+.po .pct{font-size:14px;font-weight:700;color:var(--pri)}
+.po .tgt{font-size:12px;color:var(--t2)}
+
+/* Calendar */
+.cal-wrap{padding:14px}
+.cal-title{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.cal{width:100%;border-collapse:collapse;table-layout:fixed}
+.cal th{background:#fafafa;padding:6px 4px;text-align:center;font-size:11px;font-weight:600;color:var(--t2);border:1px solid #f0f0f0}
+.cal td{border:1px solid #f0f0f0;padding:6px 4px;text-align:center;height:62px;vertical-align:top;position:relative;cursor:default}
+.cal td.empty{background:#fafafa}
+.cal td .day{font-size:11px;color:var(--t2);margin-bottom:2px}
+.cal td .amt{font-size:13px;font-weight:700;color:var(--pri);cursor:default}
+.cal td .amt.zero{color:var(--t3);font-weight:400;font-size:11px}
+.cal td .amt.high{color:var(--suc)}
+.cal td:hover{background:var(--pri-l)}
+.cal-tooltip{position:absolute;z-index:100;background:rgba(0,0,0,.75);color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;white-space:nowrap;pointer-events:none;transform:translateX(-50%);left:50%;bottom:100%;margin-bottom:4px;display:none}
+.cal td:hover .cal-tooltip{display:block}
+
+
+
+
+
+/* Drill-down */
+.drill-back{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--pri);cursor:pointer;margin-bottom:10px;padding:3px 8px;border-radius:4px;border:1px solid var(--pri);background:var(--pri-l)}
+.drill-back:hover{background:#bae7ff}
+.source-item{display:inline-block;padding:3px 10px;margin:2px 4px;border-radius:14px;font-size:11px;cursor:pointer;border:1px solid var(--bd);transition:all .2s;background:#fff}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Call tabs */
+.call-tabs{display:flex;border-bottom:1px solid var(--bd);background:#fafafa}
+.call-tab{padding:9px 20px;font-size:12px;color:var(--t2);cursor:pointer;border-bottom:2px solid transparent;font-weight:500;transition:all .2s}
+.call-tab:hover{color:var(--pri);background:var(--pri-l)}
+.call-tab.active{color:var(--pri);border-bottom-color:var(--pri);background:#fff;font-weight:600}
+
+/* Call metric cards */
+.call-card{padding:14px 18px;border-right:1px solid #f5f5f5}
+.call-card:last-child{border-right:none}
+.call-label{font-size:12px;color:var(--t2);margin-bottom:6px}
+.call-val{font-size:22px;font-weight:700;color:var(--t1);margin-bottom:4px}
+.call-avg{font-size:11px;color:var(--pri)}
+
+/* AI icon & button */
+.ai-icon{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#1890ff,#36cfc9);font-size:11px;margin-left:6px;cursor:pointer;vertical-align:middle;transition:transform .2s;box-shadow:0 2px 6px rgba(24,144,255,.3)}
+.ai-icon:hover{transform:scale(1.15)}
+.ai-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:16px;background:linear-gradient(135deg,#1890ff,#36cfc9);color:#fff;font-size:11px;font-weight:600;cursor:pointer;border:none;box-shadow:0 2px 8px rgba(24,144,255,.3);transition:all .2s}
+.ai-btn:hover{box-shadow:0 4px 14px rgba(24,144,255,.45);transform:translateY(-1px)}
+
+/* Modal */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:10000;display:none;justify-content:center;align-items:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:#fff;border-radius:10px;width:620px;max-width:92vw;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.2);animation:modalIn .25s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-header{padding:14px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;font-size:14px;flex-shrink:0}
+.modal-close{width:28px;height:28px;border-radius:6px;border:none;background:var(--bg);cursor:pointer;font-size:14px;color:var(--t2);display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:#eee}
+.modal-body{padding:18px;overflow-y:auto;flex:1}
+
+/* Smart analysis in modal */
+.sa-section{margin-bottom:16px;border:1px solid #f0f0f0;border-radius:8px;overflow:hidden}
+.sa-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fafafa;border-bottom:1px solid #f0f0f0}
+.sa-head .sa-metric{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.sa-head .sa-count{font-size:12px;padding:2px 10px;border-radius:10px}
+.sa-count.warn{background:var(--dan-bg);color:var(--dan);font-weight:600}
+.sa-count.ok{background:var(--suc-bg);color:var(--suc);font-weight:600}
+.sa-names{padding:10px 14px;font-size:12px;line-height:2;color:var(--t1)}
+.sa-names .name-tag{display:inline-block;padding:1px 8px;margin:2px 3px;border-radius:4px;font-size:11px}
+.sa-names .name-tag.below{background:var(--dan-bg);color:var(--dan)}
+.sa-names .name-tag.above{background:var(--suc-bg);color:var(--suc)}
+
+/* Chart section layout */
+.cr{display:flex;gap:0}.cc{flex:1;min-height:260px}.cc+.cc{border-left:1px solid #f5f5f5}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="lc">🐙</div><span>电销CRM</span></div>
+    <div class="ng">▾ 个人工作台</div>
+    <div class="ni"><span>🏠</span>首页<span class="bd">99+</span></div>
+    <div class="ni"><span>📊</span>我的数据</div>
+    <div class="ni act"><span>📈</span>数据看板</div>
+    <div class="ni"><span>💬</span>消息管理<span class="bd">9</span></div>
+    <div class="ng">▸ 公海池</div>
+    <div class="ng">▸ 客户管理</div>
+    <div class="ng">▸ 订单管理</div>
+    <div class="ng">▸ 数据统计</div>
+    <div class="ng">▸ 活动管理</div>
+    <div class="ng">▸ 积分商城</div>
+    <div class="ng">▸ 薪酬体系</div>
+    <div class="ng">▸ 系统设置</div>
+    <div class="ng">▸ 坐席管理</div>
+    <div class="ng">▸ 日常运营</div>
+    <div class="ng">▸ 销售人员管理</div>
+    <div class="ng">▸ 企微机器人</div>
+    <div class="ng">▸ AI陪练台</div>
+  </aside>
+  <div class="main">
+    <div class="top">
+      <div>☰ &nbsp;首页</div>
+      <div class="r"><span>🚩</span><span>📝</span><span>❓</span><span>🔍</span><span>📞</span><span>🔔</span><div class="av">李</div><span>liyingping</span></div>
+    </div>
+    <div class="pn"><span style="cursor:pointer">‹</span><span class="pt">首页</span><span>/</span><span>数据看板</span></div>
+    <div class="ca"><div class="ci">
+
+      <!-- 筛选栏 -->
+      <div class="fbar">
+        <label>部门：</label>
+        <select><option>武汉电销</option></select>
+        <label>坐席：</label>
+        <select><option value="">请选择坐席</option><option>李静月</option><option>张伟</option><option>王丽</option><option>刘洋</option></select>
+        <span class="mp">📅 2026-03</span>
+      </div>
+
+      <!-- 业绩概览 -->
+      <div class="po">
+        <div class="pv">本月业绩：<b id="totalPerf">14,114,176.77</b></div>
+        <div class="pg">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="pct">60.23%</span>
+            <div class="bar" style="flex:1"><div class="fill" style="width:60.23%"></div></div>
+          </div>
+        </div>
+        <div class="tgt">本月目标：23,434,120</div>
+      </div>
+
+      <!-- 业绩趋势 + 业绩日历 -->
+      <div class="mc">
+        <div class="mh">
+          <div><span class="mt">业绩数据</span> <span class="mti" style="margin-left:8px;">数据更新时间：2026-03-19 14:32:50</span></div>
+          <div class="fs">
+            <select><option>武汉电销</option></select>
+            <select><option value="">请选择坐席</option></select>
+            <select><option>月</option></select>
+            <span class="mp">📅 2026-03</span>
+          </div>
+        </div>
+        <div class="mb" style="padding:0;">
+          <div style="display:flex;">
+            <div style="flex:1;padding:14px;border-right:1px solid #f5f5f5;">
+              <div id="chartPerf" style="width:100%;height:260px;"></div>
+            </div>
+            <div style="width:52%;padding:0;" id="calendarWrap">
+              <div class="cal-wrap">
+                <div class="cal-title">📅 业绩日历</div>
+                <table class="cal" id="calTable"></table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 营收分布 -->
+      <div class="mc">
+        <div class="mh">
+          <div><span class="mt">营收分布</span></div>
+          <div class="fs">
+            <select><option>武汉电销</option></select>
+            <select><option value="">请选择坐席</option></select>
+            <select><option>月</option></select>
+            <span class="mp">📅 2026-03</span>
+          </div>
+        </div>
+        <div style="padding:0;position:relative;">
+          <!-- 环形图视图 -->
+          <div id="pieView">
+            <div style="display:flex;border-bottom:1px solid #f5f5f5;">
+              <div style="flex:1;padding:14px;border-right:1px solid #f5f5f5;">
+                <div style="font-size:13px;font-weight:600;text-align:center;margin-bottom:4px;">订单类型分布</div>
+                <div id="chartOrderType" style="width:100%;height:300px;"></div>
+              </div>
+              <div style="flex:1;padding:14px;">
+                <div style="font-size:13px;font-weight:600;text-align:center;margin-bottom:4px;">线索来源分布</div>
+                <div style="font-size:10px;color:var(--pri);text-align:center;margin-bottom:2px;display:flex;align-items:center;justify-content:center;gap:4px">
+                  <span style="display:inline-block;width:6px;height:6px;background:var(--pri);border-radius:50%;animation:blink 1.2s infinite"></span>
+                  点击【企业微信】扇区查看各等级线索营收
+                </div>
+                <div id="chartSourcePie" style="width:100%;height:300px;"></div>
+              </div>
+            </div>
+          </div>
+          <!-- 下钻柱形图视图（覆盖环形图） -->
+          <div id="drillView" style="display:none;">
+            <div style="padding:14px;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                <div class="drill-back" onclick="closeDrillDown()">← 返回</div>
+                <span style="font-size:13px;font-weight:600;">企业微信 · 各等级线索营收分布</span>
+                <span style="font-size:11px;color:var(--t2);" id="drillTotalInfo"></span>
+              </div>
+              <div id="chartDrillDown" style="width:100%;height:340px;"></div>
+            </div>
+          </div>
+          <div style="color:var(--pri);font-size:11px;padding:6px 14px;">数据更新时间：2026-03-24 15:23:08</div>
+        </div>
+      </div>
+
+      <!-- 通话情况 -->
+      <div class="mc">
+        <div class="mh">
+          <div><span class="mt">通话情况</span> <span class="mti" style="margin-left:8px;">数据截止时间：2026-03-19 00:00:00</span></div>
+          <div class="fs">
+            <select><option>武汉电销</option></select>
+            <select><option value="">请选择坐席</option></select>
+            <select><option>月</option></select>
+            <span class="mp">📅 2026-03</span>
+          </div>
+        </div>
+        <!-- 四个指标卡片 -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid #f5f5f5;">
+          <div class="call-card"><div class="call-label">拨打线索数</div><div class="call-val">576,950</div><div class="call-avg">均值：288,476</div></div>
+          <div class="call-card"><div class="call-label">拨打次数</div><div class="call-val">1,407,816</div><div class="call-avg">均值：703,909</div></div>
+          <div class="call-card"><div class="call-label">有效通话量</div><div class="call-val">207,741</div><div class="call-avg">均值：103,870</div></div>
+          <div class="call-card"><div class="call-label">有效通话时长</div><div class="call-val">7167小时24分11秒</div><div class="call-avg">均值：3583小时42分6秒</div></div>
+        </div>
+        <!-- Tab 切换 -->
+        <div class="call-tabs">
+          <div class="call-tab active" onclick="switchCallDimTab('time',this)">时间维度</div>
+          <div class="call-tab" onclick="switchCallDimTab('tsliang',this)">通时通量</div>
+        </div>
+        <!-- 时间维度内容 -->
+        <div id="tabTime" style="padding:14px;border-bottom:1px solid #f5f5f5;">
+          <div style="display:flex;gap:12px;margin-bottom:8px;font-size:10px;color:var(--t2)">
+            <span>🟦 拨打线索数</span><span>🟪 拨打次数</span><span>🟩 有效通话量</span><span>🟠 有效通话时长/min</span>
+          </div>
+          <div id="chartCall" style="width:100%;height:260px;"></div>
+        </div>
+        <!-- 通时通量内容 -->
+        <div id="tabTsliang" style="display:none;padding:14px;border-bottom:1px solid #f5f5f5;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:14px;border:1px solid #f0f0f0;border-radius:6px;">
+            <div style="padding:12px 18px;border-right:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:13px;color:var(--t2)">接通率</span>
+              <span style="font-size:22px;font-weight:700">1.2%</span>
+            </div>
+            <div style="padding:12px 18px;display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:13px;color:var(--t2)">有效通话率</span>
+              <span style="font-size:22px;font-weight:700">25%</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:0;">
+            <div style="flex:1;padding:0 14px;">
+              <div style="font-size:14px;font-weight:600;text-align:center;margin-bottom:8px;">通话分布</div>
+              <div id="chartCallDist" style="width:100%;height:260px;"></div>
+              <div style="padding:8px 0;font-size:12px;color:var(--t1);line-height:2.2;">
+                <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:4px;border-radius:2px;background:#1a3a7a"></span> 未接通：100次</div>
+                <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:4px;border-radius:2px;background:#4080e0"></span> 0-10s：25次</div>
+                <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:4px;border-radius:2px;background:#93bbf5"></span> 有效通话：10次</div>
+              </div>
+            </div>
+            <div style="flex:1;padding:0 14px;">
+              <div style="font-size:14px;font-weight:600;text-align:center;margin-bottom:8px;">通时分布</div>
+              <div id="chartTimeDist" style="width:100%;height:260px;"></div>
+              <div style="padding:8px 0;font-size:12px;color:var(--t1);line-height:2.2;">
+                <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:4px;border-radius:2px;background:#1a3a7a"></span> 10s-3min：6次</div>
+                <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:4px;border-radius:2px;background:#4080e0"></span> 3-10min：3次</div>
+                <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;width:14px;height:4px;border-radius:2px;background:#93bbf5"></span> 10min以上：1次</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 人员维度（始终显示） -->
+        <div style="padding:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <div style="font-size:13px;font-weight:600;">通话情况-人员维度</div>
+            <div class="ai-btn" onclick="openSmartModal()">🤖 智能分析</div>
+          </div>
+          <div style="display:flex;gap:12px;margin-bottom:8px;font-size:10px;color:var(--t2)">
+            <span>🟦 拨打线索数</span><span>🟪 拨打次数</span><span>🟩 有效通话量</span><span>🟠 有效通话时长/min</span>
+          </div>
+          <div id="chartCallPerson" style="width:100%;height:320px;"></div>
+        </div>
+      </div>
+
+    </div></div>
+  </div>
+</div>
+
+<!-- 智能分析弹窗 -->
+<div class="modal-overlay" id="smartModal" onclick="if(event.target===this)closeSmartModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:18px">🤖</span><b>智能分析 · 通话情况人员维度</b></div>
+      <button class="modal-close" onclick="closeSmartModal()">✕</button>
+    </div>
+    <div class="modal-body" id="smartModalBody"></div>
+  </div>
+</div>
+
+<script>
+const calendarData = {
+  1: 1008356.5, 2: 368843.59, 3: 343239.95, 4: 555310.79, 5: 761741.82, 6: 858300.33, 7: 1229707.2,
+  8: 1575402.87, 9: 530899.88, 10: 410930.32, 11: 691463.97, 12: 666942.07, 13: 666832.12, 14: 1348549.04,
+  15: 1587368.21, 16: 443336.5, 17: 327816.82, 18: 625908.7, 19: 113226.09,
+  20: 0, 21: 0, 22: 0, 23: 0, 24: 0, 25: 0, 26: 0, 27: 0, 28: 0, 29: 0, 30: 0, 31: 0
+};
+
+const orderTypeData = [
+  { name: '组合商品', value: 88.69 },
+  { name: '零售商品', value: 6.1 },
+  { name: '积木块商品', value: 2.46 },
+  { name: '加购商品', value: 1.87 },
+  { name: '学习机', value: 0.87 },
+  { name: '其他所有类型', value: 0.01 }
+];
+
+const sourceDistData = [
+  { name: '企业微信', value: 27.62, count: 1818 },
+  { name: '中学业务', value: 23.8, count: 1567 },
+  { name: '人工录入', value: 18.8, count: 1238 },
+  { name: '成交入库/流转', value: 14.04, count: 925 },
+  { name: '线索转移', value: 3.55, count: 234 },
+  { name: '其他所有类型', value: 12.19, count: 803 }
+];
+
+const qwGradeData = [
+  { grade: 'S级', revenue: 1357140, count: 45, pct: 30.0 },
+  { grade: 'A级', revenue: 1085712, count: 82, pct: 24.0 },
+  { grade: 'B级', revenue: 904760, count: 136, pct: 20.0 },
+  { grade: 'C级', revenue: 542856, count: 198, pct: 12.0 },
+  { grade: 'D级', revenue: 361904, count: 253, pct: 8.0 },
+  { grade: 'E级', revenue: 180952, count: 312, pct: 4.0 },
+  { grade: 'F级', revenue: 90476, count: 186, pct: 2.0 }
+];
+
+const dailyPerfTrend = [
+  1008356, 368844, 343240, 555311, 761742, 858300, 1229707,
+  1575403, 530900, 410930, 691464, 666942, 666832, 1348549,
+  1587368, 443337, 327817, 625909, 113226, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+];
+
+const callDailyData = {
+  leads: [28500,26200,24800,29100,32500,31200,18500, 35200,27800,25600,30400,29800,28900,33500, 36200,24800,22100,28600,15800,0,0,0,0,0,0,0,0,0,0,0,0],
+  calls: [67500,62100,58800,69000,77100,74000,43900, 83500,65900,60700,72100,70700,68500,79400, 85800,58800,52400,67800,37500,0,0,0,0,0,0,0,0,0,0,0,0],
+  valid: [10100,9300,8800,10300,11500,11100,6600, 12500,9900,9100,10800,10600,10300,11900, 12900,8800,7800,10100,5600,0,0,0,0,0,0,0,0,0,0,0,0],
+  duration: [355,327,309,363,406,389,231, 440,347,320,379,372,361,418, 452,309,275,356,197,0,0,0,0,0,0,0,0,0,0,0,0]
+};
+
+const teamMembers = [
+  { name: '王丽', leads: 32400, calls: 76800, valid: 11520, durationMin: 16050, perf: 1568000 },
+  { name: '陈明', leads: 30200, calls: 71600, valid: 10740, durationMin: 15200, perf: 1425000 },
+  { name: '李静月', leads: 28800, calls: 68300, valid: 10245, durationMin: 12893, perf: 1106480 },
+  { name: '赵婷', leads: 27500, calls: 65200, valid: 9780, durationMin: 14500, perf: 1052000 },
+  { name: '张伟', leads: 25600, calls: 60700, valid: 9105, durationMin: 14420, perf: 985000 },
+  { name: '周敏', leads: 24200, calls: 57400, valid: 8610, durationMin: 13800, perf: 920000 },
+  { name: '吴晓', leads: 22800, calls: 54100, valid: 8115, durationMin: 13100, perf: 856000 },
+  { name: '孙洁', leads: 21400, calls: 50700, valid: 7605, durationMin: 12500, perf: 798000 },
+  { name: '何欢', leads: 20100, calls: 47700, valid: 7155, durationMin: 11800, perf: 742000 },
+  { name: '刘洋', leads: 18600, calls: 44100, valid: 6615, durationMin: 10150, perf: 685000 },
+  { name: '马强', leads: 17200, calls: 40800, valid: 6120, durationMin: 9400, perf: 623000 },
+  { name: '黄丹', leads: 15800, calls: 37500, valid: 5625, durationMin: 8600, perf: 558000 },
+  { name: '林芳', leads: 14400, calls: 34100, valid: 5115, durationMin: 7800, perf: 482000 },
+  { name: '郑超', leads: 13000, calls: 30800, valid: 4620, durationMin: 7100, perf: 421000 },
+  { name: '杨雨', leads: 11600, calls: 27500, valid: 4125, durationMin: 6200, perf: 356000 }
+];
+
+let charts = {};
+let isDrillDown = false;
+
+function formatAmt(val) {
+  if (val === 0) return '0';
+  if (val >= 10000) return (val / 10000).toFixed(1) + 'w';
+  return val.toLocaleString();
+}
+
+function buildCalendar() {
+  const startDay = 0; // March 1, 2026 = Sunday (0=Sun in header: 日一二三四五六)
+  const daysInMonth = 31;
+  let html = '<thead><tr><th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th></tr></thead><tbody>';
+
+  const maxVal = Math.max(...Object.values(calendarData));
+  let dayCount = 1;
+  let started = false;
+  for (let w = 0; w < 6; w++) {
+    if (dayCount > daysInMonth) break;
+    html += '<tr>';
+    for (let d = 0; d < 7; d++) {
+      if (w === 0 && d < startDay) {
+        html += '<td class="empty"></td>';
+      } else if (dayCount > daysInMonth) {
+        html += '<td class="empty"></td>';
+      } else {
+        const val = calendarData[dayCount] || 0;
+        const dispVal = formatAmt(val);
+        const exactVal = '¥' + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        const cls = val === 0 ? 'zero' : (val >= maxVal * 0.7 ? 'high' : '');
+        const bgOpacity = val > 0 ? Math.max(0.05, (val / maxVal) * 0.25) : 0;
+        html += `<td style="background:rgba(24,144,255,${bgOpacity})">
+          <div class="day">${dayCount}</div>
+          <div class="amt ${cls}" title="${exactVal}">${dispVal}</div>
+          ${val > 0 ? `<div class="cal-tooltip">${exactVal}</div>` : ''}
+        </td>`;
+        dayCount++;
+      }
+    }
+    html += '</tr>';
+  }
+  html += '</tbody>';
+  document.getElementById('calTable').innerHTML = html;
+}
+
+function initPerfChart() {
+  const days = Array.from({length: 31}, (_, i) => `3/${i + 1}`);
+  charts.perf = echarts.init(document.getElementById('chartPerf'));
+  charts.perf.setOption({
+    grid: {top: 10, bottom: 28, left: 55, right: 8},
+    tooltip: {trigger: 'axis', formatter: p => `${p[0].axisValue}<br/>业绩: ¥${p[0].value.toLocaleString()}`},
+    xAxis: {type: 'category', data: days, axisLabel: {fontSize: 9, rotate: 50}},
+    yAxis: {type: 'value', axisLabel: {fontSize: 9, formatter: v => v >= 10000 ? (v / 10000).toFixed(0) + 'w' : v}},
+    series: [{type: 'bar', data: dailyPerfTrend, itemStyle: {color: '#1890ff', borderRadius: [2,2,0,0]}}]
+  });
+}
+
+function initOrderTypeChart() {
+  charts.orderType = echarts.init(document.getElementById('chartOrderType'));
+  const colors = ['#5b8ff9','#5ad8a6','#5d7092','#f6bd16','#e86452','#6dc8ec'];
+  charts.orderType.setOption({
+    tooltip: {trigger: 'item', formatter: '{b}<br/>{d}%'},
+    legend: {bottom: 0, textStyle: {fontSize: 9}, itemWidth: 10, itemHeight: 10},
+    series: [{
+      type: 'pie', radius: ['45%', '70%'], center: ['50%', '44%'],
+      label: {show: true, fontSize: 9, formatter: '{b}\n{d}%', color: '#666'},
+      labelLine: {length: 8, length2: 10},
+      data: orderTypeData.map((d, i) => ({...d, itemStyle: {color: colors[i]}}))
+    }]
+  });
+}
+
+function initSourcePieChart() {
+  charts.sourcePie = echarts.init(document.getElementById('chartSourcePie'));
+  const colors = ['#5b8ff9','#5ad8a6','#f6bd16','#e86452','#6dc8ec','#945fb9'];
+  charts.sourcePie.setOption({
+    tooltip: {
+      trigger: 'item',
+      formatter: function(p) {
+        const d = sourceDistData.find(s => s.name === p.name);
+        let tip = '<b>' + p.name + '</b><br/>占比: ' + p.percent + '%';
+        if (d) tip += '<br/>数量: ' + d.count;
+        if (p.name === '企业微信') tip += '<br/><span style="color:#faad14">👆 点击查看各等级线索营收</span>';
+        return tip;
+      }
+    },
+    legend: {bottom: 0, textStyle: {fontSize: 9}, itemWidth: 10, itemHeight: 10},
+    series: [{
+      type: 'pie', radius: ['45%', '70%'], center: ['50%', '44%'],
+      label: {show: true, fontSize: 9, formatter: '{b}\n{d}%', color: '#666'},
+      labelLine: {length: 8, length2: 10},
+      emphasis: {
+        itemStyle: {shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.2)'},
+        label: {show: true, fontSize: 11, fontWeight: 'bold'}
+      },
+      data: sourceDistData.map((d, i) => ({
+        name: d.name, value: d.value,
+        itemStyle: {
+          color: colors[i],
+          borderWidth: d.name === '企业微信' ? 2 : 0,
+          borderColor: d.name === '企业微信' ? '#3a7bd5' : 'transparent'
+        }
+      }))
+    }]
+  });
+
+  charts.sourcePie.on('click', function(params) {
+    if (params.name === '企业微信') openDrillDown();
+  });
+}
+
+function openDrillDown() {
+  document.getElementById('pieView').style.display = 'none';
+  document.getElementById('drillView').style.display = 'block';
+
+  const totalRevenue = qwGradeData.reduce((s, d) => s + d.revenue, 0);
+  document.getElementById('drillTotalInfo').textContent =
+    '（企微线索总营收：¥' + totalRevenue.toLocaleString() + '，共 ' + sourceDistData[0].count + ' 条线索）';
+
+  if (charts.drillDown) charts.drillDown.dispose();
+  charts.drillDown = echarts.init(document.getElementById('chartDrillDown'));
+
+  charts.drillDown.setOption({
+    grid: {top: 30, bottom: 40, left: 60, right: 60},
+    tooltip: {
+      trigger: 'axis',
+      formatter: function(p) {
+        let s = '<b>' + p[0].name + '</b><br/>';
+        p.forEach(item => {
+          if (item.seriesName === '营收金额') s += item.marker + item.seriesName + ': ¥' + item.value.toLocaleString() + '<br/>';
+          else s += item.marker + item.seriesName + ': ' + item.value + '%<br/>';
+        });
+        return s;
+      }
+    },
+    legend: {data: ['营收金额', '占企微营收比例'], bottom: 0, textStyle: {fontSize: 10}},
+    xAxis: {type: 'category', data: qwGradeData.map(d => d.grade), axisLabel: {fontSize: 11, fontWeight: 600}},
+    yAxis: [
+      {type: 'value', name: '营收金额', nameTextStyle: {fontSize: 10}, axisLabel: {fontSize: 9, formatter: v => v >= 10000 ? (v / 10000).toFixed(0) + 'w' : v}},
+      {type: 'value', name: '占比(%)', nameTextStyle: {fontSize: 10}, position: 'right', min: 0, max: 100, axisLabel: {fontSize: 9, formatter: '{value}%'}}
+    ],
+    series: [
+      {
+        name: '营收金额', type: 'bar', barWidth: '40%',
+        data: qwGradeData.map(d => d.revenue),
+        itemStyle: {color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#69c0ff'},{offset:1,color:'#1890ff'}]), borderRadius: [4,4,0,0]},
+        label: {show: true, position: 'top', fontSize: 10, fontWeight: 600, formatter: p => formatAmt(p.value)}
+      },
+      {
+        name: '占企微营收比例', type: 'line', yAxisIndex: 1,
+        data: qwGradeData.map(d => d.pct),
+        itemStyle: {color: '#faad14'}, lineStyle: {width: 2.5}, symbol: 'circle', symbolSize: 8,
+        label: {show: true, fontSize: 10, fontWeight: 600, formatter: '{c}%', color: '#d48806', position: 'top'}
+      }
+    ],
+    animationDuration: 800,
+    animationEasing: 'cubicOut'
+  });
+}
+
+function closeDrillDown() {
+  document.getElementById('drillView').style.display = 'none';
+  document.getElementById('pieView').style.display = 'block';
+  if (charts.drillDown) { charts.drillDown.dispose(); charts.drillDown = null; }
+  if (charts.orderType) charts.orderType.resize();
+  if (charts.sourcePie) charts.sourcePie.resize();
+}
+
+function initCallChart() {
+  const days = Array.from({length: 31}, (_, i) => `3/${i + 1}`);
+  charts.call = echarts.init(document.getElementById('chartCall'));
+  charts.call.setOption({
+    grid: {top: 10, bottom: 28, left: 40, right: 40},
+    tooltip: {trigger: 'axis'},
+    xAxis: {type: 'category', data: days, axisLabel: {fontSize: 9, rotate: 50}},
+    yAxis: [
+      {type: 'value', name: '数量', axisLabel: {fontSize: 9}},
+      {type: 'value', name: '时长(分钟)', position: 'right', axisLabel: {fontSize: 9, formatter: '{value}min'}}
+    ],
+    series: [
+      {name: '拨打线索数', type: 'bar', data: callDailyData.leads, itemStyle: {color: '#1890ff'}},
+      {name: '拨打次数', type: 'bar', data: callDailyData.calls, itemStyle: {color: '#597ef7'}},
+      {name: '有效通话量', type: 'bar', data: callDailyData.valid, itemStyle: {color: '#52c41a'}},
+      {name: '有效通话时长', type: 'line', yAxisIndex: 1, data: callDailyData.duration, itemStyle: {color: '#faad14'}, smooth: true}
+    ]
+  });
+}
+
+function initCallPersonChart() {
+  charts.callPerson = echarts.init(document.getElementById('chartCallPerson'));
+  const names = teamMembers.map(m => m.name);
+  charts.callPerson.setOption({
+    grid: {top: 10, bottom: 40, left: 50, right: 50},
+    tooltip: {trigger: 'axis'},
+    xAxis: {type: 'category', data: names, axisLabel: {fontSize: 9, rotate: 30, interval: 0}},
+    yAxis: [
+      {type: 'value', name: '数量', axisLabel: {fontSize: 9}},
+      {type: 'value', name: '时长(分钟)', position: 'right', axisLabel: {fontSize: 9, formatter: '{value}min'}}
+    ],
+    dataZoom: [{type: 'slider', bottom: 2, height: 14, startValue: 0, endValue: 9}],
+    series: [
+      {name: '拨打线索数', type: 'bar', data: teamMembers.map(m => m.leads), itemStyle: {color: '#1890ff'}},
+      {name: '拨打次数', type: 'bar', data: teamMembers.map(m => m.calls), itemStyle: {color: '#597ef7'}},
+      {name: '有效通话量', type: 'bar', data: teamMembers.map(m => m.valid), itemStyle: {color: '#52c41a'}},
+      {name: '有效通话时长', type: 'line', yAxisIndex: 1, data: teamMembers.map(m => m.durationMin), itemStyle: {color: '#faad14'}, smooth: true}
+    ]
+  });
+}
+
+function switchCallDimTab(tab, el) {
+  document.querySelectorAll('.call-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tabTime').style.display = tab === 'time' ? 'block' : 'none';
+  document.getElementById('tabTsliang').style.display = tab === 'tsliang' ? 'block' : 'none';
+  if (tab === 'time') {
+    if (charts.call) charts.call.resize();
+    if (charts.callPerson) charts.callPerson.resize();
+  }
+  if (tab === 'tsliang') {
+    if (!charts.callDist) initCallDistCharts();
+    else { charts.callDist.resize(); charts.timeDist.resize(); }
+  }
+}
+
+function initCallDistCharts() {
+  const ringColors = ['#1a3a7a','#4080e0','#93bbf5'];
+
+  charts.callDist = echarts.init(document.getElementById('chartCallDist'));
+  charts.callDist.setOption({
+    tooltip: {trigger: 'item', formatter: '{b}: {c}次 ({d}%)'},
+    series: [{
+      type: 'pie', radius: ['52%', '76%'], center: ['50%', '50%'],
+      label: {show: false},
+      data: [
+        {value: 100, name: '未接通', itemStyle: {color: ringColors[0]}},
+        {value: 25, name: '0-10s', itemStyle: {color: ringColors[1]}},
+        {value: 10, name: '有效通话', itemStyle: {color: ringColors[2]}}
+      ]
+    }]
+  });
+
+  charts.timeDist = echarts.init(document.getElementById('chartTimeDist'));
+  charts.timeDist.setOption({
+    tooltip: {trigger: 'item', formatter: '{b}: {c}次 ({d}%)'},
+    series: [{
+      type: 'pie', radius: ['52%', '76%'], center: ['50%', '50%'],
+      label: {show: false},
+      data: [
+        {value: 6, name: '10s-3min', itemStyle: {color: ringColors[0]}},
+        {value: 3, name: '3-10min', itemStyle: {color: ringColors[1]}},
+        {value: 1, name: '10min以上', itemStyle: {color: ringColors[2]}}
+      ]
+    }]
+  });
+}
+
+function openSmartModal() {
+  const n = teamMembers.length;
+  const metrics = [
+    {key: 'leads', icon: '📋', label: '拨打线索数', color: '#1890ff'},
+    {key: 'calls', icon: '📞', label: '拨打次数', color: '#597ef7'},
+    {key: 'valid', icon: '✅', label: '有效通话量', color: '#52c41a'},
+    {key: 'durationMin', icon: '⏱️', label: '有效通话时长', color: '#faad14'}
+  ];
+
+  function durFmt(m) {
+    const h = Math.floor(m / 60);
+    const min = Math.round(m % 60);
+    return h + 'h' + String(min).padStart(2, '0') + 'm';
+  }
+
+  let html = '';
+  metrics.forEach(mt => {
+    const avg = teamMembers.reduce((s, m) => s + m[mt.key], 0) / n;
+    const belowList = teamMembers.filter(m => m[mt.key] < avg);
+    const aboveList = teamMembers.filter(m => m[mt.key] >= avg);
+    const isWarn = belowList.length / n > 0.4;
+    const avgDisplay = mt.key === 'durationMin' ? durFmt(avg) : Math.round(avg).toLocaleString();
+    const valFmt = (v) => mt.key === 'durationMin' ? durFmt(v) : v.toLocaleString();
+
+    html += `<div class="sa-section">
+      <div class="sa-head">
+        <div class="sa-metric"><span style="color:${mt.color}">${mt.icon}</span> ${mt.label} <span style="font-size:11px;color:var(--t2);font-weight:400">（均值：${avgDisplay}）</span></div>
+        <div class="sa-count ${isWarn ? 'warn' : 'ok'}">${belowList.length}/${n}人低于均值</div>
+      </div>
+      <div class="sa-names">
+        <div style="margin-bottom:4px;font-size:11px;color:var(--dan);font-weight:600">⚠ 低于均值（${belowList.length}人）：</div>
+        ${belowList.map(m => `<span class="name-tag below">${m.name}（${valFmt(m[mt.key])}）</span>`).join('')}
+        <div style="margin-top:6px;margin-bottom:4px;font-size:11px;color:var(--suc);font-weight:600">✓ 达标（${aboveList.length}人）：</div>
+        ${aboveList.map(m => `<span class="name-tag above">${m.name}（${valFmt(m[mt.key])}）</span>`).join('')}
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('smartModalBody').innerHTML = html;
+  document.getElementById('smartModal').classList.add('show');
+}
+
+function closeSmartModal() {
+  document.getElementById('smartModal').classList.remove('show');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  buildCalendar();
+  initPerfChart();
+  initOrderTypeChart();
+  initSourcePieChart();
+  initCallChart();
+  initCallPersonChart();
+
+  window.addEventListener('resize', () => {
+    Object.values(charts).forEach(c => c && c.resize());
+  });
+});
+</script>
+</body>
+</html>
