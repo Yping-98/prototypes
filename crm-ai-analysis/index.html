@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>电销CRM - 我的数据（AI智能分析）</title>
+<script src="https://unpkg.com/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+:root{--pri:#1890ff;--pri-l:#e6f7ff;--pri-d:#096dd9;--suc:#52c41a;--suc-bg:#f6ffed;--war:#faad14;--war-bg:#fffbe6;--dan:#ff4d4f;--dan-bg:#fff2f0;--t1:#303133;--t2:#909399;--t3:#c0c4cc;--bg:#f5f7fa;--card:#fff;--bd:#e4e7ed;--sb:#001529}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--t1)}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:150px;background:var(--sb);flex-shrink:0;display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-logo{height:48px;display:flex;align-items:center;padding:0 14px;gap:8px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sidebar-logo .lc{width:28px;height:28px;background:var(--pri);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;font-weight:700}
+.sidebar-logo span{color:#fff;font-size:14px;font-weight:600}
+.ni{display:flex;align-items:center;gap:7px;padding:8px 14px;color:rgba(255,255,255,.6);font-size:12px;cursor:pointer;border-left:3px solid transparent;transition:all .15s}
+.ni:hover{color:#fff;background:rgba(255,255,255,.04)}
+.ni.act{color:#fff;background:rgba(24,144,255,.15);border-left-color:var(--pri)}
+.ni .bd{margin-left:auto;background:var(--dan);color:#fff;font-size:9px;padding:0 4px;border-radius:7px;line-height:14px}
+.ng{padding:6px 14px 3px;font-size:10px;color:rgba(255,255,255,.25);cursor:pointer}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.top{height:42px;background:#fff;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex-shrink:0;font-size:12px}
+.top .c{color:var(--pri)}
+.top .r{display:flex;align-items:center;gap:10px;color:var(--t2)}
+.top .av{width:24px;height:24px;border-radius:50%;background:var(--pri);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px}
+.pn{height:36px;background:#fff;border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0;font-size:12px;color:var(--t2)}
+.pn .pt{background:var(--pri-l);padding:3px 10px;border-radius:3px;color:var(--pri);font-size:11px}
+.ca{flex:1;overflow-y:auto}.ci{padding:14px}
+.ss{background:#fff;border-radius:6px;padding:10px 14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.ss select{padding:4px 10px;border:1px solid var(--bd);border-radius:4px;font-size:12px;color:var(--t1);cursor:pointer;background:#fff;font-weight:600;color:var(--pri)}
+.ps{background:#fff;border-radius:6px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.ps .rank{background:var(--pri);color:#fff;padding:5px 16px;border-radius:18px;font-size:12px;font-weight:600;white-space:nowrap}
+.ps .rank .no{font-size:20px;font-weight:800}
+.ps .pv{font-size:14px;font-weight:700;white-space:nowrap}
+.ps .pv .pc{font-size:18px;color:var(--suc);font-weight:800;margin-left:8px}
+.ps .prog{flex:1;min-width:120px}
+.ps .prog .bar{height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden;margin:4px 0}
+.ps .prog .fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#1890ff,#36cfc9)}
+.ps .tgt{font-size:12px;color:var(--t2);white-space:nowrap}
+.ps .moti{font-size:11px;color:var(--dan);font-weight:500}
+.ps .mp{padding:4px 10px;border:1px solid var(--bd);border-radius:4px;font-size:11px;white-space:nowrap;cursor:pointer}
+.mc{background:#fff;border-radius:6px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);overflow:hidden}
+.mh{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f5f5f5;font-size:11px}
+.mt{font-size:13px;font-weight:600}
+.mti{color:var(--pri);font-size:11px}
+.mb{padding:14px}
+.cr{display:flex;gap:0}.cc{flex:1;min-height:260px}.cc+.cc{border-left:1px solid #f5f5f5}
+.mk{padding:12px 14px;border-bottom:1px solid #f5f5f5;position:relative}
+.mk:last-child{border-bottom:none}
+.mk .ml{font-size:11px;color:var(--t2);margin-bottom:4px}
+.mk .mv{font-size:20px;font-weight:700}
+.mk .ma{font-size:10px;margin-top:3px}
+.ma.ok{color:var(--suc)}.ma.low{color:var(--dan)}
+.mk .tag{position:absolute;top:8px;right:10px;padding:1px 7px;border-radius:8px;font-size:9px;font-weight:600}
+.tag.above{background:var(--suc-bg);color:var(--suc)}.tag.below{background:var(--dan-bg);color:var(--dan)}
+.fs{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--t2)}
+.fs select{padding:3px 8px;border:1px solid var(--bd);border-radius:4px;font-size:11px;cursor:pointer}
+/* Robot FAB */
+.fab{position:fixed;bottom:28px;right:28px;z-index:9999;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1890ff,#36cfc9);box-shadow:0 4px 20px rgba(24,144,255,.4);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;animation:fp 2s ease-in-out infinite}
+.fab:hover{transform:scale(1.1);box-shadow:0 6px 28px rgba(24,144,255,.5)}
+.fab svg{width:26px;height:26px;fill:#fff}
+@keyframes fp{0%,100%{box-shadow:0 4px 20px rgba(24,144,255,.4)}50%{box-shadow:0 4px 30px rgba(24,144,255,.6),0 0 0 8px rgba(24,144,255,.1)}}
+.fab .fbg{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--suc);border-radius:50%;border:2px solid #fff}
+.tip-bubble{position:fixed;bottom:86px;right:24px;z-index:9998;background:#fff;border-radius:10px;padding:10px 14px;box-shadow:0 4px 20px rgba(0,0,0,.12);font-size:11px;color:var(--t1);max-width:220px;line-height:1.5;animation:ti .4s ease}
+.tip-bubble::after{content:'';position:absolute;bottom:-6px;right:20px;width:10px;height:10px;background:#fff;transform:rotate(45deg);box-shadow:2px 2px 4px rgba(0,0,0,.06)}
+@keyframes ti{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* AI Panel */
+.ao{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.35);z-index:10000;display:none;justify-content:flex-end}
+.ao.show{display:flex}
+.ap{width:580px;max-width:92vw;background:#fff;height:100%;display:flex;flex-direction:column;animation:ps .35s cubic-bezier(.16,1,.3,1);box-shadow:-8px 0 40px rgba(0,0,0,.15)}
+@keyframes ps{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.aph{padding:14px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.aph h3{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.apc{width:30px;height:30px;border-radius:6px;border:none;background:var(--bg);cursor:pointer;font-size:14px;color:var(--t2);display:flex;align-items:center;justify-content:center}
+.apc:hover{background:#eee}
+/* AI Tabs */
+.ai-tabs{display:flex;border-bottom:1px solid var(--bd);flex-shrink:0;background:#fafafa}
+.ai-tab{flex:1;padding:10px 0;text-align:center;font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;position:relative}
+.ai-tab:hover{color:var(--pri);background:var(--pri-l)}
+.ai-tab.active{color:var(--pri);border-bottom-color:var(--pri);background:#fff}
+.ai-tab .tab-icon{font-size:16px;display:block;margin-bottom:2px}
+.apb{flex:1;overflow-y:auto;padding:18px}
+/* AI Sections */
+.as{margin-bottom:18px;animation:sf .5s ease forwards;opacity:0}
+.as:nth-child(1){animation-delay:.1s}.as:nth-child(2){animation-delay:.25s}.as:nth-child(3){animation-delay:.4s}.as:nth-child(4){animation-delay:.55s}.as:nth-child(5){animation-delay:.7s}.as:nth-child(6){animation-delay:.85s}
+@keyframes sf{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.ast{font-size:13px;font-weight:600;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:6px}
+.ab{border-radius:7px;padding:10px 12px;margin-bottom:8px;font-size:11px;line-height:1.7}
+.ab.d{background:var(--dan-bg);border:1px solid #ffccc7}.ab.w{background:var(--war-bg);border:1px solid #ffe58f}.ab.s{background:var(--suc-bg);border:1px solid #b7eb8f}.ab.i{background:var(--pri-l);border:1px solid #91d5ff}
+.ab strong{font-weight:600}.r{color:var(--dan);font-weight:600}.b{color:var(--pri);font-weight:600}.g{color:var(--suc);font-weight:600}.o{color:var(--war);font-weight:600}
+/* Salary */
+.sc{background:linear-gradient(135deg,#f0f5ff,#e6fffb);border:1px solid #d6e4ff;border-radius:10px;padding:14px;margin-bottom:8px}
+.sc .str{display:flex;align-items:baseline;gap:6px;margin-bottom:10px}
+.sc .stl{font-size:12px;color:var(--t2)}.sc .stv{font-size:26px;font-weight:700;color:var(--pri)}
+.sc .sps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sc .sp{background:rgba(255,255,255,.7);border-radius:7px;padding:8px;text-align:center}
+.sc .sp .spl{font-size:10px;color:var(--t2);margin-bottom:3px}.sc .sp .spv{font-size:16px;font-weight:700}.sc .sp .spd{font-size:9px;color:var(--t3);margin-top:2px}
+.tt{width:100%;border-collapse:collapse;font-size:11px;margin-top:6px}
+.tt th{background:#fafafa;padding:5px 8px;text-align:left;font-weight:600;color:var(--t2);border-bottom:1px solid var(--bd)}
+.tt td{padding:5px 8px;border-bottom:1px solid #f5f5f5}
+.tt tr.cur{background:var(--pri-l)}.tt tr.cur td{color:var(--pri);font-weight:600}
+.tt tr.nxt{background:#f6ffed}
+.tt .bs{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;color:#fff}
+.bs.c{background:var(--pri)}.bs.t{background:var(--suc)}.bs.rk{background:var(--dan)}
+.sl{padding:0;margin:0;list-style:none}
+.sl li{padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:11px;line-height:1.6;display:flex;gap:7px}
+.sl li:last-child{border-bottom:none}
+.sim-r{display:flex;gap:8px;margin-bottom:10px}
+.sig{flex:1}.sig label{display:block;font-size:10px;color:var(--t2);margin-bottom:3px}
+.sig input,.sig select{width:100%;padding:5px 8px;border:1px solid var(--bd);border-radius:4px;font-size:12px;outline:none}
+.sig input:focus,.sig select:focus{border-color:var(--pri)}
+.srb{background:linear-gradient(135deg,#e6f7ff,#f0f5ff);border-radius:7px;padding:12px;text-align:center}
+.srb .srv{font-size:24px;font-weight:700;color:var(--pri)}.srb .srd{font-size:10px;color:var(--t2);margin-top:3px}
+.ld{display:inline-flex;gap:3px;align-items:center}
+.ld span{width:5px;height:5px;border-radius:50%;background:var(--pri);animation:db .6s ease infinite alternate}
+.ld span:nth-child(2){animation-delay:.15s}.ld span:nth-child(3){animation-delay:.3s}
+@keyframes db{from{opacity:.3;transform:scale(.8)}to{opacity:1;transform:scale(1.2)}}
+/* Data overview cards in AI panel */
+.ov-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+.ov-card{background:#fafafa;border-radius:8px;padding:10px 12px;border:1px solid #f0f0f0}
+.ov-card .ov-l{font-size:10px;color:var(--t2);margin-bottom:4px}
+.ov-card .ov-v{font-size:18px;font-weight:700}
+.ov-card .ov-sub{font-size:9px;color:var(--t3);margin-top:2px}
+.ov-card.good .ov-v{color:var(--suc)}.ov-card.warn .ov-v{color:var(--dan)}.ov-card.pri .ov-v{color:var(--pri)}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="lc">🐙</div><span>电销CRM</span></div>
+    <div class="ng">▾ 个人工作台</div>
+    <div class="ni"><span>🏠</span>首页<span class="bd">99+</span></div>
+    <div class="ni act"><span>📊</span>我的数据</div>
+    <div class="ni"><span>📈</span>数据看板</div>
+    <div class="ni"><span>💬</span>消息管理<span class="bd">9</span></div>
+  </aside>
+  <div class="main">
+    <div class="top">
+      <div>☰ &nbsp;首页</div>
+      <div class="c">今日已领0，自助线索池上限10/日</div>
+      <div class="r"><span>🚩</span><span>📝</span><span>❓</span><span>🔍</span><span>📞</span><span>🔔</span><div class="av">李</div><span>liyingping</span></div>
+    </div>
+    <div class="pn"><span style="cursor:pointer">‹</span><span class="pt">首页</span><span style="flex:1"></span></div>
+    <div class="ca"><div class="ci">
+      <!-- 坐席选择 -->
+      <div class="ss">
+        <select id="agentSelect" onchange="switchAgent()">
+          <option value="lijingyue">李静月</option>
+          <option value="zhangwei">张伟</option>
+          <option value="wangli">王丽</option>
+          <option value="liuyang">刘洋</option>
+        </select>
+      </div>
+      <!-- 业绩概览 -->
+      <div class="ps" id="perfSummary">
+        <div class="rank">我的业绩排名：<span class="no" id="rankNo">NO.2</span></div>
+        <div class="pv">本月业绩：<span id="perfVal">110647.68</span> <span class="pc" id="perfPct">122.94%</span></div>
+        <div class="prog">
+          <div class="bar"><div class="fill" id="progFill" style="width:100%;background:linear-gradient(90deg,#52c41a,#36cfc9);"></div></div>
+          <div class="moti" id="motiText">巅峰之上，再造传奇！</div>
+        </div>
+        <div class="tgt">本月目标：<span id="tgtVal">90000</span></div>
+        <div class="mp">📅 2026-03</div>
+      </div>
+      <!-- 我的业绩 + 业绩分类 -->
+      <div class="mc">
+        <div class="mh"><span class="mti">数据更新时间：2026-03-19 15:37:52</span><div class="fs"><select><option>月</option></select><span class="mp">📅 2026-03</span></div></div>
+        <div class="mb"><div class="cr">
+          <div class="cc"><div style="font-size:13px;font-weight:600;margin-bottom:8px;">我的业绩</div><div id="c1" style="width:100%;height:240px;"></div></div>
+          <div class="cc" style="padding-left:14px;"><div style="font-size:13px;font-weight:600;margin-bottom:8px;">业绩分类</div><div id="c2" style="width:100%;height:240px;"></div></div>
+        </div></div>
+      </div>
+      <!-- 我的客户来源 + 已成交客户池来源 -->
+      <div class="mc">
+        <div class="mh"><span class="mti">数据更新时间：2026-03-19 15:37:52</span><div class="fs"><select><option>月</option></select><span class="mp">📅 2026-03</span></div></div>
+        <div class="mb"><div class="cr">
+          <div class="cc"><div style="font-size:13px;font-weight:600;margin-bottom:8px;">我的客户来源</div><div id="c4" style="width:100%;height:280px;"></div></div>
+          <div class="cc" style="padding-left:14px;"><div style="font-size:13px;font-weight:600;margin-bottom:8px;">已成交客户池来源</div><div id="c5" style="width:100%;height:280px;"></div></div>
+        </div></div>
+      </div>
+      <!-- 通话情况 -->
+      <div class="mc">
+        <div class="mh"><div><span class="mt">我的通话情况</span> <span class="mti" style="margin-left:8px;">数据截止时间：2026-03-19 00:00:00</span></div><div class="fs"><select><option>月</option></select><span class="mp">📅 2026-03</span></div></div>
+        <div class="mb" style="padding:0;display:flex;">
+          <div style="flex:1;padding:14px;border-right:1px solid #f5f5f5;">
+            <div style="display:flex;gap:12px;margin-bottom:8px;font-size:10px;color:var(--t2)">
+              <span>🟦 拨打线索数</span><span>🟪 拨打次数</span><span>🟩 有效通话量</span><span>🟠 有效通话时长/min</span>
+            </div>
+            <div id="c3" style="width:100%;height:240px;"></div>
+          </div>
+          <div style="width:190px;flex-shrink:0;" id="callMetrics">
+            <div class="mk"><div class="ml">拨打线索数</div><div class="mv" style="color:var(--suc)">1646</div><div class="ma ok">均值：1161</div><span class="tag above">✓ 达标</span></div>
+            <div class="mk"><div class="ml">拨打次数</div><div class="mv" style="color:var(--suc)">3871</div><div class="ma ok">均值：2753</div><span class="tag above">✓ 达标</span></div>
+            <div class="mk"><div class="ml">有效通话量</div><div class="mv" style="color:var(--suc)">500</div><div class="ma ok">均值：409</div><span class="tag above">✓ 达标</span></div>
+            <div class="mk"><div class="ml">有效通话时长</div><div class="mv" style="color:var(--dan)">12h53m29s</div><div class="ma low">均值：14h23m53s</div><span class="tag below">⚠ 偏低</span></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- Robot FAB -->
+<div class="tip-bubble" id="tip">🤖 点击我，为当前坐席生成智能数据分析！</div>
+<div class="fab" id="fab" onclick="openPanel()">
+  <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 110 2h-1v1a7 7 0 01-7 7H10a7 7 0 01-7-7v-1H2a1 1 0 110-2h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zm-2 9a2 2 0 100 4 2 2 0 000-4zm4 0a2 2 0 100 4 2 2 0 000-4z"/></svg>
+  <div class="fbg"></div>
+</div>
+
+<!-- AI Panel -->
+<div class="ao" id="overlay">
+  <div style="flex:1" onclick="closePanel()"></div>
+  <div class="ap">
+    <div class="aph"><h3 id="panelTitle">🤖 AI 智能分析 · 李静月</h3><button class="apc" onclick="closePanel()">✕</button></div>
+    <div class="ai-tabs">
+      <div class="ai-tab active" data-tab="salary" onclick="switchTab('salary')"><span class="tab-icon">💰</span>薪资分析</div>
+      <div class="ai-tab" data-tab="action" onclick="switchTab('action')"><span class="tab-icon">💡</span>智能行动建议</div>
+    </div>
+    <div class="apb" id="panelBody"></div>
+  </div>
+</div>
+
+<script>
+const agentData = {
+  lijingyue: {
+    name: '李静月', rank: 2, rankPct: 3, perf: 110647.68, target: 90000,
+    perfPct: 122.94, moti: '巅峰之上，再造传奇！',
+    dailyPerf: [3248,3798,2200,0,0,0,13000,17000,13000,10000,7994,10000,3596,5196,14000,2402,1904,6194,3698,0,0,0,0,0,0,0,0,0,0,0,0],
+    pieData: [{value:88.1,name:'组合商品'},{value:5.94,name:'零售商品'},{value:5.96,name:'加购商品'}],
+    sourceBar: {labels:['企业微信','中学业务','成交入库/流转','转介绍/推荐','人工录入','线索品-双倍抵扣','加购商品自动归属','自助线索池/转移','线索品入库/流转','成交入库','转介绍','其他'], data:[1110,299,128,122,63,36,31,51,29,9,5,1]},
+    sourcePie: [{value:30.23,name:'企业微信'},{value:20.93,name:'成交入库/流转'},{value:11.63,name:'人工录入'},{value:9.3,name:'中学业务'},{value:9.3,name:'线索品-双倍抵扣'},{value:18.61,name:'其他所有类型'}],
+    callDaily: {leads:[120,115,130,0,0,0,135,145,128,110,120,135,125,118,140,95,88,130,112,0,0,0,0,0,0,0,0,0,0,0,0],calls:[280,270,310,0,0,0,320,340,300,260,280,315,290,275,330,220,200,305,265,0,0,0,0,0,0,0,0,0,0,0,0],valid:[35,32,38,0,0,0,42,45,40,34,36,41,38,35,44,28,25,39,33,0,0,0,0,0,0,0,0,0,0,0,0],duration:[48,44,52,0,0,0,55,60,53,46,48,54,50,47,58,38,34,51,44,0,0,0,0,0,0,0,0,0,0,0,0]},
+    callMetrics: {leads:{val:1646,avg:1161},calls:{val:3871,avg:2753},valid:{val:500,avg:409},duration:{val:'12h53m29s',avg:'14h23m53s',low:true}},
+    isTarget: true, school: '初中'
+  },
+  zhangwei: {
+    name: '张伟', rank: 5, rankPct: 8, perf: 89500, target: 90000,
+    perfPct: 99.44, moti: '距目标仅差一步，全力冲刺！',
+    dailyPerf: [2800,3200,1900,0,0,0,8500,12000,9800,7600,6500,8200,4200,4800,7500,3100,2800,3500,2600,0,0,0,0,0,0,0,0,0,0,0,0],
+    pieData: [{value:72.3,name:'组合商品'},{value:18.2,name:'零售商品'},{value:9.5,name:'加购商品'}],
+    sourceBar: {labels:['企业微信','中学业务','成交入库/流转','转介绍/推荐','人工录入','线索品-双倍抵扣','其他'], data:[850,220,95,80,45,25,12]},
+    sourcePie: [{value:35.5,name:'企业微信'},{value:18.2,name:'成交入库/流转'},{value:15.3,name:'人工录入'},{value:12.8,name:'中学业务'},{value:8.1,name:'线索品-双倍抵扣'},{value:10.1,name:'其他所有类型'}],
+    callDaily: {leads:[95,100,105,0,0,0,110,118,102,90,98,108,100,95,115,80,75,105,92,0,0,0,0,0,0,0,0,0,0,0,0],calls:[220,240,250,0,0,0,270,290,260,210,230,255,240,225,275,185,170,250,215,0,0,0,0,0,0,0,0,0,0,0,0],valid:[28,26,30,0,0,0,34,36,32,27,29,33,30,28,35,22,20,31,26,0,0,0,0,0,0,0,0,0,0,0,0],duration:[40,37,43,0,0,0,48,50,45,38,41,47,42,39,49,31,28,43,37,0,0,0,0,0,0,0,0,0,0,0,0]},
+    callMetrics: {leads:{val:1352,avg:1161},calls:{val:3190,avg:2753},valid:{val:412,avg:409},duration:{val:'14h42m15s',avg:'14h23m53s',low:false}},
+    isTarget: false, school: '初中'
+  },
+  wangli: {
+    name: '王丽', rank: 1, rankPct: 1, perf: 156800, target: 90000,
+    perfPct: 174.22, moti: '遥遥领先，王者风范！',
+    dailyPerf: [5500,6200,4800,0,0,0,18000,22000,16000,14000,12500,15000,6800,8200,15600,5800,4200,0,2200,0,0,0,0,0,0,0,0,0,0,0,0],
+    pieData: [{value:82.5,name:'组合商品'},{value:10.3,name:'零售商品'},{value:7.2,name:'加购商品'}],
+    sourceBar: {labels:['企业微信','中学业务','成交入库/流转','转介绍/推荐','人工录入','线索品-双倍抵扣','其他'], data:[1350,380,165,140,88,42,18]},
+    sourcePie: [{value:32.1,name:'企业微信'},{value:22.5,name:'成交入库/流转'},{value:13.8,name:'人工录入'},{value:11.2,name:'中学业务'},{value:10.1,name:'线索品-双倍抵扣'},{value:10.3,name:'其他所有类型'}],
+    callDaily: {leads:[140,135,148,0,0,0,155,168,145,130,142,158,148,135,165,112,105,155,130,0,0,0,0,0,0,0,0,0,0,0,0],calls:[330,320,360,0,0,0,380,400,350,310,330,370,340,320,390,260,240,360,305,0,0,0,0,0,0,0,0,0,0,0,0],valid:[42,39,46,0,0,0,50,54,48,40,43,49,45,42,52,34,30,46,40,0,0,0,0,0,0,0,0,0,0,0,0],duration:[58,54,63,0,0,0,68,72,64,55,59,66,61,57,70,47,42,62,55,0,0,0,0,0,0,0,0,0,0,0,0]},
+    callMetrics: {leads:{val:1920,avg:1161},calls:{val:4480,avg:2753},valid:{val:580,avg:409},duration:{val:'16h45m10s',avg:'14h23m53s',low:false}},
+    isTarget: true, school: '初中'
+  },
+  liuyang: {
+    name: '刘洋', rank: 12, rankPct: 18, perf: 62300, target: 90000,
+    perfPct: 69.22, moti: '追赶中，不要放弃！',
+    dailyPerf: [1800,2100,1500,0,0,0,5500,7200,5800,4200,3800,5100,2400,3200,4800,1600,1400,3200,1400,0,0,0,0,0,0,0,0,0,0,0,0],
+    pieData: [{value:65.2,name:'组合商品'},{value:22.8,name:'零售商品'},{value:12.0,name:'加购商品'}],
+    sourceBar: {labels:['企业微信','中学业务','成交入库/流转','转介绍/推荐','人工录入','其他'], data:[580,145,75,55,30,10]},
+    sourcePie: [{value:38.2,name:'企业微信'},{value:16.8,name:'成交入库/流转'},{value:14.5,name:'人工录入'},{value:10.5,name:'中学业务'},{value:8.0,name:'线索品-双倍抵扣'},{value:12.0,name:'其他所有类型'}],
+    callDaily: {leads:[75,80,85,0,0,0,88,95,82,72,78,86,80,76,92,65,60,84,73,0,0,0,0,0,0,0,0,0,0,0,0],calls:[175,190,200,0,0,0,215,230,198,170,185,205,195,180,220,150,140,200,172,0,0,0,0,0,0,0,0,0,0,0,0],valid:[22,20,24,0,0,0,27,29,25,21,23,26,24,22,28,18,16,25,21,0,0,0,0,0,0,0,0,0,0,0,0],duration:[32,28,35,0,0,0,38,42,36,30,33,37,34,31,40,26,23,36,30,0,0,0,0,0,0,0,0,0,0,0,0]},
+    callMetrics: {leads:{val:980,avg:1161},calls:{val:2310,avg:2753},valid:{val:310,avg:409},duration:{val:'10h15m00s',avg:'14h23m53s',low:true}},
+    isTarget: false, school: '初中'
+  }
+};
+
+let currentAgent = 'lijingyue';
+let charts = {};
+let currentTab = 'salary';
+let panelOpened = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+  initCharts();
+  setTimeout(() => { const t = document.getElementById('tip'); if(t) { t.style.opacity = '0'; setTimeout(() => t.style.display = 'none', 300); } }, 5000);
+});
+
+function switchAgent() {
+  currentAgent = document.getElementById('agentSelect').value;
+  panelOpened = false;
+  updatePage();
+}
+
+function updatePage() {
+  const d = agentData[currentAgent];
+  document.getElementById('rankNo').textContent = 'NO.' + d.rank;
+  document.getElementById('perfVal').textContent = d.perf.toLocaleString();
+  document.getElementById('perfPct').textContent = d.perfPct.toFixed(2) + '%';
+  document.getElementById('tgtVal').textContent = d.target.toLocaleString();
+  document.getElementById('motiText').textContent = d.moti;
+  const pct = Math.min(100, d.perfPct);
+  const fill = document.getElementById('progFill');
+  fill.style.width = pct + '%';
+  fill.style.background = pct >= 100 ? 'linear-gradient(90deg,#52c41a,#36cfc9)' : 'linear-gradient(90deg,#1890ff,#36cfc9)';
+
+  updateCallMetrics(d);
+  updateCharts(d);
+  document.getElementById('tip').style.display = 'block';
+  document.getElementById('tip').style.opacity = '1';
+  document.getElementById('tip').textContent = '🤖 点击我，为' + d.name + '生成智能数据分析！';
+  setTimeout(() => { const t = document.getElementById('tip'); if(t) { t.style.opacity = '0'; setTimeout(() => t.style.display = 'none', 300); } }, 4000);
+}
+
+function updateCallMetrics(d) {
+  const m = d.callMetrics;
+  const el = document.getElementById('callMetrics');
+  el.innerHTML = `
+    <div class="mk"><div class="ml">拨打线索数</div><div class="mv" style="color:${m.leads.val >= m.leads.avg ? 'var(--suc)' : 'var(--dan)'}">${m.leads.val}</div><div class="ma ${m.leads.val >= m.leads.avg ? 'ok' : 'low'}">均值：${m.leads.avg}</div><span class="tag ${m.leads.val >= m.leads.avg ? 'above' : 'below'}">${m.leads.val >= m.leads.avg ? '✓ 达标' : '⚠ 偏低'}</span></div>
+    <div class="mk"><div class="ml">拨打次数</div><div class="mv" style="color:${m.calls.val >= m.calls.avg ? 'var(--suc)' : 'var(--dan)'}">${m.calls.val}</div><div class="ma ${m.calls.val >= m.calls.avg ? 'ok' : 'low'}">均值：${m.calls.avg}</div><span class="tag ${m.calls.val >= m.calls.avg ? 'above' : 'below'}">${m.calls.val >= m.calls.avg ? '✓ 达标' : '⚠ 偏低'}</span></div>
+    <div class="mk"><div class="ml">有效通话量</div><div class="mv" style="color:${m.valid.val >= m.valid.avg ? 'var(--suc)' : 'var(--dan)'}">${m.valid.val}</div><div class="ma ${m.valid.val >= m.valid.avg ? 'ok' : 'low'}">均值：${m.valid.avg}</div><span class="tag ${m.valid.val >= m.valid.avg ? 'above' : 'below'}">${m.valid.val >= m.valid.avg ? '✓ 达标' : '⚠ 偏低'}</span></div>
+    <div class="mk"><div class="ml">有效通话时长</div><div class="mv" style="color:${m.duration.low ? 'var(--dan)' : 'var(--suc)'}">${m.duration.val}</div><div class="ma ${m.duration.low ? 'low' : 'ok'}">均值：${m.duration.avg}</div><span class="tag ${m.duration.low ? 'below' : 'above'}">${m.duration.low ? '⚠ 偏低' : '✓ 达标'}</span></div>
+  `;
+}
+
+function initCharts() {
+  const d = agentData[currentAgent];
+  const days = Array.from({length: 31}, (_, i) => `3/${i + 1}`);
+
+  charts.c1 = echarts.init(document.getElementById('c1'));
+  charts.c2 = echarts.init(document.getElementById('c2'));
+  charts.c3 = echarts.init(document.getElementById('c3'));
+  charts.c4 = echarts.init(document.getElementById('c4'));
+  charts.c5 = echarts.init(document.getElementById('c5'));
+
+  setChartOptions(d, days);
+
+  window.addEventListener('resize', () => {
+    Object.values(charts).forEach(c => c && c.resize());
+  });
+}
+
+function setChartOptions(d, days) {
+  if (!days) days = Array.from({length: 31}, (_, i) => `3/${i + 1}`);
+
+  charts.c1.setOption({
+    grid:{top:10,bottom:28,left:45,right:8},tooltip:{trigger:'axis',formatter:p=>`${p[0].axisValue}<br/>业绩: ¥${p[0].value.toLocaleString()}`},
+    xAxis:{type:'category',data:days,axisLabel:{fontSize:9,rotate:50}},
+    yAxis:{type:'value',axisLabel:{fontSize:9,formatter:v=>v>=10000?(v/10000).toFixed(1)+'w':v}},
+    series:[{type:'bar',data:d.dailyPerf,itemStyle:{color:'#1890ff',borderRadius:[2,2,0,0]}}]
+  }, true);
+
+  const pieColors = ['#1890ff','#36cfc9','#ffc53d','#ff7a45','#722ed1','#eb2f96'];
+  charts.c2.setOption({
+    tooltip:{trigger:'item'},legend:{bottom:0,textStyle:{fontSize:10}},
+    series:[{type:'pie',radius:['42%','70%'],center:['50%','42%'],label:{show:false},
+      data:d.pieData.map((item, i) => ({...item, itemStyle:{color:pieColors[i]}}))}]
+  }, true);
+
+  charts.c3.setOption({
+    grid:{top:10,bottom:28,left:40,right:40},tooltip:{trigger:'axis'},
+    xAxis:{type:'category',data:days,axisLabel:{fontSize:9,rotate:50}},
+    yAxis:[{type:'value',name:'数量',axisLabel:{fontSize:9}},{type:'value',name:'时长(分钟)',position:'right',axisLabel:{fontSize:9,formatter:'{value}min'}}],
+    series:[
+      {name:'拨打线索数',type:'bar',data:d.callDaily.leads,itemStyle:{color:'#1890ff'}},
+      {name:'拨打次数',type:'bar',data:d.callDaily.calls,itemStyle:{color:'#597ef7'}},
+      {name:'有效通话量',type:'bar',data:d.callDaily.valid,itemStyle:{color:'#52c41a'}},
+      {name:'有效通话时长',type:'line',yAxisIndex:1,data:d.callDaily.duration,itemStyle:{color:'#faad14'},smooth:true}
+    ]
+  }, true);
+
+  charts.c4.setOption({
+    grid:{top:10,bottom:80,left:10,right:10},tooltip:{trigger:'axis'},
+    xAxis:{type:'category',data:d.sourceBar.labels,axisLabel:{fontSize:9,rotate:40,interval:0}},
+    yAxis:{type:'value',axisLabel:{fontSize:9}},
+    series:[{type:'bar',data:d.sourceBar.data,itemStyle:{color:'#1890ff',borderRadius:[2,2,0,0]},label:{show:true,position:'top',fontSize:9}}]
+  }, true);
+
+  const srcColors = ['#1890ff','#36cfc9','#52c41a','#722ed1','#faad14','#ff7a45'];
+  charts.c5.setOption({
+    tooltip:{trigger:'item',formatter:'{b}: {d}%'},legend:{bottom:0,textStyle:{fontSize:9}},
+    series:[{type:'pie',radius:['38%','68%'],center:['50%','40%'],label:{show:true,fontSize:9,formatter:'{b}\n{d}%'},
+      data:d.sourcePie.map((item, i) => ({...item, itemStyle:{color:srcColors[i]}}))}]
+  }, true);
+}
+
+function updateCharts(d) {
+  const days = Array.from({length: 31}, (_, i) => `3/${i + 1}`);
+  setChartOptions(d, days);
+}
+
+function openPanel() {
+  document.getElementById('tip').style.display = 'none';
+  const o = document.getElementById('overlay');
+  o.style.display = 'flex';
+  o.classList.add('show');
+  const d = agentData[currentAgent];
+  document.getElementById('panelTitle').textContent = '🤖 AI 智能分析 · ' + d.name;
+  if (!panelOpened) {
+    panelOpened = true;
+    currentTab = 'salary';
+    document.querySelectorAll('.ai-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('[data-tab="salary"]').classList.add('active');
+    runAnalysis();
+  }
+}
+
+function closePanel() {
+  const o = document.getElementById('overlay');
+  o.classList.remove('show');
+  setTimeout(() => o.style.display = 'none', 300);
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.ai-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  renderTab();
+}
+
+function runAnalysis() {
+  const b = document.getElementById('panelBody');
+  const d = agentData[currentAgent];
+  b.innerHTML = `<div style="text-align:center;padding:36px 0"><div style="font-size:36px;margin-bottom:10px">🤖</div><div style="font-size:13px;color:var(--t2);margin-bottom:14px">正在分析${d.name}的各模块数据...</div><div class="ld"><span></span><span></span><span></span></div></div>`;
+  setTimeout(() => renderTab(), 1500);
+}
+
+function renderTab() {
+  const b = document.getElementById('panelBody');
+  const d = agentData[currentAgent];
+  switch (currentTab) {
+    case 'salary': b.innerHTML = genSalary(d); break;
+    case 'action': b.innerHTML = genAction(d); break;
+  }
+}
+
+function calcSalary(perf, rankPct, isTarget) {
+  let ts = 0;
+  if (rankPct <= 10) ts = 2500;
+  else if (rankPct <= 20) ts = 2000;
+  else if (rankPct <= 30) ts = 1500;
+  else if (rankPct <= 40) ts = 1000;
+  else if (rankPct <= 50) ts = 500;
+  const base = 4500 + ts;
+
+  let rate = 0;
+  if (perf >= 200000) rate = isTarget ? 15 : 14;
+  else if (perf >= 170000) rate = isTarget ? 13 : 12;
+  else if (perf >= 140000) rate = isTarget ? 12 : 11;
+  else if (perf >= 110000) rate = isTarget ? 11 : 10;
+  else if (perf >= 80000) rate = isTarget ? 9 : 8;
+  else if (perf >= 60000) rate = isTarget ? 8 : 7;
+  else if (perf >= 40000) rate = isTarget ? 7 : 6;
+  else if (perf >= 20000) rate = isTarget ? 5 : 4;
+  const comm = Math.round(perf * rate / 100);
+
+  let bonus = 0;
+  if (perf > 0 && rankPct <= 10) bonus = 2000;
+  else if (perf > 0 && rankPct <= 20) bonus = 1000;
+  else if (perf > 0 && rankPct <= 30) bonus = 500;
+  const perfBonus = 500;
+  return { base, ts, rate, comm, bonus, perfBonus, total: base + comm + bonus + perfBonus };
+}
+
+function getTierInfo(perf) {
+  const tiers = [
+    {min: 200000, max: Infinity, rateT: 15, rateN: 14},
+    {min: 170000, max: 200000, rateT: 13, rateN: 12},
+    {min: 140000, max: 170000, rateT: 12, rateN: 11},
+    {min: 110000, max: 140000, rateT: 11, rateN: 10},
+    {min: 80000, max: 110000, rateT: 9, rateN: 8},
+    {min: 60000, max: 80000, rateT: 8, rateN: 7},
+    {min: 40000, max: 60000, rateT: 7, rateN: 6},
+    {min: 20000, max: 40000, rateT: 5, rateN: 4},
+    {min: 0, max: 20000, rateT: 0, rateN: 0}
+  ];
+  let curIdx = tiers.findIndex(t => perf >= t.min && perf < t.max);
+  if (perf >= 200000) curIdx = 0;
+  return { tiers, curIdx };
+}
+
+function genOverview(d) {
+  const s = calcSalary(d.perf, d.rankPct, d.isTarget);
+  const m = d.callMetrics;
+  const aboveCount = [m.leads.val >= m.leads.avg, m.calls.val >= m.calls.avg, m.valid.val >= m.valid.avg, !m.duration.low].filter(Boolean).length;
+  const rating = aboveCount >= 4 ? '⭐ 优秀' : aboveCount >= 3 ? '⭐ 良好' : aboveCount >= 2 ? '⚠ 一般' : '❗ 需关注';
+  const ratingClass = aboveCount >= 4 ? 'g' : aboveCount >= 3 ? 'b' : aboveCount >= 2 ? 'o' : 'r';
+  const topSource = d.sourceBar.labels[0];
+  const topSourceVal = d.sourceBar.data[0];
+  const totalSource = d.sourceBar.data.reduce((a, b) => a + b, 0);
+  const topSourcePct = (topSourceVal / totalSource * 100).toFixed(1);
+
+  return `
+<div class="as">
+  <div class="ast">📊 数据总览</div>
+  <div class="ov-grid">
+    <div class="ov-card pri"><div class="ov-l">业绩排名</div><div class="ov-v">NO.${d.rank}</div><div class="ov-sub">前${d.rankPct}%</div></div>
+    <div class="ov-card ${d.perfPct >= 100 ? 'good' : 'warn'}"><div class="ov-l">本月业绩</div><div class="ov-v">¥${d.perf.toLocaleString()}</div><div class="ov-sub">完成率 ${d.perfPct}%</div></div>
+    <div class="ov-card ${d.perfPct >= 100 ? 'good' : 'warn'}"><div class="ov-l">月目标</div><div class="ov-v">¥${d.target.toLocaleString()}</div><div class="ov-sub">${d.perfPct >= 100 ? '已超额完成' : '差¥' + (d.target - d.perf).toLocaleString()}</div></div>
+    <div class="ov-card pri"><div class="ov-l">预估薪资</div><div class="ov-v">¥${s.total.toLocaleString()}</div><div class="ov-sub">底薪+提成+奖金</div></div>
+  </div>
+  <div class="ab ${aboveCount >= 3 ? 's' : aboveCount >= 2 ? 'w' : 'd'}">
+    <strong>${aboveCount >= 3 ? '✅' : '⚠️'} ${d.name}整体表现${rating.split(' ')[1]}</strong><br>
+    扫描「我的数据」<span class="b">5个模块</span>（业绩概览、我的业绩、业绩分类、客户来源、通话情况），综合评分：<span class="${ratingClass}">${rating}</span>
+  </div>
+</div>
+
+<div class="as">
+  <div class="ast">📈 模块一：业绩概览</div>
+  <div class="ab ${d.perfPct >= 100 ? 's' : 'w'}">
+    • 业绩排名：<span class="${d.rank <= 3 ? 'g' : d.rank <= 10 ? 'b' : 'o'}">NO.${d.rank}</span>（前${d.rankPct}%）<br>
+    • 本月业绩：<span class="${d.perfPct >= 100 ? 'g' : 'r'}">¥${d.perf.toLocaleString()}</span><br>
+    • 本月目标：¥${d.target.toLocaleString()} — 完成率 <span class="${d.perfPct >= 100 ? 'g' : 'r'}">${d.perfPct}%</span> ${d.perfPct >= 100 ? '<strong>已超额完成！</strong>' : '<strong>尚未达标</strong>'}
+  </div>
+</div>
+
+<div class="as">
+  <div class="ast">📊 模块二：我的业绩趋势 & 业绩分类</div>
+  <div class="ab i">
+    • 本月有效工作日业绩日均约 <span class="b">¥${Math.round(d.perf / d.dailyPerf.filter(v => v > 0).length).toLocaleString()}</span><br>
+    • 业绩分类：${d.pieData.map(p => `${p.name}占 <span class="b">${p.value}%</span>`).join('，')}<br>
+    ${d.pieData[0].value > 80 ? '• <span class="o">建议：</span>头部品类占比过高，适当提升其他品类销售分散风险' : '• 品类分布较为均衡'}
+  </div>
+</div>
+
+<div class="as">
+  <div class="ast">👥 模块三：客户来源分析</div>
+  <div class="ab i">
+    • 主要客户来源：<span class="b">${topSource}</span>（${topSourcePct}%），共 ${topSourceVal} 个客户<br>
+    • 成交客户池前三来源：${d.sourcePie.slice(0, 3).map(p => `${p.name}(${p.value}%)`).join('、')}<br>
+    ${parseFloat(topSourcePct) > 50 ? '• <span class="o">建议：</span>来源过于集中，需拓展其他获客渠道' : '• 来源渠道较分散，获客结构健康'}
+  </div>
+</div>
+
+<div class="as">
+  <div class="ast">📞 模块四：通话情况</div>
+  <div class="ab ${aboveCount >= 3 ? 's' : 'w'}">
+    • 拨打线索数：<span class="${m.leads.val >= m.leads.avg ? 'g' : 'r'}">${m.leads.val.toLocaleString()}</span> — 均值 ${m.leads.avg}（<span class="${m.leads.val >= m.leads.avg ? 'g' : 'r'}">${m.leads.val >= m.leads.avg ? '↑ 高出' + ((m.leads.val / m.leads.avg - 1) * 100).toFixed(1) + '%' : '↓ 低' + ((1 - m.leads.val / m.leads.avg) * 100).toFixed(1) + '%'}</span>）<br>
+    • 拨打次数：<span class="${m.calls.val >= m.calls.avg ? 'g' : 'r'}">${m.calls.val.toLocaleString()}</span> — 均值 ${m.calls.avg}（<span class="${m.calls.val >= m.calls.avg ? 'g' : 'r'}">${m.calls.val >= m.calls.avg ? '↑ 高出' + ((m.calls.val / m.calls.avg - 1) * 100).toFixed(1) + '%' : '↓ 低' + ((1 - m.calls.val / m.calls.avg) * 100).toFixed(1) + '%'}</span>）<br>
+    • 有效通话量：<span class="${m.valid.val >= m.valid.avg ? 'g' : 'r'}">${m.valid.val}</span> — 均值 ${m.valid.avg}（<span class="${m.valid.val >= m.valid.avg ? 'g' : 'r'}">${m.valid.val >= m.valid.avg ? '↑ 高出' + ((m.valid.val / m.valid.avg - 1) * 100).toFixed(1) + '%' : '↓ 低' + ((1 - m.valid.val / m.valid.avg) * 100).toFixed(1) + '%'}</span>）<br>
+    • 有效通话时长：<span class="${m.duration.low ? 'r' : 'g'}">${m.duration.val}</span> — 均值 ${m.duration.avg}（<span class="${m.duration.low ? 'r' : 'g'}">${m.duration.low ? '↓ 偏低' : '✓ 达标'}</span>）<br>
+    ${m.duration.low ? '• <strong>诊断：</strong>通话时长偏低，建议关注深度沟通质量，适当延长有效沟通时间' : '• <strong>诊断：</strong>各项通话指标表现良好'}
+  </div>
+</div>`;
+}
+
+function genSalary(d) {
+  const s = calcSalary(d.perf, d.rankPct, d.isTarget);
+  const ti = getTierInfo(d.perf);
+  const curTier = ti.tiers[ti.curIdx];
+  const nextTier = ti.curIdx > 0 ? ti.tiers[ti.curIdx - 1] : null;
+  const prevTier = ti.curIdx < ti.tiers.length - 1 ? ti.tiers[ti.curIdx + 1] : null;
+  const gap = nextTier ? (nextTier.min - d.perf) : 0;
+  const safeMargin = d.perf - curTier.min;
+  const workDaysLeft = 12;
+
+  let bonusRankInfo = '';
+  if (d.rankPct <= 10) bonusRankInfo = `排名前10%，奖金 <span class="b">¥2,000</span>`;
+  else if (d.rankPct <= 20) bonusRankInfo = `排名前20%，奖金 <span class="b">¥1,000</span>`;
+  else if (d.rankPct <= 30) bonusRankInfo = `排名前30%，奖金 <span class="b">¥500</span>`;
+  else bonusRankInfo = `排名超过30%，暂无排名奖金`;
+
+  let nextRankInfo = '';
+  if (d.rankPct <= 10) nextRankInfo = `当前档位薪资 ¥2,500（前10%），若降至10%~20%区间，档位薪资将降至 ¥2,000，减少 <span class="r">¥500</span>`;
+  else if (d.rankPct <= 20) nextRankInfo = `当前档位薪资 ¥2,000（10%~20%），若降至20%~30%区间，档位薪资将降至 ¥1,500，减少 <span class="r">¥500</span>`;
+  else nextRankInfo = `当前档位薪资 ¥${s.ts.toLocaleString()}，保持排名避免降档`;
+
+  return `
+<div class="as">
+  <div class="ast">💰 薪资核算分析</div>
+  <div class="sc">
+    <div class="str"><span class="stl">预估总薪资</span><span class="stv">¥${s.total.toLocaleString()}</span></div>
+    <div class="sps">
+      <div class="sp"><div class="spl">底薪（含档位）</div><div class="spv">¥${s.base.toLocaleString()}</div><div class="spd">基础¥4,500 + 档位¥${s.ts.toLocaleString()}</div></div>
+      <div class="sp"><div class="spl">提成</div><div class="spv" style="color:var(--suc)">¥${s.comm.toLocaleString()}</div><div class="spd">¥${d.perf.toLocaleString()} × ${s.rate}%</div></div>
+      <div class="sp"><div class="spl">绩效</div><div class="spv" style="color:#722ed1">¥${s.perfBonus.toLocaleString()}</div><div class="spd">绩效基数 ¥500</div></div>
+      <div class="sp"><div class="spl">奖金</div><div class="spv" style="color:var(--war)">¥${s.bonus.toLocaleString()}</div><div class="spd">${d.school}排名 NO.${d.rank}</div></div>
+    </div>
+  </div>
+  <div class="ab i">
+    <strong>薪资构成说明</strong><br>
+    • <strong>底薪：</strong>排名 NO.${d.rank}（前${d.rankPct}%），档位薪资 <span class="b">¥${s.ts.toLocaleString()}</span>，底薪 = ¥4,500 + ¥${s.ts.toLocaleString()} = <span class="b">¥${s.base.toLocaleString()}</span><br>
+    • <strong>提成：</strong>业绩 ¥${d.perf.toLocaleString()}，${d.isTarget ? '已达标' : '未达标'}，提成比例 <span class="b">${s.rate}%</span>，提成 = <span class="b">¥${s.comm.toLocaleString()}</span><br>
+    • <strong>绩效：</strong>绩效基数 <span class="b">¥${s.perfBonus.toLocaleString()}</span><br>
+    • <strong>奖金：</strong>${bonusRankInfo}
+  </div>
+</div>
+
+<div class="as">
+  <div class="ast">📊 业绩档位差距提醒</div>
+  ${nextTier ? `<div class="ab w">
+    <strong>⬆️ 冲击更高提成档位</strong><br>
+    当前业绩 <span class="b">¥${d.perf.toLocaleString()}</span>，处于 ${s.rate}% 提成档位。<br>
+    距离下一档 <span class="b">${d.isTarget ? nextTier.rateT : nextTier.rateN}%</span>（¥${nextTier.min.toLocaleString()}）还差 <span class="r">¥${gap.toLocaleString()}</span>。<br>
+    若达到 ¥${nextTier.min.toLocaleString()}，提成将从 ¥${s.comm.toLocaleString()} 升至 <span class="g">¥${Math.round(nextTier.min * (d.isTarget ? nextTier.rateT : nextTier.rateN) / 100).toLocaleString()}</span>。<br>
+    本月剩余${workDaysLeft}个工作日，日均需增加 <span class="b">¥${Math.round(gap / workDaysLeft).toLocaleString()}</span> 业绩。
+  </div>` : '<div class="ab s"><strong>🏆 已达最高提成档位！</strong></div>'}
+  <div class="ab ${safeMargin > 5000 ? 's' : safeMargin > 1000 ? 'w' : 'd'}" style="margin-top:8px">
+    <strong>⬇️ 当前档位安全边际</strong><br>
+    当前业绩 ¥${d.perf.toLocaleString()}，距离降档（低于 ¥${curTier.min.toLocaleString()}）的安全边际为 <span class="${safeMargin > 5000 ? 'g' : safeMargin > 1000 ? 'o' : 'r'}">¥${safeMargin.toLocaleString()}</span>。<br>
+    ${safeMargin <= 2000 ? `⚠️ <span class="r">安全边际极小！</span>若发生退款导致业绩下滑，存在降档风险。` : safeMargin <= 10000 ? `⚠️ 安全边际适中，需关注退款风险。` : `✅ 安全边际较大，档位稳固。`}
+  </div>
+  <div class="ab w" style="margin-top:8px">
+    <strong>👥 排名竞争预警</strong><br>
+    • 当前排名 <span class="b">NO.${d.rank}</span>，${nextRankInfo}<br>
+    • 建议关注相邻排名同事的业绩动态，保持或提升排名
+  </div>
+  <div class="ab i" style="margin-top:8px">
+    <strong>🏆 奖金档位（${d.school}学段）</strong><br>
+    • 当前排名 NO.${d.rank} → 奖金 <span class="b">¥${s.bonus.toLocaleString()}</span><br>
+    ${d.rankPct <= 10 ? '• 已在最高奖金档位（前10名 ¥2,000）' : d.rankPct <= 20 ? '• 距上一档（前10名 ¥2,000）需提升排名' : '• 需提升排名进入前20名获得更高奖金'}
+  </div>
+</div>
+
+<div class="as">
+  <div class="ast">🧮 薪资模拟器</div>
+  <div style="font-size:11px;color:var(--t2);margin-bottom:8px">调整参数，实时预估薪资变化</div>
+  <div class="sim-r">
+    <div class="sig"><label>预估月业绩(元)</label><input type="number" id="sp" value="${Math.round(d.perf)}" oninput="simCalc()"></div>
+    <div class="sig"><label>排名百分比(%)</label><input type="number" id="sr" value="${d.rankPct}" min="0" max="100" oninput="simCalc()"></div>
+    <div class="sig"><label>是否达标</label><select id="st" onchange="simCalc()"><option value="yes" ${d.isTarget ? 'selected' : ''}>达标</option><option value="no" ${!d.isTarget ? 'selected' : ''}>不达标</option></select></div>
+  </div>
+  <div class="srb" id="simR">
+    <div class="srv">¥${s.total.toLocaleString()}</div>
+    <div class="srd">底薪 ¥${s.base.toLocaleString()} (基础¥4,500+档位¥${s.ts.toLocaleString()}) + 提成 ¥${s.comm.toLocaleString()} (${s.rate}%) + 绩效 ¥${s.perfBonus.toLocaleString()} + 奖金 ¥${s.bonus.toLocaleString()}</div>
+  </div>
+</div>`;
+}
+
+function simCalc() {
+  const p = parseFloat(document.getElementById('sp').value) || 0;
+  const r = parseFloat(document.getElementById('sr').value) || 50;
+  const t = document.getElementById('st').value === 'yes';
+  const s = calcSalary(p, r, t);
+  document.getElementById('simR').innerHTML = `<div class="srv">¥${s.total.toLocaleString()}</div><div class="srd">底薪 ¥${s.base.toLocaleString()} (基础¥4,500+档位¥${s.ts.toLocaleString()}) + 提成 ¥${s.comm.toLocaleString()} (${s.rate}%) + 绩效 ¥${s.perfBonus.toLocaleString()} + 奖金 ¥${s.bonus.toLocaleString()}</div>`;
+}
+
+function genAction(d) {
+  const s = calcSalary(d.perf, d.rankPct, d.isTarget);
+  const ti = getTierInfo(d.perf);
+  const nextTier = ti.curIdx > 0 ? ti.tiers[ti.curIdx - 1] : null;
+  const m = d.callMetrics;
+  const gap = nextTier ? nextTier.min - d.perf : 0;
+  const workDaysLeft = 12;
+  const nextS = nextTier ? calcSalary(nextTier.min, d.rankPct, d.isTarget) : null;
+
+  const suggestions = [];
+
+  if (nextTier) {
+    suggestions.push({icon: '🎯', title: `冲刺¥${(nextTier.min / 10000).toFixed(0)}万业绩`, text: `剩余${workDaysLeft}个工作日，日均增加 ¥${Math.round(gap / workDaysLeft).toLocaleString()} 即可达到 ${d.isTarget ? nextTier.rateT : nextTier.rateN}% 提成档位，提成增加 <span class="g">¥${(nextS.comm - s.comm).toLocaleString()}</span>，总薪资可达 <span class="g">¥${nextS.total.toLocaleString()}</span>。`});
+  }
+
+  const safeMargin = d.perf - ti.tiers[ti.curIdx].min;
+  if (safeMargin < 5000 && safeMargin > 0) {
+    suggestions.push({icon: '⚠️', title: '注意退款风险', text: `当前业绩 ¥${d.perf.toLocaleString()} 仅高于 ${s.rate}% 档位线 ¥${safeMargin.toLocaleString()}，极其接近降档。务必关注已成交订单的退款情况。`});
+  }
+
+  if (m.duration.low) {
+    suggestions.push({icon: '📞', title: '提升通话时长', text: `有效通话时长 ${m.duration.val} 低于均值 ${m.duration.avg}，建议每次通话增加深度沟通时间，提升转化率。`});
+  }
+
+  if (m.leads.val < m.leads.avg) {
+    suggestions.push({icon: '📋', title: '增加拨打线索量', text: `拨打线索数 ${m.leads.val} 低于均值 ${m.leads.avg}，需增加外呼量以扩大漏斗顶部。`});
+  }
+  if (m.calls.val < m.calls.avg) {
+    suggestions.push({icon: '📞', title: '提高拨打次数', text: `拨打次数 ${m.calls.val} 低于均值 ${m.calls.avg}，需增加跟进频次。`});
+  }
+  if (m.valid.val < m.valid.avg) {
+    suggestions.push({icon: '🔗', title: '提升有效通话量', text: `有效通话量 ${m.valid.val} 低于均值 ${m.valid.avg}，建议优化呼叫时间段和话术提高接通率。`});
+  }
+
+  if (d.pieData[0] && d.pieData[0].value > 80) {
+    suggestions.push({icon: '📊', title: '优化业绩结构', text: `${d.pieData[0].name}占比 ${d.pieData[0].value}% 过于集中，建议适当推荐其他品类商品，提高客单价和抗风险能力。`});
+  }
+
+  suggestions.push({icon: '🏆', title: '保持排名优势', text: `当前 NO.${d.rank} 排名带来 ¥${s.ts.toLocaleString()} 档位薪资和 ¥${s.bonus.toLocaleString()} 排名奖，合计额外 ¥${(s.ts + s.bonus).toLocaleString()}。持续冲刺保持排名。`});
+
+  if (!d.isTarget && d.perfPct < 100) {
+    suggestions.push({icon: '🚀', title: '全力冲击月目标', text: `当前完成率 ${d.perfPct}%，距月目标 ¥${d.target.toLocaleString()} 还差 ¥${(d.target - d.perf).toLocaleString()}。达标后提成比例将提升1个百分点。`});
+  }
+
+  if (nextTier && ti.curIdx > 1) {
+    const nextNext = ti.tiers[ti.curIdx - 2];
+    const nnGap = nextNext.min - d.perf;
+    if (nnGap > 0) {
+      const nnS = calcSalary(nextNext.min, d.rankPct, d.isTarget);
+      suggestions.push({icon: '💪', title: `大胆冲击¥${(nextNext.min / 10000).toFixed(0)}万`, text: `若达到 ¥${nextNext.min.toLocaleString()}（差 ¥${nnGap.toLocaleString()}），提成比例跳至 ${d.isTarget ? nextNext.rateT : nextNext.rateN}%，总薪资可达 <span class="g">¥${nnS.total.toLocaleString()}</span>。日均需 ¥${Math.round(nnGap / workDaysLeft).toLocaleString()}。`});
+    }
+  }
+
+  return `
+<div class="as">
+  <div class="ast">💡 针对${d.name}的智能行动建议</div>
+  <div class="ab i" style="margin-bottom:12px">
+    基于${d.name}当前业绩 <span class="b">¥${d.perf.toLocaleString()}</span>、排名 <span class="b">NO.${d.rank}</span>、通话数据及客户来源分析，AI为您生成以下${suggestions.length}条个性化建议：
+  </div>
+  <ul class="sl">
+    ${suggestions.map(s => `<li><span>${s.icon}</span><div><strong>${s.title}。</strong>${s.text}</div></li>`).join('')}
+  </ul>
+</div>
+
+<div class="as">
+  <div class="ast">📅 本月剩余目标拆解</div>
+  <div class="ab s">
+    <strong>数据快照</strong>（截至 2026-03-19）<br>
+    • 本月已工作 <span class="b">${d.dailyPerf.filter(v => v > 0).length}</span> 天，累计业绩 <span class="b">¥${d.perf.toLocaleString()}</span><br>
+    • 剩余 <span class="b">${workDaysLeft}</span> 个工作日<br>
+    ${nextTier ? `• 冲刺 ¥${nextTier.min.toLocaleString()} 日均需 <span class="b">¥${Math.round(gap / workDaysLeft).toLocaleString()}</span>` : '• 已达最高档位，继续保持！'}<br>
+    • 当前日均有效通话 <span class="b">${Math.round(m.valid.val / d.dailyPerf.filter(v => v > 0).length)}</span> 通，日均拨打 <span class="b">${Math.round(m.leads.val / d.dailyPerf.filter(v => v > 0).length)}</span> 个线索
+  </div>
+</div>`;
+}
+</script>
+</body>
+</html>
