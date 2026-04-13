@@ -103,6 +103,23 @@ tr:hover td { background: #f5f7fa; }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
+/* Rank Cards */
+.rank-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.rank-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); overflow: hidden; }
+.rank-card-header { padding: 12px 16px; font-size: 13px; font-weight: 600; color: #666; border-bottom: 1px solid #f0f0f0; background: #fafafa; }
+.rank-card-body { padding: 0; }
+.rank-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
+.rank-row:last-child { border-bottom: none; }
+.rank-row .rank-icon { width: 28px; flex-shrink: 0; margin-right: 10px; display: flex; align-items: center; justify-content: center; }
+.rank-row .rank-icon img { width: 22px; height: 22px; }
+.rank-row .rank-plain { width: 28px; flex-shrink: 0; margin-right: 10px; text-align: center; color: #999; font-size: 14px; }
+.rank-row .rank-name { flex: 1; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rank-row .rank-val { margin-left: 8px; color: #666; white-space: nowrap; }
+.rank-row:nth-child(1) .rank-name,.rank-row:nth-child(2) .rank-name,.rank-row:nth-child(3) .rank-name { color: #1890ff; }
+.rank-trophy-1 { font-size: 20px; }
+.rank-trophy-2 { font-size: 20px; }
+.rank-trophy-3 { font-size: 20px; }
+
 /* Modal */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; }
 .modal-overlay.show { display: flex; }
@@ -228,9 +245,9 @@ tr:hover td { background: #f5f7fa; }
               <table>
                 <thead><tr><th>线索归属坐席</th><th>所属小组</th><th>老客户手机号</th><th>老客户洋葱ID</th><th>裂变新客户</th><th>转化新客户</th><th>订单量</th><th>订单金额</th><th>客单价</th><th>转化率</th><th>操作</th></tr></thead>
                 <tbody>
-                  <tr><td>张三</td><td>销售一组</td><td>138****1234</td><td>YC100201</td><td>15</td><td>8</td><td>5</td><td>2,440</td><td>488</td><td>53.3%</td><td><a class="link" onclick="openDetail('13759980506')">查看详情</a></td></tr>
-                  <tr><td>李四</td><td>销售二组</td><td>139****5678</td><td>YC100302</td><td>22</td><td>12</td><td>8</td><td>3,856</td><td>482</td><td>54.5%</td><td><a class="link" onclick="openDetail('13922156789')">查看详情</a></td></tr>
-                  <tr><td>王五</td><td>销售三组</td><td>137****9012</td><td>YC100403</td><td>18</td><td>9</td><td>6</td><td>2,772</td><td>462</td><td>50.0%</td><td><a class="link" onclick="openDetail('13788901234')">查看详情</a></td></tr>
+                  <tr><td>张三</td><td>销售一组</td><td>13811121234</td><td>YC100201</td><td>15</td><td>8</td><td>5</td><td>2,440</td><td>488</td><td>53.3%</td><td><a class="link" onclick="openDetail('13811121234')">查看详情</a></td></tr>
+                  <tr><td>李四</td><td>销售二组</td><td>13922155678</td><td>YC100302</td><td>22</td><td>12</td><td>8</td><td>3,856</td><td>482</td><td>54.5%</td><td><a class="link" onclick="openDetail('13922155678')">查看详情</a></td></tr>
+                  <tr><td>王五</td><td>销售三组</td><td>13788909012</td><td>YC100403</td><td>18</td><td>9</td><td>6</td><td>2,772</td><td>462</td><td>50.0%</td><td><a class="link" onclick="openDetail('13788909012')">查看详情</a></td></tr>
                 </tbody>
               </table>
               <div class="pagination"><span>共 3 条</span><div class="page-btn">‹</div><div class="page-btn active">1</div><div class="page-btn">›</div></div>
@@ -300,12 +317,12 @@ tr:hover td { background: #f5f7fa; }
             </div>
             <div class="table-wrap" style="overflow-x:auto;">
               <table>
-                <thead><tr><th>介绍人</th><th>所属小组</th><th>老客户手机号</th><th>裂变新客户</th><th>转化新客户</th><th>订单量</th><th>订单金额</th><th>客单价</th><th>转化率</th><th>操作</th></tr></thead>
+                <thead><tr><th>介绍人</th><th>所属小组</th><th>老客户手机号</th><th>老客户洋葱ID</th><th>裂变新客户</th><th>转化新客户</th><th>订单量</th><th>订单金额</th><th>客单价</th><th>转化率</th><th>操作</th></tr></thead>
                 <tbody>
-                  <tr><td>刘伴学</td><td>伴学一组</td><td>13811112222</td><td>18</td><td>5</td><td>6</td><td>¥14,200</td><td>¥2,840</td><td>27.8%</td><td><a class="link" onclick="openDetail('13811112222')">查看详情</a></td></tr>
-                  <tr><td>刘伴学</td><td>伴学一组</td><td>13922223333</td><td>12</td><td>3</td><td>4</td><td>¥8,600</td><td>¥2,867</td><td>25.0%</td><td><a class="link" onclick="openDetail('13922223333')">查看详情</a></td></tr>
-                  <tr><td>陈伴学</td><td>伴学一组</td><td>13733334444</td><td>14</td><td>4</td><td>5</td><td>¥11,200</td><td>¥2,800</td><td>28.6%</td><td><a class="link" onclick="openDetail('13733334444')">查看详情</a></td></tr>
-                  <tr><td>黄伴学</td><td>伴学二组</td><td>13644445555</td><td>22</td><td>8</td><td>10</td><td>¥24,800</td><td>¥3,100</td><td>36.4%</td><td><a class="link" onclick="openDetail('13644445555')">查看详情</a></td></tr>
+                  <tr><td>刘伴学</td><td>伴学一组</td><td>13811112222</td><td>YC200101</td><td>18</td><td>5</td><td>6</td><td>¥14,200</td><td>¥2,840</td><td>27.8%</td><td><a class="link" onclick="openDetail('13811112222')">查看详情</a></td></tr>
+                  <tr><td>刘伴学</td><td>伴学一组</td><td>13922223333</td><td>YC200102</td><td>12</td><td>3</td><td>4</td><td>¥8,600</td><td>¥2,867</td><td>25.0%</td><td><a class="link" onclick="openDetail('13922223333')">查看详情</a></td></tr>
+                  <tr><td>陈伴学</td><td>伴学一组</td><td>13733334444</td><td>YC200203</td><td>14</td><td>4</td><td>5</td><td>¥11,200</td><td>¥2,800</td><td>28.6%</td><td><a class="link" onclick="openDetail('13733334444')">查看详情</a></td></tr>
+                  <tr><td>黄伴学</td><td>伴学二组</td><td>13644445555</td><td>YC200304</td><td>22</td><td>8</td><td>10</td><td>¥24,800</td><td>¥3,100</td><td>36.4%</td><td><a class="link" onclick="openDetail('13644445555')">查看详情</a></td></tr>
                 </tbody>
               </table>
               <div class="pagination"><span>共 4 条</span><div class="page-btn">‹</div><div class="page-btn active">1</div><div class="page-btn">›</div></div>
@@ -332,27 +349,76 @@ tr:hover td { background: #f5f7fa; }
           <div class="tab-content active" id="p2i-sales">
             <div class="filters">
               <div class="filter-item">
-                <span class="filter-label">日期</span>
-                <div class="date-range"><input type="date" class="date-input" value="2026-03-01"><span class="date-sep">~</span><input type="date" class="date-input" value="2026-04-13"></div>
+                <span class="filter-label" style="font-size:14px;">🕐</span>
+                <div class="date-range"><input type="datetime-local" class="date-input" value="2026-04-01T00:00:00" style="width:175px;"><span class="date-sep">至</span><input type="datetime-local" class="date-input" value="2026-04-10T16:22:30" style="width:175px;"></div>
               </div>
-              <button class="btn btn-primary">搜索</button>
-              <button class="btn btn-default" style="margin-left:auto;" onclick="alert('已开始下载本月承接结果')">下载本月承接结果</button>
+              <button class="btn btn-primary">🔍 搜索</button>
+              <button class="btn btn-default" style="margin-left:auto;" onclick="alert('已开始下载本月承接结果\n\n下载内容：\n- 姓名\n- 小组\n- 转介绍业绩')">下载本月承接结果</button>
             </div>
             <div class="formula-note">
               <strong>转化率公式：</strong>转化率 = 所选时间范围内裂变新客中发生转化的用户 / 所选时间范围内裂变新客数
             </div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th style="width:80px;">排名</th><th>坐席</th><th>营收/元</th><th>转介绍营收占比</th><th>裂变新客</th><th>转化率</th></tr></thead>
-                <tbody>
-                  <tr><td><span class="medal medal-1">1</span></td><td>王五</td><td>128,600</td><td>68.5%</td><td>768</td><td>52.3%</td></tr>
-                  <tr><td><span class="medal medal-2">2</span></td><td>张三</td><td>115,200</td><td>62.1%</td><td>756</td><td>45.6%</td></tr>
-                  <tr><td><span class="medal medal-3">3</span></td><td>李四</td><td>98,400</td><td>55.8%</td><td>698</td><td>41.4%</td></tr>
-                  <tr><td><span class="rank-num">4</span></td><td>赵六</td><td>86,500</td><td>48.2%</td><td>580</td><td>44.8%</td></tr>
-                  <tr><td><span class="rank-num">5</span></td><td>孙七</td><td>72,300</td><td>42.6%</td><td>520</td><td>40.2%</td></tr>
-                </tbody>
-              </table>
-              <div class="pagination"><span>共 5 条</span><div class="page-btn">‹</div><div class="page-btn active">1</div><div class="page-btn">›</div></div>
+            <div class="rank-grid">
+              <div class="rank-card">
+                <div class="rank-card-header">排名</div>
+                <div class="rank-card-body">
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-1">🥇</span></div><div class="rank-name">康&nbsp;&nbsp;阳</div><div class="rank-val">(10196)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-2">🥈</span></div><div class="rank-name">郑思琪</div><div class="rank-val">(6896)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-3">🥉</span></div><div class="rank-name">魏伟强</div><div class="rank-val">(5096)</div></div>
+                  <div class="rank-row"><div class="rank-plain">4</div><div class="rank-name">朱志豪</div><div class="rank-val">(4798)</div></div>
+                  <div class="rank-row"><div class="rank-plain">5</div><div class="rank-name">袁&nbsp;&nbsp;亚</div><div class="rank-val">(4798)</div></div>
+                  <div class="rank-row"><div class="rank-plain">6</div><div class="rank-name">郭晓华</div><div class="rank-val">(4798)</div></div>
+                  <div class="rank-row"><div class="rank-plain">7</div><div class="rank-name">向&nbsp;&nbsp;斌</div><div class="rank-val">(4298)</div></div>
+                  <div class="rank-row"><div class="rank-plain">8</div><div class="rank-name">李成02</div><div class="rank-val">(4098)</div></div>
+                  <div class="rank-row"><div class="rank-plain">9</div><div class="rank-name">杨&nbsp;&nbsp;帆</div><div class="rank-val">(4098)</div></div>
+                  <div class="rank-row"><div class="rank-plain">10</div><div class="rank-name">曹&nbsp;&nbsp;芹</div><div class="rank-val">(4098)</div></div>
+                </div>
+              </div>
+              <div class="rank-card">
+                <div class="rank-card-header">转介绍营收占比</div>
+                <div class="rank-card-body">
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-1">🥇</span></div><div class="rank-name">贺宇01</div><div class="rank-val">(39.6%)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-2">🥈</span></div><div class="rank-name">康&nbsp;&nbsp;阳</div><div class="rank-val">(37.43%)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-3">🥉</span></div><div class="rank-name">郭晓华</div><div class="rank-val">(35.02%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">4</div><div class="rank-name">袁&nbsp;&nbsp;亚</div><div class="rank-val">(30.21%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">5</div><div class="rank-name">魏伟强</div><div class="rank-val">(27.87%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">6</div><div class="rank-name">曹亿01</div><div class="rank-val">(27.45%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">7</div><div class="rank-name">曹&nbsp;&nbsp;芹</div><div class="rank-val">(23.62%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">8</div><div class="rank-name">郑思琪</div><div class="rank-val">(22.8%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">9</div><div class="rank-name">彭丽媛</div><div class="rank-val">(20.99%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">10</div><div class="rank-name">付&nbsp;&nbsp;雯</div><div class="rank-val">(20.43%)</div></div>
+                </div>
+              </div>
+              <div class="rank-card">
+                <div class="rank-card-header">裂变新客</div>
+                <div class="rank-card-body">
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-1">🥇</span></div><div class="rank-name">余水珍</div><div class="rank-val">(4)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-2">🥈</span></div><div class="rank-name">冯锡华</div><div class="rank-val">(4)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-3">🥉</span></div><div class="rank-name">杨&nbsp;&nbsp;帆</div><div class="rank-val">(2)</div></div>
+                  <div class="rank-row"><div class="rank-plain">4</div><div class="rank-name">李情01</div><div class="rank-val">(2)</div></div>
+                  <div class="rank-row"><div class="rank-plain">5</div><div class="rank-name">向&nbsp;&nbsp;斌</div><div class="rank-val">(2)</div></div>
+                  <div class="rank-row"><div class="rank-plain">6</div><div class="rank-name">李天凯01</div><div class="rank-val">(2)</div></div>
+                  <div class="rank-row"><div class="rank-plain">7</div><div class="rank-name">熊瑞莹</div><div class="rank-val">(2)</div></div>
+                  <div class="rank-row"><div class="rank-plain">8</div><div class="rank-name">张&nbsp;&nbsp;锋</div><div class="rank-val">(2)</div></div>
+                  <div class="rank-row"><div class="rank-plain">9</div><div class="rank-name">张国建</div><div class="rank-val">(2)</div></div>
+                  <div class="rank-row"><div class="rank-plain">10</div><div class="rank-name">陈&nbsp;&nbsp;露</div><div class="rank-val">(2)</div></div>
+                </div>
+              </div>
+              <div class="rank-card">
+                <div class="rank-card-header">转化率</div>
+                <div class="rank-card-body">
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-1">🥇</span></div><div class="rank-name">李成02</div><div class="rank-val">(100.00%)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-2">🥈</span></div><div class="rank-name">曹&nbsp;&nbsp;芹</div><div class="rank-val">(100.00%)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-3">🥉</span></div><div class="rank-name">李曼曼</div><div class="rank-val">(100.00%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">4</div><div class="rank-name">康&nbsp;&nbsp;阳</div><div class="rank-val">(100.00%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">5</div><div class="rank-name">吕红旭01</div><div class="rank-val">(100.00%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">6</div><div class="rank-name">曹亿01</div><div class="rank-val">(100.00%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">7</div><div class="rank-name">杨&nbsp;&nbsp;琼</div><div class="rank-val">(100.00%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">8</div><div class="rank-name">贺宇01</div><div class="rank-val">(100.00%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">9</div><div class="rank-name">郑思琪</div><div class="rank-val">(100.00%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">10</div><div class="rank-name">杨维峰</div><div class="rank-val">(100.00%)</div></div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -360,26 +426,55 @@ tr:hover td { background: #f5f7fa; }
           <div class="tab-content" id="p2i-companion">
             <div class="filters">
               <div class="filter-item">
-                <span class="filter-label">日期</span>
-                <div class="date-range"><input type="date" class="date-input" value="2026-03-01"><span class="date-sep">~</span><input type="date" class="date-input" value="2026-04-13"></div>
+                <span class="filter-label" style="font-size:14px;">🕐</span>
+                <div class="date-range"><input type="datetime-local" class="date-input" value="2026-04-01T00:00:00" style="width:175px;"><span class="date-sep">至</span><input type="datetime-local" class="date-input" value="2026-04-10T16:22:30" style="width:175px;"></div>
               </div>
-              <button class="btn btn-primary">搜索</button>
+              <button class="btn btn-primary">🔍 搜索</button>
             </div>
             <div class="formula-note">
               <strong>转化率公式：</strong>转化率 = 所选时间范围内裂变新客中发生转化的用户 / 所选时间范围内裂变新客数
             </div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th style="width:80px;">排名</th><th>伴学师</th><th>营收/元</th><th>转介绍营收占比</th><th>裂变新客</th><th>转化率</th></tr></thead>
-                <tbody>
-                  <tr><td><span class="medal medal-1">1</span></td><td>周八</td><td>71,500</td><td>58.2%</td><td>982</td><td>46.0%</td></tr>
-                  <tr><td><span class="medal medal-2">2</span></td><td>孙七</td><td>48,800</td><td>45.1%</td><td>660</td><td>47.0%</td></tr>
-                  <tr><td><span class="medal medal-3">3</span></td><td>赵六</td><td>42,100</td><td>40.3%</td><td>580</td><td>44.8%</td></tr>
-                  <tr><td><span class="rank-num">4</span></td><td>钱九</td><td>38,200</td><td>36.8%</td><td>420</td><td>42.1%</td></tr>
-                  <tr><td><span class="rank-num">5</span></td><td>吴十</td><td>32,600</td><td>33.5%</td><td>380</td><td>39.5%</td></tr>
-                </tbody>
-              </table>
-              <div class="pagination"><span>共 5 条</span><div class="page-btn">‹</div><div class="page-btn active">1</div><div class="page-btn">›</div></div>
+            <div class="rank-grid">
+              <div class="rank-card">
+                <div class="rank-card-header">排名</div>
+                <div class="rank-card-body">
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-1">🥇</span></div><div class="rank-name">周&nbsp;&nbsp;八</div><div class="rank-val">(71,500)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-2">🥈</span></div><div class="rank-name">孙&nbsp;&nbsp;七</div><div class="rank-val">(48,800)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-3">🥉</span></div><div class="rank-name">赵&nbsp;&nbsp;六</div><div class="rank-val">(42,100)</div></div>
+                  <div class="rank-row"><div class="rank-plain">4</div><div class="rank-name">钱&nbsp;&nbsp;九</div><div class="rank-val">(38,200)</div></div>
+                  <div class="rank-row"><div class="rank-plain">5</div><div class="rank-name">吴&nbsp;&nbsp;十</div><div class="rank-val">(32,600)</div></div>
+                </div>
+              </div>
+              <div class="rank-card">
+                <div class="rank-card-header">转介绍营收占比</div>
+                <div class="rank-card-body">
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-1">🥇</span></div><div class="rank-name">周&nbsp;&nbsp;八</div><div class="rank-val">(58.2%)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-2">🥈</span></div><div class="rank-name">孙&nbsp;&nbsp;七</div><div class="rank-val">(45.1%)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-3">🥉</span></div><div class="rank-name">赵&nbsp;&nbsp;六</div><div class="rank-val">(40.3%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">4</div><div class="rank-name">钱&nbsp;&nbsp;九</div><div class="rank-val">(36.8%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">5</div><div class="rank-name">吴&nbsp;&nbsp;十</div><div class="rank-val">(33.5%)</div></div>
+                </div>
+              </div>
+              <div class="rank-card">
+                <div class="rank-card-header">裂变新客</div>
+                <div class="rank-card-body">
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-1">🥇</span></div><div class="rank-name">周&nbsp;&nbsp;八</div><div class="rank-val">(982)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-2">🥈</span></div><div class="rank-name">孙&nbsp;&nbsp;七</div><div class="rank-val">(660)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-3">🥉</span></div><div class="rank-name">赵&nbsp;&nbsp;六</div><div class="rank-val">(580)</div></div>
+                  <div class="rank-row"><div class="rank-plain">4</div><div class="rank-name">钱&nbsp;&nbsp;九</div><div class="rank-val">(420)</div></div>
+                  <div class="rank-row"><div class="rank-plain">5</div><div class="rank-name">吴&nbsp;&nbsp;十</div><div class="rank-val">(380)</div></div>
+                </div>
+              </div>
+              <div class="rank-card">
+                <div class="rank-card-header">转化率</div>
+                <div class="rank-card-body">
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-1">🥇</span></div><div class="rank-name">孙&nbsp;&nbsp;七</div><div class="rank-val">(47.0%)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-2">🥈</span></div><div class="rank-name">周&nbsp;&nbsp;八</div><div class="rank-val">(46.0%)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-3">🥉</span></div><div class="rank-name">赵&nbsp;&nbsp;六</div><div class="rank-val">(44.8%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">4</div><div class="rank-name">钱&nbsp;&nbsp;九</div><div class="rank-val">(42.1%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">5</div><div class="rank-name">吴&nbsp;&nbsp;十</div><div class="rank-val">(39.5%)</div></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -395,26 +490,52 @@ tr:hover td { background: #f5f7fa; }
           <div class="tab-content active" id="p2g-sales">
             <div class="filters">
               <div class="filter-item">
-                <span class="filter-label">日期</span>
-                <div class="date-range"><input type="date" class="date-input" value="2026-03-01"><span class="date-sep">~</span><input type="date" class="date-input" value="2026-04-13"></div>
+                <span class="filter-label" style="font-size:14px;">🕐</span>
+                <div class="date-range"><input type="datetime-local" class="date-input" value="2026-04-01T00:00:00" style="width:175px;"><span class="date-sep">至</span><input type="datetime-local" class="date-input" value="2026-04-10T16:22:30" style="width:175px;"></div>
               </div>
-              <button class="btn btn-primary">搜索</button>
+              <button class="btn btn-primary">🔍 搜索</button>
             </div>
-            <div class="formula-note">
-              <strong>转化率公式：</strong>转化率 = 所选时间范围内裂变新客中发生转化的用户 / 所选时间范围内裂变新客数
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th style="width:80px;">排名</th><th>小组</th><th>营收/元</th><th>转介绍营收占比</th><th>裂变新客</th><th>转化率</th></tr></thead>
-                <tbody>
-                  <tr><td><span class="medal medal-1">1</span></td><td>销售三组</td><td>262,400</td><td>72.1%</td><td>1,536</td><td>52.3%</td></tr>
-                  <tr><td><span class="medal medal-2">2</span></td><td>销售一组</td><td>238,600</td><td>65.4%</td><td>1,512</td><td>45.6%</td></tr>
-                  <tr><td><span class="medal medal-3">3</span></td><td>销售二组</td><td>197,200</td><td>58.9%</td><td>1,396</td><td>41.4%</td></tr>
-                  <tr><td><span class="rank-num">4</span></td><td>销售四组</td><td>168,000</td><td>50.2%</td><td>1,120</td><td>38.6%</td></tr>
-                  <tr><td><span class="rank-num">5</span></td><td>销售五组</td><td>142,800</td><td>44.7%</td><td>980</td><td>35.2%</td></tr>
-                </tbody>
-              </table>
-              <div class="pagination"><span>共 5 条</span><div class="page-btn">‹</div><div class="page-btn active">1</div><div class="page-btn">›</div></div>
+            <div class="rank-grid">
+              <div class="rank-card">
+                <div class="rank-card-header">排名</div>
+                <div class="rank-card-body">
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-1">🥇</span></div><div class="rank-name">销售三组</div><div class="rank-val">(262,400)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-2">🥈</span></div><div class="rank-name">销售一组</div><div class="rank-val">(238,600)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-3">🥉</span></div><div class="rank-name">销售二组</div><div class="rank-val">(197,200)</div></div>
+                  <div class="rank-row"><div class="rank-plain">4</div><div class="rank-name">销售四组</div><div class="rank-val">(168,000)</div></div>
+                  <div class="rank-row"><div class="rank-plain">5</div><div class="rank-name">销售五组</div><div class="rank-val">(142,800)</div></div>
+                </div>
+              </div>
+              <div class="rank-card">
+                <div class="rank-card-header">转介绍营收占比</div>
+                <div class="rank-card-body">
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-1">🥇</span></div><div class="rank-name">销售三组</div><div class="rank-val">(72.1%)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-2">🥈</span></div><div class="rank-name">销售一组</div><div class="rank-val">(65.4%)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-3">🥉</span></div><div class="rank-name">销售二组</div><div class="rank-val">(58.9%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">4</div><div class="rank-name">销售四组</div><div class="rank-val">(50.2%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">5</div><div class="rank-name">销售五组</div><div class="rank-val">(44.7%)</div></div>
+                </div>
+              </div>
+              <div class="rank-card">
+                <div class="rank-card-header">裂变新客</div>
+                <div class="rank-card-body">
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-1">🥇</span></div><div class="rank-name">销售三组</div><div class="rank-val">(1,536)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-2">🥈</span></div><div class="rank-name">销售一组</div><div class="rank-val">(1,512)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-3">🥉</span></div><div class="rank-name">销售二组</div><div class="rank-val">(1,396)</div></div>
+                  <div class="rank-row"><div class="rank-plain">4</div><div class="rank-name">销售四组</div><div class="rank-val">(1,120)</div></div>
+                  <div class="rank-row"><div class="rank-plain">5</div><div class="rank-name">销售五组</div><div class="rank-val">(980)</div></div>
+                </div>
+              </div>
+              <div class="rank-card">
+                <div class="rank-card-header">转化率</div>
+                <div class="rank-card-body">
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-1">🥇</span></div><div class="rank-name">销售三组</div><div class="rank-val">(52.3%)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-2">🥈</span></div><div class="rank-name">销售一组</div><div class="rank-val">(45.6%)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-3">🥉</span></div><div class="rank-name">销售二组</div><div class="rank-val">(41.4%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">4</div><div class="rank-name">销售四组</div><div class="rank-val">(38.6%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">5</div><div class="rank-name">销售五组</div><div class="rank-val">(35.2%)</div></div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -422,26 +543,52 @@ tr:hover td { background: #f5f7fa; }
           <div class="tab-content" id="p2g-companion">
             <div class="filters">
               <div class="filter-item">
-                <span class="filter-label">日期</span>
-                <div class="date-range"><input type="date" class="date-input" value="2026-03-01"><span class="date-sep">~</span><input type="date" class="date-input" value="2026-04-13"></div>
+                <span class="filter-label" style="font-size:14px;">🕐</span>
+                <div class="date-range"><input type="datetime-local" class="date-input" value="2026-04-01T00:00:00" style="width:175px;"><span class="date-sep">至</span><input type="datetime-local" class="date-input" value="2026-04-10T16:22:30" style="width:175px;"></div>
               </div>
-              <button class="btn btn-primary">搜索</button>
+              <button class="btn btn-primary">🔍 搜索</button>
             </div>
-            <div class="formula-note">
-              <strong>转化率公式：</strong>转化率 = 所选时间范围内裂变新客中发生转化的用户 / 所选时间范围内裂变新客数
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th style="width:80px;">排名</th><th>小组</th><th>营收/元</th><th>转介绍营收占比</th><th>裂变新客</th><th>转化率</th></tr></thead>
-                <tbody>
-                  <tr><td><span class="medal medal-1">1</span></td><td>伴学一组</td><td>185,200</td><td>62.8%</td><td>1,562</td><td>46.0%</td></tr>
-                  <tr><td><span class="medal medal-2">2</span></td><td>伴学二组</td><td>148,800</td><td>55.3%</td><td>1,320</td><td>47.0%</td></tr>
-                  <tr><td><span class="medal medal-3">3</span></td><td>伴学三组</td><td>126,400</td><td>48.6%</td><td>1,080</td><td>44.8%</td></tr>
-                  <tr><td><span class="rank-num">4</span></td><td>伴学四组</td><td>98,600</td><td>42.1%</td><td>860</td><td>40.5%</td></tr>
-                  <tr><td><span class="rank-num">5</span></td><td>伴学五组</td><td>82,400</td><td>36.9%</td><td>720</td><td>37.8%</td></tr>
-                </tbody>
-              </table>
-              <div class="pagination"><span>共 5 条</span><div class="page-btn">‹</div><div class="page-btn active">1</div><div class="page-btn">›</div></div>
+            <div class="rank-grid">
+              <div class="rank-card">
+                <div class="rank-card-header">排名</div>
+                <div class="rank-card-body">
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-1">🥇</span></div><div class="rank-name">伴学一组</div><div class="rank-val">(185,200)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-2">🥈</span></div><div class="rank-name">伴学二组</div><div class="rank-val">(148,800)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-3">🥉</span></div><div class="rank-name">伴学三组</div><div class="rank-val">(126,400)</div></div>
+                  <div class="rank-row"><div class="rank-plain">4</div><div class="rank-name">伴学四组</div><div class="rank-val">(98,600)</div></div>
+                  <div class="rank-row"><div class="rank-plain">5</div><div class="rank-name">伴学五组</div><div class="rank-val">(82,400)</div></div>
+                </div>
+              </div>
+              <div class="rank-card">
+                <div class="rank-card-header">转介绍营收占比</div>
+                <div class="rank-card-body">
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-1">🥇</span></div><div class="rank-name">伴学一组</div><div class="rank-val">(62.8%)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-2">🥈</span></div><div class="rank-name">伴学二组</div><div class="rank-val">(55.3%)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-3">🥉</span></div><div class="rank-name">伴学三组</div><div class="rank-val">(48.6%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">4</div><div class="rank-name">伴学四组</div><div class="rank-val">(42.1%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">5</div><div class="rank-name">伴学五组</div><div class="rank-val">(36.9%)</div></div>
+                </div>
+              </div>
+              <div class="rank-card">
+                <div class="rank-card-header">裂变新客</div>
+                <div class="rank-card-body">
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-1">🥇</span></div><div class="rank-name">伴学一组</div><div class="rank-val">(1,562)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-2">🥈</span></div><div class="rank-name">伴学二组</div><div class="rank-val">(1,320)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-3">🥉</span></div><div class="rank-name">伴学三组</div><div class="rank-val">(1,080)</div></div>
+                  <div class="rank-row"><div class="rank-plain">4</div><div class="rank-name">伴学四组</div><div class="rank-val">(860)</div></div>
+                  <div class="rank-row"><div class="rank-plain">5</div><div class="rank-name">伴学五组</div><div class="rank-val">(720)</div></div>
+                </div>
+              </div>
+              <div class="rank-card">
+                <div class="rank-card-header">转化率</div>
+                <div class="rank-card-body">
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-1">🥇</span></div><div class="rank-name">伴学二组</div><div class="rank-val">(47.0%)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-2">🥈</span></div><div class="rank-name">伴学一组</div><div class="rank-val">(46.0%)</div></div>
+                  <div class="rank-row"><div class="rank-icon"><span class="rank-trophy-3">🥉</span></div><div class="rank-name">伴学三组</div><div class="rank-val">(44.8%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">4</div><div class="rank-name">伴学四组</div><div class="rank-val">(40.5%)</div></div>
+                  <div class="rank-row"><div class="rank-plain">5</div><div class="rank-name">伴学五组</div><div class="rank-val">(37.8%)</div></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -537,10 +684,10 @@ function switchSubTab(prefix, tabName, el) {
   document.getElementById(prefix + '-' + tabName).classList.add('active');
 }
 
-const mockDetailData = {
-  '13759980506': [{phone:'18740419397',fission:'2026-04-01 09:53:11',deal:'2026-04-07 15:08:23',amount:'4098'}],
-  '13922156789': [{phone:'18655012345',fission:'2026-03-28 14:22:05',deal:'2026-04-03 10:15:30',amount:'3200'},{phone:'18766023456',fission:'2026-04-02 11:08:42',deal:'2026-04-08 16:45:18',amount:'2680'}],
-  '13788901234': [{phone:'18877034567',fission:'2026-03-25 09:10:33',deal:'2026-04-01 13:22:50',amount:'5120'}],
+        const mockDetailData = {
+          '13811121234': [{phone:'18740419397',fission:'2026-04-01 09:53:11',deal:'2026-04-07 15:08:23',amount:'4098'}],
+          '13922155678': [{phone:'18655012345',fission:'2026-03-28 14:22:05',deal:'2026-04-03 10:15:30',amount:'3200'},{phone:'18766023456',fission:'2026-04-02 11:08:42',deal:'2026-04-08 16:45:18',amount:'2680'}],
+          '13788909012': [{phone:'18877034567',fission:'2026-03-25 09:10:33',deal:'2026-04-01 13:22:50',amount:'5120'}],
   '13811112222': [{phone:'18900112233',fission:'2026-04-03 08:30:15',deal:'2026-04-09 11:20:45',amount:'3600'},{phone:'18911223344',fission:'2026-04-05 10:45:22',deal:'',amount:''}],
   '13922223333': [{phone:'18922334455',fission:'2026-04-01 16:12:08',deal:'2026-04-06 14:55:30',amount:'2900'}],
   '13733334444': [{phone:'18933445566',fission:'2026-03-30 13:25:40',deal:'2026-04-05 09:18:12',amount:'4200'}],
