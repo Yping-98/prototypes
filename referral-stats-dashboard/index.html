@@ -142,22 +142,21 @@ tr:hover td { background: #f5f7fa; }
 
       <!-- ==================== PAGE 1: 转介绍业绩统计 ==================== -->
       <div class="page active" id="page1">
-        <!-- Top tabs: 小组 / 个人 -->
+        <!-- Top tabs: 销售 / 伴学 -->
         <div class="top-tabs">
-          <div class="top-tab active" onclick="switchTopTab('p1', 'group', this)">小组</div>
-          <div class="top-tab" onclick="switchTopTab('p1', 'individual', this)">个人</div>
+          <div class="top-tab active" onclick="switchTopTab('p1', 'sales', this)">销售</div>
+          <div class="top-tab" onclick="switchTopTab('p1', 'companion', this)">伴学</div>
         </div>
 
-        <!-- ===== GROUP VIEW ===== -->
-        <div class="tab-content active" id="p1-group">
-          <!-- Sub tabs: 销售 / 伴学 -->
+        <!-- ===== SALES VIEW ===== -->
+        <div class="tab-content active" id="p1-sales">
           <div class="sub-tabs">
-            <div class="sub-tab active" onclick="switchSubTab('p1g', 'sales', this)">销售</div>
-            <div class="sub-tab" onclick="switchSubTab('p1g', 'companion', this)">伴学</div>
+            <div class="sub-tab active" onclick="switchSubTab('p1s', 'group', this)">小组</div>
+            <div class="sub-tab" onclick="switchSubTab('p1s', 'individual', this)">个人</div>
           </div>
 
-          <!-- GROUP - SALES -->
-          <div class="tab-content active" id="p1g-sales">
+          <!-- SALES - GROUP -->
+          <div class="tab-content active" id="p1s-group">
             <div class="filters">
               <div class="filter-item"><span class="filter-label">小组</span><select class="filter-select"><option>全部小组</option><option>销售一组</option><option>销售二组</option><option>销售三组</option></select></div>
               <div class="filter-item"><span class="filter-label">坐席</span><select class="filter-select"><option>全部坐席</option><option>张三</option><option>李四</option><option>王五</option></select></div>
@@ -190,49 +189,8 @@ tr:hover td { background: #f5f7fa; }
             </div>
           </div>
 
-          <!-- GROUP - COMPANION -->
-          <div class="tab-content" id="p1g-companion">
-            <div class="filters">
-              <div class="filter-item"><span class="filter-label">小组</span><select class="filter-select"><option>全部小组</option><option>伴学一组</option><option>伴学二组</option></select></div>
-              <div class="filter-item"><span class="filter-label">坐席</span><select class="filter-select"><option>全部坐席</option><option>赵六</option><option>孙七</option></select></div>
-              <div class="filter-item">
-                <span class="filter-label">日期</span>
-                <div class="date-range"><input type="date" class="date-input" value="2026-03-01"><span class="date-sep">~</span><input type="date" class="date-input" value="2026-04-13"></div>
-              </div>
-              <button class="btn btn-primary">搜索</button>
-              <button class="btn btn-default">重置</button>
-            </div>
-            <div class="stats-row">
-              <div class="stat-card"><div class="label">裂变老客户</div><div class="value">1,222</div></div>
-              <div class="stat-card"><div class="label">裂变新客户</div><div class="value">2,222</div></div>
-              <div class="stat-card"><div class="label">转化新客户</div><div class="value">2,222</div></div>
-              <div class="stat-card"><div class="label">订单金额</div><div class="value">2,222</div></div>
-              <div class="stat-card"><div class="label">客单价/元</div><div class="value">2,222</div></div>
-              <div class="stat-card"><div class="label">转化率</div><div class="value">2,222</div></div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>介绍人</th><th>所属小组</th><th>裂变老客户</th><th>裂变新客户</th><th>转化新客户</th><th>订单量</th><th>订单金额</th><th>客单价</th><th>转化率</th></tr></thead>
-                <tbody>
-                  <tr><td>赵六</td><td>伴学一组</td><td>320</td><td>580</td><td>260</td><td>88</td><td>42,100</td><td>478</td><td>44.8%</td></tr>
-                  <tr><td>孙七</td><td>伴学二组</td><td>410</td><td>660</td><td>310</td><td>102</td><td>48,800</td><td>479</td><td>47.0%</td></tr>
-                  <tr><td>周八</td><td>伴学一组</td><td>492</td><td>982</td><td>452</td><td>145</td><td>71,500</td><td>493</td><td>46.0%</td></tr>
-                </tbody>
-              </table>
-              <div class="pagination"><span>共 3 条</span><div class="page-btn">‹</div><div class="page-btn active">1</div><div class="page-btn">›</div></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ===== INDIVIDUAL VIEW ===== -->
-        <div class="tab-content" id="p1-individual">
-          <div class="sub-tabs">
-            <div class="sub-tab active" onclick="switchSubTab('p1i', 'sales', this)">销售</div>
-            <div class="sub-tab" onclick="switchSubTab('p1i', 'companion', this)">伴学</div>
-          </div>
-
-          <!-- INDIVIDUAL - SALES -->
-          <div class="tab-content active" id="p1i-sales">
+          <!-- SALES - INDIVIDUAL -->
+          <div class="tab-content" id="p1s-individual">
             <div class="filters">
               <div class="filter-item"><span class="filter-label">小组</span><select class="filter-select"><option>全部小组</option><option>销售一组</option><option>销售二组</option></select></div>
               <div class="filter-item"><span class="filter-label">坐席</span><select class="filter-select"><option>全部坐席</option><option>张三</option><option>李四</option></select></div>
@@ -266,9 +224,50 @@ tr:hover td { background: #f5f7fa; }
               <div class="pagination"><span>共 3 条</span><div class="page-btn">‹</div><div class="page-btn active">1</div><div class="page-btn">›</div></div>
             </div>
           </div>
+        </div>
 
-          <!-- INDIVIDUAL - COMPANION -->
-          <div class="tab-content" id="p1i-companion">
+        <!-- ===== COMPANION VIEW ===== -->
+        <div class="tab-content" id="p1-companion">
+          <div class="sub-tabs">
+            <div class="sub-tab active" onclick="switchSubTab('p1c', 'group', this)">小组</div>
+            <div class="sub-tab" onclick="switchSubTab('p1c', 'individual', this)">个人</div>
+          </div>
+
+          <!-- COMPANION - GROUP -->
+          <div class="tab-content active" id="p1c-group">
+            <div class="filters">
+              <div class="filter-item"><span class="filter-label">小组</span><select class="filter-select"><option>全部小组</option><option>伴学一组</option><option>伴学二组</option></select></div>
+              <div class="filter-item"><span class="filter-label">坐席</span><select class="filter-select"><option>全部坐席</option><option>赵六</option><option>孙七</option></select></div>
+              <div class="filter-item">
+                <span class="filter-label">日期</span>
+                <div class="date-range"><input type="date" class="date-input" value="2026-03-01"><span class="date-sep">~</span><input type="date" class="date-input" value="2026-04-13"></div>
+              </div>
+              <button class="btn btn-primary">搜索</button>
+              <button class="btn btn-default">重置</button>
+            </div>
+            <div class="stats-row">
+              <div class="stat-card"><div class="label">裂变老客户</div><div class="value">1,222</div></div>
+              <div class="stat-card"><div class="label">裂变新客户</div><div class="value">2,222</div></div>
+              <div class="stat-card"><div class="label">转化新客户</div><div class="value">2,222</div></div>
+              <div class="stat-card"><div class="label">订单金额</div><div class="value">2,222</div></div>
+              <div class="stat-card"><div class="label">客单价/元</div><div class="value">2,222</div></div>
+              <div class="stat-card"><div class="label">转化率</div><div class="value">2,222</div></div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>介绍人</th><th>所属小组</th><th>裂变老客户</th><th>裂变新客户</th><th>转化新客户</th><th>订单量</th><th>订单金额</th><th>客单价</th><th>转化率</th></tr></thead>
+                <tbody>
+                  <tr><td>赵六</td><td>伴学一组</td><td>320</td><td>580</td><td>260</td><td>88</td><td>42,100</td><td>478</td><td>44.8%</td></tr>
+                  <tr><td>孙七</td><td>伴学二组</td><td>410</td><td>660</td><td>310</td><td>102</td><td>48,800</td><td>479</td><td>47.0%</td></tr>
+                  <tr><td>周八</td><td>伴学一组</td><td>492</td><td>982</td><td>452</td><td>145</td><td>71,500</td><td>493</td><td>46.0%</td></tr>
+                </tbody>
+              </table>
+              <div class="pagination"><span>共 3 条</span><div class="page-btn">‹</div><div class="page-btn active">1</div><div class="page-btn">›</div></div>
+            </div>
+          </div>
+
+          <!-- COMPANION - INDIVIDUAL -->
+          <div class="tab-content" id="p1c-individual">
             <div class="filters">
               <div class="filter-item"><span class="filter-label">小组</span><select class="filter-select"><option>全部小组</option><option>伴学一组</option><option>伴学二组</option></select></div>
               <div class="filter-item"><span class="filter-label">坐席</span><select class="filter-select"><option>全部坐席</option><option>赵六</option><option>孙七</option></select></div>
