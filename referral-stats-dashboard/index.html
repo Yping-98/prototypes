@@ -103,6 +103,18 @@ tr:hover td { background: #f5f7fa; }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
+/* Modal */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: #fff; border-radius: 8px; width: 780px; max-width: 90vw; max-height: 80vh; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.15); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid #f0f0f0; }
+.modal-title { font-size: 16px; font-weight: 600; color: #333; }
+.modal-close { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; color: #999; border: none; background: none; border-radius: 4px; }
+.modal-close:hover { background: #f5f5f5; color: #333; }
+.modal-body { padding: 20px 24px; overflow-y: auto; }
+.modal-pagination { display: flex; justify-content: flex-end; align-items: center; padding: 12px 0 0; gap: 8px; font-size: 13px; color: #666; }
+.modal-pagination select { height: 28px; border: 1px solid #d9d9d9; border-radius: 4px; padding: 0 6px; font-size: 13px; }
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
@@ -216,9 +228,9 @@ tr:hover td { background: #f5f7fa; }
               <table>
                 <thead><tr><th>线索归属坐席</th><th>所属小组</th><th>老客户手机号</th><th>老客户洋葱ID</th><th>裂变新客户</th><th>转化新客户</th><th>订单量</th><th>订单金额</th><th>客单价</th><th>转化率</th><th>操作</th></tr></thead>
                 <tbody>
-                  <tr><td>张三</td><td>销售一组</td><td>138****1234</td><td>YC100201</td><td>15</td><td>8</td><td>5</td><td>2,440</td><td>488</td><td>53.3%</td><td><a class="link">查看详情</a></td></tr>
-                  <tr><td>李四</td><td>销售二组</td><td>139****5678</td><td>YC100302</td><td>22</td><td>12</td><td>8</td><td>3,856</td><td>482</td><td>54.5%</td><td><a class="link">查看详情</a></td></tr>
-                  <tr><td>王五</td><td>销售三组</td><td>137****9012</td><td>YC100403</td><td>18</td><td>9</td><td>6</td><td>2,772</td><td>462</td><td>50.0%</td><td><a class="link">查看详情</a></td></tr>
+                  <tr><td>张三</td><td>销售一组</td><td>138****1234</td><td>YC100201</td><td>15</td><td>8</td><td>5</td><td>2,440</td><td>488</td><td>53.3%</td><td><a class="link" onclick="openDetail('13759980506')">查看详情</a></td></tr>
+                  <tr><td>李四</td><td>销售二组</td><td>139****5678</td><td>YC100302</td><td>22</td><td>12</td><td>8</td><td>3,856</td><td>482</td><td>54.5%</td><td><a class="link" onclick="openDetail('13922156789')">查看详情</a></td></tr>
+                  <tr><td>王五</td><td>销售三组</td><td>137****9012</td><td>YC100403</td><td>18</td><td>9</td><td>6</td><td>2,772</td><td>462</td><td>50.0%</td><td><a class="link" onclick="openDetail('13788901234')">查看详情</a></td></tr>
                 </tbody>
               </table>
               <div class="pagination"><span>共 3 条</span><div class="page-btn">‹</div><div class="page-btn active">1</div><div class="page-btn">›</div></div>
@@ -286,16 +298,17 @@ tr:hover td { background: #f5f7fa; }
               <div class="stat-card"><div class="label">客单价/元</div><div class="value">2,222</div></div>
               <div class="stat-card"><div class="label">转化率</div><div class="value">2,222</div></div>
             </div>
-            <div class="table-wrap">
+            <div class="table-wrap" style="overflow-x:auto;">
               <table>
-                <thead><tr><th>介绍人</th><th>所属小组</th><th>裂变老客户</th><th>裂变新客户</th><th>转化新客户</th><th>订单量</th><th>订单金额</th><th>客单价</th><th>转化率</th></tr></thead>
+                <thead><tr><th>介绍人</th><th>所属小组</th><th>老客户手机号</th><th>裂变新客户</th><th>转化新客户</th><th>订单量</th><th>订单金额</th><th>客单价</th><th>转化率</th><th>操作</th></tr></thead>
                 <tbody>
-                  <tr><td>赵六</td><td>伴学一组</td><td>320</td><td>580</td><td>260</td><td>88</td><td>42,100</td><td>478</td><td>44.8%</td></tr>
-                  <tr><td>孙七</td><td>伴学二组</td><td>410</td><td>660</td><td>310</td><td>102</td><td>48,800</td><td>479</td><td>47.0%</td></tr>
-                  <tr><td>周八</td><td>伴学一组</td><td>492</td><td>982</td><td>452</td><td>145</td><td>71,500</td><td>493</td><td>46.0%</td></tr>
+                  <tr><td>刘伴学</td><td>伴学一组</td><td>13811112222</td><td>18</td><td>5</td><td>6</td><td>¥14,200</td><td>¥2,840</td><td>27.8%</td><td><a class="link" onclick="openDetail('13811112222')">查看详情</a></td></tr>
+                  <tr><td>刘伴学</td><td>伴学一组</td><td>13922223333</td><td>12</td><td>3</td><td>4</td><td>¥8,600</td><td>¥2,867</td><td>25.0%</td><td><a class="link" onclick="openDetail('13922223333')">查看详情</a></td></tr>
+                  <tr><td>陈伴学</td><td>伴学一组</td><td>13733334444</td><td>14</td><td>4</td><td>5</td><td>¥11,200</td><td>¥2,800</td><td>28.6%</td><td><a class="link" onclick="openDetail('13733334444')">查看详情</a></td></tr>
+                  <tr><td>黄伴学</td><td>伴学二组</td><td>13644445555</td><td>22</td><td>8</td><td>10</td><td>¥24,800</td><td>¥3,100</td><td>36.4%</td><td><a class="link" onclick="openDetail('13644445555')">查看详情</a></td></tr>
                 </tbody>
               </table>
-              <div class="pagination"><span>共 3 条</span><div class="page-btn">‹</div><div class="page-btn active">1</div><div class="page-btn">›</div></div>
+              <div class="pagination"><span>共 4 条</span><div class="page-btn">‹</div><div class="page-btn active">1</div><div class="page-btn">›</div></div>
             </div>
           </div>
         </div>
@@ -323,6 +336,7 @@ tr:hover td { background: #f5f7fa; }
                 <div class="date-range"><input type="date" class="date-input" value="2026-03-01"><span class="date-sep">~</span><input type="date" class="date-input" value="2026-04-13"></div>
               </div>
               <button class="btn btn-primary">搜索</button>
+              <button class="btn btn-default" style="margin-left:auto;" onclick="alert('已开始下载本月承接结果')">下载本月承接结果</button>
             </div>
             <div class="formula-note">
               <strong>转化率公式：</strong>转化率 = 所选时间范围内裂变新客中发生转化的用户 / 所选时间范围内裂变新客数
@@ -466,6 +480,31 @@ tr:hover td { background: #f5f7fa; }
   </div>
 </div>
 
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal" onclick="if(event.target===this)closeDetail()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">查看详情 - 13759980506</div>
+      <button class="modal-close" onclick="closeDetail()">×</button>
+    </div>
+    <div class="modal-body">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr><th>新客户手机号</th><th>裂变时间</th><th>成交时间</th><th>订单金额/元</th></tr></thead>
+        <tbody id="modalTableBody">
+          <tr><td>18740419397</td><td>2026-04-01 09:53:11</td><td>2026-04-07 15:08:23</td><td>4098</td></tr>
+        </tbody>
+      </table>
+      <div class="modal-pagination">
+        <span id="modalCount">共 1 条</span>
+        <select><option>20条/页</option></select>
+        <div class="page-btn" style="width:28px;height:28px;font-size:12px;">‹</div>
+        <div class="page-btn active" style="width:28px;height:28px;font-size:12px;">1</div>
+        <div class="page-btn" style="width:28px;height:28px;font-size:12px;">›</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 const breadcrumbMap = {
   page1: '首页 / 数据统计 / <span>转介绍业绩统计</span>',
@@ -496,6 +535,29 @@ function switchSubTab(prefix, tabName, el) {
   const container = el.closest('.tab-content');
   container.querySelectorAll(':scope > .tab-content').forEach(c => c.classList.remove('active'));
   document.getElementById(prefix + '-' + tabName).classList.add('active');
+}
+
+const mockDetailData = {
+  '13759980506': [{phone:'18740419397',fission:'2026-04-01 09:53:11',deal:'2026-04-07 15:08:23',amount:'4098'}],
+  '13922156789': [{phone:'18655012345',fission:'2026-03-28 14:22:05',deal:'2026-04-03 10:15:30',amount:'3200'},{phone:'18766023456',fission:'2026-04-02 11:08:42',deal:'2026-04-08 16:45:18',amount:'2680'}],
+  '13788901234': [{phone:'18877034567',fission:'2026-03-25 09:10:33',deal:'2026-04-01 13:22:50',amount:'5120'}],
+  '13811112222': [{phone:'18900112233',fission:'2026-04-03 08:30:15',deal:'2026-04-09 11:20:45',amount:'3600'},{phone:'18911223344',fission:'2026-04-05 10:45:22',deal:'',amount:''}],
+  '13922223333': [{phone:'18922334455',fission:'2026-04-01 16:12:08',deal:'2026-04-06 14:55:30',amount:'2900'}],
+  '13733334444': [{phone:'18933445566',fission:'2026-03-30 13:25:40',deal:'2026-04-05 09:18:12',amount:'4200'}],
+  '13644445555': [{phone:'18944556677',fission:'2026-04-02 07:50:18',deal:'2026-04-07 16:30:55',amount:'3100'},{phone:'18955667788',fission:'2026-04-04 11:22:33',deal:'2026-04-10 10:05:42',amount:'2800'},{phone:'18966778899',fission:'2026-04-06 09:15:20',deal:'',amount:''}]
+};
+
+function openDetail(phone) {
+  document.getElementById('modalTitle').textContent = '查看详情 - ' + phone;
+  const rows = mockDetailData[phone] || [{phone:'18740419397',fission:'2026-04-01 09:53:11',deal:'2026-04-07 15:08:23',amount:'4098'}];
+  const tbody = document.getElementById('modalTableBody');
+  tbody.innerHTML = rows.map(r => '<tr><td>'+r.phone+'</td><td>'+r.fission+'</td><td>'+(r.deal||'-')+'</td><td>'+(r.amount||'-')+'</td></tr>').join('');
+  document.getElementById('modalCount').textContent = '共 '+rows.length+' 条';
+  document.getElementById('detailModal').classList.add('show');
+}
+
+function closeDetail() {
+  document.getElementById('detailModal').classList.remove('show');
 }
 </script>
 </body>
