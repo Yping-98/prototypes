@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>投放渠道年级扩展与线索分配规则重构 - 交互原型</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background: #f0f2f5; color: #333; font-size: 14px; }
+.app { display: flex; height: 100vh; }
+.sidebar { width: 200px; background: #001529; color: #fff; flex-shrink: 0; overflow-y: auto; }
+.sidebar-title { padding: 16px 20px; font-size: 16px; font-weight: 600; border-bottom: 1px solid #0d2137; }
+.menu-item { padding: 10px 20px; cursor: pointer; transition: background .2s; font-size: 13px; }
+.menu-item:hover { background: #0d2137; }
+.menu-item.active { background: #1890ff; }
+.menu-item.sub { padding-left: 36px; font-size: 12px; }
+.menu-item.disabled { opacity: .4; text-decoration: line-through; cursor: not-allowed; }
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.header { height: 48px; background: #fff; border-bottom: 1px solid #e8e8e8; display: flex; align-items: center; padding: 0 20px; }
+.breadcrumb { font-size: 13px; color: #666; }
+.breadcrumb span { color: #1890ff; cursor: pointer; }
+.content { flex: 1; padding: 20px; overflow-y: auto; }
+.page-nav { display: flex; gap: 8px; margin-bottom: 16px; }
+.page-nav-btn { padding: 6px 16px; border: 1px solid #d9d9d9; background: #fff; border-radius: 4px; cursor: pointer; font-size: 13px; }
+.page-nav-btn.active { background: #1890ff; color: #fff; border-color: #1890ff; }
+
+/* Table styles */
+.card { background: #fff; border-radius: 4px; padding: 16px; margin-bottom: 16px; }
+.card-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+.filter-row { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-row label { font-size: 13px; color: #666; white-space: nowrap; }
+.input { padding: 4px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; height: 32px; }
+.btn { padding: 4px 16px; border: 1px solid #d9d9d9; background: #fff; border-radius: 4px; cursor: pointer; font-size: 13px; height: 32px; display: inline-flex; align-items: center; }
+.btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+.btn-primary:hover { background: #40a9ff; }
+.btn-link { border: none; background: none; color: #1890ff; cursor: pointer; padding: 0; font-size: 13px; }
+.btn-link:hover { color: #40a9ff; }
+.btn-link.danger { color: #ff4d4f; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: #fafafa; padding: 10px 8px; text-align: left; border-bottom: 1px solid #e8e8e8; font-weight: 600; white-space: nowrap; }
+td { padding: 10px 8px; border-bottom: 1px solid #f0f0f0; }
+tr:hover td { background: #f5f5f5; }
+
+.tag { display: inline-block; padding: 2px 8px; border-radius: 2px; font-size: 12px; margin: 1px 2px; }
+.tag-blue { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
+.tag-green { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+
+.pagination { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 12px; font-size: 13px; color: #666; }
+
+/* Modal */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.45); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.modal { background: #fff; border-radius: 8px; width: 640px; max-height: 85vh; overflow-y: auto; }
+.modal-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: 600; }
+.modal-close { cursor: pointer; font-size: 20px; color: #999; background: none; border: none; }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 12px 20px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 8px; }
+
+.form-item { margin-bottom: 16px; }
+.form-label { display: block; margin-bottom: 4px; font-size: 13px; }
+.form-label .required { color: #ff4d4f; margin-right: 4px; }
+.form-input { width: 100%; padding: 4px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; height: 32px; }
+
+.checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; min-height: 36px; }
+.checkbox-item { display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 13px; padding: 2px 6px; border-radius: 3px; }
+.checkbox-item input[type="checkbox"] { cursor: pointer; }
+.checkbox-item.checked { background: #e6f7ff; }
+.checkbox-item.disabled-grade { opacity: .4; cursor: not-allowed; text-decoration: line-through; }
+.checkbox-item.disabled-grade input[type="checkbox"] { cursor: not-allowed; }
+
+.grade-level-module { border: 1px solid #e8e8e8; border-radius: 6px; padding: 12px; margin-bottom: 12px; background: #fafafa; position: relative; }
+.grade-level-module .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.grade-level-module .module-header .module-label { font-size: 13px; font-weight: 600; color: #1890ff; }
+.grade-level-module .module-remove { background: none; border: none; color: #ff4d4f; cursor: pointer; font-size: 18px; line-height: 1; padding: 0 4px; }
+.grade-level-module .module-remove:hover { color: #cf1322; }
+.add-module-btn { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; padding: 8px; border: 1px dashed #d9d9d9; border-radius: 6px; background: #fff; cursor: pointer; color: #1890ff; font-size: 13px; transition: border-color .2s; }
+.add-module-btn:hover { border-color: #1890ff; }
+.grade-conflict-tip { font-size: 11px; color: #ff4d4f; margin-top: 4px; display: none; }
+
+/* Distribution rule section */
+.rule-section { background: #fff; border-radius: 4px; padding: 16px; margin-bottom: 16px; border: 1px solid #e8e8e8; }
+.rule-header { font-size: 15px; font-weight: 600; margin-bottom: 4px; color: #1890ff; }
+.rule-channels { font-size: 12px; color: #999; margin-bottom: 12px; word-break: break-all; }
+.rule-sub-section { margin-bottom: 16px; }
+.rule-sub-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
+.rule-sub-title .required { color: #ff4d4f; }
+
+.employee-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.emp-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; background: #f5f5f5; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; }
+.emp-tag .remove { cursor: pointer; color: #999; font-size: 14px; }
+.emp-tag .remove:hover { color: #ff4d4f; }
+
+.dist-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+.dist-table th { background: #fafafa; padding: 8px; text-align: left; border: 1px solid #e8e8e8; font-size: 12px; }
+.dist-table td { padding: 6px 8px; border: 1px solid #e8e8e8; font-size: 13px; }
+.dist-table tr { cursor: grab; }
+.dist-table tr:hover { background: #f5f5f5; }
+.dist-table tr.dragging { opacity: 0.4; }
+.green-dot { display: inline-block; width: 8px; height: 8px; background: #52c41a; border-radius: 50%; margin-right: 4px; }
+.dist-input { width: 80px; padding: 2px 6px; border: 1px solid #d9d9d9; border-radius: 3px; font-size: 13px; text-align: center; }
+.dist-input::placeholder { color: #bbb; font-size: 12px; }
+.drag-handle { cursor: grab; color: #999; margin-right: 6px; }
+
+.backup-employees { margin-top: 8px; }
+.backup-note { font-size: 12px; color: #999; margin-top: 4px; }
+
+.info-bar { background: #fff7e6; border: 1px solid #ffe7ba; border-radius: 4px; padding: 8px 12px; margin-bottom: 16px; font-size: 13px; color: #d48806; }
+.info-bar.retired { background: #fff1f0; border-color: #ffa39e; color: #cf1322; }
+
+.plan-info { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px 24px; margin-bottom: 16px; font-size: 13px; }
+.plan-info-item { display: flex; }
+.plan-info-item .label { color: #999; white-space: nowrap; }
+.plan-info-item .value { color: #333; font-weight: 500; }
+
+.hidden { display: none !important; }
+.bottom-bar { padding: 12px 20px; background: #fff; border-top: 1px solid #e8e8e8; display: flex; justify-content: flex-end; gap: 8px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-title">体验营</div>
+    <div class="menu-item">客户管理</div>
+    <div class="menu-item">线索查询</div>
+    <div class="menu-item active" id="nav-config">配置 ▾</div>
+    <div class="menu-item sub" id="nav-channel" onclick="switchPage('channel')">配置投放渠道信息</div>
+    <div class="menu-item sub" id="nav-plan" onclick="switchPage('plan')">线索投放计划</div>
+    <div class="menu-item sub disabled" id="nav-old-dist">线索分配设置（已下线）</div>
+  </div>
+  <div class="main">
+    <div class="header">
+      <div class="breadcrumb" id="breadcrumb">配置投放渠道信息</div>
+    </div>
+    <div class="content" id="content">
+
+      <!-- Page 1: Channel Config List -->
+      <div id="page-channel">
+        <div class="card">
+          <div class="filter-row">
+            <label>channel:</label>
+            <input class="input" placeholder="请输入channel" style="width:160px">
+            <label>渠道线索等级:</label>
+            <select class="input" style="width:120px">
+              <option>请选择等级</option>
+              <option>A级</option><option>B级</option><option>C级</option>
+            </select>
+            <label>年级:</label>
+            <select class="input" style="width:120px">
+              <option>全部年级</option>
+              <option>不限</option><option>七年级</option><option>八年级</option><option>九年级</option>
+            </select>
+            <button class="btn btn-primary" style="margin-left:8px">查询</button>
+            <button class="btn">重置</button>
+          </div>
+          <div style="margin-bottom:12px; display:flex; gap:8px;">
+            <button class="btn btn-primary" onclick="openModal()">配置投放渠道信息</button>
+            <button class="btn">批量修改非服承接人员</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th><input type="checkbox"></th>
+                <th>渠道类型</th>
+                <th>渠道名称</th>
+                <th>channel</th>
+                <th>年级</th>
+                <th>渠道线索等级</th>
+                <th>渠道预估转化率</th>
+                <th>渠道备注说明</th>
+                <th>非服承接人员</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td>小红书</td>
+                <td>xiaohongshu-fufei1</td>
+                <td>xiaohongshu-fufei</td>
+                <td><span class="tag tag-blue">七年级</span><span class="tag tag-blue">八年级</span><span class="tag tag-blue">九年级</span></td>
+                <td>A级</td>
+                <td>2%-6%</td>
+                <td></td>
+                <td>周秋扬</td>
+                <td><a class="btn-link" onclick="openEditModal()">编辑</a></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td>小红书</td>
+                <td>xiaohongshu-fufei1</td>
+                <td>xiaohongshu-fufei</td>
+                <td><span class="tag tag-blue">高一</span><span class="tag tag-blue">高二</span><span class="tag tag-blue">高三</span></td>
+                <td>A级</td>
+                <td>2%-6%</td>
+                <td></td>
+                <td>张三</td>
+                <td><a class="btn-link" onclick="openEditModal()">编辑</a></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td>投放</td>
+                <td>语文素材测试-腾讯</td>
+                <td>tencent-yuedu</td>
+                <td><span class="tag tag-green">不限</span></td>
+                <td>A级</td>
+                <td>10%-20%</td>
+                <td>阅读品测试-腾讯</td>
+                <td>周秋扬</td>
+                <td><a class="btn-link" onclick="openEditModal()">编辑</a></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td>私域</td>
+                <td>洋葱补给站9.9</td>
+                <td>xiaohongshu-9.9bujizhan</td>
+                <td><span class="tag tag-blue">一年级</span><span class="tag tag-blue">二年级</span><span class="tag tag-blue">三年级</span></td>
+                <td>A级</td>
+                <td>10%-20%</td>
+                <td></td>
+                <td>周秋扬</td>
+                <td><a class="btn-link" onclick="openEditModal()">编辑</a></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td>投放</td>
+                <td>百度998</td>
+                <td>baidu-jiawei</td>
+                <td><span class="tag tag-green">不限</span></td>
+                <td>A级</td>
+                <td>10%-20%</td>
+                <td></td>
+                <td>周秋扬</td>
+                <td><a class="btn-link" onclick="openEditModal()">编辑</a></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td>老用户激活</td>
+                <td>后转</td>
+                <td>houzhuan-0</td>
+                <td><span class="tag tag-blue">四年级</span><span class="tag tag-blue">五年级</span><span class="tag tag-blue">六年级</span></td>
+                <td>G级</td>
+                <td>1%-5%</td>
+                <td></td>
+                <td>周秋扬</td>
+                <td><a class="btn-link" onclick="openEditModal()">编辑</a></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination">
+            <span>共 71 条</span>
+            <button class="btn" style="padding:2px 8px" disabled>&lt;</button>
+            <button class="btn btn-primary" style="padding:2px 10px">1</button>
+            <button class="btn" style="padding:2px 10px">2</button>
+            <button class="btn" style="padding:2px 10px">3</button>
+            <button class="btn" style="padding:2px 10px">4</button>
+            <button class="btn" style="padding:2px 8px">&gt;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page 2: Lead Distribution Rules Detail -->
+      <div id="page-plan" class="hidden">
+        <div class="info-bar">
+          本页面展示线索投放计划的分配规则配置。原【线索分配设置】页面已下线，所有分配规则以本页面的轮循分配模式为准。
+        </div>
+        <div class="card">
+          <div class="card-title">线索投放计划基本信息</div>
+          <div class="plan-info">
+            <div class="plan-info-item"><span class="label">线索周期：</span><span class="value">2026-04-20 00:00 - 2026-04-26 23:59</span></div>
+            <div class="plan-info-item"><span class="label">结营日期：</span><span class="value">2026-05-03</span></div>
+            <div class="plan-info-item"><span class="label">期数：</span><span class="value">172</span></div>
+            <div class="plan-info-item"><span class="label">目标线索总量：</span><span class="value">2000</span></div>
+          </div>
+        </div>
+
+        <!-- A类 Rule -->
+        <div class="rule-section">
+          <div class="rule-header">A类线索分配规则</div>
+          <div class="rule-channels">A类线索渠道：xiaohongshu-fufei，xiaohongshu-9.9bujizhan，tencent-yuedu，baiduzhibo，douyin-zhishiditu，tencent-xin2，baidu-jiawei，tencent-xin1，uc</div>
+
+          <div class="rule-sub-section">
+            <div class="rule-sub-title"><span class="required">*</span> 分配员工：<button class="btn" style="height:28px;font-size:12px;margin-left:8px" onclick="alert('选择员工弹窗')">选择员工</button></div>
+            <div class="employee-tags">
+              <span class="emp-tag">朱鑫 <span class="remove">&times;</span></span>
+              <span class="emp-tag">兰正红 <span class="remove">&times;</span></span>
+              <span class="emp-tag">陈斯武 <span class="remove">&times;</span></span>
+              <span class="emp-tag">罗宇环 <span class="remove">&times;</span></span>
+              <span class="emp-tag">阮长峰 <span class="remove">&times;</span></span>
+              <span class="emp-tag">熊逸凡 <span class="remove">&times;</span></span>
+              <span class="emp-tag">袁俊丽 <span class="remove">&times;</span></span>
+            </div>
+          </div>
+
+          <div class="rule-sub-section">
+            <div class="rule-sub-title"><span class="required">*</span> 员工承接数量：</div>
+            <div style="font-size:12px;color:#999;margin-bottom:6px;">按表格顺序轮循分配线索，可拖动调整顺序。<span class="green-dot" style="vertical-align:middle;"></span>表示下一个线索将分配给该员工。</div>
+            <table class="dist-table" id="dist-table-a">
+              <thead>
+                <tr>
+                  <th style="width:40px;"></th>
+                  <th>姓名</th>
+                  <th style="width:120px;">数量</th>
+                  <th style="width:120px;">已分配数量</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr draggable="true">
+                  <td class="drag-handle">⋮⋮</td>
+                  <td><span class="green-dot"></span>朱鑫</td>
+                  <td><input class="dist-input" placeholder="无上限" value="50"></td>
+                  <td>23</td>
+                </tr>
+                <tr draggable="true">
+                  <td class="drag-handle">⋮⋮</td>
+                  <td>兰正红</td>
+                  <td><input class="dist-input" placeholder="无上限" value="50"></td>
+                  <td>18</td>
+                </tr>
+                <tr draggable="true">
+                  <td class="drag-handle">⋮⋮</td>
+                  <td>陈斯武</td>
+                  <td><input class="dist-input" placeholder="无上限" value="40"></td>
+                  <td>40</td>
+                </tr>
+                <tr draggable="true">
+                  <td class="drag-handle">⋮⋮</td>
+                  <td>罗宇环</td>
+                  <td><input class="dist-input" placeholder="无上限"></td>
+                  <td>15</td>
+                </tr>
+                <tr draggable="true">
+                  <td class="drag-handle">⋮⋮</td>
+                  <td>阮长峰</td>
+                  <td><input class="dist-input" placeholder="无上限" value="60"></td>
+                  <td>30</td>
+                </tr>
+                <tr draggable="true">
+                  <td class="drag-handle">⋮⋮</td>
+                  <td>熊逸凡</td>
+                  <td><input class="dist-input" placeholder="无上限" value="45"></td>
+                  <td>12</td>
+                </tr>
+                <tr draggable="true">
+                  <td class="drag-handle">⋮⋮</td>
+                  <td>袁俊丽</td>
+                  <td><input class="dist-input" placeholder="无上限" value="50"></td>
+                  <td>50</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="rule-sub-section">
+            <div class="rule-sub-title">备选员工：<button class="btn" style="height:28px;font-size:12px;margin-left:8px" onclick="alert('选择备选员工弹窗')">选择员工</button></div>
+            <div class="backup-note">当分配员工的承接数量全部达到上限后，线索将分配给备选员工，按顺序轮循。</div>
+            <div class="employee-tags" style="margin-top:6px;">
+              <span class="emp-tag">刘文龙 <span class="remove">&times;</span></span>
+              <span class="emp-tag">杨晓慧 <span class="remove">&times;</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- B类 Rule -->
+        <div class="rule-section">
+          <div class="rule-header">B类线索分配规则</div>
+          <div class="rule-channels">B类线索渠道：benditui-ziran，benditui-tuangou，benditui-liuzi，douyin-benditui</div>
+
+          <div class="rule-sub-section">
+            <div class="rule-sub-title"><span class="required">*</span> 分配员工：<button class="btn" style="height:28px;font-size:12px;margin-left:8px" onclick="alert('选择员工弹窗')">选择员工</button></div>
+            <div class="employee-tags">
+              <span class="emp-tag">谭礼清 <span class="remove">&times;</span></span>
+              <span class="emp-tag">涂婵 <span class="remove">&times;</span></span>
+            </div>
+          </div>
+
+          <div class="rule-sub-section">
+            <div class="rule-sub-title"><span class="required">*</span> 员工承接数量：</div>
+            <div style="font-size:12px;color:#999;margin-bottom:6px;">按表格顺序轮循分配线索，可拖动调整顺序。<span class="green-dot" style="vertical-align:middle;"></span>表示下一个线索将分配给该员工。</div>
+            <table class="dist-table">
+              <thead>
+                <tr>
+                  <th style="width:40px;"></th>
+                  <th>姓名</th>
+                  <th style="width:120px;">数量</th>
+                  <th style="width:120px;">已分配数量</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr draggable="true">
+                  <td class="drag-handle">⋮⋮</td>
+                  <td><span class="green-dot"></span>谭礼清</td>
+                  <td><input class="dist-input" placeholder="无上限" value="30"></td>
+                  <td>10</td>
+                </tr>
+                <tr draggable="true">
+                  <td class="drag-handle">⋮⋮</td>
+                  <td>涂婵</td>
+                  <td><input class="dist-input" placeholder="无上限" value="30"></td>
+                  <td>8</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="rule-sub-section">
+            <div class="rule-sub-title">备选员工：<button class="btn" style="height:28px;font-size:12px;margin-left:8px">选择员工</button></div>
+            <div class="backup-note">当分配员工的承接数量全部达到上限后，线索将分配给备选员工，按顺序轮循。</div>
+            <div class="employee-tags" style="margin-top:6px;">
+              <span class="emp-tag">高友艳 <span class="remove">&times;</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Retired info -->
+        <div class="info-bar retired" style="margin-top:16px;">
+          ⚠ 原【线索分配设置】页面的配置功能已下线。之前的随机分配 / 权重分配 / 每日上限比例等分配规则已全部停用，统一改为本页面的轮循分配模式。
+        </div>
+
+        <div class="bottom-bar" style="margin-top:16px;">
+          <button class="btn" onclick="switchPage('channel')">返回</button>
+          <button class="btn btn-primary" onclick="alert('提交成功')">提交</button>
+        </div>
+      </div>
+
+      <!-- Page 3: Old page retired notice -->
+      <div id="page-old" class="hidden">
+        <div class="card" style="text-align:center;padding:60px 20px;">
+          <div style="font-size:48px;margin-bottom:16px;">🚫</div>
+          <div style="font-size:18px;font-weight:600;margin-bottom:8px;">线索分配设置已下线</div>
+          <div style="color:#999;font-size:14px;margin-bottom:20px;">系统之前的分配规则已全部推翻，线索分配配置功能已迁移至「线索投放计划 > 线索分配规则」页面。</div>
+          <button class="btn btn-primary" onclick="switchPage('plan')">前往新的线索分配规则</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add/Edit Channel Config -->
+<div class="modal-overlay hidden" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="modal-title">配置投放渠道信息</span>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-item">
+        <label class="form-label"><span class="required">*</span> channel:</label>
+        <input class="form-input" value="xiaohongshu-fufei" id="channel-input">
+      </div>
+      <div class="form-item">
+        <label class="form-label"><span class="required">*</span> 渠道名称:</label>
+        <input class="form-input" value="xiaohongshu-fufei1" placeholder="请输入渠道名称，最多50个汉字或字符">
+      </div>
+      <div class="form-item">
+        <label class="form-label">渠道类型:</label>
+        <div style="display:flex;gap:16px;">
+          <label><input type="radio" name="ch-type" checked> 已有渠道</label>
+          <label><input type="radio" name="ch-type"> 新增渠道</label>
+        </div>
+      </div>
+      <div class="form-item">
+        <label class="form-label"><span class="required">*</span> 渠道类型名称:</label>
+        <select class="form-input">
+          <option>小红书</option>
+          <option>投放</option>
+          <option>私域</option>
+          <option>内部导流</option>
+          <option>老用户激活</option>
+        </select>
+      </div>
+      <div class="form-item">
+        <label class="form-label"><span class="required">*</span> 年级与等级:  <span style="font-size:11px;color:#999;">(每个模块选择年级和对应等级，年级不可跨模块重复)</span></label>
+        <div id="grade-level-modules">
+          <!-- Module 1 (default) -->
+          <div class="grade-level-module" data-module-id="1">
+            <div class="module-header">
+              <span class="module-label">模块 1</span>
+            </div>
+            <div style="margin-bottom:8px;">
+              <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;"><span class="required">*</span> 年级（多选）:</label>
+              <div class="checkbox-group grade-checkboxes">
+                <label class="checkbox-item"><input type="checkbox" data-grade="不限" onchange="onGradeChange(this)"> 不限</label>
+                <label class="checkbox-item"><input type="checkbox" data-grade="一年级" onchange="onGradeChange(this)"> 一年级</label>
+                <label class="checkbox-item"><input type="checkbox" data-grade="二年级" onchange="onGradeChange(this)"> 二年级</label>
+                <label class="checkbox-item"><input type="checkbox" data-grade="三年级" onchange="onGradeChange(this)"> 三年级</label>
+                <label class="checkbox-item"><input type="checkbox" data-grade="四年级" onchange="onGradeChange(this)"> 四年级</label>
+                <label class="checkbox-item"><input type="checkbox" data-grade="五年级" onchange="onGradeChange(this)"> 五年级</label>
+                <label class="checkbox-item"><input type="checkbox" data-grade="六年级" onchange="onGradeChange(this)"> 六年级</label>
+                <label class="checkbox-item checked"><input type="checkbox" data-grade="七年级" checked onchange="onGradeChange(this)"> 七年级</label>
+                <label class="checkbox-item checked"><input type="checkbox" data-grade="八年级" checked onchange="onGradeChange(this)"> 八年级</label>
+                <label class="checkbox-item checked"><input type="checkbox" data-grade="九年级" checked onchange="onGradeChange(this)"> 九年级</label>
+                <label class="checkbox-item"><input type="checkbox" data-grade="高一" onchange="onGradeChange(this)"> 高一</label>
+                <label class="checkbox-item"><input type="checkbox" data-grade="高二" onchange="onGradeChange(this)"> 高二</label>
+                <label class="checkbox-item"><input type="checkbox" data-grade="高三" onchange="onGradeChange(this)"> 高三</label>
+                <label class="checkbox-item"><input type="checkbox" data-grade="中职" onchange="onGradeChange(this)"> 中职</label>
+                <label class="checkbox-item"><input type="checkbox" data-grade="无学段" onchange="onGradeChange(this)"> 无学段</label>
+              </div>
+              <div class="grade-conflict-tip">请至少选择一个年级</div>
+            </div>
+            <div>
+              <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;"><span class="required">*</span> 渠道线索等级:</label>
+              <select class="form-input module-level-select">
+                <option value="">请选择等级</option>
+                <option value="A级" selected>A级</option><option value="B级">B级</option><option value="C级">C级</option><option value="D级">D级</option><option value="E级">E级</option><option value="F级">F级</option><option value="G级">G级</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="add-module-btn" onclick="addGradeLevelModule()">＋ 添加年级与等级模块</button>
+        <div style="font-size:11px;color:#ff4d4f;margin-top:4px;" id="grade-error" class="hidden">每个模块至少选择一个年级和一个等级</div>
+      </div>
+      <div class="form-item">
+        <label class="form-label"><span class="required">*</span> 渠道预估转化率:</label>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <input class="form-input" style="width:80px" value="2" type="number" min="0" max="100">
+          <span>% 至</span>
+          <input class="form-input" style="width:80px" value="6" type="number" min="0" max="100">
+          <span>%</span>
+        </div>
+      </div>
+      <div class="form-item">
+        <label class="form-label">渠道备注说明:</label>
+        <textarea class="form-input" style="height:60px;resize:vertical" placeholder="非必填，最多50个汉字或字符"></textarea>
+      </div>
+      <div class="form-item">
+        <label class="form-label"><span class="required">*</span> 非服承接人员:</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="btn" style="height:28px;font-size:12px">已选1人</button>
+          <span>周秋扬</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="submitModal()">提交</button>
+    </div>
+  </div>
+</div>
+
+<!-- Duplicate validation toast -->
+<div id="toast" style="position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#fff2f0;border:1px solid #ffccc7;color:#cf1322;padding:10px 20px;border-radius:4px;font-size:13px;z-index:2000;display:none;">
+  该 channel + 年级 组合已存在，请检查后重新提交
+</div>
+
+<script>
+function switchPage(page) {
+  document.getElementById('page-channel').classList.add('hidden');
+  document.getElementById('page-plan').classList.add('hidden');
+  document.getElementById('page-old').classList.add('hidden');
+
+  document.querySelectorAll('.menu-item.sub').forEach(el => el.classList.remove('active'));
+
+  if (page === 'channel') {
+    document.getElementById('page-channel').classList.remove('hidden');
+    document.getElementById('nav-channel').classList.add('active');
+    document.getElementById('breadcrumb').innerHTML = '配置投放渠道信息';
+  } else if (page === 'plan') {
+    document.getElementById('page-plan').classList.remove('hidden');
+    document.getElementById('nav-plan').classList.add('active');
+    document.getElementById('breadcrumb').innerHTML = '<span onclick="switchPage(\'channel\')">线索投放计划</span> / 线索分配规则';
+  } else if (page === 'old') {
+    document.getElementById('page-old').classList.remove('hidden');
+    document.getElementById('nav-old-dist').classList.add('active');
+    document.getElementById('breadcrumb').innerHTML = '线索分配设置（已下线）';
+  }
+}
+
+var moduleCounter = 1;
+var allGrades = ['不限','一年级','二年级','三年级','四年级','五年级','六年级','七年级','八年级','九年级','高一','高二','高三','中职','无学段'];
+
+function openModal() {
+  document.getElementById('modal-title').textContent = '配置投放渠道信息';
+  document.getElementById('channel-input').value = '';
+  document.getElementById('channel-input').disabled = false;
+  resetModules();
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+function openEditModal() {
+  document.getElementById('modal-title').textContent = '编辑投放渠道信息';
+  document.getElementById('channel-input').disabled = true;
+  resetModulesToEdit();
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+  document.getElementById('grade-error').classList.add('hidden');
+}
+
+function resetModules() {
+  moduleCounter = 1;
+  var container = document.getElementById('grade-level-modules');
+  container.innerHTML = '';
+  addGradeLevelModule();
+}
+
+function resetModulesToEdit() {
+  moduleCounter = 0;
+  var container = document.getElementById('grade-level-modules');
+  container.innerHTML = '';
+  addGradeLevelModule(['七年级','八年级','九年级'], 'A级');
+  syncAllGradeDisabled();
+}
+
+function buildGradeCheckboxesHTML(moduleId, preChecked) {
+  preChecked = preChecked || [];
+  return allGrades.map(function(g) {
+    var checked = preChecked.indexOf(g) >= 0;
+    return '<label class="checkbox-item' + (checked ? ' checked' : '') + '">' +
+      '<input type="checkbox" data-grade="' + g + '"' + (checked ? ' checked' : '') + ' onchange="onGradeChange(this)"> ' + g +
+      '</label>';
+  }).join('\n');
+}
+
+function addGradeLevelModule(preCheckedGrades, preLevel) {
+  moduleCounter++;
+  var id = moduleCounter;
+  var container = document.getElementById('grade-level-modules');
+  var moduleCount = container.querySelectorAll('.grade-level-module').length;
+
+  var div = document.createElement('div');
+  div.className = 'grade-level-module';
+  div.setAttribute('data-module-id', id);
+  div.innerHTML =
+    '<div class="module-header">' +
+      '<span class="module-label">模块 ' + (moduleCount + 1) + '</span>' +
+      (moduleCount > 0 ? '<button class="module-remove" title="删除此模块" onclick="removeModule(this)">✕</button>' : '') +
+    '</div>' +
+    '<div style="margin-bottom:8px;">' +
+      '<label style="font-size:12px;color:#666;display:block;margin-bottom:4px;"><span class="required">*</span> 年级（多选）:</label>' +
+      '<div class="checkbox-group grade-checkboxes">' +
+        buildGradeCheckboxesHTML(id, preCheckedGrades) +
+      '</div>' +
+      '<div class="grade-conflict-tip">请至少选择一个年级</div>' +
+    '</div>' +
+    '<div>' +
+      '<label style="font-size:12px;color:#666;display:block;margin-bottom:4px;"><span class="required">*</span> 渠道线索等级:</label>' +
+      '<select class="form-input module-level-select">' +
+        '<option value="">请选择等级</option>' +
+        '<option value="A级"' + (preLevel === 'A级' ? ' selected' : '') + '>A级</option>' +
+        '<option value="B级"' + (preLevel === 'B级' ? ' selected' : '') + '>B级</option>' +
+        '<option value="C级"' + (preLevel === 'C级' ? ' selected' : '') + '>C级</option>' +
+        '<option value="D级"' + (preLevel === 'D级' ? ' selected' : '') + '>D级</option>' +
+        '<option value="E级"' + (preLevel === 'E级' ? ' selected' : '') + '>E级</option>' +
+        '<option value="F级"' + (preLevel === 'F级' ? ' selected' : '') + '>F级</option>' +
+        '<option value="G级"' + (preLevel === 'G级' ? ' selected' : '') + '>G级</option>' +
+      '</select>' +
+    '</div>';
+  container.appendChild(div);
+  syncAllGradeDisabled();
+  refreshModuleLabels();
+}
+
+function removeModule(btn) {
+  var mod = btn.closest('.grade-level-module');
+  mod.remove();
+  syncAllGradeDisabled();
+  refreshModuleLabels();
+  ensureFirstModuleNonRemovable();
+}
+
+function refreshModuleLabels() {
+  var modules = document.querySelectorAll('#grade-level-modules .grade-level-module');
+  modules.forEach(function(mod, i) {
+    mod.querySelector('.module-label').textContent = '模块 ' + (i + 1);
+  });
+}
+
+function ensureFirstModuleNonRemovable() {
+  var modules = document.querySelectorAll('#grade-level-modules .grade-level-module');
+  modules.forEach(function(mod, i) {
+    var removeBtn = mod.querySelector('.module-remove');
+    if (i === 0 && modules.length === 1) {
+      if (removeBtn) removeBtn.remove();
+    } else if (!removeBtn) {
+      var header = mod.querySelector('.module-header');
+      var btn = document.createElement('button');
+      btn.className = 'module-remove';
+      btn.title = '删除此模块';
+      btn.textContent = '✕';
+      btn.onclick = function() { removeModule(btn); };
+      header.appendChild(btn);
+    }
+  });
+}
+
+function getUsedGrades(excludeModule) {
+  var used = [];
+  document.querySelectorAll('#grade-level-modules .grade-level-module').forEach(function(mod) {
+    if (mod === excludeModule) return;
+    mod.querySelectorAll('.grade-checkboxes input[type="checkbox"]:checked').forEach(function(cb) {
+      used.push(cb.getAttribute('data-grade'));
+    });
+  });
+  return used;
+}
+
+function syncAllGradeDisabled() {
+  var modules = document.querySelectorAll('#grade-level-modules .grade-level-module');
+  modules.forEach(function(mod) {
+    var usedByOthers = getUsedGrades(mod);
+    mod.querySelectorAll('.grade-checkboxes input[type="checkbox"]').forEach(function(cb) {
+      var grade = cb.getAttribute('data-grade');
+      var label = cb.parentElement;
+      if (usedByOthers.indexOf(grade) >= 0 && !cb.checked) {
+        label.classList.add('disabled-grade');
+        cb.disabled = true;
+      } else {
+        label.classList.remove('disabled-grade');
+        cb.disabled = false;
+      }
+    });
+  });
+}
+
+function onGradeChange(cb) {
+  if (cb.checked) {
+    cb.parentElement.classList.add('checked');
+  } else {
+    cb.parentElement.classList.remove('checked');
+  }
+  syncAllGradeDisabled();
+  var mod = cb.closest('.grade-level-module');
+  var anyChecked = Array.from(mod.querySelectorAll('.grade-checkboxes input[type="checkbox"]')).some(function(c) { return c.checked; });
+  if (anyChecked) {
+    mod.querySelector('.grade-conflict-tip').style.display = 'none';
+  }
+}
+
+function submitModal() {
+  var modules = document.querySelectorAll('#grade-level-modules .grade-level-module');
+  var valid = true;
+  modules.forEach(function(mod) {
+    var gradeChecked = Array.from(mod.querySelectorAll('.grade-checkboxes input[type="checkbox"]')).some(function(c) { return c.checked; });
+    var levelSelected = mod.querySelector('.module-level-select').value !== '';
+    if (!gradeChecked) {
+      mod.querySelector('.grade-conflict-tip').textContent = '请至少选择一个年级';
+      mod.querySelector('.grade-conflict-tip').style.display = 'block';
+      valid = false;
+    }
+    if (!levelSelected) {
+      mod.querySelector('.grade-conflict-tip').textContent = '请选择渠道线索等级';
+      mod.querySelector('.grade-conflict-tip').style.display = 'block';
+      valid = false;
+    }
+  });
+  if (!valid) return;
+
+  var toast = document.getElementById('toast');
+  var channel = document.getElementById('channel-input').value;
+  if (channel === 'xiaohongshu-fufei') {
+    toast.style.display = 'block';
+    setTimeout(function() { toast.style.display = 'none'; }, 3000);
+    return;
+  }
+  closeModal();
+  alert('提交成功');
+}
+
+// Drag & drop for distribution table rows
+document.querySelectorAll('.dist-table tbody').forEach(function(tbody) {
+  var dragRow = null;
+  tbody.addEventListener('dragstart', function(e) {
+    dragRow = e.target.closest('tr');
+    if (dragRow) dragRow.classList.add('dragging');
+  });
+  tbody.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    var afterEl = getDragAfterElement(tbody, e.clientY);
+    if (afterEl == null) {
+      tbody.appendChild(dragRow);
+    } else {
+      tbody.insertBefore(dragRow, afterEl);
+    }
+  });
+  tbody.addEventListener('dragend', function() {
+    if (dragRow) dragRow.classList.remove('dragging');
+    dragRow = null;
+    updateGreenDots(tbody);
+  });
+});
+
+function getDragAfterElement(container, y) {
+  var els = Array.from(container.querySelectorAll('tr:not(.dragging)'));
+  return els.reduce(function(closest, child) {
+    var box = child.getBoundingClientRect();
+    var offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) {
+      return { offset: offset, element: child };
+    }
+    return closest;
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+function updateGreenDots(tbody) {
+  tbody.querySelectorAll('.green-dot').forEach(function(dot) { dot.remove(); });
+  var firstRow = tbody.querySelector('tr td:nth-child(2)');
+  if (firstRow) {
+    var dot = document.createElement('span');
+    dot.className = 'green-dot';
+    firstRow.prepend(dot);
+  }
+}
+
+// Input validation: only positive integers
+document.querySelectorAll('.dist-input').forEach(function(input) {
+  input.addEventListener('input', function() {
+    this.value = this.value.replace(/[^0-9]/g, '');
+  });
+});
+</script>
+</body>
+</html>
