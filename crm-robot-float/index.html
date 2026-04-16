@@ -6,152 +6,284 @@
 <title>CRM 智能助手悬浮窗 - 交互原型</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background: #f0f2f5; overflow: hidden; height: 100vh; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background: #f0f2f5; overflow: hidden; height: 100vh; font-size: 13px; }
 
-  /* ===== 模拟 CRM 系统骨架 ===== */
   .crm-shell { display: flex; height: 100vh; }
 
-  /* 侧边栏 */
+  /* ===== 左侧边栏 ===== */
   .crm-sidebar {
-    width: 200px;
-    background: #001529;
+    width: 160px;
+    background: linear-gradient(180deg, #3da0e8 0%, #2b8cd6 40%, #1a7ac4 100%);
     color: #fff;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
   }
-  .crm-sidebar .logo {
-    height: 56px;
+  .sidebar-top {
+    padding: 14px 12px 10px;
     display: flex;
     align-items: center;
-    padding: 0 16px;
-    font-size: 16px;
-    font-weight: 700;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    gap: 8px;
-  }
-  .crm-sidebar .logo span { color: #4f9cff; }
-  .crm-sidebar .menu { flex: 1; padding: 8px 0; overflow-y: auto; }
-  .crm-sidebar .menu-group { padding: 12px 16px 6px; font-size: 11px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; }
-  .crm-sidebar .menu-item {
-    padding: 10px 16px 10px 24px;
-    font-size: 13px;
-    color: rgba(255,255,255,0.65);
+    gap: 6px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
     cursor: pointer;
-    transition: all 0.15s;
+  }
+  .sidebar-top svg { width: 16px; height: 16px; fill: #fff; }
+  .sidebar-top .badge {
+    background: #ff4d4f;
+    color: #fff;
+    font-size: 10px;
+    padding: 0 5px;
+    border-radius: 8px;
+    margin-left: 2px;
+    line-height: 16px;
+  }
+  .sidebar-section {
+    padding: 6px 0;
+  }
+  .sidebar-item {
+    padding: 9px 12px 9px 20px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    transition: all 0.15s;
+    position: relative;
   }
-  .crm-sidebar .menu-item:hover { color: #fff; background: rgba(255,255,255,0.06); }
-  .crm-sidebar .menu-item.active { color: #fff; background: #1677ff; border-radius: 0 20px 20px 0; margin-right: 12px; }
-
-  /* 主内容区 */
-  .crm-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-
-  /* 顶部栏 */
-  .crm-header {
-    height: 56px;
+  .sidebar-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .sidebar-item.active {
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    font-weight: 500;
+  }
+  .sidebar-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
     background: #fff;
-    border-bottom: 1px solid #e8e8e8;
+    border-radius: 0 2px 2px 0;
+  }
+  .sidebar-item .icon { font-size: 14px; width: 18px; text-align: center; }
+  .sidebar-group-title {
+    padding: 10px 12px 4px 12px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+  .sidebar-group-title svg { width: 12px; height: 12px; fill: rgba(255,255,255,0.55); }
+  .sidebar-sub { padding-left: 8px; }
+
+  /* ===== 右侧主区域 ===== */
+  .crm-main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: #f0f2f5; }
+
+  /* 顶部蓝色横条 */
+  .crm-topbar {
+    height: 40px;
+    background: #2b8cd6;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 24px;
+    padding: 0 16px;
+    flex-shrink: 0;
+    color: #fff;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-left .logo { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .topbar-left .logo svg { width: 20px; height: 20px; fill: #fff; }
+  .topbar-left .menu-icon { cursor: pointer; font-size: 16px; color: rgba(255,255,255,0.8); }
+  .topbar-center { font-size: 12px; }
+  .topbar-center .label { color: rgba(255,255,255,0.85); margin-right: 16px; }
+  .topbar-center .notice { color: #ffeb3b; font-size: 12px; }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .topbar-right .icon-btn { color: rgba(255,255,255,0.8); cursor: pointer; font-size: 14px; }
+  .topbar-right .user { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .topbar-right .user .avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: #5bb8f0; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: #fff; font-weight: 500;
+  }
+
+  /* Tab 页签栏 */
+  .crm-page-tabs {
+    height: 36px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    border-bottom: 1px solid #e8e8e8;
+    flex-shrink: 0;
+    gap: 4px;
+  }
+  .crm-page-tabs .back-btn { color: #999; cursor: pointer; margin-right: 4px; font-size: 14px; }
+  .page-tab {
+    padding: 6px 14px;
+    font-size: 12px;
+    color: #666;
+    cursor: pointer;
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .page-tab.active { color: #2b8cd6; background: #e8f4fd; font-weight: 500; }
+  .page-tab .close { font-size: 10px; color: #999; margin-left: 2px; }
+
+  /* 黄色提示条 */
+  .crm-warning-bar {
+    background: #fffbe6;
+    border: 1px solid #ffe58f;
+    color: #d48806;
+    padding: 6px 16px;
+    font-size: 12px;
+    text-align: center;
+    flex-shrink: 0;
+    margin: 0;
+  }
+  .crm-warning-bar a { color: #1890ff; cursor: pointer; margin-left: 4px; text-decoration: underline; }
+
+  /* 筛选条件区 */
+  .crm-filters {
+    background: #fff;
+    padding: 10px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
     flex-shrink: 0;
   }
-  .crm-header .breadcrumb { font-size: 14px; color: #666; }
-  .crm-header .breadcrumb b { color: #333; }
-  .crm-header .user-info { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #666; }
-  .crm-header .avatar { width: 32px; height: 32px; border-radius: 50%; background: #1677ff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
-
-  /* Tab 栏 */
-  .crm-tabs {
-    display: flex;
+  .crm-filters .list-icon { color: #999; cursor: pointer; font-size: 14px; margin-right: 2px; }
+  .filter-input {
+    padding: 4px 10px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #bfbfbf;
     background: #fff;
-    padding: 0 24px;
+    height: 28px;
+    min-width: 120px;
+  }
+  .filter-select {
+    padding: 4px 10px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #333;
+    background: #fff;
+    height: 28px;
+    min-width: 100px;
+  }
+
+  /* 操作按钮条 */
+  .crm-actions {
+    background: #fff;
+    padding: 8px 16px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #f0f0f0;
+    flex-shrink: 0;
+  }
+  .btn {
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    color: #333;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+  .btn-primary:hover { background: #40a9ff; }
+  .btn:hover { border-color: #1890ff; color: #1890ff; }
+
+  /* 功能按钮行 */
+  .crm-func-btns {
+    background: #fff;
+    padding: 8px 16px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
     border-bottom: 1px solid #e8e8e8;
     flex-shrink: 0;
   }
-  .crm-tabs .tab {
-    padding: 12px 20px;
-    font-size: 14px;
-    color: #666;
+  .btn-func {
+    padding: 5px 14px;
+    border-radius: 4px;
+    font-size: 12px;
     cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all 0.15s;
-  }
-  .crm-tabs .tab:hover { color: #1677ff; }
-  .crm-tabs .tab.active { color: #1677ff; border-bottom-color: #1677ff; font-weight: 500; }
-
-  /* 筛选 & 工具栏 */
-  .crm-toolbar {
-    display: flex;
+    border: 1px solid #1890ff;
+    background: #1890ff;
+    color: #fff;
+    height: 30px;
+    display: inline-flex;
     align-items: center;
-    gap: 12px;
-    padding: 16px 24px;
-    background: #fff;
-    margin: 16px 16px 0;
-    border-radius: 8px 8px 0 0;
-    flex-shrink: 0;
+    white-space: nowrap;
   }
-  .crm-toolbar .filter {
-    padding: 6px 14px;
-    border: 1px solid #d9d9d9;
-    border-radius: 6px;
-    font-size: 13px;
-    color: #333;
-    background: #fff;
-    cursor: pointer;
-  }
-  .crm-toolbar .filter:hover { border-color: #1677ff; color: #1677ff; }
-  .crm-toolbar .search {
-    padding: 6px 14px;
-    border: 1px solid #d9d9d9;
-    border-radius: 6px;
-    font-size: 13px;
-    width: 220px;
-    outline: none;
-  }
-  .crm-toolbar .search:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.1); }
+  .btn-func:hover { background: #40a9ff; }
 
   /* 表格 */
   .crm-table-wrap {
     flex: 1;
-    margin: 0 16px 16px;
     background: #fff;
-    border-radius: 0 0 8px 8px;
     overflow: auto;
   }
-  table.crm-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.crm-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1100px; }
   table.crm-table th {
     position: sticky;
     top: 0;
     background: #fafafa;
-    padding: 12px 16px;
+    padding: 10px 10px;
     text-align: left;
     font-weight: 500;
     color: #666;
     border-bottom: 1px solid #e8e8e8;
     white-space: nowrap;
+    font-size: 12px;
   }
+  table.crm-table th .sort { color: #bbb; font-size: 10px; margin-left: 2px; }
   table.crm-table td {
-    padding: 12px 16px;
+    padding: 10px 10px;
     border-bottom: 1px solid #f0f0f0;
     color: #333;
     white-space: nowrap;
-  }
-  table.crm-table tr:hover td { background: #f5f7fa; }
-  .tag {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
     font-size: 12px;
   }
-  .tag-blue { background: #e6f4ff; color: #1677ff; }
+  table.crm-table tr:hover td { background: #f5f8ff; }
+  .td-checkbox { width: 36px; text-align: center; }
+  .td-id { color: #1890ff; cursor: pointer; }
+  .td-id:hover { text-decoration: underline; }
+  .td-copy { color: #1890ff; cursor: pointer; font-size: 11px; margin-left: 4px; }
+  .tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+  .tag-gray { background: #f5f5f5; color: #999; }
+  .tag-blue { background: #e6f7ff; color: #1890ff; }
   .tag-green { background: #f6ffed; color: #52c41a; }
-  .tag-orange { background: #fff7e6; color: #fa8c16; }
-  .tag-red { background: #fff2f0; color: #ff4d4f; }
+  .td-ops { display: flex; gap: 6px; align-items: center; }
+  .td-ops a { color: #1890ff; cursor: pointer; font-size: 12px; white-space: nowrap; }
+  .td-ops a:hover { text-decoration: underline; }
+  .td-settings { color: #999; cursor: pointer; font-size: 14px; }
 
   /* ===== 悬浮机器人按钮 ===== */
   #crm-robot-fab {
@@ -159,11 +291,11 @@
     bottom: 32px;
     right: 32px;
     z-index: 2147483647;
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #4f6ef7 0%, #6c4bf7 100%);
-    box-shadow: 0 4px 16px rgba(79, 110, 247, 0.45);
+    background: linear-gradient(135deg, #36a3f7 0%, #2b8cd6 100%);
+    box-shadow: 0 4px 16px rgba(43, 140, 214, 0.45);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -175,17 +307,17 @@
   }
   #crm-robot-fab:hover {
     transform: scale(1.1);
-    box-shadow: 0 6px 24px rgba(79, 110, 247, 0.6);
+    box-shadow: 0 6px 24px rgba(43, 140, 214, 0.6);
   }
   #crm-robot-fab:active { transform: scale(0.95); }
-  #crm-robot-fab svg { width: 28px; height: 28px; fill: #fff; }
+  #crm-robot-fab svg { width: 26px; height: 26px; fill: #fff; }
 
   #crm-robot-fab::before {
     content: '';
     position: absolute;
     inset: -4px;
     border-radius: 50%;
-    background: rgba(79, 110, 247, 0.3);
+    background: rgba(43, 140, 214, 0.3);
     animation: crm-pulse 2s ease-in-out infinite;
     z-index: -1;
   }
@@ -194,17 +326,16 @@
     50% { transform: scale(1.25); opacity: 0; }
   }
 
-  /* tooltip */
   #crm-robot-fab .tooltip {
     position: absolute;
-    right: 68px;
+    right: 58px;
     top: 50%;
     transform: translateY(-50%);
     background: rgba(0,0,0,0.75);
     color: #fff;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
     white-space: nowrap;
     pointer-events: none;
     opacity: 0;
@@ -215,7 +346,7 @@
   /* ===== 客服弹窗面板 ===== */
   #crm-robot-panel {
     position: fixed;
-    bottom: 100px;
+    bottom: 92px;
     right: 32px;
     z-index: 2147483647;
     width: 400px;
@@ -225,7 +356,7 @@
     opacity: 0;
     visibility: hidden;
     background: #fff;
-    border-radius: 16px;
+    border-radius: 12px;
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
@@ -244,8 +375,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
-    background: linear-gradient(135deg, #4f6ef7 0%, #6c4bf7 100%);
+    padding: 10px 14px;
+    background: linear-gradient(135deg, #36a3f7 0%, #2b8cd6 100%);
     color: #fff;
     flex-shrink: 0;
   }
@@ -258,13 +389,13 @@
   }
   #crm-robot-panel-header .title svg { width: 18px; height: 18px; fill: #fff; }
   .close-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
+    width: 26px;
+    height: 26px;
+    border-radius: 4px;
     border: none;
     background: rgba(255,255,255,0.15);
     color: #fff;
-    font-size: 16px;
+    font-size: 14px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -278,7 +409,7 @@
   #crm-robot-loading {
     position: absolute;
     inset: 0;
-    top: 48px;
+    top: 44px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -289,94 +420,215 @@
   }
   #crm-robot-loading.hidden { opacity: 0; pointer-events: none; }
   .crm-spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid #e0e4f0;
-    border-top-color: #4f6ef7;
+    width: 28px;
+    height: 28px;
+    border: 3px solid #e0e8f0;
+    border-top-color: #2b8cd6;
     border-radius: 50%;
     animation: crm-spin 0.7s linear infinite;
   }
   @keyframes crm-spin { to { transform: rotate(360deg); } }
-  #crm-robot-loading span { font-size: 13px; color: #999; }
+  #crm-robot-loading span { font-size: 12px; color: #999; }
 </style>
 </head>
 <body>
 
-<!-- ===== 模拟 CRM 系统界面 ===== -->
 <div class="crm-shell">
+  <!-- 左侧边栏 -->
   <aside class="crm-sidebar">
-    <div class="logo">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="#4f9cff"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-      <span>CRM</span> 电销系统
+    <div class="sidebar-top">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      个人工作台
+      <span class="badge">0</span>
     </div>
-    <div class="menu">
-      <div class="menu-group">客户管理</div>
-      <div class="menu-item active">📋 跟进中客户</div>
-      <div class="menu-item">📥 待分配线索</div>
-      <div class="menu-item">📦 公海客户</div>
-      <div class="menu-item">✅ 已成交客户</div>
-      <div class="menu-group">数据中心</div>
-      <div class="menu-item">📊 转化漏斗</div>
-      <div class="menu-item">📈 业绩看板</div>
-      <div class="menu-item">📉 数据报表</div>
-      <div class="menu-group">系统设置</div>
-      <div class="menu-item">⚙️ 分配规则</div>
-      <div class="menu-item">👥 团队管理</div>
-      <div class="menu-item">🔗 渠道配置</div>
+    <div class="sidebar-section">
+      <div class="sidebar-item"><span class="icon">🏢</span>公海池</div>
+      <div class="sidebar-group-title">
+        <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+        👥 客户管理
+      </div>
+      <div class="sidebar-sub">
+        <div class="sidebar-item active"><span class="icon"></span>客户池</div>
+        <div class="sidebar-item"><span class="icon"></span>已成交</div>
+        <div class="sidebar-item"><span class="icon"></span>付费线索池</div>
+      </div>
+      <div class="sidebar-item"><span class="icon">🔄</span>转介绍跟进</div>
+      <div class="sidebar-item"><span class="icon">📊</span>转介绍数据来源</div>
+      <div class="sidebar-item"><span class="icon">🔗</span>核实绑定家庭</div>
+      <div class="sidebar-item"><span class="icon">⭐</span>推送优质线索池</div>
+      <div class="sidebar-item"><span class="icon">❤️</span>已收藏</div>
+      <div class="sidebar-item"><span class="icon">📝</span>推送线索记录</div>
+      <div class="sidebar-item"><span class="icon">🔍</span>线索查询</div>
+      <div class="sidebar-item"><span class="icon">📡</span>线索溯源</div>
     </div>
   </aside>
 
+  <!-- 右侧主区域 -->
   <div class="crm-main">
-    <div class="crm-header">
-      <div class="breadcrumb">客户管理 / <b>跟进中客户</b></div>
-      <div class="user-info">
-        <span>武汉校区</span>
-        <div class="avatar">李</div>
+    <!-- 顶部蓝色条 -->
+    <div class="crm-topbar">
+      <div class="topbar-left">
+        <div class="logo">
+          <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.07A7.001 7.001 0 0 1 7.07 19H6a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h-1V5.73A2 2 0 0 1 12 2z"/></svg>
+          电销CRM
+        </div>
+        <span class="menu-icon">≡</span>
+        <span style="font-size:13px">客户池</span>
+      </div>
+      <div class="topbar-center">
+        <span class="notice">今日已领0，自助线索池上限10/日</span>
+      </div>
+      <div class="topbar-right">
+        <span class="icon-btn">🔔</span>
+        <span class="icon-btn">📋</span>
+        <span class="icon-btn">❓</span>
+        <span class="icon-btn">🔍</span>
+        <span class="icon-btn">📞</span>
+        <div class="user">
+          <div class="avatar">李</div>
+          <span>liyingping</span>
+        </div>
       </div>
     </div>
 
-    <div class="crm-tabs">
-      <div class="tab active">全部 (386)</div>
-      <div class="tab">今日待跟进 (24)</div>
-      <div class="tab">超期未跟进 (8)</div>
-      <div class="tab">7天内到期 (15)</div>
+    <!-- 页签栏 -->
+    <div class="crm-page-tabs">
+      <span class="back-btn">&lt;</span>
+      <div class="page-tab">首页</div>
+      <div class="page-tab active">客户池 <span class="close">×</span></div>
     </div>
 
-    <div class="crm-toolbar">
-      <button class="filter">年级 ▾</button>
-      <button class="filter">来源渠道 ▾</button>
-      <button class="filter">跟进状态 ▾</button>
-      <button class="filter">分配时间 ▾</button>
-      <input class="search" placeholder="搜索客户姓名 / 手机号">
+    <!-- 黄色提示条 -->
+    <div class="crm-warning-bar">
+      ●当前视图存在本地变更，保存将对所有浏览者可见。<a>重置</a>
     </div>
 
+    <!-- 筛选条件 -->
+    <div class="crm-filters">
+      <span class="list-icon">☰</span>
+      <input class="filter-input" placeholder="请输入家庭ID" readonly>
+      <input class="filter-input" placeholder="请输入洋葱ID" readonly>
+      <input class="filter-input" placeholder="请输入客户手机号" readonly>
+      <input class="filter-input" placeholder="请选择小组" readonly>
+      <select class="filter-select"><option>陈佳洲04</option></select>
+      <input class="filter-input" placeholder="请选择地区" readonly>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="crm-actions">
+      <button class="btn btn-primary">🔍 搜索</button>
+      <button class="btn">清空筛选条件</button>
+      <button class="btn">≡ 组合排序</button>
+      <button class="btn btn-primary">💾 另存为</button>
+      <button class="btn">更多筛选 ∨</button>
+    </div>
+
+    <!-- 功能按钮 -->
+    <div class="crm-func-btns">
+      <button class="btn-func">批量释放线索</button>
+      <button class="btn-func">上传冷静期数据</button>
+      <button class="btn-func">人工录入</button>
+      <button class="btn-func">申请客户</button>
+      <button class="btn-func">批量转线索</button>
+    </div>
+
+    <!-- 数据表格 -->
     <div class="crm-table-wrap">
       <table class="crm-table">
         <thead>
           <tr>
-            <th>客户姓名</th>
-            <th>手机号</th>
-            <th>年级</th>
-            <th>来源渠道</th>
-            <th>跟进状态</th>
-            <th>最近跟进</th>
-            <th>下次跟进</th>
-            <th>跟进人</th>
+            <th class="td-checkbox"><input type="checkbox"></th>
+            <th>洋葱ID</th>
+            <th>客户手机号</th>
+            <th>来源</th>
+            <th>创建时间 <span class="sort">↕</span></th>
+            <th>意向度 <span class="sort">↕</span></th>
+            <th>外呼状态</th>
+            <th>外呼次数 <span class="sort">↕</span></th>
+            <th>最近一次看课时间 <span class="sort">↕</span></th>
+            <th>最近一次拨打时间 <span class="sort">↕</span></th>
+            <th>操作 ⚙</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td>张小明</td><td>138****6721</td><td>初一</td><td>抖音投放</td><td><span class="tag tag-blue">初次沟通</span></td><td>2026-04-15</td><td>2026-04-17</td><td>王老师</td></tr>
-          <tr><td>李思琪</td><td>159****3348</td><td>高二</td><td>转介绍</td><td><span class="tag tag-green">意向明确</span></td><td>2026-04-14</td><td>2026-04-16</td><td>赵老师</td></tr>
-          <tr><td>刘子轩</td><td>177****8892</td><td>初三</td><td>百度搜索</td><td><span class="tag tag-orange">待回访</span></td><td>2026-04-12</td><td>2026-04-16</td><td>王老师</td></tr>
-          <tr><td>陈雨欣</td><td>136****4455</td><td>高一</td><td>微信公众号</td><td><span class="tag tag-green">意向明确</span></td><td>2026-04-15</td><td>2026-04-18</td><td>孙老师</td></tr>
-          <tr><td>赵天宇</td><td>188****7761</td><td>六年级</td><td>快手投放</td><td><span class="tag tag-blue">初次沟通</span></td><td>2026-04-15</td><td>2026-04-17</td><td>赵老师</td></tr>
-          <tr><td>周梓涵</td><td>155****2209</td><td>初二</td><td>活码裂变</td><td><span class="tag tag-red">即将到期</span></td><td>2026-04-10</td><td>2026-04-16</td><td>王老师</td></tr>
-          <tr><td>吴佳琪</td><td>183****5534</td><td>高三</td><td>官网注册</td><td><span class="tag tag-green">意向明确</span></td><td>2026-04-14</td><td>2026-04-17</td><td>孙老师</td></tr>
-          <tr><td>孙浩然</td><td>139****8876</td><td>初一</td><td>抖音投放</td><td><span class="tag tag-orange">待回访</span></td><td>2026-04-13</td><td>2026-04-18</td><td>赵老师</td></tr>
-          <tr><td>黄思雨</td><td>186****1123</td><td>初三</td><td>转介绍</td><td><span class="tag tag-blue">初次沟通</span></td><td>2026-04-15</td><td>2026-04-19</td><td>王老师</td></tr>
-          <tr><td>马可欣</td><td>152****9987</td><td>高一</td><td>百度搜索</td><td><span class="tag tag-green">意向明确</span></td><td>2026-04-14</td><td>2026-04-17</td><td>孙老师</td></tr>
-          <tr><td>林子豪</td><td>176****3345</td><td>六年级</td><td>微信公众号</td><td><span class="tag tag-orange">待回访</span></td><td>2026-04-11</td><td>2026-04-16</td><td>赵老师</td></tr>
-          <tr><td>何雨桐</td><td>135****6678</td><td>初二</td><td>快手投放</td><td><span class="tag tag-red">即将到期</span></td><td>2026-04-09</td><td>2026-04-16</td><td>王老师</td></tr>
+          <tr>
+            <td class="td-checkbox"><input type="checkbox"></td>
+            <td><span class="td-id">202710733</span> <span class="td-copy">📋</span></td>
+            <td>15980969067 <span class="td-copy">📋</span></td>
+            <td>中学业务</td>
+            <td>2026-04-16<br>14:35:04</td>
+            <td><span class="tag tag-gray">未跟进</span></td>
+            <td>通话=0</td>
+            <td>1</td>
+            <td>2026-04-15 23:4<br>4:47</td>
+            <td>2026-04-16 14:3<br>5:43</td>
+            <td class="td-ops"><a>一键外呼</a> <a>查看详情</a> <a>锁定</a></td>
+          </tr>
+          <tr>
+            <td class="td-checkbox"><input type="checkbox"></td>
+            <td><span class="td-id">704707414</span> <span class="td-copy">📋</span></td>
+            <td>13536858857 <span class="td-copy">📋</span></td>
+            <td>中学业务</td>
+            <td>2026-04-16<br>14:32:25</td>
+            <td><span class="tag tag-gray">待跟进</span></td>
+            <td>10s<通话<br>&lt;3min</td>
+            <td>2</td>
+            <td>2025-11-09 16:0<br>7:50</td>
+            <td>2026-04-16 14:3<br>4:05</td>
+            <td class="td-ops"><a>一键外呼</a> <a>查看详情</a> <a>锁定</a></td>
+          </tr>
+          <tr>
+            <td class="td-checkbox"><input type="checkbox"></td>
+            <td><span class="td-id">903559209</span> <span class="td-copy">📋</span></td>
+            <td>15270870629 <span class="td-copy">📋</span></td>
+            <td>中学业务</td>
+            <td>2026-04-16<br>14:30:56</td>
+            <td><span class="tag tag-gray">待跟进</span></td>
+            <td>通话=0</td>
+            <td>2</td>
+            <td>2025-05-07 22:0<br>1:37</td>
+            <td>2026-04-16 14:3<br>2:06</td>
+            <td class="td-ops"><a>一键外呼</a> <a>查看详情</a> <a>锁定</a></td>
+          </tr>
+          <tr>
+            <td class="td-checkbox"><input type="checkbox"></td>
+            <td><span class="td-id">704320853</span> <span class="td-copy">📋</span></td>
+            <td>18075792984 <span class="td-copy">📋</span></td>
+            <td>中学业务</td>
+            <td>2026-04-16<br>14:27:38</td>
+            <td><span class="tag tag-gray">待跟进</span></td>
+            <td>10s<通话<br>&lt;3min</td>
+            <td>1</td>
+            <td>2026-04-16 14:2<br>0:00</td>
+            <td>2026-04-16 14:2<br>7:40</td>
+            <td class="td-ops"><a>一键外呼</a> <a>查看详情</a> <a>锁定</a></td>
+          </tr>
+          <tr>
+            <td class="td-checkbox"><input type="checkbox"></td>
+            <td><span class="td-id">706685054</span> <span class="td-copy">📋</span></td>
+            <td>19867310045 <span class="td-copy">📋</span></td>
+            <td>中学业务</td>
+            <td>2026-04-16<br>14:24:58</td>
+            <td><span class="tag tag-gray">待跟进</span></td>
+            <td>通话=0</td>
+            <td>2</td>
+            <td>2026-04-16 13:2<br>1:18</td>
+            <td>2026-04-16 14:2<br>7:07</td>
+            <td class="td-ops"><a>一键外呼</a> <a>查看详情</a> <a>锁定</a></td>
+          </tr>
+          <tr>
+            <td class="td-checkbox"><input type="checkbox"></td>
+            <td><span class="td-id">56556322</span> <span class="td-copy">📋</span></td>
+            <td>15016310507 <span class="td-copy">📋</span></td>
+            <td>中学业务</td>
+            <td>2026-04-16<br>14:22:23</td>
+            <td><span class="tag tag-gray">待跟进</span></td>
+            <td>通话=0</td>
+            <td>2</td>
+            <td>2026-04-16 05:4<br>9:37</td>
+            <td>2026-04-16 14:2<br>3:53</td>
+            <td class="td-ops"><a>一键外呼</a> <a>查看详情</a> <a>锁定</a></td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -418,11 +670,7 @@
   let panelOpen = false;
 
   function togglePanel() {
-    if (panelOpen) {
-      closePanel();
-    } else {
-      openPanel();
-    }
+    panelOpen ? closePanel() : openPanel();
   }
 
   function openPanel() {
@@ -448,9 +696,7 @@
   fab.addEventListener('click', togglePanel);
   closeBtn.addEventListener('click', closePanel);
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && panelOpen) {
-      closePanel();
-    }
+    if (e.key === 'Escape' && panelOpen) closePanel();
   });
 })();
 </script>
