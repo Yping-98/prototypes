@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM 智能助手悬浮窗 - 交互原型</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background: #f0f2f5; overflow: hidden; height: 100vh; }
+
+  /* ===== 模拟 CRM 系统骨架 ===== */
+  .crm-shell { display: flex; height: 100vh; }
+
+  /* 侧边栏 */
+  .crm-sidebar {
+    width: 200px;
+    background: #001529;
+    color: #fff;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .crm-sidebar .logo {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    font-size: 16px;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    gap: 8px;
+  }
+  .crm-sidebar .logo span { color: #4f9cff; }
+  .crm-sidebar .menu { flex: 1; padding: 8px 0; overflow-y: auto; }
+  .crm-sidebar .menu-group { padding: 12px 16px 6px; font-size: 11px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; }
+  .crm-sidebar .menu-item {
+    padding: 10px 16px 10px 24px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .crm-sidebar .menu-item:hover { color: #fff; background: rgba(255,255,255,0.06); }
+  .crm-sidebar .menu-item.active { color: #fff; background: #1677ff; border-radius: 0 20px 20px 0; margin-right: 12px; }
+
+  /* 主内容区 */
+  .crm-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+  /* 顶部栏 */
+  .crm-header {
+    height: 56px;
+    background: #fff;
+    border-bottom: 1px solid #e8e8e8;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    flex-shrink: 0;
+  }
+  .crm-header .breadcrumb { font-size: 14px; color: #666; }
+  .crm-header .breadcrumb b { color: #333; }
+  .crm-header .user-info { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #666; }
+  .crm-header .avatar { width: 32px; height: 32px; border-radius: 50%; background: #1677ff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+
+  /* Tab 栏 */
+  .crm-tabs {
+    display: flex;
+    background: #fff;
+    padding: 0 24px;
+    border-bottom: 1px solid #e8e8e8;
+    flex-shrink: 0;
+  }
+  .crm-tabs .tab {
+    padding: 12px 20px;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .crm-tabs .tab:hover { color: #1677ff; }
+  .crm-tabs .tab.active { color: #1677ff; border-bottom-color: #1677ff; font-weight: 500; }
+
+  /* 筛选 & 工具栏 */
+  .crm-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: #fff;
+    margin: 16px 16px 0;
+    border-radius: 8px 8px 0 0;
+    flex-shrink: 0;
+  }
+  .crm-toolbar .filter {
+    padding: 6px 14px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #333;
+    background: #fff;
+    cursor: pointer;
+  }
+  .crm-toolbar .filter:hover { border-color: #1677ff; color: #1677ff; }
+  .crm-toolbar .search {
+    padding: 6px 14px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    font-size: 13px;
+    width: 220px;
+    outline: none;
+  }
+  .crm-toolbar .search:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.1); }
+
+  /* 表格 */
+  .crm-table-wrap {
+    flex: 1;
+    margin: 0 16px 16px;
+    background: #fff;
+    border-radius: 0 0 8px 8px;
+    overflow: auto;
+  }
+  table.crm-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.crm-table th {
+    position: sticky;
+    top: 0;
+    background: #fafafa;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 500;
+    color: #666;
+    border-bottom: 1px solid #e8e8e8;
+    white-space: nowrap;
+  }
+  table.crm-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+    white-space: nowrap;
+  }
+  table.crm-table tr:hover td { background: #f5f7fa; }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .tag-blue { background: #e6f4ff; color: #1677ff; }
+  .tag-green { background: #f6ffed; color: #52c41a; }
+  .tag-orange { background: #fff7e6; color: #fa8c16; }
+  .tag-red { background: #fff2f0; color: #ff4d4f; }
+
+  /* ===== 悬浮机器人按钮 ===== */
+  #crm-robot-fab {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    z-index: 2147483647;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f6ef7 0%, #6c4bf7 100%);
+    box-shadow: 0 4px 16px rgba(79, 110, 247, 0.45);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+    outline: none;
+    user-select: none;
+  }
+  #crm-robot-fab:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 24px rgba(79, 110, 247, 0.6);
+  }
+  #crm-robot-fab:active { transform: scale(0.95); }
+  #crm-robot-fab svg { width: 28px; height: 28px; fill: #fff; }
+
+  #crm-robot-fab::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: rgba(79, 110, 247, 0.3);
+    animation: crm-pulse 2s ease-in-out infinite;
+    z-index: -1;
+  }
+  @keyframes crm-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.25); opacity: 0; }
+  }
+
+  /* tooltip */
+  #crm-robot-fab .tooltip {
+    position: absolute;
+    right: 68px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.75);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  #crm-robot-fab:hover .tooltip { opacity: 1; }
+
+  /* ===== 遮罩 ===== */
+  #crm-robot-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483646;
+    background: rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+  }
+  #crm-robot-overlay.visible { opacity: 1; visibility: visible; }
+
+  /* ===== 面板 ===== */
+  #crm-robot-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 2147483647;
+    width: 85vw;
+    max-width: 1080px;
+    height: 82vh;
+    max-height: 780px;
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0;
+    visibility: hidden;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.25s ease,
+                visibility 0.25s ease;
+  }
+  #crm-robot-panel.visible {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    visibility: visible;
+  }
+
+  #crm-robot-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #4f6ef7 0%, #6c4bf7 100%);
+    color: #fff;
+    flex-shrink: 0;
+  }
+  #crm-robot-panel-header .title {
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #crm-robot-panel-header .title svg { width: 20px; height: 20px; fill: #fff; }
+  .close-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+  }
+  .close-btn:hover { background: rgba(255,255,255,0.3); }
+
+  #crm-robot-panel iframe { flex: 1; width: 100%; border: none; }
+
+  #crm-robot-loading {
+    position: absolute;
+    inset: 0;
+    top: 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f7f8fc;
+    gap: 16px;
+    transition: opacity 0.3s ease;
+  }
+  #crm-robot-loading.hidden { opacity: 0; pointer-events: none; }
+  .crm-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e0e4f0;
+    border-top-color: #4f6ef7;
+    border-radius: 50%;
+    animation: crm-spin 0.7s linear infinite;
+  }
+  @keyframes crm-spin { to { transform: rotate(360deg); } }
+  #crm-robot-loading span { font-size: 13px; color: #999; }
+</style>
+</head>
+<body>
+
+<!-- ===== 模拟 CRM 系统界面 ===== -->
+<div class="crm-shell">
+  <aside class="crm-sidebar">
+    <div class="logo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#4f9cff"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      <span>CRM</span> 电销系统
+    </div>
+    <div class="menu">
+      <div class="menu-group">客户管理</div>
+      <div class="menu-item active">📋 跟进中客户</div>
+      <div class="menu-item">📥 待分配线索</div>
+      <div class="menu-item">📦 公海客户</div>
+      <div class="menu-item">✅ 已成交客户</div>
+      <div class="menu-group">数据中心</div>
+      <div class="menu-item">📊 转化漏斗</div>
+      <div class="menu-item">📈 业绩看板</div>
+      <div class="menu-item">📉 数据报表</div>
+      <div class="menu-group">系统设置</div>
+      <div class="menu-item">⚙️ 分配规则</div>
+      <div class="menu-item">👥 团队管理</div>
+      <div class="menu-item">🔗 渠道配置</div>
+    </div>
+  </aside>
+
+  <div class="crm-main">
+    <div class="crm-header">
+      <div class="breadcrumb">客户管理 / <b>跟进中客户</b></div>
+      <div class="user-info">
+        <span>武汉校区</span>
+        <div class="avatar">李</div>
+      </div>
+    </div>
+
+    <div class="crm-tabs">
+      <div class="tab active">全部 (386)</div>
+      <div class="tab">今日待跟进 (24)</div>
+      <div class="tab">超期未跟进 (8)</div>
+      <div class="tab">7天内到期 (15)</div>
+    </div>
+
+    <div class="crm-toolbar">
+      <button class="filter">年级 ▾</button>
+      <button class="filter">来源渠道 ▾</button>
+      <button class="filter">跟进状态 ▾</button>
+      <button class="filter">分配时间 ▾</button>
+      <input class="search" placeholder="搜索客户姓名 / 手机号">
+    </div>
+
+    <div class="crm-table-wrap">
+      <table class="crm-table">
+        <thead>
+          <tr>
+            <th>客户姓名</th>
+            <th>手机号</th>
+            <th>年级</th>
+            <th>来源渠道</th>
+            <th>跟进状态</th>
+            <th>最近跟进</th>
+            <th>下次跟进</th>
+            <th>跟进人</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>张小明</td><td>138****6721</td><td>初一</td><td>抖音投放</td><td><span class="tag tag-blue">初次沟通</span></td><td>2026-04-15</td><td>2026-04-17</td><td>王老师</td></tr>
+          <tr><td>李思琪</td><td>159****3348</td><td>高二</td><td>转介绍</td><td><span class="tag tag-green">意向明确</span></td><td>2026-04-14</td><td>2026-04-16</td><td>赵老师</td></tr>
+          <tr><td>刘子轩</td><td>177****8892</td><td>初三</td><td>百度搜索</td><td><span class="tag tag-orange">待回访</span></td><td>2026-04-12</td><td>2026-04-16</td><td>王老师</td></tr>
+          <tr><td>陈雨欣</td><td>136****4455</td><td>高一</td><td>微信公众号</td><td><span class="tag tag-green">意向明确</span></td><td>2026-04-15</td><td>2026-04-18</td><td>孙老师</td></tr>
+          <tr><td>赵天宇</td><td>188****7761</td><td>六年级</td><td>快手投放</td><td><span class="tag tag-blue">初次沟通</span></td><td>2026-04-15</td><td>2026-04-17</td><td>赵老师</td></tr>
+          <tr><td>周梓涵</td><td>155****2209</td><td>初二</td><td>活码裂变</td><td><span class="tag tag-red">即将到期</span></td><td>2026-04-10</td><td>2026-04-16</td><td>王老师</td></tr>
+          <tr><td>吴佳琪</td><td>183****5534</td><td>高三</td><td>官网注册</td><td><span class="tag tag-green">意向明确</span></td><td>2026-04-14</td><td>2026-04-17</td><td>孙老师</td></tr>
+          <tr><td>孙浩然</td><td>139****8876</td><td>初一</td><td>抖音投放</td><td><span class="tag tag-orange">待回访</span></td><td>2026-04-13</td><td>2026-04-18</td><td>赵老师</td></tr>
+          <tr><td>黄思雨</td><td>186****1123</td><td>初三</td><td>转介绍</td><td><span class="tag tag-blue">初次沟通</span></td><td>2026-04-15</td><td>2026-04-19</td><td>王老师</td></tr>
+          <tr><td>马可欣</td><td>152****9987</td><td>高一</td><td>百度搜索</td><td><span class="tag tag-green">意向明确</span></td><td>2026-04-14</td><td>2026-04-17</td><td>孙老师</td></tr>
+          <tr><td>林子豪</td><td>176****3345</td><td>六年级</td><td>微信公众号</td><td><span class="tag tag-orange">待回访</span></td><td>2026-04-11</td><td>2026-04-16</td><td>赵老师</td></tr>
+          <tr><td>何雨桐</td><td>135****6678</td><td>初二</td><td>快手投放</td><td><span class="tag tag-red">即将到期</span></td><td>2026-04-09</td><td>2026-04-16</td><td>王老师</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 悬浮机器人 ===== -->
+<button id="crm-robot-fab" title="智能助手">
+  <span class="tooltip">智能助手</span>
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.07A7.001 7.001 0 0 1 7.07 19H6a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h-1V5.73A2 2 0 0 1 12 2zm-1 9a5 5 0 0 0-5 5v1h12v-1a5 5 0 0 0-5-5h-2zm-1 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm4 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+  </svg>
+</button>
+
+<!-- ===== 遮罩 ===== -->
+<div id="crm-robot-overlay"></div>
+
+<!-- ===== 面板 ===== -->
+<div id="crm-robot-panel">
+  <div id="crm-robot-panel-header">
+    <span class="title">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.07A7.001 7.001 0 0 1 7.07 19H6a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h-1V5.73A2 2 0 0 1 12 2zm-1 9a5 5 0 0 0-5 5v1h12v-1a5 5 0 0 0-5-5h-2zm-1 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm4 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+      智能助手
+    </span>
+    <button class="close-btn" title="关闭">✕</button>
+  </div>
+  <div id="crm-robot-loading">
+    <div class="crm-spinner"></div>
+    <span>正在加载智能助手...</span>
+  </div>
+</div>
+
+<script>
+(function () {
+  const FEISHU_URL = 'https://guanghe.feishu.cn/share/base/query/shrcnbEzxGoAlh2si3iu9lLzLtc';
+
+  const fab = document.getElementById('crm-robot-fab');
+  const panel = document.getElementById('crm-robot-panel');
+  const overlay = document.getElementById('crm-robot-overlay');
+  const closeBtn = panel.querySelector('.close-btn');
+  const loading = document.getElementById('crm-robot-loading');
+  let iframeLoaded = false;
+
+  function openPanel() {
+    if (!iframeLoaded) {
+      const iframe = document.createElement('iframe');
+      iframe.src = FEISHU_URL;
+      iframe.setAttribute('allow', 'clipboard-read; clipboard-write');
+      iframe.addEventListener('load', function () {
+        loading.classList.add('hidden');
+      });
+      panel.appendChild(iframe);
+      iframeLoaded = true;
+    }
+    overlay.classList.add('visible');
+    panel.classList.add('visible');
+    fab.style.display = 'none';
+  }
+
+  function closePanel() {
+    overlay.classList.remove('visible');
+    panel.classList.remove('visible');
+    fab.style.display = 'flex';
+  }
+
+  fab.addEventListener('click', openPanel);
+  closeBtn.addEventListener('click', closePanel);
+  overlay.addEventListener('click', closePanel);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && panel.classList.contains('visible')) {
+      closePanel();
+    }
+  });
+})();
+</script>
+</body>
+</html>
