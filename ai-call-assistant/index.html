@@ -400,7 +400,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
                 <li>💬 <strong>话术推荐</strong>：当前 SOP 阶段进度条 + SOP 标准话术 + 异议应对话术（基于阻碍因素自动匹配）+ 话术智能包装</li>
               </ul>
             </li>
-            <li>数据隔离原则：仅展示当前登录坐席名下的通话，T+1 批量转译与 AI 生成</li>
+            <li>数据隔离原则：仅展示当前登录坐席名下的通话；<strong>通话结束即触发转译</strong>，ASR 完成后立即生成 AI 总结与话术推荐（通常 1-3 分钟内可查看）</li>
             <li>未接通 / IVR 放弃的通话不生成 AI 总结，操作列显示「未接通」</li>
           </ul>
         </div>
@@ -524,6 +524,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
         <span class="info-item">⏱ 通话时长 <strong>19秒</strong></span>
         <span class="info-item">👤 坐席 <strong>张李辛01</strong></span>
         <span class="info-item"><span class="el-tag el-tag-success">已接听</span></span>
+        <span class="info-item" style="color:#67c23a;">⚡ 转译完成于 14:56:52（通话结束后 36 秒）</span>
       </div>
 
       <!-- Audio Player -->
