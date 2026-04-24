@@ -178,6 +178,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
 .sop-step .label { font-size: 12px; color: #606266; margin-top: 6px; }
 .sop-step.current .label { color: #409eff; font-weight: 600; }
 .sop-step.done .label { color: #67c23a; }
+.sop-step::before { content: '▶'; position: absolute; top: 9px; left: calc(100% - 7px); font-size: 11px; color: #c0c4cc; z-index: 2; line-height: 1; }
+.sop-step.done::before { color: #67c23a; }
+.sop-step.current::before { color: #409eff; }
+.sop-step:last-child::before { display: none; }
+.sop-step .current-badge { display: none; margin-top: 4px; font-size: 10px; color: #409eff; font-weight: 600; padding: 1px 6px; background: #ecf5ff; border: 1px solid #d9ecff; border-radius: 8px; animation: pulse 1.6s ease-in-out infinite; }
+.sop-step.current .current-badge { display: inline-block; }
 
 .script-section { margin-bottom: 16px; }
 .script-section-title { font-size: 14px; font-weight: 600; color: #303133; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
@@ -279,6 +285,34 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
 .audio-progress { flex: 1; height: 4px; background: #ebeef5; border-radius: 2px; position: relative; overflow: hidden; }
 .audio-progress-fill { position: absolute; top: 0; left: 0; height: 100%; background: #409eff; width: 35%; border-radius: 2px; }
 .audio-time { font-size: 12px; color: #909399; font-family: monospace; }
+.audio-speed { position: relative; }
+.audio-speed-btn { padding: 3px 10px; font-size: 12px; color: #606266; background: #fff; border: 1px solid #dcdfe6; border-radius: 3px; cursor: pointer; min-width: 58px; font-family: inherit; line-height: 1.4; }
+.audio-speed-btn:hover { color: #409eff; border-color: #409eff; }
+.audio-speed-menu { position: absolute; bottom: calc(100% + 4px); right: 0; background: #fff; border: 1px solid #ebeef5; border-radius: 4px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); min-width: 74px; z-index: 10; padding: 4px 0; }
+.audio-speed-menu.hidden { display: none; }
+.audio-speed-menu > div { padding: 6px 14px; font-size: 12px; color: #606266; cursor: pointer; }
+.audio-speed-menu > div:hover { background: #f5f9ff; color: #409eff; }
+.audio-speed-menu > div.active { color: #409eff; font-weight: 600; background: #f5f9ff; }
+
+/* Section Edit (标签 / 结构化总结 手动编辑) */
+.section-toolbar { margin-left: auto; display: inline-flex; gap: 6px; align-items: center; }
+.section-edit-btn, .section-save-btn, .section-cancel-btn { font-size: 12px; cursor: pointer; font-weight: normal; padding: 2px 10px; border-radius: 3px; background: #fff; border: 1px solid #dcdfe6; color: #606266; }
+.section-edit-btn:hover { color: #409eff; border-color: #409eff; }
+.section-save-btn { color: #409eff; border-color: #409eff; }
+.section-save-btn:hover { background: #409eff; color: #fff; }
+.section-cancel-btn:hover { color: #f56c6c; border-color: #f56c6c; }
+.section-save-btn, .section-cancel-btn { display: none; }
+.drawer-section.editing .section-edit-btn { display: none; }
+.drawer-section.editing .section-save-btn,
+.drawer-section.editing .section-cancel-btn { display: inline-block; }
+.drawer-section.editing [contenteditable="true"] { background: #fffbe6; outline: 1px dashed #e6a23c; border-radius: 3px; padding: 1px 6px; min-width: 30px; }
+.drawer-section.editing [contenteditable="true"]:focus { background: #fff; outline-color: #409eff; }
+.drawer-section .tag-remove { display: none; margin-left: 4px; color: #f56c6c; cursor: pointer; font-size: 10px; font-weight: 700; opacity: 0.75; }
+.drawer-section .tag-remove:hover { opacity: 1; }
+.drawer-section.editing .tag-remove { display: inline-block; }
+.drawer-section .tag-add-inline { display: none; padding: 2px 8px; border-radius: 12px; font-size: 12px; color: #909399; background: #fff; border: 1px dashed #c0c4cc; cursor: pointer; align-items: center; gap: 2px; }
+.drawer-section .tag-add-inline:hover { color: #409eff; border-color: #409eff; }
+.drawer-section.editing .tag-add-inline { display: inline-flex; }
 
 /* Toast */
 .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #f0f9eb; color: #67c23a; border: 1px solid #e1f3d8; padding: 10px 20px; border-radius: 4px; font-size: 14px; z-index: 9999; display: none; align-items: center; gap: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
@@ -389,7 +423,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
             <li><span class="tag-new">NEW</span><strong>AI 详情抽屉</strong>内部分 3 个 Tab：
               <ul style="margin-top:2px;padding-left:18px;">
                 <li>📝 <strong>完整通话转译</strong>：ASR 语音转文本结果，支持按销售 / 客户分角色展示，关键词高亮</li>
-                <li>📋 <strong>通话总结</strong>：本次通话 AI 提取的标签 + 结构化通话总结（9 项字段）+ 下次跟进推荐话术</li>
+                <li>📋 <strong>通话总结</strong>：AI 提取的标签 + 结构化通话总结（9 项字段，含<strong>竞品提及</strong> / <strong>福利介绍</strong>）+ 下次跟进推荐话术，支持<strong>手动编辑</strong></li>
                 <li>💬 <strong>话术推荐</strong>：当前 SOP 阶段进度条 + SOP 标准话术 + 异议应对话术（基于阻碍因素自动匹配）</li>
               </ul>
             </li>
@@ -525,6 +559,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
         <span class="audio-time">00:06</span>
         <div class="audio-progress"><div class="audio-progress-fill"></div></div>
         <span class="audio-time">00:19</span>
+        <div class="audio-speed">
+          <button class="audio-speed-btn" onclick="toggleAudioSpeed(event)">1.0x ▾</button>
+          <div class="audio-speed-menu hidden" id="audioSpeedMenu">
+            <div onclick="setAudioSpeed('0.75x')">0.75x</div>
+            <div class="active" onclick="setAudioSpeed('1.0x')">1.0x</div>
+            <div onclick="setAudioSpeed('1.25x')">1.25x</div>
+            <div onclick="setAudioSpeed('1.5x')">1.5x</div>
+            <div onclick="setAudioSpeed('2.0x')">2.0x</div>
+          </div>
+        </div>
         <button class="el-btn el-btn-sm" onclick="showToast('已下载录音')">⬇</button>
       </div>
     </div>
@@ -562,53 +606,81 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
     <!-- Tab 2: 通话总结 -->
     <div class="drawer-tab-body hidden" id="dt-summary">
       <!-- Extracted tags -->
-      <div class="drawer-section">
-        <div class="drawer-section-title">🏷️ 本次通话提取标签 <span class="title-tag">AI 自动识别</span></div>
-        <div style="padding:12px 14px;background:#fafbfc;border-radius:4px;display:flex;flex-wrap:wrap;gap:6px;">
-          <span class="profile-tag primary">妈妈</span>
-          <span class="profile-tag primary">初二</span>
-          <span class="profile-tag danger">数学（薄弱）</span>
-          <span class="profile-tag warning">80分左右</span>
-          <span class="profile-tag warning">基础题丢分</span>
-          <span class="profile-tag success">意愿中高</span>
-          <span class="profile-tag primary">学情分析阶段</span>
-          <span class="profile-tag warning">一般偏敏感</span>
-          <span class="profile-tag danger">价格偏高</span>
-          <span class="profile-tag danger">决策人不在家</span>
+      <div class="drawer-section" id="tagsSection">
+        <div class="drawer-section-title">🏷️ 本次通话提取标签 <span class="title-tag">AI 自动识别</span>
+          <span class="section-toolbar">
+            <button class="section-edit-btn" onclick="enterEdit('tagsSection')">✏️ 编辑</button>
+            <button class="section-save-btn" onclick="exitEdit('tagsSection', true)">✓ 保存</button>
+            <button class="section-cancel-btn" onclick="exitEdit('tagsSection', false)">✕ 取消</button>
+          </span>
+        </div>
+        <div style="padding:12px 14px;background:#fafbfc;border-radius:4px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+          <span class="profile-tag primary">妈妈<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+          <span class="profile-tag primary">初二<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+          <span class="profile-tag danger">数学（薄弱）<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+          <span class="profile-tag warning">80分左右<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+          <span class="profile-tag warning">基础题丢分<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+          <span class="profile-tag success">意愿中高<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+          <span class="profile-tag primary">学情分析阶段<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+          <span class="profile-tag warning">一般偏敏感<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+          <span class="profile-tag danger">价格偏高<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+          <span class="profile-tag danger">决策人不在家<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+          <span class="tag-add-inline" onclick="addTag(this, 'primary')">＋ 添加标签</span>
         </div>
       </div>
 
       <!-- Structured Summary -->
-      <div class="drawer-section">
-        <div class="drawer-section-title">📋 结构化通话总结 <span class="title-tag">AI 自动生成</span></div>
+      <div class="drawer-section" id="summarySection">
+        <div class="drawer-section-title">📋 结构化通话总结 <span class="title-tag">AI 自动生成</span>
+          <span class="section-toolbar">
+            <button class="section-edit-btn" onclick="enterEdit('summarySection')">✏️ 编辑</button>
+            <button class="section-save-btn" onclick="exitEdit('summarySection', true)">✓ 保存</button>
+            <button class="section-cancel-btn" onclick="exitEdit('summarySection', false)">✕ 取消</button>
+          </span>
+        </div>
 
         <div class="summary-outline" style="margin: 0 0 12px; background: linear-gradient(90deg, #f0f9ff 0%, #fff 100%);">
           <div class="outline-label">💡 沟通概要</div>
-          <p>首次回访，家长关注孩子<strong>数学成绩下滑</strong>问题，认可产品但因孩子爸爸不在家未做决定，倾向 7 天后给答复。</p>
+          <p data-editable="true">首次回访，家长关注孩子<strong>数学成绩下滑</strong>问题，认可产品但因孩子爸爸不在家未做决定，倾向 7 天后给答复。</p>
         </div>
 
         <table class="data-table" style="border-radius:6px;">
           <tbody>
-            <tr><th style="width:100px;background:#fafbfc;color:#606266;">客户身份</th><td>妈妈（接听）</td></tr>
-            <tr><th style="background:#fafbfc;color:#606266;">孩子学情</th><td>初二年级 · 数学薄弱（80分左右）· 主要问题：<strong style="color:#f56c6c;">基础题丢分较多</strong></td></tr>
+            <tr><th style="width:100px;background:#fafbfc;color:#606266;">客户身份</th><td><span data-editable="true">妈妈（接听）</span></td></tr>
+            <tr><th style="background:#fafbfc;color:#606266;">孩子学情</th><td data-editable="true">初二年级 · 数学薄弱（80分左右）· 主要问题：<strong style="color:#f56c6c;">基础题丢分较多</strong></td></tr>
             <tr><th style="background:#fafbfc;color:#606266;">购买意愿</th><td>
               <span class="intent-meter">
                 <span class="intent-bars"><span class="bar on-med"></span><span class="bar on-med"></span><span class="bar on-med"></span><span class="bar"></span></span>
                 <span class="intent-label mid">中等偏高</span>
               </span>
-              · 认可产品内容，但对价格犹豫
+              · <span data-editable="true">认可产品内容，但对价格犹豫</span>
             </td></tr>
             <tr><th style="background:#fafbfc;color:#606266;">客户关注点</th><td>
-              <span class="profile-tag">课程是否真能提分</span>
-              <span class="profile-tag">是否有真人老师跟进</span>
+              <span class="profile-tag">课程是否真能提分<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+              <span class="profile-tag">是否有真人老师跟进<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+              <span class="tag-add-inline" onclick="addTag(this, '')">＋ 添加</span>
             </td></tr>
             <tr><th style="background:#fafbfc;color:#606266;">促成因素</th><td>
-              <span class="profile-tag success">孩子喜欢用洋葱</span>
-              <span class="profile-tag success">7 天无理由退款</span>
+              <span class="profile-tag success">孩子喜欢用洋葱<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+              <span class="profile-tag success">7 天无理由退款<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+              <span class="tag-add-inline" onclick="addTag(this, 'success')">＋ 添加</span>
             </td></tr>
             <tr><th style="background:#fafbfc;color:#606266;">阻碍因素</th><td>
-              <span class="profile-tag danger">价格偏高</span>
-              <span class="profile-tag danger">决策人不在场（爸爸出差）</span>
+              <span class="profile-tag danger">价格偏高<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+              <span class="profile-tag danger">决策人不在场（爸爸出差）<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+              <span class="tag-add-inline" onclick="addTag(this, 'danger')">＋ 添加</span>
+            </td></tr>
+            <tr><th style="background:#fafbfc;color:#606266;">竞品提及</th><td>
+              <span class="profile-tag danger">猿辅导<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+              <span class="profile-tag danger">学而思网校<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+              <span class="tag-add-inline" onclick="addTag(this, 'danger')">＋ 添加</span>
+              <div style="margin-top:6px;color:#909399;font-size:12px;">· <span data-editable="true">客户曾比较过这两家，未做决定</span></div>
+            </td></tr>
+            <tr><th style="background:#fafbfc;color:#606266;">福利介绍</th><td>
+              <span class="profile-tag warning">月底优惠价（有效期至 4-30）<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+              <span class="profile-tag warning">剩余 12 个名额<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+              <span class="profile-tag warning">赠送 1 对 1 诊断辅导（1 次）<span class="tag-remove" onclick="removeTag(this)">×</span></span>
+              <span class="tag-add-inline" onclick="addTag(this, 'warning')">＋ 添加</span>
             </td></tr>
             <tr><th style="background:#fafbfc;color:#606266;">通话阶段</th><td>
               <span class="stage-badge done">✓ 开场</span>
@@ -653,12 +725,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
       <div class="sop-stage-bar">
         <div class="sop-title">🧭 当前 SOP 阶段 <span style="font-weight:normal;color:#909399;font-size:12px;">· AI 基于本次通话判断</span></div>
         <div class="sop-steps">
-          <div class="sop-step done"><div class="dot">✓</div><div class="label">开场</div></div>
-          <div class="sop-step done"><div class="dot">✓</div><div class="label">挖需</div></div>
-          <div class="sop-step current"><div class="dot">3</div><div class="label">学情分析</div></div>
-          <div class="sop-step"><div class="dot">4</div><div class="label">产介</div></div>
-          <div class="sop-step"><div class="dot">5</div><div class="label">报价</div></div>
-          <div class="sop-step"><div class="dot">6</div><div class="label">关单</div></div>
+          <div class="sop-step done"><div class="dot">✓</div><div class="label">① 开场</div></div>
+          <div class="sop-step done"><div class="dot">✓</div><div class="label">② 挖需</div></div>
+          <div class="sop-step current"><div class="dot">3</div><div class="label">③ 学情分析</div><div class="current-badge">当前阶段</div></div>
+          <div class="sop-step"><div class="dot">4</div><div class="label">④ 产介</div></div>
+          <div class="sop-step"><div class="dot">5</div><div class="label">⑤ 报价</div></div>
+          <div class="sop-step"><div class="dot">6</div><div class="label">⑥ 关单</div></div>
         </div>
         <div style="margin-top:12px;padding:8px 12px;background:#fff7e6;border-left:3px solid #e6a23c;border-radius:3px;font-size:12px;color:#606266;line-height:1.7;">
           💡 <strong>AI 建议</strong>：客户已完成学情沟通但未进入报价。下次跟进应<strong>推进到「产介 → 报价」</strong>，优先解决「价格」与「决策人」两个阻碍因素。推荐话术已按优先级排序 ↓
@@ -805,6 +877,65 @@ function showToast(msg) {
   document.getElementById('toastText').textContent = msg || '操作成功';
   toast.classList.add('show');
   setTimeout(function() { toast.classList.remove('show'); }, 1800);
+}
+
+function toggleAudioSpeed(e) {
+  if (e) e.stopPropagation();
+  document.getElementById('audioSpeedMenu').classList.toggle('hidden');
+}
+function setAudioSpeed(s) {
+  var menu = document.getElementById('audioSpeedMenu');
+  var items = menu.querySelectorAll('div');
+  for (var i = 0; i < items.length; i++) {
+    items[i].classList.remove('active');
+    if (items[i].textContent.trim() === s) items[i].classList.add('active');
+  }
+  var btn = document.querySelector('.audio-speed-btn');
+  if (btn) btn.innerHTML = s + ' ▾';
+  menu.classList.add('hidden');
+  showToast('倍速已切换为 ' + s);
+}
+document.addEventListener('click', function(e) {
+  var menu = document.getElementById('audioSpeedMenu');
+  if (!menu || menu.classList.contains('hidden')) return;
+  if (e.target.closest('.audio-speed')) return;
+  menu.classList.add('hidden');
+});
+
+function enterEdit(sectionId) {
+  var section = document.getElementById(sectionId);
+  if (!section) return;
+  section.setAttribute('data-snapshot', section.innerHTML);
+  section.classList.add('editing');
+  var editables = section.querySelectorAll('[data-editable="true"]');
+  for (var i = 0; i < editables.length; i++) editables[i].setAttribute('contenteditable', 'true');
+}
+function exitEdit(sectionId, save) {
+  var section = document.getElementById(sectionId);
+  if (!section) return;
+  if (!save) {
+    var snapshot = section.getAttribute('data-snapshot');
+    if (snapshot) section.innerHTML = snapshot;
+    showToast('已取消编辑');
+  } else {
+    section.classList.remove('editing');
+    var editables = section.querySelectorAll('[data-editable="true"]');
+    for (var i = 0; i < editables.length; i++) editables[i].removeAttribute('contenteditable');
+    showToast('已保存修改');
+  }
+  section.removeAttribute('data-snapshot');
+}
+function removeTag(el) {
+  var tag = el.closest('.profile-tag');
+  if (tag) tag.remove();
+}
+function addTag(el, variant) {
+  var name = prompt('输入新标签内容');
+  if (!name || !name.trim()) return;
+  var span = document.createElement('span');
+  span.className = 'profile-tag' + (variant ? ' ' + variant : '');
+  span.innerHTML = name.trim().replace(/</g, '&lt;') + '<span class="tag-remove" onclick="removeTag(this)">×</span>';
+  el.parentNode.insertBefore(span, el);
 }
 </script>
 
