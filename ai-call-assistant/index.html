@@ -62,12 +62,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
 .tab-content { padding: 16px 20px; }
 
 /* Annotation */
-.anno-panel { background: #fff; border-radius: 4px; border: 1px solid #ebeef5; padding: 14px 18px; margin-bottom: 14px; border-left: 3px solid #409eff; }
-.anno-panel h4 { font-size: 14px; font-weight: 600; color: #409eff; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-.anno-panel ul { padding-left: 18px; font-size: 13px; line-height: 1.9; color: #606266; }
-.anno-panel .tag-new { display: inline-block; background: #f0f9eb; color: #67c23a; border: 1px solid #e1f3d8; padding: 0 6px; border-radius: 3px; font-size: 11px; font-weight: 600; margin-right: 4px; }
-.anno-panel .tag-change { display: inline-block; background: #fdf6ec; color: #e6a23c; border: 1px solid #faecd8; padding: 0 6px; border-radius: 3px; font-size: 11px; font-weight: 600; margin-right: 4px; }
-
 /* AI Panel */
 .ai-panel { background: #fff; border-radius: 6px; border: 1px solid #ebeef5; margin-bottom: 16px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
 .ai-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: linear-gradient(135deg, #eff6ff 0%, #f5f9ff 100%); border-bottom: 1px solid #e4e7ed; }
@@ -415,24 +409,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
 
       <!-- Tab Content: 呼叫记录 -->
       <div class="tab-content">
-        <!-- Annotation -->
-        <div class="anno-panel">
-          <h4>📐 原型变更说明 · 通话智能辅助方案</h4>
-          <ul>
-            <li><span class="tag-new">NEW</span>在呼叫记录表格「操作」列新增「<span class="ai-action-btn">✨ AI 总结</span>」按钮，点击打开该通话的 AI 详情抽屉（仅对已接通、有转译内容的通话可用）</li>
-            <li><span class="tag-new">NEW</span><strong>AI 详情抽屉</strong>内部分 3 个 Tab：
-              <ul style="margin-top:2px;padding-left:18px;">
-                <li>📝 <strong>完整通话转译</strong>：ASR 语音转文本结果，支持按销售 / 客户分角色展示，关键词高亮</li>
-                <li>📋 <strong>通话总结</strong>：AI 提取的标签 + 结构化通话总结（9 项字段，含<strong>竞品提及</strong> / <strong>福利介绍</strong>）+ 下次跟进推荐话术，支持<strong>手动编辑</strong></li>
-                <li>💬 <strong>话术推荐</strong>：当前 SOP 阶段进度条 + SOP 标准话术 + 异议应对话术（基于阻碍因素自动匹配）</li>
-              </ul>
-            </li>
-            <li>数据隔离原则：仅展示当前登录坐席名下的通话；<strong>通话结束即触发转译</strong>，ASR 完成后立即生成 AI 总结与话术推荐（通常 1-3 分钟内可查看）</li>
-            <li>未接通 / IVR 放弃的通话不生成 AI 总结，操作列显示「未接通」</li>
-          </ul>
-        </div>
-
-
         <!-- Filters -->
         <div class="filter-bar">
           <span class="filter-label">呼叫状态：</span>
