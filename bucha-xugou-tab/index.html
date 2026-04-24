@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>电销CRM - 客户详情 - 补差续购合并Tab</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; background: #f5f7fa; color: #333; font-size: 14px; }
+
+.layout { display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar { width: 180px; background: #304156; color: #fff; flex-shrink: 0; overflow-y: auto; }
+.sidebar-header { height: 50px; display: flex; align-items: center; padding: 0 16px; background: #263445; gap: 8px; }
+.sidebar-header .logo { width: 32px; height: 32px; border-radius: 50%; background: #409eff; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.sidebar-header span { font-size: 14px; font-weight: 600; }
+.nav-item { padding: 11px 20px; color: rgba(255,255,255,0.7); cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; transition: all 0.2s; border-left: 3px solid transparent; }
+.nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+.nav-item.active { color: #409eff; background: rgba(64,158,255,0.1); border-left-color: #409eff; }
+.nav-item .badge { background: #f56c6c; color: #fff; font-size: 10px; padding: 0 5px; border-radius: 8px; margin-left: auto; line-height: 16px; }
+.nav-sub { padding-left: 12px; }
+.nav-parent { cursor: pointer; padding: 11px 20px; color: rgba(255,255,255,0.7); font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.nav-parent:hover { color: #fff; }
+.nav-parent .arrow { margin-left: auto; font-size: 10px; transition: transform 0.2s; }
+.nav-parent.open .arrow { transform: rotate(90deg); }
+
+/* Main */
+.main-wrap { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+
+/* Top Header */
+.top-bar { height: 50px; background: #fff; border-bottom: 1px solid #dcdfe6; display: flex; align-items: center; padding: 0 20px; flex-shrink: 0; font-size: 13px; }
+.top-bar .left { display: flex; align-items: center; gap: 12px; }
+.top-bar .center { flex: 1; text-align: center; color: #409eff; font-size: 13px; }
+.top-bar .right { display: flex; align-items: center; gap: 14px; color: #606266; }
+.avatar-sm { width: 28px; height: 28px; border-radius: 50%; background: #409eff; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; }
+
+/* Breadcrumb */
+.bc-bar { height: 40px; background: #fff; border-bottom: 1px solid #ebeef5; display: flex; align-items: center; padding: 0 20px; font-size: 13px; color: #909399; flex-shrink: 0; }
+.bc-bar .crumb { color: #409eff; cursor: pointer; }
+
+/* Content */
+.content { flex: 1; overflow-y: auto; padding: 0; }
+
+/* Customer detail top: toolbar + 基础信息 */
+.customer-detail-top { background: #fff; padding: 16px 20px 0; border-bottom: 1px solid #ebeef5; }
+.detail-actions-bar { display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.detail-actions-bar .el-btn-default { height: 32px; padding: 0 14px; border-radius: 2px; border: 1px solid #d9d9d9; background: #fff; color: rgba(0,0,0,0.85); font-size: 13px; cursor: pointer; transition: all 0.2s; }
+.detail-actions-bar .el-btn-default:hover { color: #1890ff; border-color: #1890ff; }
+.detail-actions-bar .el-btn-primary-ad { height: 32px; padding: 0 14px; border-radius: 2px; border: 1px solid #1890ff; background: #1890ff; color: #fff; font-size: 13px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+.detail-actions-bar .el-btn-primary-ad:hover { background: #40a9ff; border-color: #40a9ff; }
+.el-btn-split { padding: 0 !important; overflow: hidden; }
+.el-btn-split .split-main { padding: 0 12px; height: 100%; display: inline-flex; align-items: center; }
+.el-btn-split .split-arrow { width: 28px; height: 100%; display: inline-flex; align-items: center; justify-content: center; border-left: 1px solid rgba(255,255,255,0.35); font-size: 10px; }
+
+/* 基础信息 card */
+.basic-info-card { border: 1px solid #f0f0f0; border-radius: 4px; background: #fff; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+.basic-info-card-hd { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 12px; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; min-height: 48px; }
+.basic-info-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.basic-info-title-bar { width: 3px; height: 16px; background: #1890ff; border-radius: 1px; flex-shrink: 0; }
+.basic-info-title { font-size: 15px; font-weight: 600; color: rgba(0,0,0,0.85); }
+.btn-more-family { height: 24px; padding: 0 10px; font-size: 12px; border-radius: 2px; border: none; background: #1890ff; color: #fff; cursor: pointer; }
+.btn-more-family:hover { background: #40a9ff; }
+.basic-info-card-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.btn-card-light { height: 28px; padding: 0 12px; font-size: 13px; border-radius: 2px; border: 1px solid #91d5ff; background: #e6f7ff; color: #1890ff; cursor: pointer; transition: all 0.2s; }
+.btn-card-light:hover { border-color: #1890ff; color: #096dd9; }
+
+/* 信息网格 label | value ×4 */
+.info-grid { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+.info-grid td { border: 1px solid #f0f0f0; vertical-align: middle; padding: 0; height: 40px; }
+.info-grid .ig-label { background: #fafafa; color: rgba(0,0,0,0.65); padding: 8px 12px; width: 11%; white-space: nowrap; }
+.info-grid .ig-value { background: #fff; color: rgba(0,0,0,0.85); padding: 8px 12px; width: 14%; word-break: break-all; }
+.info-grid .ig-value-muted { color: #c0c4cc; }
+.info-grid .ig-link { color: #1890ff; cursor: pointer; margin-left: 6px; text-decoration: none; font-size: 13px; }
+.info-grid .ig-link:hover { color: #40a9ff; }
+.info-grid .icon-btn { display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; width: 22px; height: 22px; border: none; background: transparent; color: #8c8c8c; cursor: pointer; border-radius: 2px; font-size: 14px; line-height: 1; vertical-align: middle; }
+.info-grid .icon-btn:hover { color: #1890ff; background: #f5f5f5; }
+.info-grid .val-blue { color: #1890ff; }
+.info-grid .ig-empty { background: #fff; }
+
+/* Tabs */
+.tabs-container { background: #fff; border-bottom: 1px solid #ebeef5; }
+.tabs { display: flex; padding: 0 20px; gap: 0; overflow-x: auto; }
+.tab-item { padding: 12px 16px; font-size: 14px; color: #606266; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; position: relative; }
+.tab-item:hover { color: #409eff; }
+.tab-item.active { color: #409eff; border-bottom-color: #409eff; font-weight: 500; }
+.tab-item.highlight { color: #409eff; font-weight: 500; }
+.tab-item .new-dot { position: absolute; top: 8px; right: 4px; width: 6px; height: 6px; background: #f56c6c; border-radius: 50%; }
+
+/* Tab Content */
+.tab-content { padding: 16px 20px; }
+
+/* Filter */
+.filter-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.filter-label { font-size: 13px; color: #606266; flex-shrink: 0; }
+.el-select { height: 32px; padding: 0 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; background: #fff; cursor: pointer; outline: none; min-width: 130px; }
+.el-select:focus { border-color: #409eff; }
+
+/* Buttons */
+.el-btn { height: 32px; padding: 0 16px; border-radius: 4px; border: 1px solid #dcdfe6; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 4px; background: #fff; color: #606266; transition: all 0.2s; }
+.el-btn:hover { color: #409eff; border-color: #c6e2ff; background: #ecf5ff; }
+.el-btn-primary { background: #409eff; color: #fff; border-color: #409eff; }
+.el-btn-primary:hover { background: #66b1ff; border-color: #66b1ff; }
+.el-btn-text { background: none; border: none; color: #409eff; padding: 0 4px; height: auto; font-size: 13px; cursor: pointer; }
+.el-btn-text:hover { color: #66b1ff; }
+
+/* Merged Table */
+.merged-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #ebeef5; border-radius: 4px; }
+.merged-table th { background: #f5f7fa; font-weight: 500; text-align: left; padding: 10px 12px; border-bottom: 1px solid #ebeef5; color: #909399; font-size: 13px; white-space: nowrap; }
+.merged-table td { padding: 10px 12px; border-bottom: 1px solid #ebeef5; font-size: 13px; color: #606266; vertical-align: middle; }
+.merged-table tr:hover td { background: #fafafa; }
+.merged-table .product-name-cell { background: #fff; font-weight: 500; color: #303133; border-right: 1px solid #ebeef5; }
+.merged-table .type-tag { display: inline-block; padding: 0 8px; height: 22px; line-height: 22px; border-radius: 3px; font-size: 12px; }
+.merged-table .type-bucha { background: #fdf6ec; color: #e6a23c; border: 1px solid #faecd8; }
+.merged-table .type-xugou { background: #ecf5ff; color: #409eff; border: 1px solid #d9ecff; }
+.merged-table .row-bucha { }
+.merged-table .row-xugou { }
+.merged-table .separator-row td { border-bottom: 2px solid #ebeef5; }
+
+/* Product group styling */
+.product-group { }
+.product-group + .product-group .product-name-cell,
+.product-group + .product-group td { border-top: 2px solid #dcdfe6; }
+
+/* Tags */
+.el-tag { display: inline-block; padding: 0 8px; height: 22px; line-height: 22px; border-radius: 3px; font-size: 12px; }
+.el-tag-warning { background: #fdf6ec; color: #e6a23c; border: 1px solid #faecd8; }
+.el-tag-primary { background: #ecf5ff; color: #409eff; border: 1px solid #d9ecff; }
+
+/* Pagination */
+.pagination { display: flex; align-items: center; justify-content: flex-end; padding: 12px 0; gap: 8px; font-size: 13px; color: #606266; }
+.pg-btn { min-width: 30px; height: 28px; border: none; background: #f4f4f5; border-radius: 2px; cursor: pointer; font-size: 13px; color: #303133; display: flex; align-items: center; justify-content: center; padding: 0 6px; }
+.pg-btn:hover { color: #409eff; }
+.pg-btn.active { background: #409eff; color: #fff; }
+.pg-btn.disabled { color: #c0c4cc; cursor: not-allowed; }
+
+/* Dialog */
+.dialog-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center; }
+.dialog-overlay.show { display: flex; }
+.dialog { background: #fff; border-radius: 4px; width: 500px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+.dialog-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+.dialog-header h3 { font-size: 16px; font-weight: 500; color: #303133; }
+.dialog-close { cursor: pointer; font-size: 16px; color: #909399; background: none; border: none; }
+.dialog-close:hover { color: #409eff; }
+.dialog-body { padding: 20px 20px; border-top: 1px solid #ebeef5; border-bottom: 1px solid #ebeef5; }
+.dialog-footer { padding: 12px 20px; display: flex; justify-content: flex-end; gap: 10px; }
+
+/* Dialog Form */
+.d-form-item { display: flex; align-items: center; margin-bottom: 20px; }
+.d-form-item:last-child { margin-bottom: 0; }
+.d-form-label { width: 90px; text-align: right; padding-right: 12px; font-size: 14px; color: #606266; flex-shrink: 0; }
+.d-form-label .req { color: #f56c6c; margin-right: 2px; }
+.d-form-value { flex: 1; font-size: 14px; color: #303133; }
+
+/* Radio */
+.radio-group { display: flex; gap: 24px; }
+.radio-label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; color: #606266; }
+.radio-label input[type="radio"] { appearance: none; width: 16px; height: 16px; border: 1px solid #dcdfe6; border-radius: 50%; position: relative; cursor: pointer; flex-shrink: 0; }
+.radio-label input[type="radio"]:checked { border-color: #409eff; }
+.radio-label input[type="radio"]:checked::after { content: ''; position: absolute; top: 3px; left: 3px; width: 8px; height: 8px; background: #409eff; border-radius: 50%; }
+
+/* 支付推送弹窗 */
+.dialog-pay-push { width: 520px; max-width: 94vw; }
+.dialog-pay-push .dialog-body { padding: 16px 20px 20px; max-height: 72vh; overflow-y: auto; }
+.pay-push-tip { background: #e6f7ff; border: 1px solid #91d5ff; color: rgba(0,0,0,0.65); padding: 10px 12px; border-radius: 4px; font-size: 13px; line-height: 1.65; margin-bottom: 18px; }
+.d-form-item--top { align-items: flex-start; }
+.d-form-item--top .d-form-label { padding-top: 6px; }
+.d-form-label--w110 { width: 110px; }
+.d-input-readonly { height: 32px; padding: 0 11px; border: 1px solid #d9d9d9; border-radius: 4px; background: #f5f5f5; color: rgba(0,0,0,0.65); font-size: 14px; width: 100%; max-width: 320px; }
+.d-select-pay { height: 32px; padding: 0 11px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; background: #fff; min-width: 280px; max-width: 100%; cursor: pointer; outline: none; }
+.d-select-pay:focus { border-color: #1890ff; }
+.radio-group--wrap { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; }
+
+/* Toast */
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #f0f9eb; color: #67c23a; border: 1px solid #e1f3d8; padding: 10px 20px; border-radius: 4px; font-size: 14px; z-index: 9999; display: none; align-items: center; gap: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
+.toast.show { display: flex; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #dcdfe6; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #c0c4cc; }
+
+/* Empty cell dash */
+.cell-dash { color: #c0c4cc; }
+
+/* Clickable discount amount */
+.discount-link { color: #409eff; cursor: pointer; text-decoration: none; border-bottom: 1px dashed #409eff; }
+.discount-link:hover { color: #66b1ff; border-bottom-color: #66b1ff; }
+
+/* Wide dialog for 补差抵扣详情 */
+.dialog-wide { width: 960px; max-width: 95vw; }
+.dialog-wide .dialog-body { padding: 16px 20px; max-height: 60vh; overflow-y: auto; }
+.detail-tip { font-size: 13px; color: #f56c6c; margin-bottom: 12px; line-height: 1.6; }
+.detail-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #ebeef5; }
+.detail-table th { background: #f5f7fa; font-weight: 500; text-align: left; padding: 10px 12px; border: 1px solid #ebeef5; color: #909399; font-size: 13px; white-space: nowrap; }
+.detail-table td { padding: 10px 12px; border: 1px solid #ebeef5; font-size: 13px; color: #606266; vertical-align: middle; }
+.detail-table .remark-text { color: #f56c6c; font-size: 12px; line-height: 1.5; max-width: 180px; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">🐙</div>
+      <span>电销CRM</span>
+    </div>
+    <div class="nav-item" style="color:rgba(255,255,255,0.5);font-size:12px;padding:8px 20px;">🔍 搜线索</div>
+    <div class="nav-item"><span>🏠</span>个人工作台<span class="badge">99+</span></div>
+    <div class="nav-item"><span>🌊</span>公海池</div>
+    <div class="nav-parent open" onclick="this.classList.toggle('open');this.nextElementSibling.style.display=this.classList.contains('open')?'block':'none'">
+      <span>👥</span>客户管理<span class="arrow">▸</span>
+    </div>
+    <div class="nav-sub">
+      <div class="nav-item" style="padding-left:36px;">客户池</div>
+      <div class="nav-item" style="padding-left:36px;">已成交</div>
+      <div class="nav-item active" style="padding-left:36px;">付费线索池</div>
+      <div class="nav-item" style="padding-left:36px;">转介绍跟进</div>
+      <div class="nav-item" style="padding-left:36px;">推送优质线索池</div>
+    </div>
+    <div class="nav-parent"><span>📦</span>订单管理<span class="arrow">▸</span></div>
+    <div class="nav-parent"><span>📊</span>数据统计<span class="arrow">▸</span></div>
+    <div class="nav-parent"><span>🎯</span>活动管理<span class="arrow">▸</span></div>
+    <div class="nav-parent"><span>⚙️</span>系统设置<span class="arrow">▸</span></div>
+  </div>
+
+  <!-- Main -->
+  <div class="main-wrap">
+    <div class="top-bar">
+      <div class="left">☰ &nbsp; 客户管理 / 客户详情</div>
+      <div class="center"></div>
+      <div class="right">
+        <div class="avatar-sm">李</div>
+        <span style="font-size:13px;">liyingping</span>
+      </div>
+    </div>
+    <div class="bc-bar">
+      <span>‹ &nbsp;</span>
+      <span class="crumb">返回列表</span>
+      <span>&nbsp; / &nbsp;</span>
+      <span>客户详情</span>
+    </div>
+
+    <div class="content">
+      <!-- 顶部操作栏 + 基础信息（按设计稿还原） -->
+      <div class="customer-detail-top">
+        <div class="detail-actions-bar">
+          <button type="button" class="el-btn-default" onclick="openPayPushDialog()">支付推送</button>
+          <button type="button" class="el-btn-default" onclick="showToast('邀约短信')">邀约短信</button>
+          <button type="button" class="el-btn-primary-ad el-btn-split" onclick="showToast('一键拨打')">
+            <span class="split-main">一键拨打</span><span class="split-arrow" title="更多拨打方式">▼</span>
+          </button>
+          <button type="button" class="el-btn-primary-ad" onclick="showToast('新增追单记录')">新增追单记录</button>
+          <button type="button" class="el-btn-default" onclick="showToast('返回')">返回</button>
+        </div>
+
+        <div class="basic-info-card">
+          <div class="basic-info-card-hd">
+            <div class="basic-info-title-row">
+              <span class="basic-info-title-bar" aria-hidden="true"></span>
+              <span class="basic-info-title">基础信息</span>
+              <button type="button" class="btn-more-family" onclick="showToast('查看更多家庭信息')">查看更多家庭信息</button>
+            </div>
+            <div class="basic-info-card-actions">
+              <button type="button" class="btn-card-light" onclick="showToast('赠送资料')">赠送资料</button>
+              <button type="button" class="btn-card-light" onclick="showToast('体验赠送')">体验赠送</button>
+              <button type="button" class="btn-card-light" onclick="showToast('释放')">释放</button>
+              <button type="button" class="btn-card-light" onclick="showToast('转线索')">转线索</button>
+            </div>
+          </div>
+          <table class="info-grid" role="presentation">
+            <colgroup>
+              <col><col><col><col><col><col><col><col>
+            </colgroup>
+            <tbody>
+              <tr>
+                <td class="ig-label">客户昵称</td>
+                <td class="ig-value">153****7841</td>
+                <td class="ig-label">所在地</td>
+                <td class="ig-value">湖北省武汉市<a href="javascript:void(0)" class="ig-link" onclick="showToast('地区合作信息')">查看地区合作信息</a></td>
+                <td class="ig-label">用户手机号</td>
+                <td class="ig-value">15387077841<button type="button" class="icon-btn" title="复制" onclick="showToast('已复制')">📋</button><a href="javascript:void(0)" class="ig-link" onclick="showToast('变更记录')">变更记录</a></td>
+                <td class="ig-label">年级</td>
+                <td class="ig-value ig-value-muted">—</td>
+              </tr>
+              <tr>
+                <td class="ig-label">用户洋葱ID</td>
+                <td class="ig-value">100778609</td>
+                <td class="ig-label">注册时间</td>
+                <td class="ig-value">2025-10-17 14:18:34</td>
+                <td class="ig-label">是否为会员</td>
+                <td class="ig-value">否</td>
+                <td class="ig-label">客户类型</td>
+                <td class="ig-value">新增</td>
+              </tr>
+              <tr>
+                <td class="ig-label">家庭组信息</td>
+                <td class="ig-value">否</td>
+                <td class="ig-label">来源</td>
+                <td class="ig-value">普通转移</td>
+                <td class="ig-label">最近一次看课时间</td>
+                <td class="ig-value">2026-02-05 13:48:37</td>
+                <td class="ig-label ig-empty"></td>
+                <td class="ig-value ig-empty"></td>
+              </tr>
+              <tr>
+                <td class="ig-label">线索触发场景</td>
+                <td class="ig-value ig-value-muted">—</td>
+                <td class="ig-label">知识点</td>
+                <td class="ig-value ig-value-muted">—</td>
+                <td class="ig-label ig-empty"></td>
+                <td class="ig-value ig-empty"></td>
+                <td class="ig-label ig-empty"></td>
+                <td class="ig-value ig-empty"></td>
+              </tr>
+              <tr>
+                <td class="ig-label">录入备注</td>
+                <td class="ig-value">转介绍用户</td>
+                <td class="ig-label">手机号类型</td>
+                <td class="ig-value">疑似学生手机号<button type="button" class="icon-btn" title="编辑" onclick="showToast('编辑手机号类型')">✎</button></td>
+                <td class="ig-label">学情被绑定状态</td>
+                <td class="ig-value">未绑定<button type="button" class="icon-btn" title="编辑" onclick="showToast('编辑绑定状态')">✎</button></td>
+                <td class="ig-label ig-empty"></td>
+                <td class="ig-value ig-empty"></td>
+              </tr>
+              <tr>
+                <td class="ig-label">实验组信息</td>
+                <td class="ig-value val-blue" colspan="7">有精研班</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs-container">
+        <div class="tabs">
+          <div class="tab-item" onclick="switchTab(this, 'tab-basic')">基本信息</div>
+          <div class="tab-item" onclick="switchTab(this, 'tab-order')">订单信息</div>
+          <div class="tab-item" onclick="switchTab(this, 'tab-follow')">跟进记录</div>
+          <div class="tab-item" onclick="switchTab(this, 'tab-call')">通话记录</div>
+          <div class="tab-item active highlight" onclick="switchTab(this, 'tab-bucha-xugou')">补差续购查询<span class="new-dot"></span></div>
+          <div class="tab-item" onclick="switchTab(this, 'tab-link')">专属链接</div>
+          <div class="tab-item" onclick="switchTab(this, 'tab-learn')">学习数据</div>
+          <div class="tab-item" onclick="switchTab(this, 'tab-device')">设备信息</div>
+        </div>
+      </div>
+
+      <!-- Tab: 补差续购查询 -->
+      <div class="tab-content" id="tab-bucha-xugou">
+        <!-- Filters -->
+        <div class="filter-bar">
+          <span class="filter-label">学段：</span>
+          <select class="el-select" style="min-width:110px;" id="filterGrade">
+            <option value="">全部</option>
+            <option value="小学">小学</option>
+            <option value="初中">初中</option>
+            <option value="高中">高中</option>
+          </select>
+          <span class="filter-label" style="margin-left:12px;">续购策略：</span>
+          <select class="el-select" style="min-width:110px;" id="filterStrategy">
+            <option value="">全部</option>
+            <option value="策略1">策略1</option>
+            <option value="策略2">策略2</option>
+          </select>
+          <button class="el-btn el-btn-primary" onclick="showToast('查询完成')">查询</button>
+          <button class="el-btn" onclick="document.getElementById('filterGrade').selectedIndex=0;document.getElementById('filterStrategy').selectedIndex=0;">重置</button>
+        </div>
+
+        <!-- Merged Table -->
+        <table class="merged-table">
+          <thead>
+            <tr>
+              <th style="width:200px;">商品名称</th>
+              <th style="width:80px;">类型</th>
+              <th style="width:100px;">商品售价</th>
+              <th style="width:100px;">优惠金额</th>
+              <th style="width:100px;">代金券</th>
+              <th style="width:100px;">实付金额</th>
+              <th style="width:120px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 商品1: 有补差+续购 -->
+            <tr>
+              <td class="product-name-cell" rowspan="2">初中数学全科VIP年卡</td>
+              <td><span class="el-tag el-tag-warning">补差</span></td>
+              <td>3980</td>
+              <td><span class="discount-link" onclick="openDeductDialog('初中数学全科VIP年卡', 500)">500</span></td>
+              <td>200</td>
+              <td style="color:#303133;font-weight:500;">3280</td>
+              <td><span class="cell-dash">—</span></td>
+            </tr>
+            <tr>
+              <td><span class="el-tag el-tag-primary">续购</span></td>
+              <td>4980</td>
+              <td>800</td>
+              <td>300</td>
+              <td style="color:#303133;font-weight:500;">3880</td>
+              <td>
+                <button class="el-btn-text" onclick="openDialog('初中数学全科VIP年卡', 4980, 3880)">动态二维码</button>
+              </td>
+            </tr>
+
+            <!-- 商品2: 有补差+续购 -->
+            <tr style="border-top:2px solid #dcdfe6;">
+              <td class="product-name-cell" rowspan="2" style="border-top:2px solid #dcdfe6;">学习机加购Q20</td>
+              <td style="border-top:2px solid #dcdfe6;"><span class="el-tag el-tag-warning">补差</span></td>
+              <td style="border-top:2px solid #dcdfe6;">5999</td>
+              <td style="border-top:2px solid #dcdfe6;"><span class="discount-link" onclick="openDeductDialog('学习机加购Q20', 1000)">1000</span></td>
+              <td style="border-top:2px solid #dcdfe6;">0</td>
+              <td style="border-top:2px solid #dcdfe6;color:#303133;font-weight:500;">4999</td>
+              <td style="border-top:2px solid #dcdfe6;"><span class="cell-dash">—</span></td>
+            </tr>
+            <tr>
+              <td><span class="el-tag el-tag-primary">续购</span></td>
+              <td>6999</td>
+              <td>1500</td>
+              <td>500</td>
+              <td style="color:#303133;font-weight:500;">4999</td>
+              <td>
+                <button class="el-btn-text" onclick="openDialog('学习机加购Q20', 6999, 4999)">动态二维码</button>
+              </td>
+            </tr>
+
+            <!-- 商品3: 有补差+续购 -->
+            <tr>
+              <td class="product-name-cell" rowspan="2" style="border-top:2px solid #dcdfe6;">高中全科VIP年卡</td>
+              <td style="border-top:2px solid #dcdfe6;"><span class="el-tag el-tag-warning">补差</span></td>
+              <td style="border-top:2px solid #dcdfe6;">4580</td>
+              <td style="border-top:2px solid #dcdfe6;"><span class="discount-link" onclick="openDeductDialog('高中全科VIP年卡', 600)">600</span></td>
+              <td style="border-top:2px solid #dcdfe6;">0</td>
+              <td style="border-top:2px solid #dcdfe6;color:#303133;font-weight:500;">3980</td>
+              <td style="border-top:2px solid #dcdfe6;"><span class="cell-dash">—</span></td>
+            </tr>
+            <tr>
+              <td><span class="el-tag el-tag-primary">续购</span></td>
+              <td>5580</td>
+              <td>1000</td>
+              <td>200</td>
+              <td style="color:#303133;font-weight:500;">4380</td>
+              <td>
+                <button class="el-btn-text" onclick="openDialog('高中全科VIP年卡', 5580, 4380)">动态二维码</button>
+              </td>
+            </tr>
+
+            <!-- 商品4: 仅续购 -->
+            <tr>
+              <td class="product-name-cell" style="border-top:2px solid #dcdfe6;">小学数学思维训练年卡</td>
+              <td style="border-top:2px solid #dcdfe6;"><span class="el-tag el-tag-primary">续购</span></td>
+              <td style="border-top:2px solid #dcdfe6;">2980</td>
+              <td style="border-top:2px solid #dcdfe6;">400</td>
+              <td style="border-top:2px solid #dcdfe6;">100</td>
+              <td style="border-top:2px solid #dcdfe6;color:#303133;font-weight:500;">2480</td>
+              <td style="border-top:2px solid #dcdfe6;">
+                <button class="el-btn-text" onclick="openDialog('小学数学思维训练年卡', 2980, 2480)">动态二维码</button>
+              </td>
+            </tr>
+
+            <!-- 商品5: 仅补差 -->
+            <tr>
+              <td class="product-name-cell" style="border-top:2px solid #dcdfe6;">初中英语听说强化班</td>
+              <td style="border-top:2px solid #dcdfe6;"><span class="el-tag el-tag-warning">补差</span></td>
+              <td style="border-top:2px solid #dcdfe6;">1980</td>
+              <td style="border-top:2px solid #dcdfe6;"><span class="discount-link" onclick="openDeductDialog('初中英语听说强化班', 300)">300</span></td>
+              <td style="border-top:2px solid #dcdfe6;">0</td>
+              <td style="border-top:2px solid #dcdfe6;color:#303133;font-weight:500;">1680</td>
+              <td style="border-top:2px solid #dcdfe6;"><span class="cell-dash">—</span></td>
+            </tr>
+
+            <!-- 商品6: 有补差+续购 -->
+            <tr>
+              <td class="product-name-cell" rowspan="2" style="border-top:2px solid #dcdfe6;">初中物理实验班年卡</td>
+              <td style="border-top:2px solid #dcdfe6;"><span class="el-tag el-tag-warning">补差</span></td>
+              <td style="border-top:2px solid #dcdfe6;">3280</td>
+              <td style="border-top:2px solid #dcdfe6;"><span class="discount-link" onclick="openDeductDialog('初中物理实验班年卡', 400)">400</span></td>
+              <td style="border-top:2px solid #dcdfe6;">100</td>
+              <td style="border-top:2px solid #dcdfe6;color:#303133;font-weight:500;">2780</td>
+              <td style="border-top:2px solid #dcdfe6;"><span class="cell-dash">—</span></td>
+            </tr>
+            <tr>
+              <td><span class="el-tag el-tag-primary">续购</span></td>
+              <td>4280</td>
+              <td>600</td>
+              <td>200</td>
+              <td style="color:#303133;font-weight:500;">3480</td>
+              <td>
+                <button class="el-btn-text" onclick="openDialog('初中物理实验班年卡', 4280, 3480)">动态二维码</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination">
+          <span>共 6 条</span>
+          <button class="pg-btn disabled">‹</button>
+          <button class="pg-btn active">1</button>
+          <button class="pg-btn disabled">›</button>
+        </div>
+      </div>
+
+      <!-- Hidden tab panels -->
+      <div class="tab-content" id="tab-basic" style="display:none;">
+        <div style="text-align:center;padding:60px 0;color:#909399;">基本信息内容区域</div>
+      </div>
+      <div class="tab-content" id="tab-order" style="display:none;">
+        <div style="text-align:center;padding:60px 0;color:#909399;">订单信息内容区域</div>
+      </div>
+      <div class="tab-content" id="tab-follow" style="display:none;">
+        <div style="text-align:center;padding:60px 0;color:#909399;">跟进记录内容区域</div>
+      </div>
+      <div class="tab-content" id="tab-call" style="display:none;">
+        <div style="text-align:center;padding:60px 0;color:#909399;">通话记录内容区域</div>
+      </div>
+      <div class="tab-content" id="tab-link" style="display:none;">
+        <div style="text-align:center;padding:60px 0;color:#909399;">专属链接内容区域</div>
+      </div>
+      <div class="tab-content" id="tab-learn" style="display:none;">
+        <div style="text-align:center;padding:60px 0;color:#909399;">学习数据内容区域</div>
+      </div>
+      <div class="tab-content" id="tab-device" style="display:none;">
+        <div style="text-align:center;padding:60px 0;color:#909399;">设备信息内容区域</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog: 支付推送 -->
+<div class="dialog-overlay" id="payPushDialog">
+  <div class="dialog dialog-pay-push">
+    <div class="dialog-header">
+      <h3>支付推送-<span id="payPushTitlePhone">15387077841</span></h3>
+      <button type="button" class="dialog-close" onclick="closePayPushDialog()">✕</button>
+    </div>
+    <div class="dialog-body">
+      <div class="pay-push-tip">
+        每日最多推送 3 次；推送后用户将在 App 内收到支付提醒，当日 24:00 前有效，过期需重新推送。
+      </div>
+      <div class="d-form-item d-form-item--top">
+        <div class="d-form-label d-form-label--w110"><span class="req">*</span>洋葱ID：</div>
+        <div class="d-form-value">
+          <input type="text" class="d-input-readonly" id="payPushOnionId" value="100778609" readonly disabled aria-readonly="true">
+        </div>
+      </div>
+      <div class="d-form-item d-form-item--top">
+        <div class="d-form-label d-form-label--w110"><span class="req">*</span>购买类型：</div>
+        <div class="d-form-value">
+          <div class="radio-group radio-group--wrap">
+            <label class="radio-label"><input type="radio" name="payPushPurchaseType" value="专属链接" onchange="refreshPayPushRenewalUI()"><span>专属链接</span></label>
+            <label class="radio-label"><input type="radio" name="payPushPurchaseType" value="会场链接（新）" onchange="refreshPayPushRenewalUI()"><span>会场链接（新）</span></label>
+            <label class="radio-label"><input type="radio" name="payPushPurchaseType" value="补差价（新）" onchange="refreshPayPushRenewalUI()"><span>补差价（新）</span></label>
+            <label class="radio-label"><input type="radio" name="payPushPurchaseType" value="续购" checked onchange="refreshPayPushRenewalUI()"><span>续购</span></label>
+          </div>
+        </div>
+      </div>
+      <div id="payPushRenewalBlock">
+        <div class="d-form-item d-form-item--top">
+          <div class="d-form-label d-form-label--w110"><span class="req">*</span>续购类型：</div>
+          <div class="d-form-value">
+            <div class="radio-group radio-group--wrap">
+              <label class="radio-label"><input type="radio" name="payPushRenewalType" value="多孩" checked><span>多孩</span></label>
+              <label class="radio-label"><input type="radio" name="payPushRenewalType" value="历史大会员"><span>历史大会员</span></label>
+              <label class="radio-label"><input type="radio" name="payPushRenewalType" value="高中囤课"><span>高中囤课</span></label>
+              <label class="radio-label"><input type="radio" name="payPushRenewalType" value="学习机加购"><span>学习机加购</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="d-form-item">
+        <div class="d-form-label d-form-label--w110"><span class="req">*</span>课程名称：</div>
+        <div class="d-form-value">
+          <select class="d-select-pay" id="payPushCourseSelect" onchange="refreshPayPushAddonVisibility()">
+            <option value="">请选择</option>
+            <option value="chusheng">「初升高」高中规划提分课</option>
+            <option value="math">初中数学全科VIP年卡</option>
+            <option value="gaozhong">高中全科VIP年卡</option>
+          </select>
+        </div>
+      </div>
+      <div class="d-form-item d-form-item--top" id="payPushAddonBlock" style="display:none;">
+        <div class="d-form-label d-form-label--w110"><span class="req">*</span>加购学习机：</div>
+        <div class="d-form-value">
+          <div class="radio-group radio-group--wrap">
+            <label class="radio-label"><input type="radio" name="payPushAddonMachine" value="不加购" checked><span>不加购</span></label>
+            <label class="radio-label"><input type="radio" name="payPushAddonMachine" value="加购Q20学习机"><span>加购Q20学习机</span></label>
+            <label class="radio-label"><input type="radio" name="payPushAddonMachine" value="加购P30学习机"><span>加购P30学习机</span></label>
+          </div>
+        </div>
+      </div>
+      <div class="d-form-item" id="payPushPriceOriginalRow">
+        <div class="d-form-label d-form-label--w110">商品原价：</div>
+        <div class="d-form-value"><input type="text" class="d-input-readonly" id="payPushPriceOriginalInput" value="6298" readonly tabindex="-1"></div>
+      </div>
+      <div class="d-form-item" id="payPushPriceSellRow">
+        <div class="d-form-label d-form-label--w110"><span class="req">*</span>商品售价：</div>
+        <div class="d-form-value"><input type="text" class="d-input-readonly" id="payPushPriceSellInput" value="3298" readonly tabindex="-1"></div>
+      </div>
+      <div class="d-form-item d-form-item--top">
+        <div class="d-form-label d-form-label--w110"><span class="req">*</span>分期支付：</div>
+        <div class="d-form-value">
+          <div class="radio-group radio-group--wrap">
+            <label class="radio-label"><input type="radio" name="payPushInstallment" value="否" checked><span>否</span></label>
+            <label class="radio-label"><input type="radio" name="payPushInstallment" value="是"><span>是</span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button type="button" class="el-btn" onclick="closePayPushDialog()">取消</button>
+      <button type="button" class="el-btn el-btn-primary" onclick="confirmPayPush()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog: 生成动态二维码 -->
+<div class="dialog-overlay" id="qrDialog">
+  <div class="dialog">
+    <div class="dialog-header">
+      <h3>生成动态二维码</h3>
+      <button class="dialog-close" onclick="closeDialog()">✕</button>
+    </div>
+    <div class="dialog-body">
+      <div class="d-form-item">
+        <div class="d-form-label">商品名称：</div>
+        <div class="d-form-value" id="dialogProductName">学习机加购Q20</div>
+      </div>
+      <div class="d-form-item d-form-item--top">
+        <div class="d-form-label"><span class="req">*</span>加购学习机：</div>
+        <div class="d-form-value">
+          <div class="radio-group radio-group--wrap">
+            <label class="radio-label"><input type="radio" name="qrAddonMachine" value="不加购" checked><span>不加购</span></label>
+            <label class="radio-label"><input type="radio" name="qrAddonMachine" value="加购Q20学习机"><span>加购Q20学习机</span></label>
+            <label class="radio-label"><input type="radio" name="qrAddonMachine" value="加购P30学习机"><span>加购P30学习机</span></label>
+          </div>
+        </div>
+      </div>
+      <div class="d-form-item">
+        <div class="d-form-label">商品售价：</div>
+        <div class="d-form-value"><input type="text" class="d-input-readonly" id="qrPriceSellInput" value="6999" readonly tabindex="-1"></div>
+      </div>
+      <div class="d-form-item">
+        <div class="d-form-label">商品实付价：</div>
+        <div class="d-form-value"><input type="text" class="d-input-readonly" id="qrPricePayInput" value="4999" readonly tabindex="-1"></div>
+      </div>
+      <div class="d-form-item">
+        <div class="d-form-label"><span class="req">*</span>分期支付：</div>
+        <div class="d-form-value">
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="installment" value="否" checked>
+              <span>否</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="installment" value="是">
+              <span>是</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button class="el-btn el-btn-primary" onclick="generateQR()">生成二维码</button>
+      <button class="el-btn" onclick="closeDialog()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog: 补差抵扣详情 -->
+<div class="dialog-overlay" id="deductDialog">
+  <div class="dialog dialog-wide">
+    <div class="dialog-header">
+      <h3>补差抵扣详情</h3>
+      <button class="dialog-close" onclick="closeDeductDialog()">✕</button>
+    </div>
+    <div class="dialog-body">
+      <div class="detail-tip" id="deductTip">最高抵扣金额：7天外订单抵扣优惠之和不超过¥1000</div>
+      <table class="detail-table">
+        <thead>
+          <tr>
+            <th>订单ID</th>
+            <th>订单名称</th>
+            <th>支付时间</th>
+            <th>抵扣金额</th>
+            <th>抵扣类型</th>
+            <th>策略名称</th>
+            <th>营销卖点</th>
+            <th>备注</th>
+          </tr>
+        </thead>
+        <tbody id="deductTableBody">
+          <tr>
+            <td style="font-size:12px;color:#909399;word-break:break-all;max-width:160px;">682ad635bbb17d608761a109</td>
+            <td>同步优学课包（1年）</td>
+            <td style="white-space:nowrap;">2025-05-19 14:57:00</td>
+            <td style="color:#303133;font-weight:500;">¥115.21</td>
+            <td>常规抵扣</td>
+            <td>-</td>
+            <td>-</td>
+            <td class="remark-text">该订单为7天外订单，补差直降优惠+7天外订单抵扣优惠之和为115.21</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="dialog-footer">
+      <button class="el-btn" onclick="closeDeductDialog()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">✅ <span id="toastMsg">操作成功</span></div>
+
+<script>
+var PAY_PUSH_PHONE = '15387077841';
+
+function switchTab(el, tabId) {
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+  document.getElementById(tabId).style.display = 'block';
+}
+
+function openPayPushDialog() {
+  document.getElementById('payPushTitlePhone').textContent = PAY_PUSH_PHONE;
+  var r = document.querySelector('input[name="payPushPurchaseType"][value="续购"]');
+  if (r) r.checked = true;
+  var m = document.querySelector('input[name="payPushRenewalType"][value="多孩"]');
+  if (m) m.checked = true;
+  var noneAddon = document.querySelector('input[name="payPushAddonMachine"][value="不加购"]');
+  if (noneAddon) noneAddon.checked = true;
+  var cs = document.getElementById('payPushCourseSelect');
+  if (cs) cs.value = '';
+  var ins = document.querySelector('input[name="payPushInstallment"][value="否"]');
+  if (ins) ins.checked = true;
+  refreshPayPushRenewalUI();
+  document.getElementById('payPushDialog').classList.add('show');
+}
+
+function closePayPushDialog() {
+  document.getElementById('payPushDialog').classList.remove('show');
+}
+
+function refreshPayPushRenewalUI() {
+  var pt = document.querySelector('input[name="payPushPurchaseType"]:checked');
+  var block = document.getElementById('payPushRenewalBlock');
+  var isRenewal = pt && pt.value === '续购';
+  if (block) block.style.display = isRenewal ? '' : 'none';
+  if (!isRenewal) {
+    var noneAddon = document.querySelector('input[name="payPushAddonMachine"][value="不加购"]');
+    if (noneAddon) noneAddon.checked = true;
+  }
+  refreshPayPushAddonVisibility();
+}
+
+function refreshPayPushAddonVisibility() {
+  var pt = document.querySelector('input[name="payPushPurchaseType"]:checked');
+  var course = document.getElementById('payPushCourseSelect');
+  var addonBlock = document.getElementById('payPushAddonBlock');
+  var origRow = document.getElementById('payPushPriceOriginalRow');
+  var sellRow = document.getElementById('payPushPriceSellRow');
+  if (!course) return;
+  var isRenewal = pt && pt.value === '续购';
+  var hasCourse = course.value !== '';
+  var showRenewalExtras = isRenewal && hasCourse;
+  var showPriceRows = !isRenewal || hasCourse;
+  if (addonBlock) addonBlock.style.display = showRenewalExtras ? '' : 'none';
+  if (origRow) origRow.style.display = showPriceRows ? '' : 'none';
+  if (sellRow) sellRow.style.display = showPriceRows ? '' : 'none';
+  if (!showRenewalExtras) {
+    var n = document.querySelector('input[name="payPushAddonMachine"][value="不加购"]');
+    if (n) n.checked = true;
+  }
+}
+
+function confirmPayPush() {
+  closePayPushDialog();
+  showToast('支付推送已提交');
+}
+
+document.getElementById('payPushDialog').addEventListener('click', function(e) {
+  if (e.target === this) closePayPushDialog();
+});
+
+function openDialog(productName, sellPrice, payPrice) {
+  document.getElementById('dialogProductName').textContent = productName;
+  document.querySelectorAll('input[name="installment"]')[0].checked = true;
+  var qrNone = document.querySelector('input[name="qrAddonMachine"][value="不加购"]');
+  if (qrNone) qrNone.checked = true;
+  var sellEl = document.getElementById('qrPriceSellInput');
+  var payEl = document.getElementById('qrPricePayInput');
+  if (sellEl && sellPrice !== undefined && sellPrice !== null) sellEl.value = sellPrice;
+  if (payEl && payPrice !== undefined && payPrice !== null) payEl.value = payPrice;
+  document.getElementById('qrDialog').classList.add('show');
+}
+
+function closeDialog() {
+  document.getElementById('qrDialog').classList.remove('show');
+}
+
+function generateQR() {
+  closeDialog();
+  showToast('二维码生成成功');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+document.getElementById('qrDialog').addEventListener('click', function(e) {
+  if (e.target === this) closeDialog();
+});
+
+function openDeductDialog(productName, amount) {
+  document.getElementById('deductDialog').classList.add('show');
+}
+
+function closeDeductDialog() {
+  document.getElementById('deductDialog').classList.remove('show');
+}
+
+document.getElementById('deductDialog').addEventListener('click', function(e) {
+  if (e.target === this) closeDeductDialog();
+});
+</script>
+
+</body>
+</html>
