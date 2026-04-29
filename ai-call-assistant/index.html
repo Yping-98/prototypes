@@ -167,11 +167,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
 /* 用户手动新增标签 - 统一中性灰，与 AI 自动标签区分 */
 .profile-tag.tag-custom   { background: #f5f5f5; color: #595959; border-color: #d9d9d9; border-style: dashed; }
 
-/* 标签色卡（标签区开头展示，用于 demo / 设计提示，原型用） */
-.tag-legend { display: flex; flex-wrap: wrap; gap: 10px; padding: 8px 12px; margin-bottom: 8px; background: #fafbfc; border: 1px dashed #e4e7ed; border-radius: 4px; font-size: 11px; color: #909399; }
-.tag-legend-item { display: inline-flex; align-items: center; gap: 4px; }
-.tag-legend-item .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; border: 1px solid rgba(0,0,0,0.06); }
-
 /* === 购买意愿等级（删进度条改为色块 chip） === */
 .intent-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; border: 1px solid; }
 .intent-chip::before { content: '●'; font-size: 10px; }
@@ -198,11 +193,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
 .role-modal-mask.show { display: flex; align-items: center; justify-content: center; }
 .role-modal { width: 360px; background: #fff; border-radius: 8px; padding: 18px 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.16); }
 .role-modal-title { font-size: 14px; font-weight: 600; color: #303133; margin-bottom: 6px; }
-.role-modal-desc { font-size: 12px; color: #909399; line-height: 1.7; margin-bottom: 14px; }
-.role-modal .role-options { display: flex; gap: 10px; margin-bottom: 16px; }
-.role-modal .role-option { flex: 1; padding: 10px 8px; text-align: center; border: 1px solid #dcdfe6; border-radius: 6px; cursor: pointer; font-size: 12px; color: #606266; }
-.role-modal .role-option.active { border-color: #409eff; background: #ecf5ff; color: #409eff; font-weight: 600; }
-.role-modal .role-option .speaker-id { font-size: 11px; color: #c0c4cc; margin-top: 2px; }
+.role-modal-desc { font-size: 13px; color: #606266; line-height: 1.8; margin-bottom: 18px; padding: 10px 12px; background: #fafbfc; border-left: 3px solid #409eff; border-radius: 3px; }
 .role-modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
 .profile-tag .auto-mark { font-size: 10px; opacity: 0.7; }
 .profile-tag .remove { margin-left: 2px; cursor: pointer; opacity: 0.5; }
@@ -680,15 +671,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
             <button class="section-cancel-btn" onclick="exitEdit('tagsSection', false)">✕ 取消</button>
           </span>
         </div>
-        <!-- 标签色卡（5+1 类） -->
-        <div class="tag-legend">
-          <span class="tag-legend-item"><span class="swatch" style="background:#e6f4ff;border-color:#bae0ff;"></span>身份</span>
-          <span class="tag-legend-item"><span class="swatch" style="background:#e6fffb;border-color:#87e8de;"></span>学情</span>
-          <span class="tag-legend-item"><span class="swatch" style="background:#f6ffed;border-color:#b7eb8f;"></span>意向</span>
-          <span class="tag-legend-item"><span class="swatch" style="background:#fff2e8;border-color:#ffbb96;"></span>阻碍</span>
-          <span class="tag-legend-item"><span class="swatch" style="background:#f9f0ff;border-color:#d3adf7;"></span>节点</span>
-          <span class="tag-legend-item"><span class="swatch" style="background:#f5f5f5;border-color:#d9d9d9;border-style:dashed;"></span>手动新增</span>
-        </div>
         <div style="padding:12px 14px;background:#fafbfc;border-radius:4px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
           <span class="profile-tag tag-identity">妈妈<span class="tag-remove" onclick="removeTag(this)">×</span></span>
           <span class="profile-tag tag-academic">初二<span class="tag-remove" onclick="removeTag(this)">×</span></span>
@@ -939,28 +921,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
 <!-- Toast -->
 <div class="toast" id="toast"><span>✓</span><span id="toastText">操作成功</span></div>
 
-<!-- 角色更换二级弹层 -->
+<!-- 角色互换二级弹层 -->
 <div class="role-modal-mask" id="roleModalMask">
   <div class="role-modal">
-    <div class="role-modal-title">🔁 手动更换角色</div>
+    <div class="role-modal-title">🔁 互换坐席与客户</div>
     <div class="role-modal-desc">
-      若 AI 自动识别的「坐席 / 客户」角色错误，请手动指定本通中哪一方是坐席。<br>
-      指定后将<strong>重新触发 Coze 工作流</strong>，相关 AI 分析结果会全部更新。
-    </div>
-    <div style="font-size:12px;color:#606266;margin-bottom:6px;">本通通话识别到 2 个说话人，请选择哪个是坐席：</div>
-    <div class="role-options">
-      <div class="role-option active" onclick="selectAgentSpeaker(this, '0')">
-        <div>说话人 A</div>
-        <div class="speaker-id">speaker_id = 0</div>
-      </div>
-      <div class="role-option" onclick="selectAgentSpeaker(this, '1')">
-        <div>说话人 B</div>
-        <div class="speaker-id">speaker_id = 1</div>
-      </div>
+      点击确认后，系统会将本通话当前识别为<strong style="color:#1677ff;">「坐席」</strong>的一方与当前识别为<strong style="color:#fa8c16;">「客户」</strong>的一方<strong>身份互换</strong>，并重新触发 Coze 工作流；转译、通话总结、话术推荐三处会一并更新。
     </div>
     <div class="role-modal-actions">
       <button class="el-btn el-btn-sm" onclick="closeRoleSwitchModal()">取消</button>
-      <button class="el-btn el-btn-sm el-btn-primary" onclick="confirmRoleSwitch()">确认并重新分析</button>
+      <button class="el-btn el-btn-sm el-btn-primary" onclick="confirmRoleSwitch()">确认互换并重新分析</button>
     </div>
   </div>
 </div>
@@ -1142,31 +1112,38 @@ function copyTranscriptByDisplay() {
   }
 }
 
-/* ===== 手动更换角色：弹层 + 重新触发 Coze 流程 ===== */
-var _selectedAgentSpeaker = '0';
+/* ===== 手动互换角色：弹层 + 重新触发 Coze 流程 ===== */
 function openRoleSwitchModal() {
   document.getElementById('roleModalMask').classList.add('show');
 }
 function closeRoleSwitchModal() {
   document.getElementById('roleModalMask').classList.remove('show');
 }
-function selectAgentSpeaker(el, speakerId) {
-  _selectedAgentSpeaker = speakerId;
-  el.parentNode.querySelectorAll('.role-option').forEach(function(o){ o.classList.remove('active'); });
-  el.classList.add('active');
-}
 function confirmRoleSwitch() {
   closeRoleSwitchModal();
-  // 局部 loading 占位：转译 / 通话总结 / 话术推荐 三个 tab 全部进入 loading
-  showSectionLoading('ttContent',     '正在按新角色重新生成转译…');
+  // 立即把当前已展示的转译角色互换（坐席 ↔ 客户），让用户直观看到效果
+  swapTranscriptRolesInline();
+  // 局部 loading 占位：通话总结 / 话术推荐 两个 tab 进入 loading（转译已就地互换，可不进入 loading）
   showSectionLoading('smFullBlock',   '正在重新生成通话总结…');
   showSectionLoading('scFullBlock',   '正在重新生成话术推荐…');
-  showToast('已重新触发 AI 分析（坐席 = speaker_' + _selectedAgentSpeaker + '）');
+  showToast('已互换坐席与客户，正在重新分析…');
   // 模拟 Coze 工作流耗时，2.4s 后局部刷新
   setTimeout(function(){
     restoreSectionLoading();
     showToast('AI 分析已更新');
   }, 2400);
+}
+function swapTranscriptRolesInline() {
+  var box = document.getElementById('ttContent');
+  if (!box) return;
+  box.querySelectorAll('.transcript-line').forEach(function(line){
+    var role = line.querySelector('.transcript-role');
+    if (!role) return;
+    var isSales = role.classList.contains('sales');
+    role.classList.toggle('sales',    !isSales);
+    role.classList.toggle('customer',  isSales);
+    role.textContent = isSales ? '客户' : '坐席';
+  });
 }
 var _loadingSnapshots = {};
 function showSectionLoading(id, text) {
