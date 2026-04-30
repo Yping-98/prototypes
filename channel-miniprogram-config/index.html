@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>渠道获客小程序链接配置 - 原型</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; background: #f4f6fa; color: #1f2937; }
+  .app { display: flex; min-height: 100vh; }
+  .sidebar { width: 200px; background: #1f2533; color: #cbd2dd; padding: 16px 0; flex-shrink: 0; font-size: 13px; }
+  .sidebar .logo { padding: 0 18px 16px; font-size: 16px; color: #fff; border-bottom: 1px solid #2a3142; }
+  .sidebar ul { list-style: none; margin-top: 12px; }
+  .sidebar li { padding: 8px 18px; cursor: pointer; }
+  .sidebar li.active { background: #2563eb; color: #fff; }
+  .sidebar li:hover:not(.active) { background: #2a3142; }
+  .main { flex: 1; padding: 16px 24px; overflow: auto; }
+  .tabs { display: flex; gap: 24px; border-bottom: 1px solid #e5e7eb; margin-bottom: 16px; }
+  .tab { padding: 10px 4px; cursor: pointer; font-size: 14px; color: #6b7280; }
+  .tab.active { color: #2563eb; border-bottom: 2px solid #2563eb; font-weight: 500; }
+  .sub-tabs { display: flex; gap: 16px; margin-bottom: 16px; font-size: 13px; }
+  .sub-tab { padding: 6px 12px; cursor: pointer; border-radius: 4px; background: #fff; border: 1px solid #e5e7eb; }
+  .sub-tab.active { background: #eff6ff; color: #2563eb; border-color: #93c5fd; }
+  .filter-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 14px; background: #fff; border-radius: 6px; margin-bottom: 12px; }
+  .filter-bar label { font-size: 13px; color: #4b5563; }
+  .filter-bar input, .filter-bar select { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; min-width: 160px; background: #fff; }
+  .btn { padding: 6px 14px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-default { background: #fff; color: #374151; border: 1px solid #d1d5db; }
+  .btn-link { background: transparent; color: #2563eb; padding: 0 6px; }
+  .panel { background: #fff; border-radius: 6px; padding: 16px; }
+  .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #f3f4f6; }
+  th { background: #f9fafb; color: #6b7280; font-weight: 500; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
+  .badge-green { background: #dcfce7; color: #16a34a; }
+  .badge-gray { background: #f3f4f6; color: #6b7280; }
+  .badge-blue { background: #dbeafe; color: #2563eb; }
+  .badge-purple { background: #ede9fe; color: #7c3aed; }
+
+  .modal-mask { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none; align-items: center; justify-content: center; z-index: 100; }
+  .modal-mask.show { display: flex; }
+  .modal { background: #fff; width: 700px; max-height: 86vh; overflow: auto; border-radius: 8px; }
+  .modal-header { padding: 14px 20px; border-bottom: 1px solid #f3f4f6; font-size: 15px; font-weight: 500; display: flex; justify-content: space-between; }
+  .modal-body { padding: 16px 20px; }
+  .form-row { display: flex; align-items: flex-start; padding: 8px 0; gap: 12px; }
+  .form-label { width: 130px; font-size: 13px; color: #374151; padding-top: 6px; flex-shrink: 0; text-align: right; }
+  .form-label.required::before { content: "*"; color: #ef4444; margin-right: 2px; }
+  .form-control { flex: 1; }
+  .form-control input[type=text], .form-control select, .form-control textarea {
+    width: 100%; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px;
+  }
+  .radio-group label { margin-right: 16px; font-size: 13px; cursor: pointer; }
+  .modal-footer { padding: 12px 20px; border-top: 1px solid #f3f4f6; text-align: right; }
+  .modal-footer .btn { margin-left: 8px; }
+  .help-text { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+  .highlight-new { background: #fff7ed; }
+
+  /* Mobile preview area */
+  .preview-mask { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none; align-items: center; justify-content: center; z-index: 200; }
+  .preview-mask.show { display: flex; }
+  .phone { width: 360px; height: 720px; background: #fff; border-radius: 30px; border: 10px solid #1f2937; overflow: hidden; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+  .phone-screen { width: 100%; height: 100%; overflow: auto; background: linear-gradient(180deg, #d6e9ff 0%, #fff 50%); padding: 40px 22px 22px; }
+  .phone-close { position: absolute; top: -36px; right: 0; background: #fff; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
+  .phone-nav { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .phone-nav button { font-size: 11px; padding: 4px 8px; border-radius: 12px; border: 1px solid #93c5fd; background: #fff; color: #2563eb; cursor: pointer; }
+  .phone-nav button.active { background: #2563eb; color: #fff; }
+
+  /* Login page */
+  .login-logo { display: flex; align-items: center; gap: 8px; justify-content: center; margin: 12px 0 24px; }
+  .login-logo .icon { width: 36px; height: 36px; background: #4cb1ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; }
+  .login-logo .name { font-size: 22px; font-weight: bold; color: #1f2937; }
+  .login-card { background: #fff; border-radius: 14px; padding: 18px 16px; box-shadow: 0 4px 12px rgba(0,0,0,.04); }
+  .login-card h3 { font-size: 15px; margin-bottom: 14px; }
+  .field { background: #f3f4f6; border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; font-size: 13px; color: #9ca3af; display: flex; justify-content: space-between; align-items: center; }
+  .field input { background: transparent; border: none; outline: none; flex: 1; font-size: 13px; }
+  .field .code-btn { color: #6b7280; cursor: pointer; font-size: 12px; }
+  .login-tip { font-size: 11px; color: #9ca3af; margin: 6px 0 14px; }
+  .submit-btn { width: 100%; background: #cbd5e1; color: #fff; border: none; border-radius: 24px; padding: 12px; font-size: 14px; cursor: pointer; }
+  .submit-btn.active { background: #2563eb; }
+  .agreement { font-size: 11px; color: #6b7280; margin-top: 12px; display: flex; gap: 4px; }
+
+  /* Transition page */
+  .trans-wrap { text-align: center; padding-top: 30px; }
+  .trans-title { font-size: 16px; margin-bottom: 22px; color: #374151; }
+  .trans-icons { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px; }
+  .trans-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 12px; }
+  .trans-icon.app { background: #4cb1ff; }
+  .trans-icon.wx { background: #07c160; }
+  .trans-dots { color: #9ca3af; }
+  .trans-btn { background: #2563eb; color: #fff; border: none; border-radius: 24px; padding: 12px 40px; font-size: 14px; cursor: pointer; margin: 16px 0; }
+  .trans-banner { background: #fff; border-radius: 30px; padding: 8px 14px; margin-top: 60px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.06); }
+
+  /* Landing page */
+  .landing-bg { background: linear-gradient(180deg, #d6e9ff 0%, #aed6ff 100%); min-height: 100%; padding: 12px; }
+  .landing-title { font-size: 22px; font-weight: bold; color: #1f2937; line-height: 1.2; }
+  .landing-sub { font-size: 13px; color: #1e40af; margin: 8px 0 14px; }
+  .landing-card { background: #fff; border-radius: 14px; padding: 14px; }
+  .tag-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .tag { background: #fff; border: 1px solid #2563eb; color: #2563eb; padding: 4px 10px; border-radius: 14px; font-size: 11px; }
+  .qr-area { background: #f9fafb; border-radius: 10px; height: 200px; display: flex; align-items: center; justify-content: center; padding: 12px; text-align: center; font-size: 13px; color: #4b5563; }
+  .qr-img { width: 140px; height: 140px; background: repeating-conic-gradient(#1f2937 0% 25%, #fff 0% 50%) 50% / 14px 14px; border-radius: 8px; }
+  .qr-error { color: #dc2626; font-weight: 500; line-height: 1.7; padding: 0 10px; }
+  .landing-bottom { background: #2563eb; color: #fff; text-align: center; padding: 14px; border-radius: 24px; margin-top: 14px; font-size: 14px; font-weight: 500; }
+
+  .scenario-bar { padding: 10px; background: #fff; border-bottom: 1px solid #e5e7eb; font-size: 12px; }
+  .scenario-bar select { padding: 4px 8px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo">体验营 CRM</div>
+    <ul>
+      <li>抖音业务客户</li>
+      <li>抖音小店</li>
+      <li>运营工具</li>
+      <li>订单管理</li>
+      <li>数据统计</li>
+      <li class="active">配置 / 渠道获客二维码/链接</li>
+      <li>线索投放计划</li>
+      <li>H5投放页配置</li>
+    </ul>
+  </aside>
+
+  <main class="main">
+    <div class="tabs">
+      <div class="tab">客户管理</div>
+      <div class="tab active">渠道获客二维码/链接</div>
+      <div class="tab">H5投放页回复配置</div>
+      <div class="tab">编辑H5投放页配置</div>
+      <div class="tab">加微工具配置</div>
+    </div>
+
+    <div class="sub-tabs">
+      <div class="sub-tab" onclick="switchSub('xinxiliu')" id="sub-xinxiliu">信息流渠道获客配置</div>
+      <div class="sub-tab active" onclick="switchSub('feixinxi')" id="sub-feixinxi">非信息流渠道获客配置</div>
+      <div class="sub-tab" onclick="switchSub('yanxue')">研学渠道获客配置</div>
+    </div>
+
+    <div class="panel">
+      <div class="filter-bar">
+        <label>获客名称：</label>
+        <input type="text" id="filter-name" placeholder="请输入获客名称（模糊搜索）" />
+        <label>渠道：</label>
+        <select id="filter-channel">
+          <option value="">全部</option>
+          <option>douyin-xin</option>
+          <option>doudian</option>
+          <option>gzh-sixin</option>
+          <option>xiaohongshu-tianyaone</option>
+          <option>xiaohongshu</option>
+          <option>tencent-xin1</option>
+          <option>xiaohongshu-gzh</option>
+          <option>xiaohongshu-bujihan</option>
+          <option>houzhuan-0</option>
+          <option>douyin-zhuce</option>
+        </select>
+        <label>添加方式：</label>
+        <select id="filter-mode">
+          <option value="">全部</option>
+          <option>获客助手</option>
+          <option>小程序</option>
+        </select>
+        <button class="btn btn-primary" onclick="applyFilter()">查询</button>
+        <button class="btn btn-default" onclick="resetFilter()">重置</button>
+      </div>
+
+      <div class="panel-header">
+        <button class="btn btn-primary" onclick="openEdit('new')">＋ 新增获客二维码/链接</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>获客名称</th>
+            <th>渠道</th>
+            <th class="highlight-new">添加方式（新增）</th>
+            <th>创建时间</th>
+            <th>创建人</th>
+            <th>状态</th>
+            <th>编辑</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Edit modal -->
+<div class="modal-mask" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="editTitle">编辑获客配置</span>
+      <button class="btn btn-link" onclick="closeEdit()">关闭</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-label required">channel：</div>
+        <div class="form-control"><select><option>douyin-xin</option><option>doudian</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-label required">获客名称：</div>
+        <div class="form-control"><input type="text" value="hy引导加微" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">channelId：</div>
+        <div class="form-control"><input type="text" value="qingxing-xin003" /></div>
+      </div>
+      <div class="form-row highlight-new" style="border-radius:6px; padding:10px 12px;">
+        <div class="form-label required">添加方式：</div>
+        <div class="form-control">
+          <div class="radio-group">
+            <label><input type="radio" name="mode" value="获客助手" checked /> 获客助手</label>
+            <label><input type="radio" name="mode" value="小程序" /> 小程序</label>
+          </div>
+          <div class="help-text">默认"获客助手"；历史数据全部为"获客助手"。选择"小程序"后，复制的链接为小程序专属链接。</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">投放灯标签：</div>
+        <div class="form-control"><select><option>173+</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">自动备注名：</div>
+        <div class="form-control">
+          <label><input type="checkbox" checked /> 开启后，可以自定义客户备注名，方便管理客户来源</label>
+          <div class="help-text">173G+微信昵称</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">加微信欢迎语：</div>
+        <div class="form-control"><textarea rows="3">为更便利地为您提供帮助，请回复您下问题：…</textarea></div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">加微信获取手机号：</div>
+        <div class="form-control"><label><input type="checkbox" checked /> 开启后，客户在加微信的弹窗页提示输入手机号，仅基于手机号未注销账号有效</label></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeEdit()">取消</button>
+      <button class="btn btn-primary" onclick="closeEdit()">提交</button>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile preview overlay -->
+<div class="preview-mask" id="previewMask">
+  <div style="position:relative;">
+    <button class="phone-close" onclick="closePreview()">×</button>
+    <div class="scenario-bar" style="position:absolute; top:-72px; left:0; right:0; border-radius:6px; background:#fff;">
+      场景模拟：
+      <select id="scenario" onchange="renderLanding()">
+        <option value="other">用户在其他业务线服务期（不可加新顾问）</option>
+        <option value="rule">体验营服务期、无坐席归属（按渠道+年级分配）</option>
+        <option value="own">体验营服务期、已有坐席归属（展示对应销售）</option>
+      </select>
+    </div>
+    <div class="phone">
+      <div class="phone-screen" id="phoneScreen">
+        <div class="phone-nav">
+          <button class="active" onclick="showStep('login', this)">①登录页</button>
+          <button onclick="showStep('trans', this)">②中转页</button>
+          <button onclick="showStep('landing', this)">③落地页</button>
+        </div>
+        <div id="stepContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const data = [
+  { name: 'hy引导加微', channel: 'douyin-xin', mode: '获客助手', time: '2026-04-24 18:57', creator: '林琪', isAdd: '是', code: 173, status: '生效中' },
+  { name: '付费抢人-小麦', channel: 'doudian', mode: '获客助手', time: '2026-03-27 11:33', creator: '林琪', isAdd: '是', code: 173, status: '生效中' },
+  { name: '小红书公众号私信', channel: 'gzh-sixin', mode: '小程序', time: '2026-03-25 16:08', creator: '常岩', isAdd: '是', code: 173, status: '生效中' },
+  { name: '搜搜', channel: 'douyin-xin', mode: '获客助手', time: '2026-03-20 10:03', creator: '林琪', isAdd: '是', code: 173, status: '生效中' },
+  { name: '公众号', channel: 'xiaohongshu-tianyaone', mode: '小程序', time: '2026-03-17 17:05', creator: '部署', isAdd: '是', code: 173, status: '生效中' },
+  { name: '付费抢人-naoma', channel: 'doudian', mode: '获客助手', time: '2026-03-06 15:05', creator: '林琪', isAdd: '是', code: 173, status: '生效中' },
+  { name: '腾讯', channel: 'tencent-xin1', mode: '获客助手', time: '2026-03-03 17:42', creator: '林琪', isAdd: '是', code: 173, status: '生效中' },
+  { name: '小红书公众号', channel: 'xiaohongshu-gzh', mode: '小程序', time: '2026-03-03 10:37', creator: '常岩', isAdd: '是', code: 173, status: '生效中' },
+  { name: '小红书-体验课', channel: 'xiaohongshu-tianyaone', mode: '获客助手', time: '2026-03-02 19:13', creator: '部署', isAdd: '是', code: 173, status: '生效中' },
+  { name: '小红书公众号导客', channel: 'xiaohongshu', mode: '小程序', time: '2026-03-02 17:27', creator: '常岩', isAdd: '是', code: 165, status: '已下架' },
+  { name: '抖店灯素', channel: 'douyin-xin', mode: '获客助手', time: '2026-02-04 11:37', creator: '林琪', isAdd: '是', code: 162, status: '已下架' },
+  { name: '老用户激活', channel: 'houzhuan-0', mode: '获客助手', time: '2026-01-23 13:19', creator: '常岩', isAdd: '是', code: 173, status: '生效中' },
+  { name: 'yima干川-升学补给站', channel: 'doudian', mode: '小程序', time: '2026-01-22 10:45', creator: '林琪', isAdd: '是', code: 173, status: '生效中' },
+  { name: '付费抢人-小白桐桐', channel: 'doudian', mode: '获客助手', time: '2026-01-20 14:45', creator: '林琪', isAdd: '是', code: 168, status: '已下架' },
+  { name: '付费抢人-长治补给', channel: 'doudian', mode: '小程序', time: '2026-01-09 18:09', creator: '林琪', isAdd: '是', code: 173, status: '生效中' },
+  { name: '洋葱补给站', channel: 'xiaohongshu-bujihan', mode: '获客助手', time: '2026-01-06 19:02', creator: '部署', isAdd: '是', code: 173, status: '生效中' },
+  { name: '付费抢人-雷喵桐', channel: 'doudian', mode: '小程序', time: '2026-01-05 15:08', creator: '林琪', isAdd: '是', code: 173, status: '生效中' },
+];
+
+function modeBadge(m){
+  return m === '小程序'
+    ? '<span class="badge badge-purple">小程序</span>'
+    : '<span class="badge badge-blue">获客助手</span>';
+}
+function statusBadge(s){
+  return s === '生效中'
+    ? '<span class="badge badge-green">生效中</span>'
+    : '<span class="badge badge-gray">已下架</span>';
+}
+
+function renderTable(list){
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = list.map(r => `
+    <tr>
+      <td>${r.name}</td>
+      <td>${r.channel}</td>
+      <td class="highlight-new">${modeBadge(r.mode)}</td>
+      <td>${r.time}</td>
+      <td>${r.creator}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td>
+        <button class="btn btn-link" onclick="openEdit('${r.name}', '${r.mode}')">编辑</button>
+        ${r.mode === '小程序' ? `<button class="btn btn-link" onclick="openPreview()">复制链接</button>` : `<button class="btn btn-link">下载</button>`}
+        <button class="btn btn-link">下载二维码</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function applyFilter(){
+  const name = document.getElementById('filter-name').value.trim();
+  const ch = document.getElementById('filter-channel').value;
+  const mode = document.getElementById('filter-mode').value;
+  const list = data.filter(r => {
+    if (name && !r.name.includes(name)) return false;
+    if (ch && r.channel !== ch) return false;
+    if (mode && r.mode !== mode) return false;
+    return true;
+  });
+  renderTable(list);
+}
+function resetFilter(){
+  document.getElementById('filter-name').value = '';
+  document.getElementById('filter-channel').value = '';
+  document.getElementById('filter-mode').value = '';
+  renderTable(data);
+}
+function switchSub(k){
+  document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+function openEdit(name, mode){
+  document.getElementById('editTitle').innerText = name === 'new' ? '新增获客配置' : `编辑获客配置 - ${name}`;
+  if (mode) {
+    document.querySelectorAll('input[name=mode]').forEach(r => r.checked = (r.value === mode));
+  }
+  document.getElementById('editModal').classList.add('show');
+}
+function closeEdit(){ document.getElementById('editModal').classList.remove('show'); }
+
+function openPreview(){
+  document.getElementById('previewMask').classList.add('show');
+  showStep('login', document.querySelector('.phone-nav button'));
+}
+function closePreview(){ document.getElementById('previewMask').classList.remove('show'); }
+
+function showStep(step, btn){
+  document.querySelectorAll('.phone-nav button').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const c = document.getElementById('stepContent');
+  if (step === 'login') c.innerHTML = renderLogin();
+  if (step === 'trans') c.innerHTML = renderTrans();
+  if (step === 'landing') c.innerHTML = renderLanding();
+}
+
+function renderLogin(){
+  return `
+    <div class="login-logo">
+      <div class="icon">🐙</div>
+      <div class="name">洋葱学园</div>
+    </div>
+    <div class="login-card">
+      <h3>请选择年级，输入手机号为您激活课程</h3>
+      <div class="field"><span>请选择孩子所在年级</span><span>›</span></div>
+      <div class="field"><input placeholder="请输入手机号" /></div>
+      <div class="field"><input placeholder="请输入验证码" /><span class="code-btn">获取验证码</span></div>
+      <div class="login-tip">若该手机号未注册洋葱账号，我们会为您自动注册</div>
+      <button class="submit-btn active" onclick="showStep('trans', document.querySelectorAll('.phone-nav button')[1])">提交</button>
+      <div class="agreement">○ 我已阅读并同意 《用户协议》 和 《隐私政策》</div>
+    </div>
+  `;
+}
+function renderTrans(){
+  return `
+    <div class="trans-wrap">
+      <div class="trans-title">正在打开</div>
+      <div class="trans-icons">
+        <div class="trans-icon app">🐙</div>
+        <div class="trans-dots">• • •</div>
+        <div class="trans-icon wx">微信</div>
+      </div>
+      <button class="trans-btn" onclick="showStep('landing', document.querySelectorAll('.phone-nav button')[2])">打开微信</button>
+      <div style="margin-top:60px;">
+        <div style="font-weight:bold; color:#2563eb;">别走开 ~</div>
+        <div class="trans-banner">👨‍🎓 全国1.1亿+学生使用推荐</div>
+      </div>
+    </div>
+  `;
+}
+function renderLanding(){
+  const scenario = document.getElementById('scenario') ? document.getElementById('scenario').value : 'other';
+  let qrBlock = '';
+  if (scenario === 'other') {
+    qrBlock = `<div class="qr-area"><div class="qr-error">非常抱歉，<br/>检测到已经有洋葱学园的<br/>专属顾问正在服务您，<br/>暂时无法添加新的<br/>专属顾问或参与活动</div></div>`;
+  } else if (scenario === 'rule') {
+    qrBlock = `<div class="qr-area"><div><div class="qr-img"></div><div style="margin-top:8px;">按"渠道+年级"分配规则<br/>展示对应销售二维码</div></div></div>`;
+  } else if (scenario === 'own') {
+    qrBlock = `<div class="qr-area"><div><div class="qr-img"></div><div style="margin-top:8px;">展示已归属销售<br/>顾问 王老师 的二维码</div></div></div>`;
+  }
+  return `
+    <div class="landing-bg">
+      <div style="margin-bottom:10px;">
+        <div class="landing-title">专属人工答疑通道</div>
+        <div class="landing-sub">基于学生目前的情况 进行精准课程匹配！</div>
+      </div>
+      <div class="landing-card">
+        <div class="tag-row">
+          <div class="tag">😟 不知道买什么？</div>
+          <div class="tag">😟 私教班是什么？</div>
+        </div>
+        ${qrBlock}
+      </div>
+      <div class="landing-bottom">长按二维码 一键添加私教班顾问</div>
+    </div>
+  `;
+}
+
+renderTable(data);
+</script>
+</body>
+</html>
