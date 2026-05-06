@@ -155,7 +155,8 @@
     text-align: center;
     font-size: 46px;
   }
-  .trans-icon.wx { background: #07c160; }
+  .trans-icon.trans-app-icon { background: #fff; }
+  .trans-icon.wx { background: #07c160; color: #fff; }
   .trans-dots {
     display: inline-block;
     vertical-align: middle;
@@ -608,7 +609,7 @@ function renderTrans(){
     <div class="trans-page">
       <div class="trans-content">
         <div class="trans-title">正在打开</div>
-        <div class="trans-icons-row"><span class="trans-icon app">🐙</span><span class="trans-dots">• • •</span><span class="trans-icon wx">💬</span></div>
+        <div class="trans-icons-row"><span class="trans-icon trans-app-icon">🐙</span><span class="trans-dots">• • •</span><span class="trans-icon wx">💬</span></div>
         <button class="trans-btn" onclick="showStep('landing', document.querySelectorAll('.phone-nav button')[2])">打开微信</button>
       </div>
       <div class="trans-bottom">
