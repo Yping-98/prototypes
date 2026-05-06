@@ -87,11 +87,17 @@
   .phone-nav button { font-size: 11px; padding: 4px 8px; border-radius: 12px; border: 1px solid #93c5fd; background: #fff; color: #2563eb; cursor: pointer; }
   .phone-nav button.active { background: #2563eb; color: #fff; }
   #stepContent { min-height: 0; height: 100%; overflow: hidden; }
+  .onion-logo {
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    background: center / contain no-repeat url("data:image/svg+xml,%3Csvg width='96' height='96' viewBox='0 0 96 96' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3CradialGradient id='g' cx='40%25' cy='28%25' r='70%25'%3E%3Cstop offset='0' stop-color='%236fd8ff'/%3E%3Cstop offset='0.55' stop-color='%233db5ff'/%3E%3Cstop offset='1' stop-color='%231b8ff4'/%3E%3C/radialGradient%3E%3Cfilter id='s' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeDropShadow dx='0' dy='2' stdDeviation='2' flood-color='%23006dcc' flood-opacity='.25'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M42 11c2-8 13-8 15 0 6-3 14 1 14 9 0 4-2 8-5 10 10 7 16 18 16 31 0 22-17 35-38 35S8 83 8 61c0-14 7-26 18-33-2-2-3-5-3-8 0-8 9-12 15-8 1-1 2-1 4-1z' fill='url(%23g)' filter='url(%23s)'/%3E%3Cellipse cx='35' cy='55' rx='10' ry='12' fill='%23fff'/%3E%3Cellipse cx='63' cy='55' rx='10' ry='12' fill='%23fff'/%3E%3Ccircle cx='36' cy='58' r='6' fill='%23301916'/%3E%3Ccircle cx='62' cy='58' r='6' fill='%23301916'/%3E%3Ccircle cx='33' cy='53' r='2.2' fill='%23fff'/%3E%3Ccircle cx='59' cy='53' r='2.2' fill='%23fff'/%3E%3Cpath d='M44 73c4 3 9 3 13 0' stroke='%230a6bc9' stroke-width='3' stroke-linecap='round' fill='none' opacity='.55'/%3E%3C/svg%3E");
+  }
 
   /* Login page */
   .login-page { height: 100%; overflow: hidden; padding: 28px 22px 0; background: linear-gradient(180deg, #d6e9ff 0%, #fff 30%); }
   .login-logo { display: flex; align-items: center; gap: 8px; justify-content: center; margin: 4px 0 18px; }
-  .login-logo .icon { width: 32px; height: 32px; background: #4cb1ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; flex-shrink: 0; }
+  .login-logo .icon { width: 32px; height: 32px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 2px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
   .login-logo .name { font-size: 20px; font-weight: bold; color: #1f2937; }
   .login-card { background: #fff; border-radius: 14px; padding: 16px 16px; box-shadow: 0 4px 12px rgba(0,0,0,.04); }
   .login-card h3 { font-size: 14px; margin-bottom: 12px; }
@@ -243,7 +249,7 @@
   .qr-code { width: 220px; height: 220px; background: #fff; position: relative; display: grid; grid-template-columns: repeat(25, 1fr); grid-template-rows: repeat(25, 1fr); gap: 2px; padding: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
   .qr-cell { background: #fff; }
   .qr-cell.on { background: #111; border-radius: 1px; }
-  .qr-logo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 56px; height: 56px; border-radius: 12px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 34px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+  .qr-logo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 56px; height: 56px; border-radius: 12px; background: #fff; display: flex; align-items: center; justify-content: center; padding: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
   .qr-error { color: #dc2626; font-weight: 500; line-height: 1.7; padding: 0 10px; }
   .landing-bottom { background: #2563eb; color: #fff; text-align: center; padding: 13px; border-radius: 24px; margin-top: 12px; font-size: 14px; font-weight: 500; }
 
@@ -589,7 +595,7 @@ function renderLogin(){
   return `
     <div class="login-page">
       <div class="login-logo">
-        <div class="icon">🐙</div>
+        <div class="icon"><span class="onion-logo"></span></div>
         <div class="name">洋葱学园</div>
       </div>
       <div class="login-card">
@@ -609,7 +615,7 @@ function renderTrans(){
     <div class="trans-page">
       <div class="trans-content">
         <div class="trans-title">正在打开</div>
-        <div class="trans-icons-row"><span class="trans-icon trans-app-icon">🐙</span><span class="trans-dots">• • •</span><span class="trans-icon wx">💬</span></div>
+        <div class="trans-icons-row"><span class="trans-icon trans-app-icon"><span class="onion-logo"></span></span><span class="trans-dots">• • •</span><span class="trans-icon wx">💬</span></div>
         <button class="trans-btn" onclick="showStep('landing', document.querySelectorAll('.phone-nav button')[2])">打开微信</button>
       </div>
       <div class="trans-bottom">
@@ -639,7 +645,7 @@ function makeQrCode(label){
       cells += `<span class="qr-cell ${!safeCenter && (finder || data) ? 'on' : ''}"></span>`;
     }
   }
-  return `<div class="qr-code">${cells}<div class="qr-logo">🐙</div></div>`;
+  return `<div class="qr-code">${cells}<div class="qr-logo"><span class="onion-logo"></span></div></div>`;
 }
 function renderLanding(){
   const scenario = document.getElementById('scenario') ? document.getElementById('scenario').value : 'other';
