@@ -186,6 +186,12 @@
     box-shadow: 0 4px 12px rgba(74,142,240,0.3);
     font-weight: 700;
   }
+  .trans-fallback-tip {
+    margin-top: 14px;
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.5;
+  }
 
   .trans-bottom {
     position: relative;
@@ -617,6 +623,7 @@ function renderTrans(){
         <div class="trans-title">正在打开</div>
         <div class="trans-icons-row"><span class="trans-icon trans-app-icon"><span class="onion-logo"></span></span><span class="trans-dots">• • •</span><span class="trans-icon wx">💬</span></div>
         <button class="trans-btn" onclick="showStep('landing', document.querySelectorAll('.phone-nav button')[2])">打开微信</button>
+        <div class="trans-fallback-tip">未安装微信时，将直接展示二维码落地页</div>
       </div>
       <div class="trans-bottom">
         <div class="trans-stay">别走开 ~</div>
