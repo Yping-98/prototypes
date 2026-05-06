@@ -102,21 +102,83 @@
   .submit-btn.active { background: #2563eb; }
   .agreement { font-size: 11px; color: #6b7280; margin-top: 12px; display: flex; gap: 4px; }
 
-  /* Transition page - 真实 H5 中转页比例（一屏内完整展示） */
+  /* Transition page - 真实 H5 中转页（按截图还原） */
   .trans-page {
     box-sizing: border-box;
     width: 100%;
     height: 100%;
-    padding: 50px 24px 30px;
-    background: #fff;
-    text-align: center;
-    display: block;
+    background: #f0f2f5;
+    position: relative;
+    overflow: hidden;
   }
-  .trans-title { font-size: 15px; color: #374151; margin: 0 0 22px; line-height: 1.4; }
+  /* 顶部状态栏 */
+  .trans-status {
+    height: 26px;
+    background: #f0f2f5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    font-size: 11px;
+    color: #1f2937;
+    font-weight: 500;
+  }
+  .trans-status .right { display: flex; gap: 4px; align-items: center; font-size: 10px; }
+  /* 微信顶栏 */
+  .trans-navbar {
+    height: 44px;
+    background: #f0f2f5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .trans-navbar .back { font-size: 22px; color: #1f2937; line-height: 1; }
+  .trans-navbar .title { font-size: 15px; color: #1f2937; font-weight: 500; }
+  .trans-navbar .more { font-size: 18px; color: #1f2937; position: relative; }
+  .trans-navbar .more::after { content: ""; position: absolute; top: 0; right: -2px; width: 6px; height: 6px; background: #ef4444; border-radius: 50%; }
+  /* 水印背景 */
+  .trans-watermark {
+    position: absolute;
+    inset: 70px 0 0 0;
+    background-image:
+      repeating-linear-gradient(
+        -30deg,
+        transparent 0,
+        transparent 80px,
+        rgba(0,0,0,0.04) 80px,
+        rgba(0,0,0,0.04) 200px
+      );
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .trans-watermark::before {
+    content: "李堂萍 洋葱学园   肖振 洋葱学园   李堂萍 洋葱学园   肖振 洋葱学园   李堂萍 洋葱学园   肖振 洋葱学园   李堂萍 洋葱学园   肖振 洋葱学园   李堂萍 洋葱学园   肖振 洋葱学园   李堂萍 洋葱学园   肖振 洋葱学园   李堂萍 洋葱学园   肖振 洋葱学园   李堂萍 洋葱学园   肖振 洋葱学园   李堂萍 洋葱学园   肖振 洋葱学园   李堂萍 洋葱学园   肖振 洋葱学园   李堂萍 洋葱学园   肖振 洋葱学园   李堂萍 洋葱学园   肖振 洋葱学园   李堂萍 洋葱学园   肖振 洋葱学园   李堂萍 洋葱学园   肖振 洋葱学园";
+    position: absolute;
+    inset: 0;
+    color: rgba(0,0,0,0.06);
+    font-size: 10px;
+    transform: rotate(-25deg);
+    transform-origin: center;
+    line-height: 28px;
+    word-spacing: 18px;
+    overflow: hidden;
+    width: 200%;
+    left: -50%;
+    top: -10%;
+    height: 130%;
+  }
+  .trans-content {
+    position: relative;
+    z-index: 1;
+    padding: 36px 24px 0;
+    text-align: center;
+  }
+  .trans-title { font-size: 17px; color: #374151; margin: 0 0 32px; }
   .trans-icons-row {
     text-align: center;
-    margin: 0 0 24px;
-    line-height: 56px;
+    margin: 0 0 50px;
     font-size: 0;
     white-space: nowrap;
   }
@@ -125,23 +187,96 @@
     vertical-align: middle;
   }
   .trans-icon {
-    width: 56px !important;
-    height: 56px !important;
-    border-radius: 14px;
-    color: #fff;
-    font-weight: bold;
-    font-size: 11px;
-    line-height: 56px;
-    text-align: center;
+    width: 70px !important;
+    height: 70px !important;
+    border-radius: 16px;
     overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    line-height: 70px;
+    text-align: center;
+    font-size: 36px;
   }
-  .trans-icon.app { background: #4cb1ff; }
-  .trans-icon.wx { background: #07c160; }
-  .trans-dots { color: #9ca3af; font-size: 14px; padding: 0 10px; line-height: 56px; }
-  .trans-btn { background: #2563eb; color: #fff; border: none; border-radius: 24px; padding: 11px 0; font-size: 14px; cursor: pointer; width: 200px; max-width: 80%; display: block; margin: 0 auto; }
-  .trans-bottom { margin-top: 80px; text-align: center; }
-  .trans-bottom .stay { font-weight: bold; color: #2563eb; margin-bottom: 10px; font-size: 14px; }
-  .trans-banner { background: #fff; border-radius: 30px; padding: 8px 14px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.06); font-size: 12px; }
+  .trans-icon.app { background: #fff; }
+  .trans-icon.wx {
+    background: #07c160;
+    color: #fff;
+  }
+  .trans-icon.wx::before { content: "💬"; font-size: 32px; }
+  .trans-icon.wx > span { display: none; }
+  .trans-icon.app::before { content: "🐙"; font-size: 36px; }
+  .trans-icon.app > span { display: none; }
+  .trans-dots { color: #c4c4c4; font-size: 16px; padding: 0 14px; }
+  .trans-btn {
+    background: linear-gradient(180deg, #6ba9ff 0%, #4a8ef0 100%);
+    color: #fff;
+    border: none;
+    border-radius: 28px;
+    padding: 14px 0;
+    font-size: 16px;
+    cursor: pointer;
+    width: 240px;
+    display: block;
+    margin: 0 auto;
+    box-shadow: 0 4px 12px rgba(74,142,240,0.3);
+    font-weight: 500;
+  }
+  .trans-bottom {
+    position: absolute;
+    bottom: 14px;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    padding: 0 16px;
+  }
+  .trans-stay {
+    font-weight: bold;
+    color: #1f2937;
+    font-size: 18px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  .trans-bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .trans-banner-pill {
+    background: #4a8ef0;
+    border-radius: 30px;
+    padding: 6px 14px 6px 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+    font-size: 12px;
+  }
+  .trans-banner-pill .avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #fde68a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .trans-side-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #7c3aed;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    font-weight: bold;
+    flex-shrink: 0;
+  }
 
   /* Landing page */
   .landing-bg { background: linear-gradient(180deg, #d6e9ff 0%, #aed6ff 100%); min-height: 100%; padding: 12px; }
@@ -515,16 +650,34 @@ function renderLogin(){
 function renderTrans(){
   return `
     <div class="trans-page">
-      <div class="trans-title">正在打开</div>
-      <div class="trans-icons-row">
-        <span class="trans-icon app">🐙</span>
-        <span class="trans-dots">• • •</span>
-        <span class="trans-icon wx">微信</span>
+      <div class="trans-status">
+        <span>16:08</span>
+        <span class="right">📶 📶 ▮5</span>
       </div>
-      <button class="trans-btn" onclick="showStep('landing', document.querySelectorAll('.phone-nav button')[2])">打开微信</button>
+      <div class="trans-navbar">
+        <span class="back">‹</span>
+        <span class="title">洋葱学园</span>
+        <span class="more">···</span>
+      </div>
+      <div class="trans-watermark"></div>
+      <div class="trans-content">
+        <div class="trans-title">正在打开</div>
+        <div class="trans-icons-row">
+          <span class="trans-icon app"><span></span></span>
+          <span class="trans-dots">• • •</span>
+          <span class="trans-icon wx"><span></span></span>
+        </div>
+        <button class="trans-btn" onclick="showStep('landing', document.querySelectorAll('.phone-nav button')[2])">打开微信</button>
+      </div>
       <div class="trans-bottom">
-        <div class="stay">别走开 ~</div>
-        <div class="trans-banner"><span style="font-size:16px;">👨‍🎓</span><span>全国1.1亿+学生使用推荐</span></div>
+        <div class="trans-stay">别走开 ~</div>
+        <div class="trans-bottom-row">
+          <div class="trans-banner-pill">
+            <span class="avatar">🧑‍🎓</span>
+            <span>全国1.1亿+学生使用推荐</span>
+          </div>
+          <div class="trans-side-icon">⚡</div>
+        </div>
       </div>
     </div>
   `;
