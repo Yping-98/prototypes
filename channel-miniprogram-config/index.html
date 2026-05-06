@@ -41,38 +41,59 @@
 
   .modal-mask { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none; align-items: center; justify-content: center; z-index: 100; }
   .modal-mask.show { display: flex; }
-  .modal { background: #fff; width: 700px; max-height: 86vh; overflow: auto; border-radius: 8px; }
+  .modal { background: #fff; width: 760px; max-height: 88vh; overflow: auto; border-radius: 8px; }
   .modal-header { padding: 14px 20px; border-bottom: 1px solid #f3f4f6; font-size: 15px; font-weight: 500; display: flex; justify-content: space-between; }
   .modal-body { padding: 16px 20px; }
   .form-row { display: flex; align-items: flex-start; padding: 8px 0; gap: 12px; }
-  .form-label { width: 130px; font-size: 13px; color: #374151; padding-top: 6px; flex-shrink: 0; text-align: right; }
+  .form-label { width: 140px; font-size: 13px; color: #374151; padding-top: 6px; flex-shrink: 0; text-align: right; }
   .form-label.required::before { content: "*"; color: #ef4444; margin-right: 2px; }
-  .form-control { flex: 1; }
+  .form-control { flex: 1; min-width: 0; }
   .form-control input[type=text], .form-control select, .form-control textarea {
     width: 100%; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px;
   }
+  .form-control input[type=text]:disabled, .form-control select:disabled { background: #f3f4f6; color: #9ca3af; }
   .radio-group label { margin-right: 16px; font-size: 13px; cursor: pointer; }
-  .modal-footer { padding: 12px 20px; border-top: 1px solid #f3f4f6; text-align: right; }
-  .modal-footer .btn { margin-left: 8px; }
+  .modal-footer { padding: 12px 20px; border-top: 1px solid #f3f4f6; text-align: center; }
+  .modal-footer .btn { margin: 0 6px; min-width: 80px; }
   .help-text { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+  .help-inline { font-size: 12px; color: #9ca3af; margin-left: 8px; }
   .highlight-new { background: #fff7ed; }
+
+  .switch { position: relative; display: inline-block; width: 36px; height: 20px; vertical-align: middle; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; inset: 0; background: #2563eb; border-radius: 10px; transition: .2s; }
+  .slider::before { content: ""; position: absolute; height: 16px; width: 16px; left: 18px; top: 2px; background: #fff; border-radius: 50%; transition: .2s; }
+  .switch input:not(:checked) + .slider { background: #d1d5db; }
+  .switch input:not(:checked) + .slider::before { left: 2px; }
+
+  .tag-pill { display: inline-block; padding: 2px 10px; background: #2563eb; color: #fff; border-radius: 10px; font-size: 12px; margin-right: 6px; }
+  .insert-btn { display: inline-block; padding: 2px 10px; border: 1px solid #93c5fd; background: #eff6ff; color: #2563eb; border-radius: 4px; font-size: 12px; cursor: pointer; }
+  .nick-card { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px; margin-bottom: 8px; }
+  .nick-card .avatar { width: 24px; height: 24px; border-radius: 50%; background: #6b7280; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .check-row { display: flex; align-items: center; gap: 6px; font-size: 13px; margin-top: 4px; }
+  .check-row input[type=text] { width: 200px; }
+  .time-row { display: flex; align-items: center; gap: 12px; font-size: 13px; margin-bottom: 4px; }
+  .time-row .label-fixed { width: 36px; color: #4b5563; }
+  .time-input { padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; width: 200px; }
+  .insert-row { margin-bottom: 6px; }
 
   /* Mobile preview area */
   .preview-mask { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none; align-items: center; justify-content: center; z-index: 200; }
   .preview-mask.show { display: flex; }
   .phone { width: 360px; height: 720px; background: #fff; border-radius: 30px; border: 10px solid #1f2937; overflow: hidden; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
-  .phone-screen { width: 100%; height: 100%; overflow: auto; background: linear-gradient(180deg, #d6e9ff 0%, #fff 50%); padding: 40px 22px 22px; }
+  .phone-screen { width: 100%; height: 100%; overflow: auto; background: #fff; }
   .phone-close { position: absolute; top: -36px; right: 0; background: #fff; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
-  .phone-nav { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .phone-nav { display: flex; gap: 6px; padding: 8px 12px; background: #fff; border-bottom: 1px solid #f3f4f6; flex-wrap: wrap; }
   .phone-nav button { font-size: 11px; padding: 4px 8px; border-radius: 12px; border: 1px solid #93c5fd; background: #fff; color: #2563eb; cursor: pointer; }
   .phone-nav button.active { background: #2563eb; color: #fff; }
 
   /* Login page */
-  .login-logo { display: flex; align-items: center; gap: 8px; justify-content: center; margin: 12px 0 24px; }
-  .login-logo .icon { width: 36px; height: 36px; background: #4cb1ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; }
-  .login-logo .name { font-size: 22px; font-weight: bold; color: #1f2937; }
+  .login-page { min-height: 100%; padding: 28px 22px 22px; background: linear-gradient(180deg, #d6e9ff 0%, #fff 30%); }
+  .login-logo { display: flex; align-items: center; gap: 8px; justify-content: center; margin: 4px 0 22px; }
+  .login-logo .icon { width: 32px; height: 32px; background: #4cb1ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; flex-shrink: 0; }
+  .login-logo .name { font-size: 20px; font-weight: bold; color: #1f2937; }
   .login-card { background: #fff; border-radius: 14px; padding: 18px 16px; box-shadow: 0 4px 12px rgba(0,0,0,.04); }
-  .login-card h3 { font-size: 15px; margin-bottom: 14px; }
+  .login-card h3 { font-size: 14px; margin-bottom: 14px; }
   .field { background: #f3f4f6; border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; font-size: 13px; color: #9ca3af; display: flex; justify-content: space-between; align-items: center; }
   .field input { background: transparent; border: none; outline: none; flex: 1; font-size: 13px; }
   .field .code-btn { color: #6b7280; cursor: pointer; font-size: 12px; }
@@ -81,16 +102,45 @@
   .submit-btn.active { background: #2563eb; }
   .agreement { font-size: 11px; color: #6b7280; margin-top: 12px; display: flex; gap: 4px; }
 
-  /* Transition page */
-  .trans-wrap { text-align: center; padding-top: 30px; }
-  .trans-title { font-size: 16px; margin-bottom: 22px; color: #374151; }
-  .trans-icons { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px; }
-  .trans-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 12px; }
+  /* Transition page - 适配真实 H5 中转页比例 */
+  .trans-page {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 24px 24px;
+    background: #fff;
+    text-align: center;
+  }
+  .trans-title { font-size: 16px; color: #374151; margin-bottom: 24px; }
+  .trans-icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 28px;
+    width: 100%;
+  }
+  .trans-icon {
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: bold;
+    font-size: 12px;
+    overflow: hidden;
+  }
   .trans-icon.app { background: #4cb1ff; }
   .trans-icon.wx { background: #07c160; }
-  .trans-dots { color: #9ca3af; }
-  .trans-btn { background: #2563eb; color: #fff; border: none; border-radius: 24px; padding: 12px 40px; font-size: 14px; cursor: pointer; margin: 16px 0; }
-  .trans-banner { background: #fff; border-radius: 30px; padding: 8px 14px; margin-top: 60px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.06); }
+  .trans-dots { color: #9ca3af; font-size: 14px; flex: 0 0 auto; }
+  .trans-btn { background: #2563eb; color: #fff; border: none; border-radius: 24px; padding: 12px 0; font-size: 14px; cursor: pointer; width: 200px; max-width: 80%; }
+  .trans-bottom { margin-top: auto; padding-top: 60px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+  .trans-bottom .stay { font-weight: bold; color: #2563eb; margin-bottom: 10px; font-size: 14px; }
+  .trans-banner { background: #fff; border-radius: 30px; padding: 8px 14px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.06); font-size: 12px; }
 
   /* Landing page */
   .landing-bg { background: linear-gradient(180deg, #d6e9ff 0%, #aed6ff 100%); min-height: 100%; padding: 12px; }
@@ -180,7 +230,7 @@
             <th>创建时间</th>
             <th>创建人</th>
             <th>状态</th>
-            <th>编辑</th>
+            <th>操作</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -199,16 +249,98 @@
     <div class="modal-body">
       <div class="form-row">
         <div class="form-label required">channel：</div>
-        <div class="form-control"><select><option>douyin-xin</option><option>doudian</option></select></div>
+        <div class="form-control"><select disabled><option>douyin-xin</option></select></div>
       </div>
       <div class="form-row">
         <div class="form-label required">获客名称：</div>
-        <div class="form-control"><input type="text" value="hy引导加微" /></div>
+        <div class="form-control"><input type="text" value="hy引导加微" disabled /></div>
       </div>
       <div class="form-row">
         <div class="form-label">channelId：</div>
-        <div class="form-control"><input type="text" value="qingxing-xin003" /></div>
+        <div class="form-control"><input type="text" value="qingxing-xin002" disabled /></div>
       </div>
+
+      <div class="form-row">
+        <div class="form-label">自动打标签：</div>
+        <div class="form-control">
+          <button class="insert-btn" style="margin-right:8px;">+ 选择标签</button>
+          <span class="tag-pill">173+ ×</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-label">自动备注名：</div>
+        <div class="form-control">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <label class="switch"><input type="checkbox" checked /><span class="slider"></span></label>
+            <span style="font-size:12px; color:#6b7280;">开启后，可以自定义客户备注名，方便管理客户来源</span>
+          </div>
+          <div class="nick-card">
+            <span class="avatar">👤</span>
+            <span style="font-size:12px;">173G+微信昵称</span>
+          </div>
+          <div class="check-row">
+            <input type="checkbox" checked /> <span>自定义内容</span>
+            <input type="text" value="173Q" />
+          </div>
+          <div class="check-row">
+            <input type="checkbox" /> <span>微信昵称</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-label">加微信后欢迎语：</div>
+        <div class="form-control">
+          <div class="insert-row">
+            <span style="font-size:12px; color:#6b7280;">插入：</span>
+            <button class="insert-btn">员工姓名</button>
+          </div>
+          <textarea rows="6">Hi~欢迎来到洋葱学园《学习规划营》，我是您本次体验营的班主任老师。
+
+您报名的试听课，本周五正式开通课程权益！包含7天VIP课程体验，后续还有专属的学习规划讲座和学习资料发放~
+
+为能更好地为您提供帮助，请回复您下问题：</textarea>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-label">分时段欢迎语：</div>
+        <div class="form-control">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <label class="switch"><input type="checkbox" checked /><span class="slider"></span></label>
+            <span style="font-size:12px; color:#6b7280;">开启后，可按不同时间段设置欢迎语，分时段之外的时间会发送上都欢迎语</span>
+          </div>
+          <div style="margin-bottom:8px;">
+            <div style="font-size:13px; color:#374151; margin-bottom:6px;"><span style="color:#ef4444;">*</span> 发送时间：</div>
+            <div class="time-row"><span class="label-fixed">周六</span><input type="text" class="time-input" value="00:00:00-23:59:59" /></div>
+            <div class="time-row"><span class="label-fixed">周日</span><input type="text" class="time-input" value="00:00:00-23:59:59" /></div>
+          </div>
+          <div>
+            <div style="font-size:13px; color:#374151; margin-bottom:6px;"><span style="color:#ef4444;">*</span> 欢迎语：</div>
+            <div class="insert-row">
+              <span style="font-size:12px; color:#6b7280;">插入：</span>
+              <button class="insert-btn">员工姓名</button>
+            </div>
+            <textarea rows="5">Hi~你已经到达洋葱学园《学习规划营》，我是您本次体验营的班主任老师。
+
+您报名的试听课，包含7天VIP课程体验，后续还有专属的学习规划讲座和学习资料发放，现在先帮您开通VIP体验课~
+
+为能更好地为您提供帮助，请回复您下问题：</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-label">加微信前获取手机号：</div>
+        <div class="form-control">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <label class="switch"><input type="checkbox" checked /><span class="slider"></span></label>
+            <span style="font-size:12px; color:#6b7280;">开启后，客户在加微信的弹窗页提示输入手机号，如果手机号未注销洋葱，会自动跳转洋葱账号</span>
+          </div>
+        </div>
+      </div>
+
       <div class="form-row highlight-new" style="border-radius:6px; padding:10px 12px;">
         <div class="form-label required">添加方式：</div>
         <div class="form-control">
@@ -219,25 +351,7 @@
           <div class="help-text">默认"获客助手"；历史数据全部为"获客助手"。选择"小程序"后，复制的链接为小程序专属链接。</div>
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-label">投放灯标签：</div>
-        <div class="form-control"><select><option>173+</option></select></div>
-      </div>
-      <div class="form-row">
-        <div class="form-label">自动备注名：</div>
-        <div class="form-control">
-          <label><input type="checkbox" checked /> 开启后，可以自定义客户备注名，方便管理客户来源</label>
-          <div class="help-text">173G+微信昵称</div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-label">加微信欢迎语：</div>
-        <div class="form-control"><textarea rows="3">为更便利地为您提供帮助，请回复您下问题：…</textarea></div>
-      </div>
-      <div class="form-row">
-        <div class="form-label">加微信获取手机号：</div>
-        <div class="form-control"><label><input type="checkbox" checked /> 开启后，客户在加微信的弹窗页提示输入手机号，仅基于手机号未注销账号有效</label></div>
-      </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn btn-default" onclick="closeEdit()">取消</button>
@@ -305,7 +419,16 @@ function statusBadge(s){
 
 function renderTable(list){
   const tbody = document.getElementById('tbody');
-  tbody.innerHTML = list.map(r => `
+  tbody.innerHTML = list.map(r => {
+    const isActive = r.status === '生效中';
+    const onOffBtn = isActive
+      ? `<button class="btn btn-link">下架</button>`
+      : `<button class="btn btn-link">上架</button>`;
+    const copyBtn = isActive
+      ? `<button class="btn btn-link" onclick="${r.mode === '小程序' ? 'openPreview()' : 'void 0'}">复制短链接</button>`
+      : '';
+    const qrBtn = `<button class="btn btn-link">下载二维码</button>`;
+    return `
     <tr>
       <td>${r.name}</td>
       <td>${r.channel}</td>
@@ -315,11 +438,12 @@ function renderTable(list){
       <td>${statusBadge(r.status)}</td>
       <td>
         <button class="btn btn-link" onclick="openEdit('${r.name}', '${r.mode}')">编辑</button>
-        ${r.mode === '小程序' ? `<button class="btn btn-link" onclick="openPreview()">复制链接</button>` : `<button class="btn btn-link">下载</button>`}
-        <button class="btn btn-link">下载二维码</button>
+        ${onOffBtn}
+        ${copyBtn}
+        ${qrBtn}
       </td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 }
 
 function applyFilter(){
@@ -370,24 +494,26 @@ function showStep(step, btn){
 
 function renderLogin(){
   return `
-    <div class="login-logo">
-      <div class="icon">🐙</div>
-      <div class="name">洋葱学园</div>
-    </div>
-    <div class="login-card">
-      <h3>请选择年级，输入手机号为您激活课程</h3>
-      <div class="field"><span>请选择孩子所在年级</span><span>›</span></div>
-      <div class="field"><input placeholder="请输入手机号" /></div>
-      <div class="field"><input placeholder="请输入验证码" /><span class="code-btn">获取验证码</span></div>
-      <div class="login-tip">若该手机号未注册洋葱账号，我们会为您自动注册</div>
-      <button class="submit-btn active" onclick="showStep('trans', document.querySelectorAll('.phone-nav button')[1])">提交</button>
-      <div class="agreement">○ 我已阅读并同意 《用户协议》 和 《隐私政策》</div>
+    <div class="login-page">
+      <div class="login-logo">
+        <div class="icon">🐙</div>
+        <div class="name">洋葱学园</div>
+      </div>
+      <div class="login-card">
+        <h3>请选择年级，输入手机号为您激活课程</h3>
+        <div class="field"><span>请选择孩子所在年级</span><span>›</span></div>
+        <div class="field"><input placeholder="请输入手机号" /></div>
+        <div class="field"><input placeholder="请输入验证码" /><span class="code-btn">获取验证码</span></div>
+        <div class="login-tip">若该手机号未注册洋葱账号，我们会为您自动注册</div>
+        <button class="submit-btn active" onclick="showStep('trans', document.querySelectorAll('.phone-nav button')[1])">提交</button>
+        <div class="agreement">○ 我已阅读并同意 《用户协议》 和 《隐私政策》</div>
+      </div>
     </div>
   `;
 }
 function renderTrans(){
   return `
-    <div class="trans-wrap">
+    <div class="trans-page">
       <div class="trans-title">正在打开</div>
       <div class="trans-icons">
         <div class="trans-icon app">🐙</div>
@@ -395,9 +521,9 @@ function renderTrans(){
         <div class="trans-icon wx">微信</div>
       </div>
       <button class="trans-btn" onclick="showStep('landing', document.querySelectorAll('.phone-nav button')[2])">打开微信</button>
-      <div style="margin-top:60px;">
-        <div style="font-weight:bold; color:#2563eb;">别走开 ~</div>
-        <div class="trans-banner">👨‍🎓 全国1.1亿+学生使用推荐</div>
+      <div class="trans-bottom">
+        <div class="stay">别走开 ~</div>
+        <div class="trans-banner"><span style="font-size:16px;">👨‍🎓</span><span>全国1.1亿+学生使用推荐</span></div>
       </div>
     </div>
   `;
