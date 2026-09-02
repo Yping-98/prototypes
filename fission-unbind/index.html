@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>原型 - 裂变详情解绑转介绍关系</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  body { background: #eef1f5; color: #333; font-size: 14px; }
+  .topbar { background: #1f6fd6; color: #fff; padding: 10px 20px; font-weight: 600; font-size: 16px; }
+  .page { padding: 20px; max-width: 1200px; margin: 0 auto; }
+  .crumb { color: #888; font-size: 13px; margin-bottom: 12px; }
+  .card { background: #fff; border: 1px solid #dcdfe6; border-radius: 4px; padding: 16px; }
+  .card h3 { font-size: 15px; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid #e4e7ed; padding: 9px 12px; text-align: center; font-size: 13px; }
+  th { background: #f5f7fa; color: #555; font-weight: 600; }
+  .link { color: #1f6fd6; cursor: pointer; text-decoration: none; }
+  .link:hover { text-decoration: underline; }
+  .hl-row { background: #eaf3fd; }
+
+  /* 弹窗 */
+  .mask { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 100; }
+  .mask.show { display: flex; align-items: flex-start; justify-content: center; padding-top: 8vh; }
+  .modal { background: #fff; border-radius: 6px; width: 760px; max-width: 94vw; box-shadow: 0 8px 30px rgba(0,0,0,.2); }
+  .modal-hd { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid #eee; }
+  .modal-hd .title { font-size: 15px; font-weight: 600; }
+  .modal-hd .close { cursor: pointer; color: #999; font-size: 18px; line-height: 1; }
+  .modal-bd { padding: 20px; }
+  .modal-ft { padding: 10px 20px 16px; color: #888; font-size: 12px; text-align: right; }
+
+  .btn { display: inline-block; padding: 5px 14px; border-radius: 3px; border: 1px solid #1f6fd6; color: #1f6fd6; background: #fff; font-size: 13px; cursor: pointer; }
+  .btn:hover { background: #f0f7ff; }
+  .btn.disabled { border-color: #c0c4cc; color: #c0c4cc; cursor: not-allowed; background: #fff; }
+  .btn.disabled:hover { background: #fff; }
+  .btn.primary { background: #1f6fd6; color: #fff; }
+  .btn.primary:hover { background: #1a5fb8; }
+  .btn.plain { border-color: #dcdfe6; color: #606266; }
+  .btn.plain:hover { background: #f5f7fa; }
+
+  /* 二次确认弹窗 */
+  .confirm { background: #fff; border-radius: 6px; width: 420px; max-width: 90vw; box-shadow: 0 8px 30px rgba(0,0,0,.25); }
+  .confirm .c-bd { padding: 24px 24px 8px; font-size: 14px; line-height: 1.7; }
+  .confirm .c-bd .warn { color: #e6a23c; font-weight: 600; }
+  .confirm .c-ft { padding: 14px 24px 18px; text-align: right; }
+  .confirm .c-ft .btn { margin-left: 10px; }
+
+  /* toast */
+  .toast { display: none; position: fixed; top: 12vh; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.75); color: #fff; padding: 10px 22px; border-radius: 4px; z-index: 300; font-size: 14px; }
+
+  .tip { background: #fdf6ec; border: 1px solid #f5dab1; color: #b8860b; font-size: 12px; padding: 8px 12px; border-radius: 4px; margin-bottom: 14px; }
+  .tag-yes { color: #67c23a; }
+  .tag-no { color: #999; }
+</style>
+</head>
+<body>
+
+<div class="topbar">电销CRM · 积分商城 - 积分管理</div>
+
+<div class="page">
+  <div class="crumb">积分商城 / 积分管理</div>
+  <div class="card">
+    <h3>积分管理列表（点击"裂变新客户数"打开裂变详情弹窗）</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>服务期归属</th><th>客户手机号</th><th>洋葱ID</th><th>裂变新客户数</th><th>转化数</th><th>转化率</th><th>当前积分</th><th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="hl-row">
+          <td>电销</td><td>15971423839</td><td>700797021</td>
+          <td><span class="link" onclick="openDetail()">2</span></td>
+          <td>1</td><td>50.00%</td><td>90000</td>
+          <td><span class="link">积分明细</span>&nbsp;<span class="link">禁星</span>&nbsp;<span class="link">积分管理</span></td>
+        </tr>
+        <tr>
+          <td>电销</td><td>15927261859</td><td>600009447</td>
+          <td><span class="link" onclick="openDetail()">2</span></td>
+          <td>1</td><td>16.67%</td><td>110790</td>
+          <td><span class="link">积分明细</span>&nbsp;<span class="link">禁星</span>&nbsp;<span class="link">积分管理</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 裂变详情弹窗 -->
+<div class="mask" id="detailMask">
+  <div class="modal">
+    <div class="modal-hd">
+      <span class="title">裂变详情 - 15971423839</span>
+      <span class="close" onclick="closeDetail()">×</span>
+    </div>
+    <div class="modal-bd">
+      <div class="tip">本次新增「操作」栏：转介绍关系存在时"解绑"可点击；不存在时置灰不可点击。</div>
+      <table>
+        <thead>
+          <tr>
+            <th>裂变规则</th><th>新客户手机号</th><th>裂变时间</th><th>转介绍关系是否存在</th><th>是否转化</th><th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="detailBody"></tbody>
+      </table>
+    </div>
+    <div class="modal-ft">共 2 条 &nbsp; 20条/页 &nbsp; ‹ 1 ›</div>
+  </div>
+</div>
+
+<!-- 解绑二次确认弹窗 -->
+<div class="mask" id="confirmMask">
+  <div class="confirm">
+    <div class="modal-hd">
+      <span class="title">解绑确认</span>
+      <span class="close" onclick="closeConfirm()">×</span>
+    </div>
+    <div class="c-bd" id="confirmText"></div>
+    <div class="c-ft">
+      <button class="btn plain" onclick="closeConfirm()">取消</button>
+      <button class="btn primary" onclick="doUnbind()">确认解绑</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// 模拟数据：hasRelation=转介绍关系是否存在；newPoints=新用户带来的拉新积分
+var rows = [
+  { rule: '体验营', phone: '13632296858', time: '2025-12-26 18:12:06', hasRelation: true,  converted: '是', newPoints: 2400 },
+  { rule: '体验营', phone: '13135601031', time: '2025-12-26 17:37:49', hasRelation: false, converted: '否', newPoints: 0 }
+];
+var currentIdx = -1;
+
+function render() {
+  var html = '';
+  rows.forEach(function (r, i) {
+    var btn = r.hasRelation
+      ? '<button class="btn" onclick="clickUnbind(' + i + ')">解绑</button>'
+      : '<button class="btn disabled" title="转介绍关系不存在，不可解绑">解绑</button>';
+    html += '<tr>'
+      + '<td>' + r.rule + '</td>'
+      + '<td>' + r.phone + '</td>'
+      + '<td>' + r.time + '</td>'
+      + '<td>' + (r.hasRelation ? '<span class="tag-yes">是</span>' : '<span class="tag-no">否</span>') + '</td>'
+      + '<td>' + r.converted + '</td>'
+      + '<td>' + btn + '</td>'
+      + '</tr>';
+  });
+  document.getElementById('detailBody').innerHTML = html;
+}
+
+function openDetail() { render(); document.getElementById('detailMask').classList.add('show'); }
+function closeDetail() { document.getElementById('detailMask').classList.remove('show'); }
+
+function clickUnbind(i) {
+  currentIdx = i;
+  var r = rows[i];
+  var text;
+  if (r.newPoints > 0) {
+    text = '该新用户（' + r.phone + '）已为老用户带来 <span class="warn">' + r.newPoints + '</span> 拉新积分，解绑后将一并扣除该积分。<br><br>解绑后，新用户购课满14天也不再给老用户下发新用户购课积分。是否确认解绑？';
+  } else {
+    text = '该新用户（' + r.phone + '）未带来拉新积分，无需扣除。<br><br>解绑后，新用户购课满14天也不再给老用户下发新用户购课积分。是否确认解绑？';
+  }
+  document.getElementById('confirmText').innerHTML = text;
+  document.getElementById('confirmMask').classList.add('show');
+}
+
+function closeConfirm() { document.getElementById('confirmMask').classList.remove('show'); currentIdx = -1; }
+
+function doUnbind() {
+  var r = rows[currentIdx];
+  r.hasRelation = false;
+  var msg = r.newPoints > 0
+    ? '解绑成功，已扣除 ' + r.newPoints + ' 拉新积分'
+    : '解绑成功';
+  r.newPoints = 0;
+  document.getElementById('confirmMask').classList.remove('show');
+  render();
+  showToast(msg);
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(function () { t.style.display = 'none'; }, 2200);
+}
+</script>
+</body>
+</html>
