@@ -5,89 +5,153 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>体验营线索筛选分配与公海转化优化 - 原型</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; }
-  body { background:#f0f2f5; color:#333; font-size:14px; }
-  .topbar { background:#fff; border-bottom:1px solid #e5e5e5; padding:0 20px; display:flex; align-items:center; height:52px; position:sticky; top:0; z-index:100; }
-  .topbar .logo { font-weight:700; font-size:15px; margin-right:32px; }
-  .nav-tab { padding:0 16px; height:52px; line-height:52px; cursor:pointer; color:#666; border-bottom:2px solid transparent; }
-  .nav-tab.active { color:#1668dc; border-bottom-color:#1668dc; font-weight:600; }
-  .page { display:none; padding:20px; max-width:1200px; margin:0 auto; }
+  * { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif; }
+  body { background:#f0f2f5; color:#606266; font-size:14px; }
+  /* ===== 顶部导航 ===== */
+  .topbar { background:#fff; border-bottom:1px solid #e4e7ed; padding:0 20px; display:flex; align-items:center; height:50px; position:sticky; top:0; z-index:100; }
+  .topbar .logo { font-weight:700; font-size:15px; margin-right:32px; color:#303133; }
+  .nav-tab { padding:0 16px; height:50px; line-height:50px; cursor:pointer; color:#606266; border-bottom:2px solid transparent; font-size:14px; }
+  .nav-tab.active { color:#409eff; border-bottom-color:#409eff; }
+  .page { display:none; }
   .page.active { display:block; }
-  .card { background:#fff; border:1px solid #e5e5e5; border-radius:6px; padding:16px 20px; margin-bottom:16px; }
-  .card-title { font-size:15px; font-weight:600; margin-bottom:12px; }
-  .breadcrumb { color:#999; font-size:12px; margin-bottom:12px; }
-  .btn { display:inline-block; padding:6px 16px; border:1px solid #d9d9d9; border-radius:4px; background:#fff; cursor:pointer; font-size:13px; }
-  .btn-primary { background:#1668dc; color:#fff; border-color:#1668dc; }
-  .btn:disabled { opacity:.5; cursor:not-allowed; }
-  .filter-row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:12px; }
-  .filter-item { display:flex; align-items:center; gap:6px; }
-  .filter-item label { color:#666; white-space:nowrap; }
-  select, input[type=text] { padding:6px 10px; border:1px solid #d9d9d9; border-radius:4px; font-size:13px; background:#fff; min-width:130px; }
-  .tag { display:inline-block; padding:2px 10px; border:1px solid #d9d9d9; border-radius:12px; margin:3px; cursor:pointer; font-size:12px; color:#555; background:#fafafa; }
-  .tag.checked { background:#e6f0ff; border-color:#1668dc; color:#1668dc; }
-  .tag.new { position:relative; }
-  .tag.new::after { content:"新增"; position:absolute; top:-9px; right:-8px; background:#fa541c; color:#fff; font-size:10px; padding:0 4px; border-radius:6px; line-height:14px; }
-  table { width:100%; border-collapse:collapse; margin-top:8px; }
-  th, td { border:1px solid #eee; padding:8px 10px; text-align:left; font-size:13px; }
-  th { background:#fafafa; color:#555; white-space:nowrap; }
-  .drawer-mask { display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:200; }
-  .drawer { position:fixed; top:0; right:-420px; width:400px; height:100%; background:#fff; z-index:201; transition:right .25s; box-shadow:-4px 0 12px rgba(0,0,0,.1); display:flex; flex-direction:column; }
+  .content-view { margin:20px; padding:20px; background:#fff; border-radius:6px; }
+  .breadcrumb { color:#909399; font-size:12px; margin:16px 20px -8px; }
+  /* ===== Element 风格控件 ===== */
+  .el-btn { display:inline-block; padding:8px 15px; border:1px solid #dcdfe6; border-radius:4px; background:#fff; color:#606266; cursor:pointer; font-size:13px; line-height:1; white-space:nowrap; }
+  .el-btn:hover { color:#409eff; border-color:#c6e2ff; background:#ecf5ff; }
+  .el-btn.primary { background:#409eff; border-color:#409eff; color:#fff; }
+  .el-btn.primary:hover { background:#66b1ff; }
+  .el-btn.primary:disabled, .el-btn:disabled { opacity:.5; cursor:not-allowed; }
+  .el-btn.link { border:none; background:none; color:#409eff; padding:4px 6px; }
+  .el-btn.link:hover { color:#66b1ff; background:none; }
+  .el-input, .el-select { padding:7px 11px; border:1px solid #dcdfe6; border-radius:4px; font-size:13px; background:#fff; color:#606266; outline:none; }
+  .el-input:focus { border-color:#409eff; }
+  .form-inline { display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; }
+  .form-item { display:flex; align-items:center; gap:8px; }
+  .form-item > label { color:#606266; font-size:13px; white-space:nowrap; }
+  /* tabs */
+  .el-tabs { display:flex; border-bottom:2px solid #e4e7ed; margin:14px 0 12px; }
+  .el-tabs .tab { padding:0 18px; height:38px; line-height:38px; cursor:pointer; color:#303133; position:relative; font-size:14px; }
+  .el-tabs .tab.active { color:#409eff; }
+  .el-tabs .tab.active::after { content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px; background:#409eff; }
+  /* table */
+  table.el-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .el-table th, .el-table td { border:1px solid #ebeef5; padding:9px 10px; text-align:left; color:#606266; white-space:nowrap; }
+  .el-table th { background:#f5f7fa; color:#909399; font-weight:600; }
+  .table-wrap { overflow-x:auto; }
+  /* tag */
+  .el-tag { display:inline-block; padding:2px 9px; background:#ecf5ff; border:1px solid #d9ecff; color:#409eff; border-radius:4px; font-size:12px; margin:0 6px 4px 0; }
+  .badge-new { display:inline-block; background:#fef0f0; border:1px solid #fde2e2; color:#f56c6c; font-size:11px; padding:0 5px; border-radius:3px; margin-left:6px; vertical-align:middle; }
+  .hint { font-size:12px; color:#e6a23c; background:#fdf6ec; border:1px solid #faecd8; padding:7px 10px; border-radius:4px; margin:10px 0; line-height:1.6; }
+  /* 单选 */
+  .el-radio { margin-right:16px; cursor:pointer; font-size:13px; color:#606266; }
+  .el-radio input { accent-color:#409eff; margin-right:4px; }
+  /* 抽屉 */
+  .drawer-mask { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:200; }
+  .drawer { position:fixed; top:0; right:-720px; width:700px; max-width:92vw; height:100%; background:#fff; z-index:201; transition:right .25s; box-shadow:-4px 0 12px rgba(0,0,0,.12); display:flex; flex-direction:column; }
   .drawer.open { right:0; }
-  .drawer-head { padding:14px 18px; border-bottom:1px solid #eee; font-weight:600; display:flex; justify-content:space-between; }
-  .drawer-body { flex:1; overflow:auto; padding:16px 18px; }
-  .drawer-foot { padding:12px 18px; border-top:1px solid #eee; text-align:right; }
-  .drawer-foot .btn { margin-left:8px; }
-  .close-x { cursor:pointer; color:#999; }
-  .group-title { font-size:13px; color:#999; margin:12px 0 6px; }
-  .member { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border:1px solid #d9d9d9; border-radius:4px; margin:3px; cursor:pointer; font-size:12px; }
-  .member.sel { background:#e6f0ff; border-color:#1668dc; color:#1668dc; }
-  .order-list { list-style:none; }
-  .order-list li { padding:6px 10px; border:1px solid #eee; border-radius:4px; margin-bottom:6px; background:#fafafa; display:flex; justify-content:space-between; font-size:13px; }
-  .order-list .grp { color:#999; font-size:12px; }
-  .toast { position:fixed; top:70px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.75); color:#fff; padding:8px 20px; border-radius:4px; z-index:300; display:none; font-size:13px; }
-  .hint { font-size:12px; color:#fa8c16; background:#fff7e6; border:1px solid #ffe7ba; padding:6px 10px; border-radius:4px; margin:8px 0; }
-  .stat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; margin-top:8px; }
-  .stat-box { border:1px solid #eee; border-radius:6px; padding:12px 14px; background:#fafafa; }
-  .stat-box .v { font-size:20px; font-weight:700; margin-top:4px; }
-  .stat-box .k { color:#666; font-size:12px; }
-  .stat-box .dim { font-size:11px; color:#999; margin-top:4px; }
-  .badge-blue { display:inline-block; background:#e6f0ff; color:#1668dc; font-size:11px; padding:0 6px; border-radius:8px; }
-  .badge-green { display:inline-block; background:#f0fff0; color:#389e0d; font-size:11px; padding:0 6px; border-radius:8px; border:1px solid #d9f7be; }
-  .date-input { padding:6px 10px; border:1px solid #d9d9d9; border-radius:4px; font-size:13px; background:#fff; width:210px; color:#555; cursor:pointer; }
-  .modal-mask { display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:250; align-items:center; justify-content:center; }
-  .modal { background:#fff; border-radius:8px; width:420px; padding:20px; }
-  .modal h4 { margin-bottom:12px; }
-  .modal .foot { text-align:right; margin-top:16px; }
-  .modal .foot .btn { margin-left:8px; }
+  .drawer-head { padding:16px 20px; font-size:16px; color:#303133; display:flex; justify-content:space-between; }
+  .drawer-body { flex:1; overflow:auto; padding:10px 24px 20px; }
+  .drawer-row { display:flex; align-items:flex-start; margin-bottom:18px; }
+  .drawer-row > label { width:230px; flex-shrink:0; font-size:13px; color:#606266; padding-top:6px; }
+  .close-x { cursor:pointer; color:#909399; font-size:16px; }
+  /* 多选下拉 */
+  .multi-select { position:relative; width:220px; }
+  .multi-select .ms-box { min-height:32px; border:1px solid #dcdfe6; border-radius:4px; background:#fff; padding:2px 24px 2px 6px; cursor:pointer; display:flex; flex-wrap:wrap; align-items:center; gap:3px; }
+  .multi-select .ms-box::after { content:"▾"; position:absolute; right:8px; top:7px; color:#c0c4cc; font-size:12px; }
+  .multi-select .ms-placeholder { color:#c0c4cc; font-size:13px; padding:4px; }
+  .ms-tag { background:#f4f4f5; border:1px solid #e9e9eb; color:#909399; font-size:12px; border-radius:3px; padding:1px 6px; }
+  .ms-dropdown { display:none; position:absolute; top:calc(100% + 4px); left:0; width:100%; background:#fff; border:1px solid #e4e7ed; border-radius:4px; box-shadow:0 2px 12px rgba(0,0,0,.1); z-index:50; max-height:260px; overflow:auto; padding:4px 0; }
+  .ms-dropdown.open { display:block; }
+  .ms-option { padding:7px 14px; font-size:13px; cursor:pointer; display:flex; justify-content:space-between; }
+  .ms-option:hover { background:#f5f7fa; }
+  .ms-option.checked { color:#409eff; font-weight:600; }
+  .ms-option.checked::after { content:"✓"; }
+  /* 弹窗 */
+  .modal-mask { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:250; align-items:center; justify-content:center; }
+  .modal { background:#fff; border-radius:6px; width:640px; max-width:94vw; max-height:88vh; display:flex; flex-direction:column; }
+  .modal-head { padding:16px 20px; font-size:16px; color:#303133; display:flex; justify-content:space-between; }
+  .modal-body { padding:6px 20px 14px; overflow:auto; }
+  .modal-foot { padding:12px 20px 18px; text-align:right; }
+  .modal-foot .el-btn { margin-left:10px; }
+  /* 选择员工弹窗 */
+  .emp-cols { display:flex; gap:4px; }
+  .emp-col { flex:1; border:1px solid #ddd; padding:12px; height:360px; overflow:auto; margin:2px; }
+  .tree-group { margin-bottom:6px; }
+  .tree-group-title { font-size:13px; color:#303133; padding:4px 0; font-weight:600; }
+  .tree-node { padding:4px 0 4px 18px; font-size:13px; display:flex; align-items:center; gap:6px; }
+  .tree-node input { accent-color:#409eff; }
+  .check-item { display:flex; justify-content:space-between; margin:4px 0; font-size:13px; }
+  .check-item .rm { cursor:pointer; color:#c0c4cc; }
+  .check-item .rm:hover { color:#f56c6c; }
+  /* 数据卡片 */
+  .data-card-box { display:flex; flex-wrap:wrap; }
+  .data-card { flex:1; margin:5px; padding:12px; min-width:150px; max-width:300px; background:rgb(180,227,251); text-align:center; }
+  .data-card .card-item-title { font-size:14px; }
+  .data-card .card-item-content { margin-top:10px; font-size:16px; font-weight:bold; color:#303133; }
+  .el-card { border:1px solid #ebeef5; border-radius:4px; box-shadow:0 2px 12px rgba(0,0,0,.06); margin:10px 0; }
+  .el-card-head { padding:12px 16px; border-bottom:1px solid #ebeef5; display:flex; justify-content:space-between; align-items:center; color:#303133; }
+  .el-card-body { padding:12px 16px; }
+  /* 分配规则页 */
+  .font-weight { font-weight:bold; color:#303133; }
+  .el-divider { height:1px; background:#dcdfe6; margin:16px 0; }
+  .rule-form-item { display:flex; margin-bottom:18px; }
+  .rule-form-item > label { width:140px; flex-shrink:0; font-size:13px; color:#606266; padding-top:5px; }
+  .rule-form-item > label.req::before { content:"*"; color:#f56c6c; margin-right:4px; }
+  .rule-form-body { flex:1; min-width:0; }
+  .capacity-tip { font-size:12px; color:#909399; margin-bottom:8px; line-height:1.7; }
+  .capacity-tip .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#67c23a; margin:0 3px; }
+  .current-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#67c23a; margin-right:5px; }
+  .drag-handle { cursor:grab; color:#909399; }
+  .num-input { width:80px; padding:5px 8px; border:1px solid #dcdfe6; border-radius:4px; font-size:13px; }
+  .alternate-tip { color:#909399; font-size:12px; margin-top:4px; }
+  .empty-tip { color:#909399; font-size:13px; padding:12px 0; }
+  .toast { position:fixed; top:70px; left:50%; transform:translateX(-50%); background:#fff; color:#67c23a; border:1px solid #e1f3d8; padding:10px 20px; border-radius:4px; z-index:300; display:none; font-size:13px; box-shadow:0 2px 12px rgba(0,0,0,.1); }
+  .toast.warn { color:#e6a23c; border-color:#faecd8; }
+  /* 日期范围（模拟） */
+  .date-range { display:inline-flex; align-items:center; border:1px solid #dcdfe6; border-radius:4px; padding:0 8px; background:#fff; height:32px; gap:6px; }
+  .date-range input { border:none; outline:none; width:150px; font-size:13px; color:#606266; }
+  .date-range .sep { color:#909399; font-size:12px; }
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <span class="logo">体验营 CRM</span>
+  <span class="logo">体验营管理后台</span>
   <div class="nav-tab active" onclick="switchPage('p1',this)">客户管理-当期客户</div>
   <div class="nav-tab" onclick="switchPage('p2',this)">配置-线索投放计划</div>
   <div class="nav-tab" onclick="switchPage('p3',this)">数据统计-公海线索转化</div>
 </div>
 
-<!-- ============ 页面1：当期客户-高级筛选 ============ -->
+<!-- ==================== 页面1：当期客户 ==================== -->
 <div class="page active" id="p1">
   <div class="breadcrumb">体验营 / 客户管理 / 当期客户</div>
-  <div class="card">
-    <div class="card-title">当期客户列表</div>
-    <div class="filter-row">
-      <div class="filter-item"><label>客户名称</label><input type="text" placeholder="请输入"></div>
-      <div class="filter-item"><label>手机号</label><input type="text" placeholder="请输入"></div>
-      <button class="btn btn-primary">查询</button>
-      <button class="btn">重置</button>
-      <button class="btn" onclick="openFilterDrawer()">高级筛选</button>
+  <div class="content-view">
+    <div class="form-inline">
+      <div class="form-item"><label>期数:</label><input class="el-input" style="width:140px" placeholder="请选择期数"></div>
+      <div class="form-item"><label>手机号:</label><input class="el-input" style="width:160px" placeholder="请输入手机号"></div>
+      <div class="form-item"><label>洋葱ID:</label><input class="el-input" style="width:140px" placeholder="请输入洋葱ID"></div>
     </div>
-    <table>
-      <tr><th>客户名称</th><th>手机号</th><th>线索等级</th><th>跟进状态</th><th>归属销售</th></tr>
-      <tr><td>王小明</td><td>138****2211</td><td>S</td><td>跟进中</td><td>李娜</td></tr>
-      <tr><td>陈晓</td><td>150****8765</td><td>A</td><td>待跟进</td><td>张伟</td></tr>
-      <tr><td>刘畅</td><td>187****3344</td><td><span class="badge-blue">Z</span></td><td>跟进中</td><td>李娜</td></tr>
-    </table>
+    <div style="display:flex; justify-content:space-between; margin-top:12px">
+      <div>
+        <button class="el-btn primary">查询</button>
+        <button class="el-btn">重置</button>
+        <button class="el-btn" onclick="openFilterDrawer()">高级筛选</button>
+        <button class="el-btn">一键导出</button>
+      </div>
+      <div>
+        <button class="el-btn primary">批量导入</button>
+        <button class="el-btn primary">单个录入客户</button>
+      </div>
+    </div>
+    <div class="table-wrap" style="margin-top:14px">
+      <table class="el-table">
+        <tr><th></th><th>期数</th><th>洋葱ID</th><th>手机号</th><th>线索等级</th><th>线索渠道</th><th>归属坐席</th><th>激活课程</th><th>创建时间</th></tr>
+        <tr><td><input type="checkbox"></td><td>第128期</td><td>982211</td><td>138****2211</td><td>S级</td><td>信息流A</td><td>李娜</td><td>用户主动激活</td><td>2026-08-12 10:23</td></tr>
+        <tr><td><input type="checkbox"></td><td>第128期</td><td>982245</td><td>150****8765</td><td>A级</td><td>信息流B</td><td>张伟</td><td>系统被动激活</td><td>2026-08-13 15:41</td></tr>
+        <tr><td><input type="checkbox"></td><td>第128期</td><td>982307</td><td>187****3344</td><td>Z级</td><td>信息流A</td><td>李娜</td><td>未激活</td><td>2026-08-14 09:05</td></tr>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -96,113 +160,181 @@
 <div class="drawer" id="filterDrawer">
   <div class="drawer-head">高级筛选 <span class="close-x" onclick="closeFilterDrawer()">✕</span></div>
   <div class="drawer-body">
-    <div class="group-title">线索等级（多选）</div>
-    <div id="levelTags">
-      <span class="tag" onclick="toggleTag(this)">S</span>
-      <span class="tag" onclick="toggleTag(this)">A</span>
-      <span class="tag" onclick="toggleTag(this)">B</span>
-      <span class="tag" onclick="toggleTag(this)">C</span>
-      <span class="tag" onclick="toggleTag(this)">D</span>
-      <span class="tag new" onclick="toggleTag(this)">Z</span>
+    <div class="drawer-row"><label>自动入库：</label>
+      <div><label class="el-radio"><input type="radio" name="sync">是</label><label class="el-radio"><input type="radio" name="sync">否</label></div>
     </div>
-    <div class="hint">本次新增：线索等级筛选项增加「Z」枚举值，其余枚举与筛选逻辑沿用现状。</div>
-    <div class="group-title">跟进状态</div>
-    <span class="tag" onclick="toggleTag(this)">待跟进</span>
-    <span class="tag" onclick="toggleTag(this)">跟进中</span>
-    <span class="tag" onclick="toggleTag(this)">已成交</span>
-  </div>
-  <div class="drawer-foot">
-    <button class="btn" onclick="resetTags()">重置</button>
-    <button class="btn btn-primary" onclick="applyFilter()">确定</button>
+    <div class="drawer-row"><label>用户属性：</label>
+      <div><label class="el-radio"><input type="radio" name="attr">B端</label><label class="el-radio"><input type="radio" name="attr">C端</label></div>
+    </div>
+    <div class="drawer-row"><label>线索进来时是否在体验营服务期：</label>
+      <div><label class="el-radio"><input type="radio" name="alloc">是</label><label class="el-radio"><input type="radio" name="alloc">否</label></div>
+    </div>
+    <div class="drawer-row"><label>激活课程：</label>
+      <div><label class="el-radio"><input type="radio" name="bind">用户主动激活</label><label class="el-radio"><input type="radio" name="bind">系统被动激活</label><label class="el-radio"><input type="radio" name="bind">未激活</label></div>
+    </div>
+    <div class="drawer-row"><label>unionId：</label><input class="el-input" style="width:220px" placeholder="请输入unionId"></div>
+    <div class="drawer-row"><label>线索等级：<span class="badge-new">本次变更</span></label>
+      <div>
+        <div class="multi-select" id="gradeSelect">
+          <div class="ms-box" onclick="toggleGradeDropdown(event)">
+            <span class="ms-placeholder" id="gradePlaceholder">请选择等级</span>
+            <span id="gradeTags"></span>
+          </div>
+          <div class="ms-dropdown" id="gradeDropdown"></div>
+        </div>
+        <div class="hint" style="margin-top:8px">新增「Z级」枚举值；其余等级选项与多选筛选逻辑沿用现状。</div>
+      </div>
+    </div>
+    <div class="drawer-row"><label>线索渠道：</label>
+      <select class="el-select" style="width:220px"><option>请选择渠道</option><option>信息流A</option><option>信息流B</option><option>渠道活码</option></select>
+    </div>
+    <div class="drawer-row"><label>channelId：</label><input class="el-input" style="width:220px" placeholder="请输入channelId"></div>
+    <div class="drawer-row"><label>激活时间:</label>
+      <div class="date-range"><input placeholder="开始创建时间"><span class="sep">至</span><input placeholder="结束创建时间"></div>
+    </div>
+    <div class="drawer-row"><label>到期时间:</label>
+      <div class="date-range"><input placeholder="开始创建时间"><span class="sep">至</span><input placeholder="结束创建时间"></div>
+    </div>
+    <div class="drawer-row"><label>最近登录:</label>
+      <div class="date-range"><input placeholder="开始创建时间"><span class="sep">至</span><input placeholder="结束创建时间"></div>
+    </div>
+    <div class="drawer-row"><label></label>
+      <div>
+        <button class="el-btn" onclick="resetGrades()">重置</button>
+        <button class="el-btn primary" onclick="applyFilter()">查询</button>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- ============ 页面2：线索分配规则 ============ -->
+<!-- ==================== 页面2：线索投放计划-线索分配规则 ==================== -->
 <div class="page" id="p2">
   <div class="breadcrumb">体验营 / 配置 / 线索投放计划 / 线索分配规则</div>
-  <div class="card">
-    <div class="card-title">线索分配规则 - 选择人员</div>
-    <div class="hint">本次调整：点击「保存」后，系统对已选人员自动随机打乱顺序，不再按照组别先后展示。</div>
-    <div class="group-title">销售一组</div>
+  <div class="content-view">
+    <div class="font-weight">线索投放计划基本信息</div>
+    <div class="el-divider"></div>
+    <div class="rule-form-item"><label>线索周期：</label><div class="rule-form-body">2026-09-01 ~ 2026-09-14</div></div>
+    <div class="rule-form-item"><label>结营日期：</label><div class="rule-form-body">2026-09-21</div></div>
+    <div class="rule-form-item"><label>期数：</label><div class="rule-form-body">第130期</div></div>
+    <div class="rule-form-item"><label>目标线索总量：</label><div class="rule-form-body">3000</div></div>
+    <div class="el-divider"></div>
+
+    <div class="font-weight">A类线索分配规则</div>
+    <div class="el-divider"></div>
+    <div class="hint">本次调整：点击「提交」保存时，系统对分配员工列表自动随机打乱顺序后保存展示，不再按选人时的组别先后排列；轮循分配、权重等既有规则沿用现状。</div>
+    <div class="rule-form-item">
+      <label class="req">分配员工：</label>
+      <div class="rule-form-body">
+        <div class="capacity-tip">按表格顺序轮循分配线索。所有员工权重一致时可拖动调整顺序；存在不同权重时顺序由权重决定，不可手动调整。<span class="dot"></span>表示下一个线索将分配给该员工。</div>
+        <button class="el-btn link" onclick="openEmpDialog()">＋ 选择员工</button>
+        <div class="table-wrap" style="margin-top:6px">
+          <table class="el-table" id="empTable">
+            <thead><tr><th style="width:50px;text-align:center">排序</th><th>员工</th><th style="width:120px">权重</th><th style="width:100px;text-align:center">本轮进度</th><th style="width:120px">数量</th><th style="width:70px;text-align:center">已分配</th><th style="width:100px;text-align:center">灰产数量</th><th style="width:70px;text-align:center">操作</th></tr></thead>
+            <tbody id="empTbody"><tr><td colspan="8" class="empty-tip" style="text-align:center">暂无分配员工，请点击上方按钮选择</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="rule-form-item">
+      <label class="req">备选员工：</label>
+      <div class="rule-form-body">
+        <button class="el-btn link" onclick="showToast('备选员工选择沿用现有交互','warn')">＋ 选择员工</button>
+        <div style="margin-top:8px"><span class="el-tag">陈静</span><span class="el-tag">杨光</span></div>
+        <div class="alternate-tip">当分配员工的承接数量全部达到上限后，线索将分配给备选员工，按顺序轮循。</div>
+      </div>
+    </div>
+    <div class="el-divider"></div>
     <div>
-      <span class="member" onclick="toggleMember(this,'销售一组')">李娜</span>
-      <span class="member" onclick="toggleMember(this,'销售一组')">张伟</span>
-      <span class="member" onclick="toggleMember(this,'销售一组')">王芳</span>
+      <button class="el-btn">返回</button>
+      <button class="el-btn primary" id="commitBtn" disabled onclick="commitRule()">提交</button>
+      <span style="color:#909399;font-size:12px;margin-left:8px">未选择分配员工时提交按钮禁用</span>
     </div>
-    <div class="group-title">销售二组</div>
-    <div>
-      <span class="member" onclick="toggleMember(this,'销售二组')">赵磊</span>
-      <span class="member" onclick="toggleMember(this,'销售二组')">孙婷</span>
-      <span class="member" onclick="toggleMember(this,'销售二组')">周杰</span>
-    </div>
-    <div class="group-title">销售三组</div>
-    <div>
-      <span class="member" onclick="toggleMember(this,'销售三组')">吴敏</span>
-      <span class="member" onclick="toggleMember(this,'销售三组')">郑强</span>
-    </div>
-    <div style="margin-top:16px">
-      <button class="btn btn-primary" id="saveBtn" disabled onclick="saveMembers()">保存</button>
-      <span style="color:#999;font-size:12px;margin-left:8px">未选择人员时保存按钮禁用</span>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">已保存的人员顺序（保存后随机打乱展示）</div>
-    <ul class="order-list" id="savedList"><li style="color:#999;border:none;background:none">暂无数据，请先选择人员并保存</li></ul>
   </div>
 </div>
 
-<!-- ============ 页面3：公海线索转化 ============ -->
+<!-- 选择员工弹窗 -->
+<div class="modal-mask" id="empModal">
+  <div class="modal">
+    <div class="modal-head">选择员工 <span class="close-x" onclick="closeEmpDialog()">✕</span></div>
+    <div class="modal-body">
+      <div class="emp-cols">
+        <div style="width:80px; padding-top:12px; font-size:13px">选择员工：</div>
+        <div class="emp-col">
+          <input class="el-input" style="width:100%; margin-bottom:8px" placeholder="搜索员工" oninput="filterTree(this.value)">
+          <div id="empTree"></div>
+        </div>
+        <div class="emp-col">
+          <div style="font-size:13px; margin-bottom:6px">已选<span id="checkedCount">0</span>人</div>
+          <div id="checkedList"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="el-btn" onclick="closeEmpDialog()">取消</button>
+      <button class="el-btn primary" onclick="submitEmpDialog()">提交</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 页面3：公海线索转化 ==================== -->
 <div class="page" id="p3">
   <div class="breadcrumb">体验营 / 数据统计 / 公海线索转化</div>
-  <div class="card">
-    <div class="card-title">筛选条件</div>
-    <div class="filter-row">
-      <div class="filter-item">
-        <label>线索领取时间 <span class="badge-blue">新</span></label>
-        <input class="date-input" id="claimDate" readonly value="2026-08-01 ~ 2026-08-31" onclick="openDateModal('claim')">
+  <div class="content-view">
+    <div class="form-inline">
+      <div class="form-item"><label>架构:</label>
+        <select class="el-select" style="width:230px"><option>体验营</option><option>体验营 / 一团</option><option>体验营 / 一团 / 销售一组</option><option>体验营 / 二团</option></select>
       </div>
-      <div class="filter-item">
-        <label>支付时间 <span class="badge-blue">新</span></label>
-        <input class="date-input" id="payDate" readonly value="2026-08-01 ~ 2026-09-04" onclick="openDateModal('pay')">
+      <div class="form-item"><label>线索领取时间:<span class="badge-new">本次变更</span></label>
+        <div class="date-range"><input id="claimStart" value="2026-09-01 00:00:00"><span class="sep">至</span><input id="claimEnd" value="2026-09-30 23:59:59"></div>
       </div>
-      <button class="btn btn-primary" onclick="queryStats()">查询</button>
+      <div class="form-item"><label>支付时间:<span class="badge-new">本次变更</span></label>
+        <div class="date-range"><input id="payStart" value="2026-09-01 00:00:00"><span class="sep">至</span><input id="payEnd" value="2026-09-30 23:59:59"></div>
+      </div>
+      <button class="el-btn primary" onclick="queryStats()">查询</button>
     </div>
-    <div class="hint">查询逻辑：统计「线索领取时间」范围内领取的线索中，在「支付时间」范围内发生支付的数据。原单一日期筛选拆分为以上两个筛选项。</div>
-  </div>
-  <div class="card">
-    <div class="card-title">领取与加微指标 <span class="badge-green">按线索领取时间查询</span></div>
-    <div class="stat-grid" id="claimStats">
-      <div class="stat-box"><div class="k">领取线索量</div><div class="v">12,480</div><div class="dim">按线索领取时间</div></div>
-      <div class="stat-box"><div class="k">人均领取线索量</div><div class="v">208</div><div class="dim">按线索领取时间</div></div>
-      <div class="stat-box"><div class="k">添加企微好友数</div><div class="v">6,532</div><div class="dim">按线索领取时间</div></div>
-      <div class="stat-box"><div class="k">人均添加企微好友数</div><div class="v">108.9</div><div class="dim">按线索领取时间</div></div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">转化指标 <span class="badge-green">按支付时间查询</span></div>
-    <div class="stat-grid" id="payStats">
-      <div class="stat-box"><div class="k">转化金额</div><div class="v">¥386,200</div><div class="dim">按支付时间</div></div>
-      <div class="stat-box"><div class="k">转化率</div><div class="v">5.2%</div><div class="dim">按支付时间</div></div>
-      <div class="stat-box"><div class="k">大会员净付费人数</div><div class="v">412</div><div class="dim">按支付时间</div></div>
-      <div class="stat-box"><div class="k">大会员净转化率</div><div class="v">3.3%</div><div class="dim">按支付时间</div></div>
-      <div class="stat-box"><div class="k">大会员净GMV</div><div class="v">¥298,400</div><div class="dim">按支付时间</div></div>
-      <div class="stat-box"><div class="k">大会员净客单价</div><div class="v">¥724.3</div><div class="dim">按支付时间</div></div>
-    </div>
-  </div>
-</div>
+    <div class="hint">原单一「日期」筛选拆分为「线索领取时间」「支付时间」两个筛选项。查询逻辑：在线索领取时间范围内领取的线索中，统计其在支付时间范围内发生支付的数据。领取线索量、人均领取线索量、添加企微好友数、人均添加企微好友数按线索领取时间查询；转化金额、转化率、大会员净付费人数、大会员净转化率、大会员净GMV、大会员净客单价按支付时间查询。</div>
 
-<!-- 日期选择弹窗（模拟） -->
-<div class="modal-mask" id="dateModal">
-  <div class="modal">
-    <h4 id="dateModalTitle">选择时间范围</h4>
-    <div class="filter-row">
-      <input type="text" id="dateStart" placeholder="开始日期 如 2026-08-01" style="flex:1">
-      <span>~</span>
-      <input type="text" id="dateEnd" placeholder="结束日期 如 2026-08-31" style="flex:1">
+    <div class="el-tabs">
+      <div class="tab active" onclick="switchConversionTab('claim',this)">领取转化</div>
+      <div class="tab" onclick="switchConversionTab('entry',this)">录入转化</div>
     </div>
-    <div class="foot">
-      <button class="btn" onclick="closeDateModal()">取消</button>
-      <button class="btn btn-primary" onclick="confirmDate()">确定</button>
+
+    <div class="data-card-box">
+      <div class="data-card"><div class="card-item-title" id="cardTitle0">总领取线索量</div><div class="card-item-content" id="c0">12,480</div></div>
+      <div class="data-card"><div class="card-item-title" id="cardTitle1">人均领取线索量</div><div class="card-item-content" id="c1">208</div></div>
+      <div class="data-card"><div class="card-item-title">总转化金额</div><div class="card-item-content" id="c2">386,200</div></div>
+      <div class="data-card"><div class="card-item-title">人均转化金额</div><div class="card-item-content" id="c3">6,436.7</div></div>
+      <div class="data-card"><div class="card-item-title">总转化线索量</div><div class="card-item-content" id="c4">649</div></div>
+      <div class="data-card"><div class="card-item-title">人均转化线索量</div><div class="card-item-content" id="c5">10.8</div></div>
+      <div class="data-card"><div class="card-item-title">转化率</div><div class="card-item-content" id="c6">5.20%</div></div>
+    </div>
+
+    <div class="el-tabs">
+      <div class="tab active" onclick="switchPanelTab('group',this)">小组</div>
+      <div class="tab" onclick="switchPanelTab('person',this)">个人</div>
+    </div>
+
+    <div id="groupPanel">
+      <div class="el-card">
+        <div class="el-card-head"><span>小组面板</span><button class="el-btn link" onclick="showToast('已导出小组面板数据')">导出数据</button></div>
+        <div class="el-card-body table-wrap">
+          <table class="el-table">
+            <thead><tr><th>序号</th><th>小组名称</th><th>小组人数</th><th id="thClaim1">领取线索量</th><th id="thClaim2">人均领取线索量</th><th>添加企微好友数</th><th>人均添加企微好友数</th><th>转化线索量</th><th>转化金额</th><th>转化率</th><th>大会员净付费人数</th><th>大会员净转化率</th><th>大会员净GMV</th><th>大会员净客单价</th></tr></thead>
+            <tbody id="groupTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div id="personPanel" style="display:none">
+      <div class="el-card">
+        <div class="el-card-head"><span>个人面板</span><button class="el-btn link" onclick="showToast('已导出个人面板数据')">导出数据</button></div>
+        <div class="el-card-body table-wrap">
+          <table class="el-table">
+            <thead><tr><th>序号</th><th>坐席</th><th id="thClaim3">领取线索量</th><th>添加企微好友数</th><th>转化线索量</th><th>转化金额</th><th>转化率</th><th>大会员净付费人数</th><th>大会员净转化率</th><th>大会员净GMV</th><th>大会员净客单价</th><th>所属团</th><th>所属小组</th></tr></thead>
+            <tbody id="personTbody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -210,70 +342,174 @@
 <div class="toast" id="toast"></div>
 
 <script>
+/* ========== 通用 ========== */
 function switchPage(id, el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
 }
-function showToast(msg){
-  const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block';
-  clearTimeout(t._tm); t._tm=setTimeout(()=>t.style.display='none',2000);
+function showToast(msg, type){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(type==='warn'?' warn':''); t.style.display='block';
+  clearTimeout(t._tm); t._tm=setTimeout(()=>t.style.display='none',2200);
 }
-/* 页面1 高级筛选 */
-function openFilterDrawer(){ document.getElementById('filterMask').style.display='block'; document.getElementById('filterDrawer').classList.add('open'); }
-function closeFilterDrawer(){ document.getElementById('filterMask').style.display='none'; document.getElementById('filterDrawer').classList.remove('open'); }
-function toggleTag(el){ el.classList.toggle('checked'); }
-function resetTags(){ document.querySelectorAll('#filterDrawer .tag').forEach(t=>t.classList.remove('checked')); }
+
+/* ========== 页面1：高级筛选-线索等级 ========== */
+const GRADE_OPTIONS = [
+  { label:'无等级', value:'' },
+  { label:'S级', value:'s' }, { label:'A级', value:'a' }, { label:'B级', value:'b' },
+  { label:'C级', value:'c' }, { label:'D级', value:'d' }, { label:'E级', value:'e' },
+  { label:'F级', value:'f' }, { label:'G级', value:'g' }, { label:'H级', value:'h' },
+  { label:'I级', value:'i' },
+  { label:'Z级', value:'z', isNew:true },
+];
+let checkedGrades = [];
+function renderGradeDropdown(){
+  document.getElementById('gradeDropdown').innerHTML = GRADE_OPTIONS.map(o=>
+    `<div class="ms-option${checkedGrades.includes(o.value)?' checked':''}" onclick="toggleGrade('${o.value}',event)">
+       <span>${o.label}${o.isNew?'<span class="badge-new">新增</span>':''}</span></div>`).join('');
+  const tags = checkedGrades.map(v=>{
+    const o=GRADE_OPTIONS.find(x=>x.value===v);
+    return `<span class="ms-tag">${o.label}</span>`;
+  }).join('');
+  document.getElementById('gradeTags').innerHTML = checkedGrades.length<=2 ? tags :
+    checkedGrades.slice(0,2).map(v=>`<span class="ms-tag">${GRADE_OPTIONS.find(x=>x.value===v).label}</span>`).join('') + `<span class="ms-tag">+${checkedGrades.length-2}</span>`;
+  document.getElementById('gradePlaceholder').style.display = checkedGrades.length?'none':'inline';
+}
+function toggleGradeDropdown(e){ e.stopPropagation(); document.getElementById('gradeDropdown').classList.toggle('open'); }
+function toggleGrade(v,e){
+  e.stopPropagation();
+  const i=checkedGrades.indexOf(v);
+  i>=0 ? checkedGrades.splice(i,1) : checkedGrades.push(v);
+  renderGradeDropdown();
+}
+document.addEventListener('click',()=>document.getElementById('gradeDropdown').classList.remove('open'));
+function resetGrades(){ checkedGrades=[]; renderGradeDropdown(); }
 function applyFilter(){
-  const sel=[...document.querySelectorAll('#levelTags .tag.checked')].map(t=>t.textContent.trim());
   closeFilterDrawer();
-  showToast(sel.length? '已按线索等级筛选：'+sel.join('、') : '已应用筛选');
+  const names=checkedGrades.map(v=>GRADE_OPTIONS.find(x=>x.value===v).label);
+  showToast(names.length?'已按线索等级筛选：'+names.join('、'):'已应用高级筛选');
 }
-/* 页面2 人员选择 */
-const selected=[];
-function toggleMember(el, grp){
-  el.classList.toggle('sel');
-  const name=el.textContent.trim();
-  const idx=selected.findIndex(m=>m.name===name);
-  if(el.classList.contains('sel') && idx<0) selected.push({name, grp});
-  if(!el.classList.contains('sel') && idx>=0) selected.splice(idx,1);
-  document.getElementById('saveBtn').disabled = selected.length===0;
+function openFilterDrawer(){ document.getElementById('filterMask').style.display='block'; document.getElementById('filterDrawer').classList.add('open'); renderGradeDropdown(); }
+function closeFilterDrawer(){ document.getElementById('filterMask').style.display='none'; document.getElementById('filterDrawer').classList.remove('open'); }
+
+/* ========== 页面2：分配员工 ========== */
+const ORG_TREE = [
+  { group:'销售一组', members:[{id:'u1',name:'李娜'},{id:'u2',name:'张伟'},{id:'u3',name:'王芳'}] },
+  { group:'销售二组', members:[{id:'u4',name:'赵磊'},{id:'u5',name:'孙婷'},{id:'u6',name:'周杰'}] },
+  { group:'销售三组', members:[{id:'u7',name:'吴敏'},{id:'u8',name:'郑强'}] },
+];
+let checkedEmp = [];   // 弹窗内勾选（按组别树顺序）
+let employeeList = []; // 已确认的分配员工
+function openEmpDialog(){
+  checkedEmp = employeeList.map(e=>e.id);
+  renderTree(); renderCheckedList();
+  document.getElementById('empModal').style.display='flex';
 }
-function saveMembers(){
-  const arr=[...selected];
-  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
-  const ul=document.getElementById('savedList');
-  ul.innerHTML=arr.map((m,i)=>`<li><span>${i+1}. ${m.name}</span><span class="grp">${m.grp}</span></li>`).join('');
-  showToast('保存成功，人员顺序已随机打乱');
+function closeEmpDialog(){ document.getElementById('empModal').style.display='none'; }
+function renderTree(filter){
+  document.getElementById('empTree').innerHTML = ORG_TREE.map(g=>{
+    const ms=g.members.filter(m=>!filter||m.name.includes(filter));
+    if(!ms.length) return '';
+    return `<div class="tree-group"><div class="tree-group-title">▾ ${g.group}</div>` +
+      ms.map(m=>`<label class="tree-node"><input type="checkbox" ${checkedEmp.includes(m.id)?'checked':''} onchange="treeCheck('${m.id}',this.checked)">${m.name}</label>`).join('') + '</div>';
+  }).join('');
 }
-/* 页面3 日期与查询 */
-let dateTarget='claim';
-function openDateModal(type){
-  dateTarget=type;
-  document.getElementById('dateModalTitle').textContent = type==='claim'?'选择线索领取时间范围':'选择支付时间范围';
-  const cur=document.getElementById(type==='claim'?'claimDate':'payDate').value.split(' ~ ');
-  document.getElementById('dateStart').value=cur[0]||''; document.getElementById('dateEnd').value=cur[1]||'';
-  document.getElementById('dateModal').style.display='flex';
+function filterTree(v){ renderTree(v.trim()); }
+function treeCheck(id,on){
+  if(on && !checkedEmp.includes(id)) checkedEmp.push(id);
+  if(!on) checkedEmp=checkedEmp.filter(x=>x!==id);
+  renderCheckedList();
 }
-function closeDateModal(){ document.getElementById('dateModal').style.display='none'; }
-function confirmDate(){
-  const s=document.getElementById('dateStart').value.trim(), e=document.getElementById('dateEnd').value.trim();
-  if(!s||!e){ showToast('请填写完整的开始和结束日期'); return; }
-  document.getElementById(dateTarget==='claim'?'claimDate':'payDate').value=s+' ~ '+e;
-  closeDateModal();
+function findMember(id){ for(const g of ORG_TREE){ const m=g.members.find(m=>m.id===id); if(m) return {...m, group:g.group}; } }
+function renderCheckedList(){
+  document.getElementById('checkedCount').textContent=checkedEmp.length;
+  document.getElementById('checkedList').innerHTML=checkedEmp.map(id=>{
+    const m=findMember(id);
+    return `<div class="check-item"><span>${m.name}</span><span class="rm" onclick="treeCheck('${id}',false);renderTree()">✕</span></div>`;
+  }).join('');
+}
+function submitEmpDialog(){
+  // 按组别树顺序生成列表（保存前的展示顺序）
+  const ordered=[];
+  ORG_TREE.forEach(g=>g.members.forEach(m=>{ if(checkedEmp.includes(m.id)) ordered.push({...m, group:g.group}); }));
+  const old={}; employeeList.forEach(e=>old[e.id]=e);
+  employeeList=ordered.map(m=>old[m.id]||{...m, weight:1, trackNum:'', assigned:0, gray:0});
+  closeEmpDialog();
+  renderEmpTable(false);
+  document.getElementById('commitBtn').disabled = employeeList.length===0;
+}
+function renderEmpTable(shuffled){
+  const tb=document.getElementById('empTbody');
+  if(!employeeList.length){ tb.innerHTML='<tr><td colspan="8" class="empty-tip" style="text-align:center">暂无分配员工，请点击上方按钮选择</td></tr>'; return; }
+  tb.innerHTML=employeeList.map((e,i)=>`<tr>
+    <td style="text-align:center"><span class="drag-handle">⠿</span></td>
+    <td>${i===0?'<span class="current-dot"></span>':''}${e.name}<span style="color:#c0c4cc;font-size:12px">（${e.group}）</span></td>
+    <td><input class="num-input" type="number" min="1" value="${e.weight}"></td>
+    <td style="text-align:center">0/${e.weight}</td>
+    <td><input class="num-input" type="number" placeholder="无上限" value="${e.trackNum}"></td>
+    <td style="text-align:center">${e.assigned}</td>
+    <td style="text-align:center">${e.gray}</td>
+    <td style="text-align:center"><button class="el-btn link" onclick="removeEmp(${i})">删除</button></td>
+  </tr>`).join('');
+}
+function removeEmp(i){ employeeList.splice(i,1); renderEmpTable(); document.getElementById('commitBtn').disabled=employeeList.length===0; }
+function commitRule(){
+  if(!employeeList.length) return;
+  // 本次变更：保存时随机打乱人员顺序
+  for(let i=employeeList.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [employeeList[i],employeeList[j]]=[employeeList[j],employeeList[i]]; }
+  renderEmpTable(true);
+  showToast('提交成功，分配员工顺序已随机打乱，不再按组别先后展示');
+}
+
+/* ========== 页面3：公海线索转化 ========== */
+let conversionTab='claim';
+const GROUPS=['销售一组','销售二组','销售三组','销售四组'];
+const PERSONS=[['李娜','一团','销售一组'],['张伟','一团','销售一组'],['赵磊','一团','销售二组'],['孙婷','二团','销售三组'],['吴敏','二团','销售四组']];
+function switchConversionTab(tab, el){
+  conversionTab=tab;
+  document.querySelectorAll('#p3 .el-tabs')[0].querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const word=tab==='entry'?'录入':'领取';
+  document.getElementById('cardTitle0').textContent='总'+word+'线索量';
+  document.getElementById('cardTitle1').textContent='人均'+word+'线索量';
+  document.getElementById('thClaim1').textContent=word+'线索量';
+  document.getElementById('thClaim2').textContent='人均'+word+'线索量';
+  document.getElementById('thClaim3').textContent=word+'线索量';
+  queryStats();
+}
+function switchPanelTab(tab, el){
+  document.querySelectorAll('#p3 .el-tabs')[1].querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('groupPanel').style.display=tab==='group'?'block':'none';
+  document.getElementById('personPanel').style.display=tab==='person'?'block':'none';
+}
+const r=(a,b)=>Math.floor(a+Math.random()*(b-a));
+function validDateRanges(){
+  const ids=['claimStart','claimEnd','payStart','payEnd'];
+  return ids.every(id=>document.getElementById(id).value.trim());
 }
 function queryStats(){
-  const r=(a,b)=>Math.floor(a+Math.random()*(b-a));
-  const c=document.querySelectorAll('#claimStats .v');
-  c[0].textContent=r(9000,15000).toLocaleString(); c[1].textContent=r(150,260);
-  c[2].textContent=r(5000,8000).toLocaleString(); c[3].textContent=(r(800,1300)/10).toFixed(1);
-  const p=document.querySelectorAll('#payStats .v');
-  p[0].textContent='¥'+r(300000,500000).toLocaleString(); p[1].textContent=(r(30,80)/10).toFixed(1)+'%';
-  p[2].textContent=r(300,600); p[3].textContent=(r(20,50)/10).toFixed(1)+'%';
-  p[4].textContent='¥'+r(200000,400000).toLocaleString(); p[5].textContent='¥'+(r(6000,9000)/10).toFixed(1);
-  showToast('查询完成：领取类指标按线索领取时间，转化类指标按支付时间');
+  if(!validDateRanges()){ showToast('请填写完整的开始和结束时间','warn'); return; }
+  const total=r(9000,15000), mean=r(150,260), money=r(300000,500000), trans=r(400,800);
+  document.getElementById('c0').textContent=total.toLocaleString();
+  document.getElementById('c1').textContent=mean;
+  document.getElementById('c2').textContent=money.toLocaleString();
+  document.getElementById('c3').textContent=(money/60).toFixed(1);
+  document.getElementById('c4').textContent=trans;
+  document.getElementById('c5').textContent=(trans/60).toFixed(1);
+  document.getElementById('c6').textContent=(trans/total*100).toFixed(2)+'%';
+  document.getElementById('groupTbody').innerHTML=GROUPS.map((g,i)=>{
+    const claim=r(1500,3500), wx=r(700,1800), t=r(60,180), m=r(40000,120000);
+    return `<tr><td>${i+1}</td><td>${g}</td><td>${r(8,15)}</td><td>${claim}</td><td>${r(120,260)}</td><td>${wx}</td><td>${r(60,140)}</td><td>${t}</td><td>${m.toLocaleString()}</td><td>${(t/claim*100).toFixed(2)}%</td><td>${r(20,80)}</td><td>${(r(100,400)/100).toFixed(2)}%</td><td>${(m*0.7/10000).toFixed(2)}</td><td>${(m/t/100).toFixed(2)}</td></tr>`;
+  }).join('');
+  document.getElementById('personTbody').innerHTML=PERSONS.map((p,i)=>{
+    const claim=r(150,400), t=r(5,30), m=r(3000,20000);
+    return `<tr><td>${i+1}</td><td>${p[0]}</td><td>${claim}</td><td>${r(80,220)}</td><td>${t}</td><td>${m.toLocaleString()}</td><td>${(t/claim*100).toFixed(2)}%</td><td>${r(2,12)}</td><td>${(r(100,400)/100).toFixed(2)}%</td><td>${(m*0.7/10000).toFixed(2)}</td><td>${(m/Math.max(t,1)/100).toFixed(2)}</td><td>${p[1]}</td><td>${p[2]}</td></tr>`;
+  }).join('');
 }
+queryStats();
 </script>
 </body>
 </html>
