@@ -221,7 +221,7 @@
 
     <div class="font-weight">A类线索分配规则</div>
     <div class="el-divider"></div>
-    <div class="hint">本次调整：点击「提交」保存时，系统对分配员工列表自动随机打乱顺序后保存展示，不再按选人时的组别先后排列；轮循分配、权重等既有规则沿用现状。</div>
+    <div class="hint">本次调整：选择员工弹窗点击「提交」保存时，系统对已选人员自动随机打乱顺序后展示，不再按选人时的组别先后排列；轮循分配、权重等既有规则沿用现状。</div>
     <div class="rule-form-item">
       <label class="req">分配员工：</label>
       <div class="rule-form-body">
@@ -430,15 +430,21 @@ function renderCheckedList(){
     return `<div class="check-item"><span>${m.name}</span><span class="rm" onclick="treeCheck('${id}',false);renderTree()">✕</span></div>`;
   }).join('');
 }
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  return arr;
+}
 function submitEmpDialog(){
-  // 按组别树顺序生成列表（保存前的展示顺序）
-  const ordered=[];
-  ORG_TREE.forEach(g=>g.members.forEach(m=>{ if(checkedEmp.includes(m.id)) ordered.push({...m, group:g.group}); }));
+  const members=[];
+  ORG_TREE.forEach(g=>g.members.forEach(m=>{ if(checkedEmp.includes(m.id)) members.push({...m, group:g.group}); }));
   const old={}; employeeList.forEach(e=>old[e.id]=e);
-  employeeList=ordered.map(m=>old[m.id]||{...m, weight:1, trackNum:'', assigned:0, gray:0});
+  const list=members.map(m=>old[m.id]||{...m, weight:1, trackNum:'', assigned:0, gray:0});
+  // 本次变更：选择人员保存时，系统自动随机打乱人员顺序，不按组别先后展示
+  employeeList=shuffle(list);
   closeEmpDialog();
   renderEmpTable(false);
   document.getElementById('commitBtn').disabled = employeeList.length===0;
+  if(employeeList.length) showToast('保存成功，分配员工顺序已随机打乱，不再按组别先后展示');
 }
 function renderEmpTable(shuffled){
   const tb=document.getElementById('empTbody');
@@ -457,10 +463,7 @@ function renderEmpTable(shuffled){
 function removeEmp(i){ employeeList.splice(i,1); renderEmpTable(); document.getElementById('commitBtn').disabled=employeeList.length===0; }
 function commitRule(){
   if(!employeeList.length) return;
-  // 本次变更：保存时随机打乱人员顺序
-  for(let i=employeeList.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [employeeList[i],employeeList[j]]=[employeeList[j],employeeList[i]]; }
-  renderEmpTable(true);
-  showToast('提交成功，分配员工顺序已随机打乱，不再按组别先后展示');
+  showToast('提交成功');
 }
 
 /* ========== 页面3：公海线索转化 ========== */
