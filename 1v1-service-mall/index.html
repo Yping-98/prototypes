@@ -340,6 +340,8 @@
           </div>
           <button class="btn primary" onclick="renderOrderTable()">查 询</button>
           <button class="btn" onclick="resetOrderFilter()">重 置</button>
+          <div style="flex:1"></div>
+          <button class="btn primary" onclick="exportOrders()">导 出</button>
         </div>
         <table class="data">
           <thead>
@@ -578,7 +580,7 @@ function doConfirm(){ const cb=confirmCb; closeModal(); if(cb) cb(); }
 function closeModal(){ const m=document.getElementById('adminModal'); if(m) m.remove(); confirmCb=null; }
 
 /* ===================== 管理后台：订单管理 ===================== */
-function renderOrderTable(){
+function getFilteredOrders(){
   const no = document.getElementById('fOrderNo').value.trim();
   const phone = document.getElementById('fOrderPhone').value.trim();
   const gname = document.getElementById('fOrderGoods').value.trim();
@@ -592,6 +594,10 @@ function renderOrderTable(){
     (!end || o.payTime <= end)
   );
   list.sort((a,b) => b.payTime.localeCompare(a.payTime));
+  return list;
+}
+function renderOrderTable(){
+  const list = getFilteredOrders();
   const tb = document.getElementById('orderTbody');
   if(!list.length){ tb.innerHTML = `<tr><td colspan="5" class="empty-row">暂无数据</td></tr>`; return; }
   tb.innerHTML = list.map(o => `
@@ -602,6 +608,20 @@ function renderOrderTable(){
       <td>${o.payTime}</td>
       <td>${o.phone}</td>
     </tr>`).join('');
+}
+function exportOrders(){
+  const list = getFilteredOrders();
+  if(!list.length) return toast('当前筛选结果为空，无数据可导出');
+  const header = ['订单号','商品名称','实付价格','支付时间','支付手机号'];
+  const rows = list.map(o => [o.no, o.goodsName, o.pay.toFixed(2), o.payTime, o.phone]);
+  const csv = '\ufeff' + [header, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `订单导出_${fmtNow().replace(/[-: ]/g,'')}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast(`已按当前筛选条件导出 ${list.length} 条订单`);
 }
 function resetOrderFilter(){
   ['fOrderNo','fOrderPhone','fOrderGoods','fOrderStart','fOrderEnd'].forEach(i => document.getElementById(i).value='');
