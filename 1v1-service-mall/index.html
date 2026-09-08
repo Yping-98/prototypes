@@ -705,13 +705,13 @@ function renderDetail(c){
       </div>
       <div class="d-desc">${g.desc}</div>
     </div>
-    <div class="d-section">
-      <div class="d-sec-title">退费说明</div>
-      <div class="d-text">${g.refund}</div>
-    </div>
     <div class="d-section d-imgs">
       <div class="d-sec-title">商品详情</div>
       ${g.detailImgs.map(img=>`<div class="img-full" style="background:${img.color}">${img.icon}</div>`).join('')}
+    </div>
+    <div class="d-section">
+      <div class="d-sec-title">退费说明</div>
+      <div class="d-text">${g.refund}</div>
     </div>
     <div style="height:12px"></div>`;
   document.getElementById('mpBuyBtn').onclick = onBuyClick;
