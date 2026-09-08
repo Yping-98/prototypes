@@ -440,9 +440,9 @@ function renderGoodsTable(){
       <td>${g.createTime}</td>
       <td>${g.creator}</td>
       <td>
-        ${g.status==='off' ? `<button class="btn warn-text" onclick="toggleGoodsStatus(${g.id})">上架</button>` : ''}
+        <button class="btn warn-text" onclick="toggleGoodsStatus(${g.id})">${g.status==='on'?'下架':'上架'}</button>
         <button class="btn link" onclick="openGoodsForm(${g.id})">编辑</button>
-        <button class="btn danger-text" onclick="delGoods(${g.id})">删除</button>
+        ${g.status==='off' ? `<button class="btn danger-text" onclick="delGoods(${g.id})">删除</button>` : ''}
         <button class="btn link" onclick="showGoodsDetail(${g.id})">查看详情</button>
       </td>
     </tr>`).join('');
