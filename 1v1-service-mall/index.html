@@ -883,8 +883,8 @@ function renderMyOrders(c){
   if(!list.length){ c.innerHTML = `<div class="mp-empty">暂无订单，快去商城逛逛吧～</div>`; return; }
   c.innerHTML = list.map(o => `
     <div class="order-card">
-      <div class="o-top"><span>订单编号：${o.no}</span><span style="color:#07c160">已支付</span></div>
-      <div class="o-name">${o.goodsName}</div>
+      <div class="o-top"><span class="o-name" style="color:#333">${o.goodsName}</span><span style="color:#07c160;flex-shrink:0">已支付</span></div>
+      <div style="font-size:12px;color:#999">订单编号：${o.no}</div>
       <div class="o-bottom">
         <span class="o-time">支付时间：${o.payTime}</span>
         <span class="o-price">${o.pay.toFixed(2)}</span>
