@@ -142,8 +142,13 @@
     <div class="center-txt" style="font-size:16px; color:#101828; font-weight:600;">报名成功</div>
     <div class="center-txt" style="font-size:12px; color:#667085; margin-top:6px;">班主任将尽快与您联系，请留意消息通知</div>
     <div class="card">
+      <div class="t">添加班主任企业微信</div>
+      <div class="wire" style="width:140px; height:140px; margin:8px auto; border-radius:8px;">企微二维码</div>
+      <div class="d center-txt">长按识别二维码，添加班主任领取课程服务<br><span style="color:#98a2b3;">小程序内以曝光二维码形式添加企微（获客助手链接不支持小程序）</span></div>
+    </div>
+    <div class="card">
       <div class="t">下一步</div>
-      <div class="d">· 后置采集模式且未打标时：自动弹出身份/年级采集弹窗<br>· 命中兑换分组时：弹出兑换课程弹窗<br>· 其余情况：引导跳转微信小程序服务</div>
+      <div class="d">· 后置采集模式且未打标时：自动弹出身份/年级采集弹窗<br>· 命中兑换分组时：弹出兑换课程弹窗</div>
     </div>
     <div class="sec" style="display:flex; flex-direction:column; gap:10px;">
       <button class="btn ghost" onclick="show('collectMask')">演示：身份/年级采集弹窗</button>
@@ -193,8 +198,9 @@
       <p>现在报名立享体验价，确定要离开吗？</p>
       <div class="btns">
         <button class="btn gray" style="cursor:pointer;" onclick="hide('retainMask'); toast('退出页面')">狠心退出</button>
-        <button class="btn" onclick="hide('retainMask'); toast('跳转企业微信 / 留在当前页')">免费领取</button>
+        <button class="btn" onclick="hide('retainMask'); toast('留在当前页继续报名')">继续报名</button>
       </div>
+      <div class="note" style="margin:8px 0 0;">小程序端取消原"免费领取"跳企业微信链路（获客助手不支持小程序）</div>
     </div>
   </div>
 
