@@ -1,0 +1,2836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI质培中台 - AI陪练 - 交互原型</title>
+<style>
+  /* ========== 基础 & 变量（对齐 AI质培中台 Element Plus 风格） ========== */
+  :root {
+    --primary: #409eff;
+    --primary-light: #ecf5ff;
+    --primary-border: #b3d8ff;
+    --success: #67c23a;
+    --success-light: #f0f9eb;
+    --warning: #e6a23c;
+    --warning-light: #fdf6ec;
+    --danger: #f56c6c;
+    --danger-light: #fef0f0;
+    --info: #909399;
+    --info-light: #f4f4f5;
+    --text-primary: #303133;
+    --text-regular: #606266;
+    --text-secondary: #909399;
+    --text-placeholder: #a8abb2;
+    --border: #dcdfe6;
+    --border-light: #e4e7ed;
+    --border-lighter: #ebeef5;
+    --bg-page: #f2f3f5;
+    --sidebar-bg: #001529;
+    --table-header-bg: #f6f7fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 14px; color: var(--text-primary); background: var(--bg-page); overflow: hidden;
+  }
+  /* ========== 布局 ========== */
+  .app-layout { display: flex; height: 100vh; }
+  .sidebar { width: 220px; background: var(--sidebar-bg); display: flex; flex-direction: column; flex-shrink: 0; }
+  .logo { height: 56px; display: flex; align-items: center; justify-content: center; gap: 8px; overflow: hidden; }
+  .logo-icon { width: 30px; height: 30px; border-radius: 6px; background: linear-gradient(135deg,#409eff,#36cfc9); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:14px; }
+  .logo-title { font-size: 18px; font-weight: 600; color: #fff; white-space: nowrap; }
+  .menu { flex: 1; overflow-y: auto; padding: 6px 8px; }
+  .menu::-webkit-scrollbar { width: 4px; }
+  .menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 2px; }
+  .menu-group-title, .menu-item { display:flex; align-items:center; gap:8px; height:44px; padding:0 12px; color: rgba(255,255,255,.65); cursor:pointer; border-radius:4px; user-select:none; font-size:14px; white-space:nowrap; }
+  .menu-group-title:hover, .menu-item:hover { background: rgba(255,255,255,.08); color:#fff; }
+  .menu-item.active { background: var(--primary); color:#fff; }
+  .menu-sub { overflow:hidden; max-height:0; transition:max-height .25s ease; }
+  .menu-group.open .menu-sub { max-height: 400px; }
+  .menu-sub .menu-item { padding-left: 40px; height:40px; }
+  .menu-arrow { margin-left:auto; font-size:12px; transition: transform .25s; }
+  .menu-group.open .menu-arrow { transform: rotate(180deg); }
+  .menu-icon { width:18px; text-align:center; font-size:15px; }
+  .body-wrap { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .navbar { height:56px; background:#fff; border-bottom:1px solid var(--border-light); display:flex; align-items:center; justify-content:space-between; padding:0 16px; flex-shrink:0; }
+  .breadcrumb { display:flex; align-items:center; gap:8px; color: var(--text-secondary); font-size:14px; }
+  .breadcrumb .cur { color: var(--text-primary); }
+  .nav-user { display:flex; align-items:center; gap:8px; cursor:pointer; }
+  .avatar { width:30px; height:30px; border-radius:50%; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; }
+  .main { flex:1; padding:10px; overflow:auto; }
+  /* ========== 卡片 ========== */
+  .card { background:#fff; border-radius:4px; border:1px solid var(--border-lighter); padding:20px; }
+  /* ========== 表单控件 ========== */
+  .form-inline { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-bottom:16px; }
+  .toolbar-right { margin-left:auto; display:flex; gap:10px; }
+  .input, .select { height:32px; border:1px solid var(--border); border-radius:4px; padding:0 11px; font-size:14px; color:var(--text-regular); outline:none; background:#fff; transition:border-color .2s; }
+  .input:focus, .select:focus { border-color: var(--primary); }
+  .input::placeholder { color: var(--text-placeholder); }
+  textarea.input { height:auto; padding:8px 11px; resize:vertical; line-height:1.6; font-family:inherit; }
+  .btn { height:32px; padding:0 15px; border-radius:4px; border:1px solid var(--border); background:#fff; color:var(--text-regular); font-size:14px; cursor:pointer; transition:all .2s; white-space:nowrap; }
+  .btn:hover { color:var(--primary); border-color:var(--primary-border); background:var(--primary-light); }
+  .btn-primary { background:var(--primary); border-color:var(--primary); color:#fff; }
+  .btn-primary:hover { background:#66b1ff; border-color:#66b1ff; color:#fff; }
+  .btn-plain { background:var(--primary-light); border-color:var(--primary-border); color:var(--primary); }
+  .btn-sm { height:26px; padding:0 10px; font-size:12px; }
+  .btn-link { border:none; background:none; color:var(--primary); padding:0 4px; height:auto; font-size:14px; cursor:pointer; }
+  .btn-link:hover { color:#66b1ff; background:none; }
+  .btn-link.danger { color: var(--danger); }
+  .btn-link.danger:hover { color:#f89898; }
+  /* radio button group */
+  .radio-group { display:inline-flex; }
+  .radio-group .rbtn { height:32px; padding:0 15px; border:1px solid var(--border); background:#fff; color:var(--text-regular); font-size:13px; cursor:pointer; }
+  .radio-group .rbtn:first-child { border-radius:4px 0 0 4px; }
+  .radio-group .rbtn:last-child { border-radius:0 4px 4px 0; border-left:none; }
+  .radio-group .rbtn.active { background:var(--primary); border-color:var(--primary); color:#fff; }
+  /* ========== 表格 ========== */
+  .table-wrap { overflow-x:auto; }
+  table.el-table { width:100%; border-collapse:collapse; font-size:14px; }
+  table.el-table th { background:var(--table-header-bg); font-weight:600; color:var(--text-primary); text-align:left; padding:10px 12px; border-bottom:1px solid var(--border-lighter); white-space:nowrap; }
+  table.el-table td { padding:10px 12px; border-bottom:1px solid var(--border-lighter); color:var(--text-regular); }
+  table.el-table tbody tr:hover { background:#f5f7fa; }
+  /* ========== 标签 ========== */
+  .tag { display:inline-flex; align-items:center; gap:4px; height:24px; padding:0 9px; border-radius:4px; font-size:12px; border:1px solid; white-space:nowrap; }
+  .tag-primary { background:var(--primary-light); border-color:var(--primary-border); color:var(--primary); }
+  .tag-success { background:var(--success-light); border-color:#c2e7b0; color:var(--success); }
+  .tag-warning { background:var(--warning-light); border-color:#f5dab1; color:var(--warning); }
+  .tag-danger  { background:var(--danger-light); border-color:#fbc4c4; color:var(--danger); }
+  .tag-info    { background:var(--info-light); border-color:#d3d4d6; color:var(--info); }
+  .tag .close { cursor:pointer; font-style:normal; opacity:.7; }
+  .tag .close:hover { opacity:1; }
+  /* ========== 分页 ========== */
+  .pagination { display:flex; align-items:center; justify-content:flex-end; gap:6px; margin-top:16px; color:var(--text-regular); font-size:13px; }
+  .page-btn { min-width:28px; height:28px; border:none; background:var(--info-light); border-radius:3px; cursor:pointer; color:var(--text-regular); font-size:13px; }
+  .page-btn.active { background:var(--primary); color:#fff; }
+  /* ========== 弹窗 ========== */
+  .dialog-mask { position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:flex-start; justify-content:center; z-index:100; overflow:auto; padding:6vh 20px 40px; }
+  .dialog-mask.show { display:flex; }
+  .dialog { background:#fff; border-radius:6px; width:600px; max-width:96vw; box-shadow:0 12px 32px rgba(0,0,0,.15); animation:dlgIn .18s ease; }
+  .dialog.lg { width: 860px; }
+  @keyframes dlgIn { from { opacity:0; transform:translateY(-14px);} to { opacity:1; transform:none;} }
+  /* 右侧抽屉（质培中台新增/编辑主体样式） */
+  .dialog-mask.drawer { justify-content:flex-end; padding:0; overflow:hidden; }
+  .dialog-mask.drawer .dialog { height:100vh; border-radius:0; width:760px; max-width:92vw; display:flex; flex-direction:column; animation:drawerIn .22s ease; }
+  .dialog-mask.drawer .dialog-body { max-height:none; flex:1; }
+  .dialog-mask.drawer .dialog-header { border-bottom:1px solid var(--border-lighter); }
+  .dialog-mask.drawer .dialog-footer { border-top:1px solid var(--border-lighter); padding-top:14px; }
+  @keyframes drawerIn { from { transform:translateX(60px); opacity:.4; } to { transform:none; opacity:1; } }
+  .dialog-mask.drawer .form-label { width:126px; }
+  /* 课程下拉筛选 combobox */
+  .combobox { position:relative; }
+  .combo-drop { position:absolute; top:36px; left:0; right:0; background:#fff; border:1px solid var(--border-light); border-radius:4px; box-shadow:0 6px 18px rgba(0,0,0,.12); max-height:220px; overflow-y:auto; display:none; z-index:20; }
+  .combo-drop.show { display:block; }
+  .combo-opt { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; cursor:pointer; font-size:13.5px; color:var(--text-regular); }
+  .combo-opt:hover { background:#f5f7fa; }
+  .combo-opt.picked { color:var(--primary); background:var(--primary-light); cursor:default; }
+  .combo-empty { padding:14px; text-align:center; color:var(--text-placeholder); font-size:13px; }
+  /* 组织架构选人面板（质培中台 OrgCascade 样式） */
+  .org-panel { margin-top:10px; padding:12px; background:#f5f7fa; border:1px solid var(--border-lighter); border-radius:8px; }
+  .org-panel-body { display:flex; gap:12px; height:250px; }
+  .org-col { flex:1; min-width:0; display:flex; flex-direction:column; padding:8px; background:#fff; border:1px solid var(--border-lighter); border-radius:6px; }
+  .org-col-title { display:flex; justify-content:space-between; align-items:center; padding-bottom:8px; margin-bottom:8px; font-size:13px; font-weight:600; border-bottom:1px solid var(--border-lighter); }
+  .org-tree, .org-members { flex:1; overflow-y:auto; }
+  .org-node { padding:6px 8px; border-radius:4px; cursor:pointer; font-size:13px; color:var(--text-regular); }
+  .org-node:hover { background:#f5f7fa; }
+  .org-node.active { background:var(--primary-light); color:var(--primary); }
+  .org-node.lv2 { padding-left:24px; }
+  .org-members { display:flex; flex-wrap:wrap; align-content:flex-start; }
+  .org-members label { flex:0 0 50%; display:flex; gap:5px; align-items:center; padding:4px 2px; font-size:13px; color:var(--text-regular); cursor:pointer; }
+  .org-empty { flex:1 1 100%; padding:20px 0; text-align:center; color:var(--text-secondary); font-size:13px; }
+  .org-panel-footer { display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
+  .org-panel-footer span { font-size:13px; color:var(--text-secondary); }
+  /* 场景类型选择卡片 */
+  .type-option { flex:1; padding:20px; border:2px solid var(--border-light); border-radius:8px; text-align:center; cursor:pointer; transition:all .25s; }
+  .type-option:hover { border-color:var(--primary); background:#f0f9ff; }
+  .type-option.selected { border-color:var(--primary); background:var(--primary-light); }
+  .type-icon { width:60px; height:60px; border-radius:50%; margin:0 auto 12px; display:flex; align-items:center; justify-content:center; font-size:26px; }
+  .type-title { font-size:16px; font-weight:600; margin-bottom:8px; }
+  .type-desc { font-size:13px; color:var(--text-regular); line-height:1.5; }
+  /* 只读详情行 */
+  .detail-row { display:flex; margin-bottom:14px; font-size:14px; }
+  .detail-label { width:120px; flex-shrink:0; color:var(--text-secondary); text-align:right; padding-right:14px; }
+  .detail-value { flex:1; color:var(--text-primary); line-height:1.7; }
+  .detail-block { background:#f5f7fa; border-radius:6px; padding:12px 14px; white-space:pre-wrap; line-height:1.8; color:var(--text-regular); font-size:13.5px; }
+  /* 描述表（el-descriptions 风格，问题详情弹窗用） */
+  .desc-row { display:flex; border:1px solid var(--border-lighter); border-bottom:none; }
+  .desc-row:last-child { border-bottom:1px solid var(--border-lighter); }
+  .desc-k { width:110px; flex-shrink:0; background:#f6f7fa; padding:10px 12px; font-size:13px; color:var(--text-regular); font-weight:600; }
+  .desc-v { flex:1; padding:10px 14px; font-size:13.5px; line-height:1.8; color:var(--text-regular); min-width:0; }
+  /* 客户详情（参考电销CRM客户详情描述表） */
+  .cd-grid { display:grid; grid-template-columns:repeat(3,1fr); border:1px solid var(--border-lighter); border-radius:4px; overflow:hidden; }
+  .cd-cell { display:flex; border-bottom:1px solid var(--border-lighter); border-right:1px solid var(--border-lighter); min-height:44px; }
+  .cd-cell:nth-child(3n) { border-right:none; }
+  .cd-cell .k { width:130px; flex-shrink:0; background:#f6f7fa; color:var(--text-regular); font-size:13px; display:flex; align-items:center; padding:0 12px; }
+  .cd-cell .v { flex:1; display:flex; align-items:center; padding:0 12px; font-size:13.5px; color:var(--text-primary); font-weight:500; }
+  .cd-tabs { display:flex; gap:4px; border-bottom:1px solid var(--border-lighter); }
+  .cd-tab { padding:10px 18px; border:none; background:none; font-size:14px; color:var(--text-regular); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; }
+  .cd-tab.active { color:var(--primary); border-bottom-color:var(--primary); font-weight:600; }
+  /* AI外呼通话面板：右上角悬浮，可收起/展开 */
+  .call-mask { position:fixed; top:66px; right:14px; display:none; z-index:130; }
+  .call-mask.show { display:block; }
+  .call-panel { width:720px; max-width:92vw; height:540px; max-height:84vh; background:#fff; border-radius:8px; display:flex; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,.28); border:1px solid var(--border-light); }
+  .call-mask.collapsed .call-panel { display:none; }
+  .call-mini { display:none; align-items:center; gap:10px; background:#001529; color:#fff; border-radius:22px; padding:8px 10px 8px 16px; box-shadow:0 6px 20px rgba(0,0,0,.3); font-size:13px; cursor:pointer; }
+  .call-mask.collapsed .call-mini { display:flex; }
+  .call-mini .dot { width:8px; height:8px; border-radius:50%; background:var(--success); animation:cblink 1s infinite; }
+  .call-mini .t { font-variant-numeric:tabular-nums; color:#bfcbd9; }
+  .call-mini .mini-btn { border:none; border-radius:14px; padding:4px 12px; font-size:12px; cursor:pointer; background:rgba(255,255,255,.15); color:#fff; }
+  .call-mini .mini-btn.red { background:var(--danger); }
+  .collapse-call-btn { border:1px solid var(--border); background:#fff; border-radius:4px; padding:3px 10px; font-size:12px; color:var(--text-regular); cursor:pointer; }
+  .collapse-call-btn:hover { color:var(--primary); border-color:var(--primary-border); }
+  .call-left { width:240px; background:#001529; color:#fff; display:flex; flex-direction:column; align-items:center; padding:32px 20px 20px; flex-shrink:0; }
+  .call-avatar { width:76px; height:76px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center; font-size:30px; position:relative; }
+  .call-avatar .ring { position:absolute; inset:-8px; border-radius:50%; border:2px solid rgba(103,194,58,.6); animation:cpulse 1.6s infinite; display:none; }
+  .call-panel.connected .call-avatar .ring { display:block; }
+  @keyframes cpulse { 0%{transform:scale(.95);opacity:1;} 100%{transform:scale(1.25);opacity:0;} }
+  .call-left h4 { margin-top:14px; font-size:16px; }
+  .call-left .phone-no { font-size:12px; color:#bfcbd9; margin-top:4px; }
+  .call-status { margin-top:12px; font-size:13px; color:var(--warning); }
+  .call-panel.connected .call-status { color:var(--success); }
+  .call-timer { font-size:26px; font-weight:300; margin-top:6px; font-variant-numeric:tabular-nums; }
+  .ai-badge2 { margin-top:14px; background:rgba(64,158,255,.18); border:1px solid rgba(64,158,255,.45); color:#65bdff; font-size:11px; padding:3px 10px; border-radius:3px; }
+  .call-tip2 { margin-top:auto; background:rgba(255,255,255,.07); border-radius:4px; padding:10px 12px; font-size:11.5px; color:#bfcbd9; line-height:1.7; }
+  .hangup-btn { margin-top:14px; width:100%; padding:10px; border-radius:4px; border:none; background:var(--danger); color:#fff; font-size:14px; cursor:pointer; }
+  .call-right { flex:1; display:flex; flex-direction:column; min-width:0; background:#f0f2f5; }
+  .call-right-head { padding:11px 16px; background:#fff; border-bottom:1px solid var(--border-lighter); display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-regular); }
+  .rec-dot { width:8px; height:8px; border-radius:50%; background:var(--danger); animation:cblink 1s infinite; }
+  @keyframes cblink { 50%{opacity:.2;} }
+  .chat-box2 { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
+  .cmsg { display:flex; gap:8px; max-width:82%; }
+  .cmsg .m-av { width:30px; height:30px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:13px; }
+  .cmsg .bubble { padding:9px 13px; border-radius:4px; font-size:13.5px; line-height:1.7; }
+  .cmsg .who { font-size:11px; color:var(--text-secondary); margin-bottom:3px; }
+  .cmsg.ai { align-self:flex-start; }
+  .cmsg.ai .m-av { background:var(--primary-light); color:var(--primary); }
+  .cmsg.ai .bubble { background:#fff; border:1px solid var(--border-lighter); }
+  .cmsg.me { align-self:flex-end; flex-direction:row-reverse; }
+  .cmsg.me .m-av { background:var(--success-light); color:var(--success); }
+  .cmsg.me .bubble { background:var(--primary); color:#fff; }
+  .cmsg.sys { align-self:center; max-width:100%; }
+  .cmsg.sys .bubble { background:transparent; border:none; color:var(--text-secondary); font-size:12px; }
+  .ctyping { display:inline-flex; gap:4px; padding:4px 0; }
+  .ctyping i { width:6px; height:6px; border-radius:50%; background:#c0c4cc; animation:ctp 1.2s infinite; }
+  .ctyping i:nth-child(2){animation-delay:.2s;} .ctyping i:nth-child(3){animation-delay:.4s;}
+  @keyframes ctp { 0%,60%,100%{transform:translateY(0);} 30%{transform:translateY(-4px);} }
+  .chat-input-bar2 { padding:12px 16px; background:#fff; border-top:1px solid var(--border-lighter); display:flex; gap:10px; }
+  .chat-input-bar2 textarea { flex:1; border:1px solid var(--border); border-radius:4px; padding:9px 12px; font-size:13.5px; resize:none; height:44px; outline:none; font-family:inherit; }
+  .chat-input-bar2 textarea:focus { border-color:var(--primary); }
+  /* 语音通话按钮与波形 */
+  .mic-btn2 { height:44px; padding:0 16px; border-radius:4px; border:1px solid var(--border); background:#fff; color:var(--text-regular); font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+  .mic-btn2:hover { color:var(--primary); border-color:var(--primary-border); }
+  .mic-btn2.on { background:var(--danger); border-color:var(--danger); color:#fff; }
+  .mic-btn2.on .mic-wave2 { display:inline-flex; }
+  .mic-wave2 { display:none; gap:2px; align-items:flex-end; height:14px; }
+  .mic-wave2 i { width:3px; background:#fff; border-radius:1px; animation:mwave 1s infinite ease-in-out; }
+  .mic-wave2 i:nth-child(1){height:6px;} .mic-wave2 i:nth-child(2){height:12px;animation-delay:.15s;} .mic-wave2 i:nth-child(3){height:8px;animation-delay:.3s;} .mic-wave2 i:nth-child(4){height:11px;animation-delay:.45s;}
+  @keyframes mwave { 0%,100%{transform:scaleY(.5);} 50%{transform:scaleY(1);} }
+  .speak-ind2 { display:none; color:var(--success); font-size:12px; }
+  .speak-ind2.show { display:inline; }
+  .mic-hint2 { font-size:11px; color:var(--text-placeholder); text-align:center; padding:0 16px 8px; background:#fff; line-height:1.6; }
+  /* 我的任务：课程卡片 + 练习模式选择 */
+  .course-card2 { border:1px solid var(--border-lighter); border-radius:6px; padding:16px; margin-bottom:14px; transition:box-shadow .2s; display:flex; justify-content:space-between; gap:14px; }
+  .course-card2:hover { box-shadow:0 2px 12px rgba(0,0,0,.08); }
+  .course-card2 .cc-title { font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+  .course-card2 .cc-target { font-size:13px; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:480px; }
+  .course-card2 .cc-btns { display:flex; flex-direction:column; gap:8px; flex-shrink:0; justify-content:center; }
+  .mode-option { display:flex; gap:12px; align-items:flex-start; border:2px solid var(--border-light); border-radius:8px; padding:14px; margin-bottom:12px; cursor:pointer; transition:all .2s; }
+  .mode-option:hover { border-color:var(--primary-border); }
+  .mode-option.active { border-color:var(--primary); background:var(--primary-light); }
+  .mode-option.disabled { opacity:.55; cursor:not-allowed; background:#fafafa; }
+  .mode-icon { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .mode-title { font-size:15px; font-weight:600; margin-bottom:4px; }
+  .mode-desc { font-size:13px; color:var(--text-regular); line-height:1.6; }
+  .feature-tag { font-size:11px; padding:2px 8px; border-radius:10px; background:var(--info-light); color:var(--text-regular); }
+  .custom-radio { width:18px; height:18px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:4px; }
+  .custom-radio.checked { border-color:var(--primary); }
+  .custom-radio.checked i { width:9px; height:9px; border-radius:50%; background:var(--primary); }
+  /* 课程练习弹窗（不覆盖左侧菜单栏，样式同电销CRM） */
+  .ex-mask { position:fixed; top:0; right:0; bottom:0; left:220px; background:rgba(0,0,0,.5); z-index:120; display:none; align-items:center; justify-content:center; }
+  .ex-mask.show { display:flex; }
+  .ex-dialog { width:calc(100% - 40px); height:calc(100% - 40px); background:#fff; border-radius:8px; box-shadow:0 12px 40px rgba(0,0,0,.22); display:flex; flex-direction:column; overflow:hidden; }
+  .ex-header { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; font-size:14px; color:var(--text-regular); flex-shrink:0; }
+  .ex-body { flex:1; display:flex; min-height:0; padding:0 16px 16px; gap:0; }
+  .ex-left { width:260px; flex-shrink:0; transition:width .2s; overflow:hidden; }
+  .ex-left.hid { width:0; }
+  .ex-info-card { background:#fff; border:1px solid var(--border-lighter); border-radius:8px; padding:16px; box-shadow:0 1px 6px rgba(0,0,0,.04); width:244px; }
+  .ex-info-head { display:flex; justify-content:space-between; font-weight:700; font-size:14.5px; margin-bottom:14px; }
+  .ex-info-row { display:flex; gap:12px; align-items:center; font-size:13px; margin-bottom:14px; color:var(--text-primary); }
+  .ex-info-row .k { color:var(--text-regular); flex-shrink:0; }
+  .ex-collapse { align-self:center; width:18px; height:36px; border:1px solid var(--border-lighter); background:#fff; border-radius:0 8px 8px 0; cursor:pointer; color:var(--text-secondary); padding:0; margin-right:16px; }
+  .ex-right { flex:1; min-width:0; display:flex; flex-direction:column; border-left:1px solid var(--border-lighter); padding-left:0; position:relative; }
+  .ex-timer { position:absolute; top:8px; right:8px; background:var(--primary-light); color:var(--primary); font-size:12.5px; padding:4px 12px; border-radius:14px; font-variant-numeric:tabular-nums; z-index:2; }
+  .ex-chat { flex:1; overflow-y:auto; padding:40px 24px 16px; display:flex; flex-direction:column; gap:12px; border-bottom:1px solid var(--border-lighter); }
+  .ex-ctrl { display:flex; align-items:center; justify-content:space-between; padding:20px 40px 8px; }
+  .ex-abandon { border:1px solid #fbc4c4; background:var(--danger-light); color:var(--danger); border-radius:4px; padding:8px 18px; font-size:14px; cursor:pointer; }
+  .ex-mic { width:56px; height:56px; border-radius:50%; border:none; background:var(--primary); color:#fff; font-size:22px; cursor:pointer; box-shadow:0 4px 14px rgba(64,158,255,.4); transition:all .2s; }
+  .ex-mic.rec { background:var(--danger); animation:cpulse2 1.2s infinite; }
+  @keyframes cpulse2 { 0%{box-shadow:0 0 0 0 rgba(245,108,108,.5);} 100%{box-shadow:0 0 0 14px rgba(245,108,108,0);} }
+  .ex-finish { border:none; background:var(--primary); color:#fff; border-radius:4px; padding:9px 18px; font-size:14px; cursor:pointer; }
+  .ex-finish:disabled { background:#a0cfff; cursor:not-allowed; }
+  .ex-hint { text-align:center; color:var(--text-secondary); font-size:12.5px; padding:6px 0 12px; }
+  .kbd { border:1px solid var(--border); border-radius:4px; padding:1px 8px; font-size:11.5px; background:#f6f7fa; color:var(--text-regular); }
+  .dialog-header { padding:16px 20px; display:flex; justify-content:space-between; align-items:center; }
+  .dialog-title { font-size:16px; font-weight:600; }
+  .dialog-close { cursor:pointer; color:var(--text-secondary); font-size:18px; border:none; background:none; }
+  .dialog-body { padding:4px 20px 10px; max-height:64vh; overflow-y:auto; }
+  .dialog-footer { padding:12px 20px 20px; text-align:right; display:flex; justify-content:flex-end; gap:10px; }
+  /* 表单行 */
+  .form-item { display:flex; margin-bottom:18px; }
+  .form-label { width:110px; flex-shrink:0; text-align:right; padding-right:12px; line-height:32px; color:var(--text-regular); font-size:14px; }
+  .form-label.req::before { content:"*"; color:var(--danger); margin-right:4px; }
+  .form-content { flex:1; min-width:0; }
+  .form-tip { font-size:12px; color:var(--text-secondary); margin-top:5px; line-height:1.5; }
+  .checkbox-line { display:flex; gap:18px; align-items:center; height:32px; }
+  .checkbox-line label { display:flex; gap:5px; align-items:center; cursor:pointer; color:var(--text-regular); }
+  /* ========== 话术库专属 ========== */
+  .script-layout { display:flex; gap:16px; }
+  .script-tree { width:230px; flex-shrink:0; background:#fff; border:1px solid var(--border-lighter); border-radius:4px; padding:12px; align-self:flex-start; }
+  .tree-title { font-weight:600; margin-bottom:10px; font-size:14px; }
+  .tree-node { padding:7px 8px; border-radius:4px; cursor:pointer; color:var(--text-regular); font-size:13.5px; display:flex; justify-content:space-between; }
+  .tree-node:hover { background:#f5f7fa; }
+  .tree-node.active { background:var(--primary-light); color:var(--primary); }
+  .tree-node .cnt { color:var(--text-placeholder); font-size:12px; }
+  .tree-children { padding-left:16px; }
+  .script-list { flex:1; min-width:0; }
+  .script-card { border:1px solid var(--border-lighter); background:#fff; border-radius:4px; margin-bottom:12px; }
+  .script-card-head { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid var(--border-lighter); gap:10px; }
+  .script-q-label { color:var(--primary); font-weight:600; flex-shrink:0; font-size:13px; }
+  .script-q-text { flex:1; font-weight:600; }
+  .script-card-body { padding:14px; font-size:14px; line-height:1.7; color:var(--text-regular); }
+  .script-card-body .ans-label { color:var(--primary); font-weight:600; }
+  .script-card-foot { display:flex; flex-wrap:wrap; gap:10px 28px; align-items:center; padding:9px 14px; border-top:1px dashed var(--border-lighter); color:var(--text-secondary); font-size:12px; }
+  /* ========== 场景配置：标签筛选行 ========== */
+  .tag-filter-row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:16px; }
+  .tag-filter-row .fbtn { height:26px; padding:0 12px; border-radius:13px; border:1px solid var(--border); background:#fff; font-size:12px; color:var(--text-regular); cursor:pointer; }
+  .tag-filter-row .fbtn.active { background:var(--primary); border-color:var(--primary); color:#fff; }
+  /* 已选课程列表 */
+  .course-pick-list { border:1px solid var(--border-light); border-radius:4px; margin-top:10px; }
+  .course-pick-item { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-bottom:1px solid var(--border-lighter); font-size:13.5px; }
+  .course-pick-item:last-child { border-bottom:none; }
+  .drag-handle { cursor:move; color:var(--primary); margin-right:8px; }
+  .badge { font-size:11px; padding:1px 7px; border-radius:9px; margin-left:8px; }
+  .badge-exam { background:var(--warning-light); color:var(--warning); }
+  .badge-practice { background:var(--success-light); color:var(--success); }
+  /* 进度条 */
+  .progress-bar { width:90px; height:6px; border-radius:3px; background:var(--border-lighter); overflow:hidden; display:inline-block; vertical-align:middle; }
+  .progress-bar i { display:block; height:100%; background:var(--primary); border-radius:3px; }
+  /* 难度点 */
+  /* 页面切换 */
+  .page-view { display:none; }
+  .page-view.show { display:block; }
+  .page-title-line { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .page-title-line h2 { font-size:17px; font-weight:600; }
+  .page-title-line .sub { color:var(--text-secondary); font-size:13px; margin-top:3px; font-weight:400; }
+  /* toast */
+  #toast { position:fixed; top:70px; left:50%; transform:translateX(-50%); background:var(--success-light); color:var(--success); border:1px solid #c2e7b0; padding:9px 20px; border-radius:4px; font-size:14px; display:none; z-index:999; }
+  /* 原型说明角标 */
+  .proto-note { position:fixed; right:14px; bottom:14px; background:rgba(0,21,41,.85); color:#fff; font-size:12px; padding:8px 14px; border-radius:6px; z-index:99; line-height:1.7; max-width:300px; }
+  .proto-note b { color:#7cc4ff; }
+</style>
+</head>
+<body>
+<div class="app-layout">
+  <!-- ============ 侧边栏 ============ -->
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-icon">质</span><span class="logo-title">AI质培中台</span></div>
+    <nav class="menu">
+      <div class="menu-group">
+        <div class="menu-group-title" onclick="toggleGroup(this)"><span class="menu-icon">&#8962;</span>工作台<span class="menu-arrow">&#9662;</span></div>
+        <div class="menu-sub"><div class="menu-item" onclick="fakeNav(this)">首页</div></div>
+      </div>
+      <div class="menu-group">
+        <div class="menu-group-title" onclick="toggleGroup(this)"><span class="menu-icon">&#128214;</span>在线学习<span class="menu-arrow">&#9662;</span></div>
+        <div class="menu-sub">
+          <div class="menu-item" onclick="fakeNav(this)">课程管理</div>
+          <div class="menu-item" onclick="fakeNav(this)">学习项目</div>
+          <div class="menu-item" onclick="fakeNav(this)">课程中心</div>
+          <div class="menu-item" onclick="fakeNav(this)">我的学习</div>
+        </div>
+      </div>
+      <div class="menu-group">
+        <div class="menu-group-title" onclick="toggleGroup(this)"><span class="menu-icon">&#9998;</span>在线考试<span class="menu-arrow">&#9662;</span></div>
+        <div class="menu-sub">
+          <div class="menu-item" onclick="fakeNav(this)">我的考试</div>
+          <div class="menu-item" onclick="fakeNav(this)">题库管理</div>
+          <div class="menu-item" onclick="fakeNav(this)">试卷管理</div>
+          <div class="menu-item" onclick="fakeNav(this)">考试管理</div>
+        </div>
+      </div>
+      <!-- ★ 新增一级菜单：AI陪练 -->
+      <div class="menu-group open" id="aiPracticeGroup">
+        <div class="menu-group-title" onclick="toggleGroup(this)"><span class="menu-icon">&#129302;</span>AI陪练<span class="menu-arrow">&#9662;</span></div>
+        <div class="menu-sub">
+          <div class="menu-item active" data-page="scripts"  onclick="switchPage(this,'scripts','优秀话术库')">优秀话术库</div>
+          <div class="menu-item" data-page="scenarios" onclick="switchPage(this,'scenarios','场景配置')">场景配置</div>
+          <div class="menu-item" data-page="personas" onclick="switchPage(this,'personas','行为画像库')">行为画像库</div>
+          <div class="menu-item" data-page="practiceConfig" onclick="switchPage(this,'practiceConfig','对练台配置管理')">对练台配置管理</div>
+          <div class="menu-item" data-page="roleVoice" onclick="switchPage(this,'roleVoice','角色音色管理')">角色音色管理</div>
+          <div class="menu-item" data-page="tasks"    onclick="switchPage(this,'tasks','任务管理')">任务管理</div>
+          <div class="menu-item" data-page="mytasks"  onclick="switchPage(this,'mytasks','我的任务')">我的任务</div>
+          <div class="menu-item" data-page="customerPool" onclick="switchPage(this,'customerPool','客户池')">客户池</div>
+        </div>
+      </div>
+      <div class="menu-group">
+        <div class="menu-group-title" onclick="toggleGroup(this)"><span class="menu-icon">&#9881;</span>系统管理<span class="menu-arrow">&#9662;</span></div>
+        <div class="menu-sub"><div class="menu-item" data-page="users" onclick="switchPage(this,'users','系统管理 / 用户管理')">用户管理</div></div>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ============ 主体 ============ -->
+  <section class="body-wrap">
+    <header class="navbar">
+      <div class="breadcrumb">AI陪练 <span>/</span> <span class="cur" id="crumb">优秀话术库</span></div>
+      <div class="nav-user"><span class="avatar">李</span><span>李映萍</span></div>
+    </header>
+    <main class="main">
+
+      <!-- ==================== 页面1：优秀话术库（交互还原电销CRM） ==================== -->
+      <div class="page-view show" id="page-scripts">
+        <div class="card" style="margin-bottom:12px;">
+          <div class="form-inline" style="margin-bottom:14px;">
+            <span style="color:var(--text-regular)">搜索模式：</span>
+            <div class="radio-group" id="scriptSearchMode">
+              <button class="rbtn active" onclick="pickRadio(this)">问题</button>
+              <button class="rbtn" onclick="pickRadio(this)">答案</button>
+            </div>
+            <input class="input" style="flex:1;min-width:220px;" placeholder="请输入搜索关键词" onkeyup="if(event.key==='Enter')toast('已按关键词搜索（原型演示）')">
+            <button class="btn btn-primary" onclick="toast('已按关键词搜索（原型演示）')">搜索</button>
+          </div>
+          <div class="form-inline" style="margin-bottom:0;">
+            <span style="color:var(--text-regular)">标签筛选：</span>
+            <button class="btn btn-plain btn-sm" onclick="openTagSelector()">&#127991; 选择标签</button>
+            <div id="scriptSelTags" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;flex:1;"></div>
+          </div>
+        </div>
+        <div class="script-layout">
+          <div class="script-tree">
+            <input class="input" style="width:100%;margin-bottom:10px;height:30px;font-size:13px;" placeholder="搜索分类名称" id="treeSearchInput" oninput="filterScriptTree()">
+            <div id="scriptTreeBox">
+              <div class="tree-node active" onclick="pickTree(this)"><span>全部</span><span class="cnt">86</span></div>
+              <div class="tree-node" onclick="pickTree(this)"><span>&#9656; 开场破冰</span><span class="cnt">18</span></div>
+              <div class="tree-children">
+                <div class="tree-node" onclick="pickTree(this)"><span>首次接触</span><span class="cnt">10</span></div>
+                <div class="tree-node" onclick="pickTree(this)"><span>二次跟进</span><span class="cnt">8</span></div>
+              </div>
+              <div class="tree-node" onclick="pickTree(this)"><span>&#9656; 需求挖掘</span><span class="cnt">22</span></div>
+              <div class="tree-children">
+                <div class="tree-node" onclick="pickTree(this)"><span>学情沟通</span><span class="cnt">12</span></div>
+                <div class="tree-node" onclick="pickTree(this)"><span>痛点定位</span><span class="cnt">10</span></div>
+              </div>
+              <div class="tree-node" onclick="pickTree(this)"><span>&#9656; 产品介绍</span><span class="cnt">16</span></div>
+              <div class="tree-node" onclick="pickTree(this)"><span>&#9656; 异议处理</span><span class="cnt">20</span></div>
+              <div class="tree-children">
+                <div class="tree-node" onclick="pickTree(this)"><span>价格顾虑</span><span class="cnt">9</span></div>
+                <div class="tree-node" onclick="pickTree(this)"><span>时间顾虑</span><span class="cnt">6</span></div>
+                <div class="tree-node" onclick="pickTree(this)"><span>效果质疑</span><span class="cnt">5</span></div>
+              </div>
+              <div class="tree-node" onclick="pickTree(this)"><span>&#9656; 促单关单</span><span class="cnt">10</span></div>
+            </div>
+          </div>
+          <div class="script-list" id="scriptList"><!-- JS 渲染 --></div>
+        </div>
+      </div>
+
+      <!-- ==================== 页面2：任务管理 ==================== -->
+      <div class="page-view" id="page-tasks">
+        <div class="card">
+          <div class="form-inline">
+            <input class="input" placeholder="请输入任务名称" style="width:200px;">
+            <select class="select" style="width:170px;"><option value="">请选择任务执行状态</option><option>未开始</option><option>进行中</option><option>已结束</option></select>
+            <input class="input" style="width:160px;" placeholder="请输入创建人" onkeyup="if(event.key==='Enter')toast('已按创建人模糊搜索（原型演示）')">
+            <select class="select" style="width:150px;"><option value="">请选择任务模式</option><option>自由练习</option><option>场景练习</option><option>考试模式</option></select>
+            <button class="btn btn-primary" onclick="toast('已按条件搜索（原型演示）')">搜索</button>
+            <button class="btn">重置</button>
+            <div class="toolbar-right"><button class="btn btn-primary" onclick="openTaskDialog(false)">新增任务</button></div>
+          </div>
+          <div class="table-wrap">
+            <table class="el-table">
+              <thead><tr><th>任务ID</th><th>任务名称</th><th>学员人数</th><th>任务状态</th><th>任务模式</th><th>创建人</th><th>更新人</th><th>创建时间</th><th>开始时间</th><th>截止时间</th><th>操作</th></tr></thead>
+              <tbody id="taskTbody"></tbody>
+            </table>
+          </div>
+          <div class="pagination"><span>共 12 条</span><button class="page-btn">&#8249;</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">&#8250;</button><span>10条/页</span></div>
+        </div>
+      </div>
+
+      <!-- ==================== 页面2-1：任务学员明细（子页面） ==================== -->
+      <div class="page-view" id="page-taskMembers">
+        <div class="card">
+          <div class="page-title-line">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <button class="btn" onclick="backToTaskList()">&#8592; 返回</button>
+              <div><h2 id="tmPageTitle">学员明细</h2><div class="sub" id="tmPageSub"></div></div>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn" onclick="toast('已发起导出，稍后自动下载（原型演示）')">导出明细</button>
+              <button class="btn btn-primary" id="btnTaskReport" onclick="openTaskReport()">查看任务报告</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="el-table">
+              <thead><tr><th>学员</th><th>所属组织</th><th>完成进度</th><th>最近练习时间</th><th>综合得分</th><th>操作</th></tr></thead>
+              <tbody id="taskMemberTbody"></tbody>
+            </table>
+          </div>
+          <div class="pagination"><span>共 3 名学员</span><button class="page-btn">&#8249;</button><button class="page-btn active">1</button><button class="page-btn">&#8250;</button></div>
+        </div>
+      </div>
+
+      <!-- ==================== 页面3：场景配置 ==================== -->
+      <div class="page-view" id="page-scenarios">
+        <div class="card">
+          <div class="form-inline">
+            <input class="input" placeholder="搜索场景名称" style="width:200px;">
+            <select class="select" style="width:130px;"><option>全部状态</option><option>已发布</option><option>草稿</option><option>已停用</option></select>
+            <select class="select" style="width:130px;"><option>全部学段</option><option>小学</option><option>初中</option><option>高中</option></select>
+            <select class="select" style="width:130px;" id="scTagFilterSel"><option>全部标签</option></select>
+            <button class="btn btn-primary" onclick="toast('已按条件搜索（原型演示）')">查询</button>
+            <button class="btn">重置</button>
+            <div class="toolbar-right">
+              <button class="btn btn-primary" onclick="openScenarioTypeDialog()">＋ 新建场景</button>
+              <button class="btn" onclick="openTagManage()">标签管理</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="el-table">
+              <thead><tr><th>场景名称</th><th>类型</th><th>适用学段</th><th>客户身份范围</th><th>标签</th><th>发布状态</th><th>更新人</th><th>更新时间</th><th>操作</th></tr></thead>
+              <tbody id="scenarioTbody"></tbody>
+            </table>
+          </div>
+          <div class="pagination"><span>共 9 个场景</span><button class="page-btn">&#8249;</button><button class="page-btn active">1</button><button class="page-btn">&#8250;</button></div>
+        </div>
+      </div>
+
+      <!-- ==================== 页面3-1：场景内容配置（新开页面，字段对齐 CRM-新建课程） ==================== -->
+      <div class="page-view" id="page-scenarioEdit">
+        <div class="card">
+          <div class="page-title-line">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <button class="btn" onclick="backToScenarioList()">&#8592; 返回</button>
+              <div><h2 id="seTitle">新建场景</h2></div>
+              <span class="badge" id="seTypeBadge" style="margin-left:0;font-size:12px;padding:3px 10px;"></span>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn" onclick="backToScenarioList();toast('已保存为草稿（原型演示）')">保存草稿</button>
+              <button class="btn btn-primary" onclick="backToScenarioList();toast('场景已发布（原型演示）')">发布场景</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:20px;">
+            <!-- 左侧：场景设置表单 -->
+            <div style="flex:1;min-width:0;">
+              <div class="form-item"><div class="form-label req" style="width:120px;">场景名称</div><div class="form-content"><input class="input" style="width:100%;" maxlength="20" placeholder="请输入场景名称（不超过20个字符）" id="seNameInput"></div></div>
+              <div class="form-item"><div class="form-label req" style="width:120px;">适用学段</div><div class="form-content">
+                <div class="checkbox-line">
+                  <label><input type="checkbox" checked>小学</label>
+                  <label><input type="checkbox">初中</label>
+                  <label><input type="checkbox">高中</label>
+                </div>
+              </div></div>
+              <div class="form-item"><div class="form-label" style="width:120px;">场景标签</div><div class="form-content">
+                <select class="select" style="width:100%;" id="scenarioTagSel"><option value="">选择标签（可在「标签管理」中维护）</option></select>
+                <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;" id="scenarioTagPicked"></div>
+              </div></div>
+
+              <!-- AI客户 专属字段（对齐 CRM AI客户课程设置） -->
+              <div id="seFieldsAI">
+                <div class="form-item"><div class="form-label req" style="width:120px;">客户身份范围</div><div class="form-content">
+                  <select class="select" style="width:100%;"><option>家长</option><option>学生</option><option selected>通用</option></select>
+                  <div class="form-tip">家长可生成父亲、母亲、爷爷或奶奶；学生可生成男学生或女学生；通用可生成家长或学生。与行为画像「适用身份范围」、角色音色「角色身份」取值保持一致</div>
+                </div></div>
+                <div class="form-item"><div class="form-label req" style="width:120px;">对话时间上限</div><div class="form-content">
+                  <input class="input" type="number" value="5" min="1" max="9999" style="width:160px;"> <span style="color:var(--text-regular);margin-left:6px;">分钟</span>
+                </div></div>
+                <div class="form-item"><div class="form-label req" style="width:120px;">对话间隔时长</div><div class="form-content">
+                  <input class="input" type="number" value="30" min="1" max="999" style="width:160px;"> <span style="color:var(--text-regular);margin-left:6px;">秒</span>
+                  <div class="form-tip">配置后对练时给销售侧回复倒计时引导，避免等待回复时长过久而降低及时回复能力</div>
+                </div></div>
+                <div style="border-bottom:1px solid var(--border-lighter);margin:18px 0 14px;"></div>
+                <div style="font-size:15px;font-weight:600;margin-bottom:14px;">场景配置</div>
+                <div class="form-item"><div class="form-label req" style="width:120px;">场景提示词</div><div class="form-content">
+                  <textarea class="input" rows="6" style="width:100%;" placeholder="写清电话背景、场景发生原因、训练流程、禁止行为和客户信息披露节奏…">【电话背景】销售外呼跟进已领取体验课的客户，孩子近期完成学情诊断。
+【训练流程】学情反馈 → 需求挖掘 → 方案推荐 → 处理异议 → 约定下一步。
+【禁止行为】不得保证提分结果、不得连续推销超过两轮、不得虚构优惠。
+【信息披露】客户信息逐步披露，销售追问具体时才补充细节。</textarea>
+                  <div class="form-tip">客户角色与音色由行为画像和角色音色管理动态匹配，不在场景中绑定</div>
+                </div></div>
+                <div class="form-item"><div class="form-label req" style="width:120px;">对话目标</div><div class="form-content">
+                  <textarea class="input" rows="4" style="width:100%;" placeholder="请输入对话目标">完成学情反馈→需求挖掘→方案推荐→处理异议→约定下一步动作，全程保持真实客户状态。</textarea>
+                </div></div>
+                <div class="form-item"><div class="form-label" style="width:120px;">评价标准</div><div class="form-content">
+                  <textarea class="input" rows="7" style="width:100%;background:#f5f7fa;cursor:not-allowed;" readonly>1. 开场破冰（20分）：30秒内完成自我介绍并确认客户身份；
+2. 需求挖掘（20分）：至少完成两轮有效追问，定位具体薄弱点；
+3. 产品介绍（20分）：结合学情诊断结果给出针对性方案；
+4. 异议处理（20分）：先共情后拆解，不得直接让步；
+5. 促单关单（20分）：结尾约定明确的下一步动作与时间。</textarea>
+                  <div class="form-tip">评价标准只可查看，不可修改；内容由「对练台配置管理」的对练评价默认模板统一维护</div>
+                </div></div>
+              </div>
+
+              <!-- 问答对练 专属字段（对齐 CRM 问答对练课程设置） -->
+              <div id="seFieldsQA" style="display:none;">
+                <div class="form-item"><div class="form-label req" style="width:120px;">对话时间间隔</div><div class="form-content">
+                  <input class="input" type="number" value="30" min="1" max="9999" style="width:160px;"> <span style="color:var(--text-regular);margin-left:6px;">秒</span>
+                </div></div>
+                <div class="form-item"><div class="form-label req" style="width:120px;">选择问题</div><div class="form-content">
+                  <button class="btn btn-primary btn-sm" onclick="toggleQaPanel()">＋ 选择问题</button>
+                  <!-- 选题面板：交互样式同学习项目-选择课程 -->
+                  <div class="org-panel" id="qaPickPanel" style="display:none;">
+                    <div class="form-inline" style="margin-bottom:10px;">
+                      <input class="input" style="width:200px;" placeholder="搜索问题关键词" id="qaKwInput" oninput="renderQaPickTable()">
+                      <select class="select" style="width:150px;" id="qaCatSel" onchange="renderQaPickTable()"><option>全部分类</option><option>需求挖掘</option><option>异议处理</option><option>促单关单</option></select>
+                      <span style="font-size:12px;color:var(--text-secondary);">仅可选择优秀话术库中已生效的问题</span>
+                    </div>
+                    <div style="max-height:240px;overflow-y:auto;background:#fff;border:1px solid var(--border-lighter);border-radius:6px;">
+                      <table class="el-table">
+                        <thead><tr><th style="width:40px;"></th><th>问题</th><th>标准答案</th><th style="width:130px;">分类</th></tr></thead>
+                        <tbody id="qaPickTbody"></tbody>
+                      </table>
+                    </div>
+                    <div class="org-panel-footer">
+                      <span id="qaPickCount">已勾选 0 个问题</span>
+                      <div style="display:flex;gap:8px;">
+                        <button class="btn btn-sm" onclick="toggleQaPanel(true)">取消</button>
+                        <button class="btn btn-primary btn-sm" id="qaConfirmBtn" onclick="qaConfirm()">确定添加</button>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- 已选问题列表 -->
+                  <div style="margin-top:10px;" id="qaPickedWrap">
+                    <table class="el-table" style="border:1px solid var(--border-lighter);border-radius:4px;">
+                      <thead><tr><th style="width:56px;">排序</th><th>问题</th><th>答案</th><th style="width:60px;">操作</th></tr></thead>
+                      <tbody id="qaPickedTbody"></tbody>
+                    </table>
+                  </div>
+                  <div class="form-tip">学员依次回答问题，系统按标准答案匹配度评分；可拖拽调整问题顺序</div>
+                </div></div>
+                <div class="form-item"><div class="form-label req" style="width:120px;">对话目标</div><div class="form-content">
+                  <textarea class="input" rows="4" style="width:100%;" placeholder="请输入对话目标">针对客户常见异议问题，训练学员按标准答案框架（共情→拆解→推动）作答，提升异议处理能力。</textarea>
+                </div></div>
+                <div class="form-item"><div class="form-label" style="width:120px;">评价标准</div><div class="form-content">
+                  <textarea class="input" rows="6" style="width:100%;background:#f5f7fa;cursor:not-allowed;" readonly>1. 答案要点覆盖（40分）：命中标准答案核心要点；
+2. 表达结构（30分）：符合"先共情、再拆解、后推动"三段论；
+3. 表达自然度（30分）：口语化、无背稿感，语速与停顿得当。</textarea>
+                  <div class="form-tip">评价标准只可查看，不可修改；内容由「对练台配置管理」的问答对练评价模板统一维护</div>
+                </div></div>
+              </div>
+            </div>
+            <!-- 右侧：效果测试（仅AI客户，对齐 CRM 效果测试区） -->
+            <div id="seTestArea" style="width:340px;flex-shrink:0;border-left:1px solid var(--border-lighter);padding-left:20px;display:flex;flex-direction:column;">
+              <div style="font-size:15px;font-weight:600;margin-bottom:10px;">效果测试</div>
+              <div style="flex:1;min-height:300px;background:#f5f7fa;border-radius:6px;padding:12px;overflow-y:auto;font-size:13px;line-height:1.7;" id="seTestMsgs">
+                <div style="color:var(--text-secondary);text-align:center;padding-top:100px;">保存配置后可与AI客户试聊<br>测试角色语气与信息披露是否自然</div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:10px;">
+                <input class="input" style="flex:1;" placeholder="输入一轮销售话术…" id="seTestInput">
+                <button class="btn btn-primary" onclick="seTestSend()">发送</button>
+              </div>
+              <button class="btn btn-sm" style="margin-top:8px;" onclick="document.getElementById('seTestMsgs').innerHTML='<div style=\'color:var(--text-secondary);text-align:center;padding-top:100px;\'>对话已重置</div>'">重置对话</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== 页面4：行为画像库 ==================== -->
+      <div class="page-view" id="page-personas">
+        <div class="card">
+          <div class="form-inline">
+            <input class="input" placeholder="搜索行为画像名称" style="width:200px;">
+            <select class="select" style="width:150px;"><option>全部适用范围</option><option>家长</option><option>学生</option><option>通用</option></select>
+            <select class="select" style="width:130px;"><option>全部状态</option><option>已发布</option><option>草稿</option><option>已停用</option></select>
+            <button class="btn btn-primary" onclick="toast('已按条件搜索（原型演示）')">查询</button>
+            <button class="btn">重置</button>
+            <div class="toolbar-right"><button class="btn btn-primary" onclick="openPersonaDialog(false)">＋ 新建行为画像</button></div>
+          </div>
+          <div class="table-wrap">
+            <table class="el-table">
+              <thead><tr><th>画像名称</th><th>适用身份范围</th><th>发布状态</th><th>更新人</th><th>更新时间</th><th>操作</th></tr></thead>
+              <tbody id="personaTbody"></tbody>
+            </table>
+          </div>
+          <div class="pagination"><span>共 7 个画像</span><button class="page-btn">&#8249;</button><button class="page-btn active">1</button><button class="page-btn">&#8250;</button></div>
+        </div>
+      </div>
+
+      <!-- ==================== 页面5：我的任务 ==================== -->
+      <div class="page-view" id="page-mytasks">
+        <div class="card">
+          <div class="form-inline">
+            <input class="input" placeholder="请输入任务名称" style="width:200px;">
+            <select class="select" style="width:170px;"><option value="">请选择任务执行状态</option><option>进行中</option><option>已结束</option></select>
+            <button class="btn btn-primary" onclick="toast('已按条件搜索（原型演示）')">搜索</button>
+            <button class="btn">重置</button>
+          </div>
+          <div class="table-wrap">
+            <table class="el-table">
+              <thead><tr><th>任务名称</th><th>任务状态</th><th>任务模式</th><th>进度</th><th>开始时间</th><th>截止时间</th><th>操作</th></tr></thead>
+              <tbody id="myTaskTbody"></tbody>
+            </table>
+          </div>
+          <div class="pagination"><span>共 5 条</span><button class="page-btn">&#8249;</button><button class="page-btn active">1</button><button class="page-btn">&#8250;</button><span>10条/页</span></div>
+        </div>
+      </div>
+
+      <!-- ==================== 页面5-1：客户池 ==================== -->
+      <div class="page-view" id="page-customerPool">
+        <div class="card">
+          <div class="form-inline">
+            <div class="toolbar-right" style="position:relative;">
+              <button class="btn btn-primary" onclick="openApplyTaskDrop(event)">＋ 申请客户</button>
+              <div id="applyTaskDrop" style="display:none;position:absolute;top:38px;right:0;width:280px;background:#fff;border:1px solid var(--border-lighter);border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:30;overflow:hidden;">
+                <div style="padding:8px 12px;font-size:12px;color:var(--text-secondary);border-bottom:1px solid var(--border-lighter);background:#f8f9fb;">你有多个进行中的自由练习任务，请选择本次申请所属任务</div>
+                <div id="applyTaskDropList"></div>
+              </div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="el-table">
+              <thead><tr><th>洋葱ID</th><th>手机号</th><th>最近一次付费时间</th><th>最近一次看课时间</th><th>意向度</th><th>领取时间</th><th>任务名称</th><th>操作</th></tr></thead>
+              <tbody id="custPoolTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== 页面5-2：客户详情（参考电销CRM客户详情） ==================== -->
+      <div class="page-view" id="page-customerDetail">
+        <div class="card" style="margin-bottom:12px;">
+          <div class="page-title-line" style="margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <button class="btn" onclick="backToCustomerPool()">&#8592; 返回</button>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span class="avatar" style="width:40px;height:40px;font-size:16px;" id="cdAvatar">洋</span>
+                <div><h2 id="cdName">--</h2><div class="sub" id="cdSub"></div></div>
+              </div>
+            </div>
+            <button class="btn btn-primary" id="cdCallBtn" onclick="startAiCall(currentCustIdx)">&#128222; 一键拨打</button>
+          </div>
+          <div class="cd-grid" id="cdGrid"></div>
+        </div>
+        <div class="card">
+          <div class="cd-tabs">
+            <button class="cd-tab active" onclick="pickCdTab(this,'order')">订单记录</button>
+            <button class="cd-tab" onclick="pickCdTab(this,'watch')">观看记录</button>
+            <button class="cd-tab" onclick="pickCdTab(this,'study')">学情报告</button>
+            <button class="cd-tab" onclick="pickCdTab(this,'call')">通话记录</button>
+          </div>
+          <div id="cdTabBody" style="margin-top:16px;"></div>
+        </div>
+      </div>
+
+      <!-- ==================== 页面6：对练台配置管理（表单样式对齐质培中台） ==================== -->
+      <div class="page-view" id="page-practiceConfig">
+        <div class="card">
+          <div style="max-width:820px;">
+            <div style="font-size:15px;font-weight:600;margin-bottom:16px;border-left:3px solid var(--primary);padding-left:10px;">模型配置</div>
+            <div class="form-item"><div class="form-label req" style="width:140px;">对练模型</div><div class="form-content">
+              <select class="select" style="width:100%;max-width:480px;">
+                <option>DeepSeek-V3-对练专用</option>
+                <option selected>豆包-Pro-128K</option>
+                <option>Qwen-Max-对话增强</option>
+                <option>GPT-4o-mini</option>
+              </select>
+              <div class="form-tip">对练过程中扮演 AI 客户所使用的大模型，模型列表来自 AI 资源配置</div>
+            </div></div>
+            <div class="form-item"><div class="form-label req" style="width:140px;">对练评价模型</div><div class="form-content">
+              <select class="select" style="width:100%;max-width:480px;">
+                <option selected>DeepSeek-V3-对练专用</option>
+                <option>豆包-Pro-128K</option>
+                <option>Qwen-Max-对话增强</option>
+                <option>GPT-4o-mini</option>
+              </select>
+              <div class="form-tip">通话结束后生成评分评判结果所使用的大模型</div>
+            </div></div>
+            <div style="border-bottom:1px solid var(--border-lighter);margin:20px 0 16px;"></div>
+            <div style="font-size:15px;font-weight:600;margin-bottom:16px;border-left:3px solid var(--primary);padding-left:10px;">评价模板配置</div>
+            <div class="form-item"><div class="form-label req" style="width:140px;">对练评价默认模板</div><div class="form-content">
+              <textarea class="input" rows="8" style="width:100%;" placeholder="请输入对练评价默认模板内容">你是一名电销培训评估专家，请根据以下对话记录对学员表现进行评价：
+1. 开场破冰（20分）：是否在30秒内完成自我介绍并确认客户身份；
+2. 需求挖掘（20分）：是否通过有效追问定位客户具体问题；
+3. 产品介绍（20分）：是否结合客户情况给出针对性方案；
+4. 异议处理（20分）：是否先共情后拆解，不直接让步；
+5. 促单关单（20分）：是否约定明确的下一步动作。
+输出格式：各维度得分、总分、优势、待改进项、综合评语。</textarea>
+              <div class="form-tip">AI客户类场景未单独配置评价标准时，默认使用该模板生成评估报告</div>
+            </div></div>
+            <div class="form-item"><div class="form-label req" style="width:140px;">问答对练评价模板</div><div class="form-content">
+              <textarea class="input" rows="10" style="width:100%;" placeholder="请输入问答对练评价模板内容">你是一名电销话术评估专家，请根据标准答案对学员的回答进行评分：
+1. 答案要点覆盖（40分）：是否命中标准答案的核心要点；
+2. 表达结构（30分）：是否符合"先共情、再拆解、后推动"三段论框架；
+3. 表达自然度（30分）：是否口语化、无背稿感、语速与停顿得当。
+评分规则：
+- 90分以上：要点完整、结构清晰、表达自然；
+- 70-89分：要点基本覆盖，结构或表达有小瑕疵；
+- 60-69分：遗漏关键要点或结构混乱；
+- 60分以下：答非所问或严重偏离标准答案。
+输出格式：单题得分、总分、逐题点评、综合建议。</textarea>
+              <div class="form-tip">问答对练类场景未单独配置评价标准时，默认使用该模板生成评分</div>
+            </div></div>
+            <div class="form-item" style="margin-top:6px;"><div class="form-label" style="width:140px;"></div><div class="form-content">
+              <button class="btn btn-primary" onclick="toast('配置更新成功（原型演示）')">保存配置</button>
+              <button class="btn" style="margin-left:10px;" onclick="toast('已重置为当前生效配置（原型演示）')">重置</button>
+            </div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== 页面7：角色音色管理 ==================== -->
+      <div class="page-view" id="page-roleVoice">
+        <div class="card">
+          <div class="form-inline">
+            <div class="toolbar-right"><button class="btn btn-primary" onclick="openRoleVoiceDialog(false)">＋ 新增角色</button></div>
+          </div>
+          <div class="table-wrap">
+            <table class="el-table">
+              <thead><tr><th>角色ID</th><th>角色名称</th><th>角色身份</th><th>音色ID</th><th>操作</th></tr></thead>
+              <tbody id="roleVoiceTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== 页面8：用户管理（系统管理，结构对齐 views/system/users） ==================== -->
+      <div class="page-view" id="page-users">
+        <div style="display:flex;gap:16px;">
+          <div class="card" style="width:260px;flex-shrink:0;align-self:flex-start;padding:12px;">
+            <div style="font-weight:600;margin-bottom:10px;">组织架构</div>
+            <div class="org-tree" id="userOrgTree"></div>
+          </div>
+          <div class="card" style="flex:1;min-width:0;padding:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+              <div style="font-size:15px;font-weight:600;" id="userOrgTitle">武汉电销 <span style="color:var(--text-secondary);font-weight:400;font-size:13px;">（8人）</span></div>
+              <div style="display:flex;gap:10px;">
+                <button class="btn btn-primary" id="btnBatchRole" disabled style="opacity:.6;" onclick="toast('批量编辑角色（原型演示，交互同批量编辑学段）')">批量编辑角色</button>
+                <button class="btn btn-primary" id="btnBatchStage" disabled style="opacity:.6;" onclick="openBatchStage()">批量编辑学段</button>
+              </div>
+            </div>
+            <div style="background:var(--primary-light);border:1px solid var(--primary-border);border-radius:4px;padding:8px 12px;font-size:13px;color:var(--text-regular);margin-bottom:14px;display:flex;align-items:center;gap:6px;"><span style="color:var(--primary);">ⓘ</span>组织架构与人员数据由 电销 CRM 同步（在电销 CRM 中新增架构/坐席后自动同步至本系统，本页不支持手动增删）</div>
+            <div class="form-inline">
+              <input class="input" placeholder="姓名关键词" style="width:170px;">
+              <input class="input" placeholder="邮箱（精确）" style="width:200px;">
+              <button class="btn btn-primary" onclick="toast('已按条件查询（原型演示）')">查询</button>
+              <button class="btn">重置</button>
+            </div>
+            <div class="table-wrap">
+              <table class="el-table">
+                <thead><tr><th style="width:42px;"><input type="checkbox" id="userAllChk" onchange="userToggleAll(this.checked)"></th><th>姓名</th><th>部门</th><th>角色</th><th>邮箱</th><th>学段</th><th>入职时间</th><th>离职时间</th><th>创建时间</th><th>更改时间</th><th>操作</th></tr></thead>
+                <tbody id="usersTbody"></tbody>
+              </table>
+            </div>
+            <div class="pagination"><span>共 8 人</span><button class="page-btn">&#8249;</button><button class="page-btn active">1</button><button class="page-btn">&#8250;</button><span>10条/页</span></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </section>
+</div>
+
+<!-- ==================== 弹窗：话术详情 ==================== -->
+<!-- ==================== 弹窗：选择标签（按标签组勾选，交互同CRM TagSelector） ==================== -->
+<div class="dialog-mask" id="dlgTagSelector">
+  <div class="dialog" style="width:720px;">
+    <div class="dialog-header"><span class="dialog-title">选择标签</span><button class="dialog-close" onclick="closeDlg('dlgTagSelector')">×</button></div>
+    <div class="dialog-body">
+      <input class="input" style="width:100%;margin-bottom:14px;" placeholder="搜索标签" id="tagSelKw" oninput="renderTagSelector()">
+      <div id="tagSelGroups"></div>
+    </div>
+    <div class="dialog-footer">
+      <span style="margin-right:auto;font-size:13px;color:var(--text-secondary);line-height:32px;" id="tagSelCount"></span>
+      <button class="btn" onclick="closeDlg('dlgTagSelector')">取消</button>
+      <button class="btn btn-primary" onclick="confirmTagSelector()">确定</button>
+    </div>
+  </div>
+</div>
+
+<div class="dialog-mask" id="dlgScriptDetail">
+  <div class="dialog lg">
+    <div class="dialog-header"><span class="dialog-title">问题详情</span><button class="dialog-close" onclick="closeDlg('dlgScriptDetail')">×</button></div>
+    <div class="dialog-body" id="scriptDetailBody"></div>
+    <div class="dialog-footer"><button class="btn" onclick="closeDlg('dlgScriptDetail')">关闭</button></div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗：新建/编辑任务（右侧浮出） ==================== -->
+<div class="dialog-mask drawer" id="dlgTask">
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title" id="dlgTaskTitle">新建任务</span><button class="dialog-close" onclick="closeDlg('dlgTask')">×</button></div>
+    <div class="dialog-body">
+      <div class="form-item"><div class="form-label req">任务名称</div><div class="form-content"><input class="input" style="width:100%;" maxlength="20" placeholder="请输入任务名称（不超过20个字符）" id="taskNameInput"></div></div>
+      <div class="form-item"><div class="form-label req">任务模式</div><div class="form-content">
+        <select class="select" style="width:100%;" id="taskModeSel" onchange="onTaskModeChange()"><option value="">请选择任务模式</option><option>自由练习</option><option>场景练习</option><option>考试模式</option></select>
+        <div class="form-tip">编辑任务时不允许修改任务模式；自由练习模式下学习场景仅可选择 AI客户类型的场景</div>
+      </div></div>
+      <div class="form-item"><div class="form-label req">学习场景</div><div class="form-content">
+        <button class="btn btn-primary btn-sm" onclick="toggleScenePanel()">＋ 选择场景</button>
+        <!-- 选场景面板：支持按标签筛选、全选 -->
+        <div class="org-panel" id="scenePickPanel" style="display:none;">
+          <div class="form-inline" style="margin-bottom:10px;">
+            <input class="input" style="width:180px;" placeholder="搜索场景名称" id="sceneKwInput" oninput="renderScenePickTable()">
+            <select class="select" style="width:140px;" id="sceneTagFilter" onchange="renderScenePickTable()"><option>全部标签</option></select>
+            <span style="font-size:12px;color:var(--text-secondary);" id="scenePickHint">仅可选择「已发布」状态的场景</span>
+          </div>
+          <div style="max-height:240px;overflow-y:auto;background:#fff;border:1px solid var(--border-lighter);border-radius:6px;">
+            <table class="el-table">
+              <thead><tr><th style="width:40px;"><input type="checkbox" id="sceneAllChk" onchange="sceneToggleAll(this.checked)"></th><th>场景名称</th><th style="width:90px;">类型</th><th style="width:80px;">适用学段</th><th>标签</th></tr></thead>
+              <tbody id="scenePickTbody"></tbody>
+            </table>
+          </div>
+          <div class="org-panel-footer">
+            <span id="scenePickCount">已勾选 0 个场景</span>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-sm" onclick="toggleScenePanel(true)">取消</button>
+              <button class="btn btn-primary btn-sm" onclick="sceneConfirm()">确定添加</button>
+            </div>
+          </div>
+        </div>
+        <div class="course-pick-list" id="scenePickedList"></div>
+        <div class="form-tip">支持按标签筛选与全选；可拖拽调整场景顺序，学员按顺序练习</div>
+      </div></div>
+      <div class="form-item"><div class="form-label req">学员</div><div class="form-content">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="toggleOrgPanel()">＋ 添加学员</button>
+          <div style="position:relative;">
+            <input class="input" style="width:230px;" id="stuSearchInput" placeholder="搜索姓名直接添加人员" oninput="renderStuSearchDrop()" onfocus="renderStuSearchDrop()" onblur="setTimeout(()=>{document.getElementById('stuSearchDrop').style.display='none'},200)">
+            <div id="stuSearchDrop" style="display:none;position:absolute;top:36px;left:0;width:280px;max-height:220px;overflow-y:auto;background:#fff;border:1px solid var(--border-lighter);border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:30;"></div>
+          </div>
+          <span style="font-size:12px;color:var(--text-secondary);">支持按人员或按组织批量选择</span>
+        </div>
+        <div class="org-panel" id="orgPanel" style="display:none;">
+          <div class="org-panel-body">
+            <div class="org-col">
+              <div class="org-col-title">选择架构</div>
+              <div class="org-tree" id="orgTree"></div>
+            </div>
+            <div class="org-col">
+              <div class="org-col-title"><span id="orgColTitle">选择人员</span><label id="orgAllWrap" style="display:none;font-weight:400;cursor:pointer;"><input type="checkbox" id="orgAllChk" onchange="orgToggleAll(this.checked)"> 全选</label></div>
+              <div class="org-members" id="orgMembers"><div class="org-empty">请先在左侧选择架构</div></div>
+            </div>
+          </div>
+          <div class="org-panel-footer">
+            <span id="orgCount">已选 0 人</span>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-sm" onclick="toggleOrgPanel(true)">取消</button>
+              <button class="btn btn-primary btn-sm" onclick="orgConfirm()">确定添加</button>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;" id="stuTags"></div>
+      </div></div>
+      <div class="form-item"><div class="form-label req">起止时间</div><div class="form-content">
+        <div style="display:flex;gap:8px;align-items:center;"><input class="input" type="datetime-local" style="flex:1;"><span>-</span><input class="input" type="datetime-local" style="flex:1;"></div>
+        <div class="form-tip">到达截止时间后，学员无法再练习课程；编辑任务时不允许修改时间范围</div>
+      </div></div>
+    </div>
+    <div class="dialog-footer"><button class="btn" onclick="closeDlg('dlgTask')">取消</button><button class="btn btn-primary" onclick="closeDlg('dlgTask');toast('任务已保存（原型演示）')">确定</button></div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗：整体任务报告（右侧浮出，仅已结束任务） ==================== -->
+<div class="dialog-mask drawer" id="dlgTaskReport">
+  <div class="dialog lg">
+    <div class="dialog-header"><span class="dialog-title" id="dlgTaskReportTitle">任务报告</span><button class="dialog-close" onclick="closeDlg('dlgTaskReport')">×</button></div>
+    <div class="dialog-body" style="line-height:1.8;color:var(--text-regular);">
+      <h3 style="margin:6px 0 10px;color:var(--text-primary);">一、整体完成情况</h3>
+      <p>本次任务共下发 <b>32</b> 名学员，按时完成 <b>28</b> 人（完成率 <b>87.5%</b>），未完成 4 人（其中离职 1 人）。全员平均综合得分 <b>82.6</b> 分，较上期复训提升 3.4 分。</p>
+      <h3 style="margin:16px 0 10px;color:var(--text-primary);">二、得分分布</h3>
+      <table class="el-table" style="margin-bottom:6px;">
+        <thead><tr><th>分数段</th><th>人数</th><th>占比</th></tr></thead>
+        <tbody>
+          <tr><td>90 分及以上</td><td>6</td><td>21.4%</td></tr>
+          <tr><td>80 - 89 分</td><td>15</td><td>53.6%</td></tr>
+          <tr><td>60 - 79 分</td><td>6</td><td>21.4%</td></tr>
+          <tr><td>60 分以下</td><td>1</td><td>3.6%</td></tr>
+        </tbody>
+      </table>
+      <h3 style="margin:16px 0 10px;color:var(--text-primary);">三、共性问题</h3>
+      <p>1. 价格异议环节主动报价过早，<b>18</b> 名学员在客户未表达价值认可前即抛出优惠；<br>2. 学情诊断结果引用不足，仅 40% 的学员在推课时关联了孩子薄弱点；<br>3. 促单阶段缺少明确的下一步动作约定。</p>
+      <h3 style="margin:16px 0 10px;color:var(--text-primary);">四、优秀表现与建议</h3>
+      <p>刘根、周雨彤在异议处理环节得分 90+，建议将其录音沉淀为优秀案例；针对共性问题建议追加「价格异议处理专项练习」任务，并在下期复训中提高该环节评分权重。</p>
+    </div>
+    <div class="dialog-footer"><button class="btn" onclick="closeDlg('dlgTaskReport')">关闭</button></div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗：对话记录+评估报告（电销样式） ==================== -->
+<div class="dialog-mask drawer" id="dlgRecordReport" style="z-index:120;">
+  <div class="dialog" style="width:1100px;">
+    <div class="dialog-header" style="border-bottom:1px solid var(--border-lighter);"><span class="dialog-title" id="dlgRecordReportTitle">评分报告</span><button class="dialog-close" onclick="closeDlg('dlgRecordReport')">×</button></div>
+    <div class="dialog-body" style="padding:0;display:flex;flex-direction:column;">
+      <div style="display:flex;flex:1;min-height:0;">
+        <!-- 左：通话记录 -->
+        <div style="flex:1.4;min-width:0;padding:16px 20px;border-right:1px solid var(--border-lighter);display:flex;flex-direction:column;">
+          <div style="font-size:14px;font-weight:600;color:var(--primary);border-bottom:2px solid var(--primary);display:inline-block;width:fit-content;padding-bottom:8px;margin-bottom:14px;">通话记录</div>
+          <!-- 音频播放条 -->
+          <div style="border:1px solid var(--border-lighter);border-radius:8px;padding:12px 16px;margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-bottom:6px;"><span>00:00</span><span id="rrDur">01:01</span></div>
+            <div style="height:4px;background:var(--border-lighter);border-radius:2px;position:relative;margin-bottom:10px;"><i style="position:absolute;left:18%;top:-4px;width:12px;height:12px;border-radius:50%;background:var(--primary);"></i><i style="position:absolute;left:0;width:18%;height:100%;background:var(--primary);border-radius:2px;"></i></div>
+            <div style="display:flex;align-items:center;gap:14px;">
+              <span style="color:var(--primary);">🔊</span>
+              <span style="flex:0 0 90px;height:4px;background:var(--border-lighter);border-radius:2px;position:relative;"><i style="position:absolute;left:0;width:55%;height:100%;background:var(--primary);border-radius:2px;"></i></span>
+              <button class="btn-link" style="font-size:18px;" onclick="toast('播放录音（原型演示）')">▶</button>
+              <span style="margin-left:auto;color:var(--primary);font-size:12px;cursor:pointer;">x1倍数</span>
+              <span style="color:var(--primary);cursor:pointer;" onclick="toast('下载录音（原型演示）')">⬇</span>
+            </div>
+          </div>
+          <!-- 对话消息 -->
+          <div id="rrChat" style="flex:1;overflow-y:auto;min-height:0;"></div>
+        </div>
+        <!-- 右：对话评估报告 -->
+        <div style="flex:1;min-width:0;padding:16px 20px;overflow-y:auto;">
+          <div style="font-size:14px;font-weight:600;margin-bottom:14px;">对话评估报告</div>
+          <div id="rrEval" style="font-size:13px;line-height:1.9;color:var(--text-regular);"></div>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer" style="border-top:1px solid var(--border-lighter);padding-top:12px;"><button class="btn" onclick="closeDlg('dlgRecordReport')">关闭</button></div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗：学员整体报告（右侧浮出，整体评价与分析） ==================== -->
+<div class="dialog-mask drawer" id="dlgMemberReport">
+  <div class="dialog lg">
+    <div class="dialog-header"><span class="dialog-title" id="dlgMemberReportTitle">学员报告</span><button class="dialog-close" onclick="closeDlg('dlgMemberReport')">×</button></div>
+    <div class="dialog-body" id="memberReportBody" style="line-height:1.8;color:var(--text-regular);"></div>
+    <div class="dialog-footer"><button class="btn" onclick="closeDlg('dlgMemberReport')">关闭</button></div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗：选择场景类型（新建第一步） ==================== -->
+<div class="dialog-mask" id="dlgScenarioType">
+  <div class="dialog" style="width:500px;">
+    <div class="dialog-header"><span class="dialog-title">选择场景类型</span><button class="dialog-close" onclick="closeDlg('dlgScenarioType')">×</button></div>
+    <div class="dialog-body">
+      <div style="color:var(--text-regular);margin-bottom:14px;">请选择要创建的场景类型：</div>
+      <div style="display:flex;gap:16px;">
+        <div class="type-option" id="typeOptAI" onclick="pickScenarioType('AI客户')">
+          <div class="type-icon" style="background:#e1f3ff;color:var(--primary);">&#128100;</div>
+          <div class="type-title">AI客户</div>
+          <div class="type-desc">与AI客户进行对话练习，提升销售沟通技巧</div>
+        </div>
+        <div class="type-option" id="typeOptQA" onclick="pickScenarioType('问答对练')">
+          <div class="type-icon" style="background:var(--warning-light);color:var(--warning);">&#128172;</div>
+          <div class="type-title">问答对练</div>
+          <div class="type-desc">通过问答练习提升异议处理能力</div>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn" onclick="closeDlg('dlgScenarioType')">取消</button>
+      <button class="btn btn-primary" id="btnTypeConfirm" disabled style="opacity:.5;" onclick="confirmScenarioType()">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗：场景配置详情（只读） ==================== -->
+<div class="dialog-mask drawer" id="dlgScenarioDetail">
+  <div class="dialog lg">
+    <div class="dialog-header"><span class="dialog-title" id="dlgScenarioDetailTitle">场景详情</span><button class="dialog-close" onclick="closeDlg('dlgScenarioDetail')">×</button></div>
+    <div class="dialog-body" id="scenarioDetailBody"></div>
+    <div class="dialog-footer"><button class="btn" onclick="closeDlg('dlgScenarioDetail')">关闭</button></div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗：标签管理（交互同课程管理-分类管理） ==================== -->
+<div class="dialog-mask drawer" id="dlgTagManage">
+  <div class="dialog" style="width:800px;">
+    <div class="dialog-header">
+      <div><div class="dialog-title">标签管理</div><div style="font-size:12px;color:var(--text-secondary);margin-top:5px;">按添加时间倒序展示；标签被场景引用时不可删除，需先在场景中移除该标签</div></div>
+      <button class="dialog-close" onclick="closeDlg('dlgTagManage')">×</button>
+    </div>
+    <div class="dialog-body">
+      <div style="display:flex;align-items:center;margin-bottom:14px;">
+        <button class="btn btn-primary" onclick="openTagAdd()">＋ 添加标签</button>
+        <span style="margin-left:auto;font-size:13px;color:var(--text-secondary);" id="tagCount"></span>
+      </div>
+      <div id="tagAddForm" style="display:none;padding:14px;margin-bottom:14px;background:#f5f7fa;border-radius:8px;">
+        <div class="form-item" style="margin-bottom:10px;"><div class="form-label req" style="width:88px;">标签名称</div><div class="form-content">
+          <input class="input" style="width:100%;" maxlength="20" placeholder="请输入标签名称，不超过 20 个字" id="tagAddInput">
+          <div class="form-tip">标签名称不可与现有标签重复</div>
+        </div></div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;"><button class="btn" onclick="closeTagAdd()">取消</button><button class="btn btn-primary" onclick="addTag()">确定添加</button></div>
+      </div>
+      <table class="el-table">
+        <thead><tr><th>标签名称</th><th>引用场景数</th><th>添加人</th><th>添加时间</th><th>操作</th></tr></thead>
+        <tbody id="tagTbody"></tbody>
+      </table>
+    </div>
+    <div class="dialog-footer"><button class="btn btn-primary" onclick="closeDlg('dlgTagManage')">完成</button></div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗：新建/编辑行为画像 ==================== -->
+<div class="dialog-mask drawer" id="dlgPersona">
+  <div class="dialog lg">
+    <div class="dialog-header"><span class="dialog-title" id="dlgPersonaTitle">新建行为画像</span><button class="dialog-close" onclick="closeDlg('dlgPersona')">×</button></div>
+    <div class="dialog-body">
+      <div class="form-item"><div class="form-label req">画像名称</div><div class="form-content"><input class="input" style="width:100%;" maxlength="20" placeholder="请输入画像名称（不超过20个字符）" id="personaNameInput"></div></div>
+      <div class="form-item"><div class="form-label req">适用身份范围</div><div class="form-content">
+        <select class="select" style="width:100%;" id="personaScopeSel"><option>家长</option><option>学生</option><option selected>通用</option></select>
+        <div class="form-tip">通用可匹配任意客户身份；家长、学生用于限制匹配候选。与场景配置「客户身份范围」、角色音色「角色身份」取值保持一致</div>
+      </div></div>
+      <div class="form-item"><div class="form-label req">行为提示词</div><div class="form-content">
+        <textarea class="input" rows="10" style="width:100%;" id="personaPromptArea" placeholder="只描述配合程度、沟通风格、信息披露、信任决策、质疑和情绪反应…">【配合程度】
+愿意沟通，但先观察对方是否专业；不会一开始就交代全部问题。
+
+【沟通风格】
+理性、克制，表达日常化，偶尔因长期没有改善而流露焦虑。
+
+【信息披露方式】
+先说模糊现象，销售追问具体且有耐心时，再逐步补充一个细节。
+
+【信任建立与决策】
+销售能准确复述现状、分析有依据并给出可验证下一步时，信任逐步提升。
+
+【价格敏感与质疑方式】
+不单纯追求最低价，更关注投入是否真正解决问题。
+
+【情绪特点】
+整体稳定，谈到长期困扰时略显焦虑，受到夸大承诺时会恢复谨慎。</textarea>
+        <div class="form-tip">禁止写入身份、学段、年级、地区、职业、会员、订单等固定事实（上限 12000 字）</div>
+      </div></div>
+      <div class="form-item"><div class="form-label">挂断提示词</div><div class="form-content">
+        <textarea class="input" rows="5" style="width:100%;" id="personaHangupArea" placeholder="选填。描述AI客户主动挂断的判断条件与结束语风格，例如：当对方连续两轮强行推销、多轮答非所问，或你已明确拒绝仍被纠缠时，不耐烦地说一句结束语（如「行了行了，我在忙，先这样啊」）然后挂断电话。留空表示该画像客户不会主动挂断。"></textarea>
+        <div class="form-tip">仅对自由练习场景下的 AI客户类型生效（上限 2000 字）；每通电话最多触发一次；触发后通话结果记为「客户挂断」，录音转写与评分规则不变</div>
+      </div></div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn" onclick="closeDlg('dlgPersona')">取消</button>
+      <button class="btn" onclick="closeDlg('dlgPersona');toast('已保存为草稿（原型演示）')">保存草稿</button>
+      <button class="btn btn-primary" onclick="closeDlg('dlgPersona');toast('画像已发布（原型演示）')">发布</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗：行为画像详情（只读） ==================== -->
+<div class="dialog-mask drawer" id="dlgPersonaDetail">
+  <div class="dialog lg">
+    <div class="dialog-header"><span class="dialog-title" id="dlgPersonaDetailTitle">画像详情</span><button class="dialog-close" onclick="closeDlg('dlgPersonaDetail')">×</button></div>
+    <div class="dialog-body" id="personaDetailBody"></div>
+    <div class="dialog-footer"><button class="btn" onclick="closeDlg('dlgPersonaDetail')">关闭</button></div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗：我的任务-任务详情（右侧浮出，卡片内联选择练习模式） ==================== -->
+<div class="dialog-mask drawer" id="dlgMyTaskDetail">
+  <div class="dialog lg">
+    <div class="dialog-header"><span class="dialog-title">任务详情</span><button class="dialog-close" onclick="closeDlg('dlgMyTaskDetail')">×</button></div>
+    <div class="dialog-body" id="myTaskCourseCards"></div>
+    <div class="dialog-footer"><button class="btn" onclick="closeDlg('dlgMyTaskDetail')">关闭</button></div>
+  </div>
+</div>
+
+<!-- ==================== 全屏：课程练习（样式同电销CRM练习页） ==================== -->
+<div class="ex-mask" id="dlgExercise">
+  <div class="ex-dialog">
+  <div class="ex-header"><span>课程练习</span><button class="dialog-close" onclick="abandonExercise(true)">×</button></div>
+  <div class="ex-body">
+    <div class="ex-left" id="exLeft">
+      <div class="ex-info-card">
+        <div class="ex-info-head"><span>课程信息</span><span style="color:var(--text-secondary);cursor:pointer;" onclick="toggleExInfo()">⌃</span></div>
+        <div id="exInfoBody">
+          <div class="ex-info-row"><span class="k">课程名称</span><span id="exCourseName">--</span></div>
+          <div class="ex-info-row"><span class="k">最大持续时间</span><span id="exMaxDur">5 分钟</span></div>
+          <div class="ex-info-row"><span class="k">机器人名称</span><span id="exBotName">周女士</span></div>
+          <div class="ex-info-row"><span class="k">机器人角色</span><span id="exBotRole">孩子妈妈</span></div>
+          <div class="ex-info-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><span class="k">练习目标</span><span id="exTarget" style="line-height:1.7;">--</span></div>
+          <div class="ex-info-row"><span class="k">创建时间</span><span>2026/9/1 10:00:00</span></div>
+          <div class="ex-info-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><span class="k">用户标签</span><span style="color:var(--text-placeholder);">暂无标签</span></div>
+        </div>
+      </div>
+    </div>
+    <button class="ex-collapse" id="exCollapseBtn" onclick="toggleExLeft()">‹</button>
+    <div class="ex-right">
+      <div class="ex-timer" id="exTimer">⏱ 00:00:00</div>
+      <div class="ex-chat" id="exChat"></div>
+      <div class="ex-ctrl">
+        <button class="ex-abandon" onclick="abandonExercise()">放弃练习</button>
+        <button class="ex-mic" id="exMicBtn" onclick="exMicPress()">🎙</button>
+        <button class="ex-finish" id="exFinishBtn" disabled onclick="finishExercise()">完成练习</button>
+      </div>
+      <div class="ex-hint">🎙 长按空格键录音，松开发送 <span class="kbd">Space</span>　|　按Esc键取消录音 <span class="kbd">Esc</span></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ==================== AI外呼通话面板（客户池-一键拨打） ==================== -->
+<div class="call-mask" id="callMask">
+  <div class="call-mini" onclick="expandCall()">
+    <span class="dot"></span><span id="miniName">--</span><span class="t" id="miniTimer">00:00</span>
+    <button class="mini-btn" onclick="event.stopPropagation();expandCall()">展开</button>
+    <button class="mini-btn red" onclick="event.stopPropagation();hangupCall()">挂断</button>
+  </div>
+  <div class="call-panel" id="callPanel">
+    <div class="call-left">
+      <div class="call-avatar"><span id="ccAv">洋</span><div class="ring"></div></div>
+      <h4 id="ccName">--</h4>
+      <div class="phone-no" id="ccPhone">--</div>
+      <div class="call-status" id="ccStatus">正在拨号…</div>
+      <div class="call-timer" id="ccTimer">00:00</div>
+      <div class="ai-badge2">AI 正在扮演该客户</div>
+      <div class="call-tip2">提示：客户性格与需求未知，注意倾听对方每一句反应，随时调整你的沟通话术；试试说"你好，我是洋葱学园的老师"或聊聊价格。</div>
+      <button class="hangup-btn" onclick="hangupCall()">挂断</button>
+    </div>
+    <div class="call-right">
+      <div class="call-right-head"><div class="rec-dot"></div>实时通话转写<span class="speak-ind2" id="speakInd2" style="margin-left:10px;">🔊 客户正在讲话…</span><span style="margin-left:auto;font-size:12px;color:var(--text-placeholder);">陪练模式 · 支持语音对话</span><button class="collapse-call-btn" style="margin-left:12px;" onclick="collapseCall()">收起 ⌃</button></div>
+      <div class="chat-box2" id="callChatBox"></div>
+      <div class="chat-input-bar2" style="justify-content:center;padding:14px 16px 10px;">
+        <button class="ex-mic" id="callMicBtn" onclick="callMicPress()">🎙</button>
+      </div>
+      <div class="mic-hint2" style="font-size:12px;color:var(--text-secondary);">🎙 长按空格键录音，松开发送 <span class="kbd">Space</span>　|　按Esc键取消录音 <span class="kbd">Esc</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗：新增/编辑角色（角色音色管理） ==================== -->
+<div class="dialog-mask" id="dlgRoleVoice">
+  <div class="dialog" style="width:600px;">
+    <div class="dialog-header"><span class="dialog-title" id="dlgRoleVoiceTitle">新增角色</span><button class="dialog-close" onclick="closeDlg('dlgRoleVoice')">×</button></div>
+    <div class="dialog-body">
+      <div class="form-item"><div class="form-label req">角色名称</div><div class="form-content"><input class="input" style="width:100%;" maxlength="10" placeholder="请输入角色名称（不超过10个字符）" id="rvNameInput"></div></div>
+      <div class="form-item"><div class="form-label req">角色身份</div><div class="form-content">
+        <select class="select" style="width:100%;" id="rvTypeSel"><option>家长</option><option>学生</option></select>
+        <div class="form-tip">用于生成 AI 客户时按场景「客户身份范围」匹配音色；与场景配置、行为画像的身份取值保持一致</div>
+      </div></div>
+      <div class="form-item"><div class="form-label req">音色ID</div><div class="form-content">
+        <div style="display:flex;gap:8px;">
+          <input class="input" style="flex:1;" placeholder="请输入音色ID" id="rvVoiceInput">
+          <button class="btn btn-primary btn-sm" style="height:32px;" onclick="toast('正在播放试听音频…（原型演示）')">试听</button>
+        </div>
+      </div></div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn" onclick="closeDlg('dlgRoleVoice')">取消</button>
+      <button class="btn btn-primary" id="rvSubmitBtn" onclick="closeDlg('dlgRoleVoice');toast('保存成功（原型演示）')">新增</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗：编辑（角色+学段，结构对齐 role-dialog） ==================== -->
+<div class="dialog-mask" id="dlgUserEdit">
+  <div class="dialog" style="width:560px;">
+    <div class="dialog-header"><span class="dialog-title" id="dlgUserEditTitle">编辑</span><button class="dialog-close" onclick="closeDlg('dlgUserEdit')">×</button></div>
+    <div class="dialog-body">
+      <div class="form-item" style="margin-bottom:12px;"><div class="form-label" style="width:72px;">姓名</div><div class="form-content" style="line-height:32px;" id="ueName"></div></div>
+      <div class="form-item" style="margin-bottom:12px;"><div class="form-label" style="width:72px;">邮箱</div><div class="form-content" style="line-height:32px;" id="ueMail"></div></div>
+      <div class="form-item" style="margin-bottom:12px;"><div class="form-label" style="width:72px;">部门</div><div class="form-content" style="line-height:32px;" id="ueOrg"></div></div>
+      <div class="form-item"><div class="form-label" style="width:72px;">角色</div><div class="form-content">
+        <div class="checkbox-line" style="flex-wrap:wrap;height:auto;gap:10px 18px;" id="ueRoleGroup"></div>
+        <div class="form-tip">角色支持多选，可不选（不选表示清空该用户角色）；姓名、部门、邮箱以飞书组织架构同步为准，仅展示不可修改。角色对应的功能权限以运营平台（shadow）中的配置为准</div>
+      </div></div>
+      <div class="form-item"><div class="form-label" style="width:72px;">学段</div><div class="form-content">
+        <select class="select" style="width:200px;" id="ueStageSel"><option>未设置</option><option>小学</option><option>初中</option><option>高中</option></select>
+        <div class="form-tip">学段用于自由练习任务申请客户时匹配对应学段的场景，可不选（未设置时无法申请AI客户）</div>
+      </div></div>
+    </div>
+    <div class="dialog-footer"><button class="btn" onclick="closeDlg('dlgUserEdit')">取消</button><button class="btn btn-primary" onclick="saveUserEdit()">保存</button></div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗：批量编辑学段（结构对齐批量编辑角色） ==================== -->
+<div class="dialog-mask" id="dlgBatchStage">
+  <div class="dialog" style="width:560px;">
+    <div class="dialog-header"><span class="dialog-title">批量编辑学段</span><button class="dialog-close" onclick="closeDlg('dlgBatchStage')">×</button></div>
+    <div class="dialog-body">
+      <div class="form-item"><div class="form-label" style="width:72px;">已选坐席</div><div class="form-content">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;max-height:30vh;overflow-y:auto;padding:6px;border:1px solid var(--border-lighter);border-radius:6px;" id="bsPicked"></div>
+      </div></div>
+      <div class="form-item"><div class="form-label" style="width:72px;">调整为</div><div class="form-content">
+        <select class="select" style="width:200px;" id="bsStageSel"><option>小学</option><option>初中</option><option>高中</option><option>未设置</option></select>
+        <div class="form-tip">保存后，所选坐席的学段将<strong>统一覆盖</strong>为所选学段（非追加）；批量编辑单次最多 50 人</div>
+      </div></div>
+    </div>
+    <div class="dialog-footer"><button class="btn" onclick="closeDlg('dlgBatchStage')">取消</button><button class="btn btn-primary" onclick="saveBatchStage()">保存</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div class="proto-note"><b>交互原型说明</b><br>新增一级菜单「AI陪练」含 7 个二级页面。样式对齐 AI质培中台（深色侧边栏 / Element Plus 风格）。所有按钮均可点击演示。</div>
+
+<script>
+/* ====================== 通用交互 ====================== */
+function toggleGroup(el){ el.parentNode.classList.toggle('open'); }
+function fakeNav(el){ toast('原型仅演示「AI陪练」菜单，其他菜单为系统现有功能'); }
+function switchPage(el, page, title){
+  document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.page-view').forEach(p=>p.classList.remove('show'));
+  document.getElementById('page-'+page).classList.add('show');
+  document.getElementById('crumb').textContent = title;
+}
+function pickRadio(el){ el.parentNode.querySelectorAll('.rbtn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); }
+function pickFbtn(el){ el.parentNode.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); }
+function pickTree(el){ document.querySelectorAll('.tree-node').forEach(n=>n.classList.remove('active')); el.classList.add('active'); }
+function openDlg(id){ document.getElementById(id).classList.add('show'); }
+function closeDlg(id){ document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.dialog-mask').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('show'); }));
+let toastTimer;
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent='✓ '+msg; t.style.display='block';
+  t.style.background='var(--success-light)'; t.style.color='var(--success)'; t.style.borderColor='#c2e7b0';
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.style.display='none',2200);
+}
+function toastErr(msg){
+  const t=document.getElementById('toast'); t.textContent='✕ '+msg; t.style.display='block';
+  t.style.background='var(--danger-light)'; t.style.color='var(--danger)'; t.style.borderColor='#fbc4c4';
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.style.display='none',2600);
+}
+
+/* ====================== 页面1：优秀话术库 mock（交互还原电销CRM） ====================== */
+const scriptTagGroups=[
+  {group:'课程类型',tags:['数学思维','语文素养','英语启蒙','编程思维','全科VIP','体验营','正式课程','短期训练营','寒暑假班','专题课','测评服务','督学服务']},
+  {group:'客户阶段',tags:['首次沟通','二次跟进','已试听','待续费','已流失召回']},
+  {group:'异议类型',tags:['价格异议','时间异议','效果质疑','决策人缺席','比价竞品']},
+  {group:'适用学段',tags:['小学','初中','高中']}
+];
+let selectedScriptTags=[{g:'课程类型',t:'数学思维'},{g:'客户阶段',t:'首次沟通'}];
+const scripts=[
+  {q:'你们的课和学校老师讲的有什么区别？为什么要额外报？',
+   a:'家长您好，学校老师面向全班几十个孩子，节奏是统一的；咱们的课是根据孩子当前的薄弱知识点定制的，先用AI学情诊断定位到具体薄弱项，再针对性练习。您可以先看孩子这次诊断报告里的三个薄弱点，我给您演示其中一个是怎么补的。',
+   cat:['需求挖掘','学情沟通'],
+   similar:['这个课跟学校讲的不是重复吗？','学校都学过了还有必要报吗？','跟着学校走就行了吧？','校内老师讲得挺好的，没必要再学','课内知识都没消化，报课外的干嘛','这不就是学校内容换个地方讲吗'],
+   effective:'永久',
+   tags:[{g:'课程类型',t:'数学思维'},{g:'客户阶段',t:'首次沟通'},{g:'适用学段',t:'小学'}]},
+  {q:'价格有点贵，我再考虑考虑吧。',
+   a:'理解您的顾虑。咱们不着急做决定，我先帮您算一笔账：这个课包平均到每次课不到一杯奶茶的钱，而且现在报名有阶段性优惠。更重要的是孩子现在正处在打基础的关键期，晚三个月补，难度和成本都会更高。您看要不要先用体验课让孩子试一周？',
+   cat:['异议处理','价格顾虑'],
+   similar:['太贵了，超预算了','别家比你们便宜','有没有再便宜点的套餐','等打折再说吧','这个价格不值','我对比一下其他机构','再等等看有没有活动','年底再买行不行','能不能分期'],
+   effective:'永久',
+   tags:[{g:'异议类型',t:'价格异议'},{g:'课程类型',t:'正式课程'},{g:'客户阶段',t:'二次跟进'},{g:'适用学段',t:'小学'},{g:'适用学段',t:'初中'}]},
+  {q:'孩子平时没时间上课，作业都写不完。',
+   a:'咱们的课是录播+直播结合的，单节只有25分钟，孩子写完作业碎片时间就能学。而且系统会根据孩子的学习记录自动调整进度，缺的课随时补，不会像线下班一样落下就跟不上。',
+   cat:['异议处理','时间顾虑'],
+   similar:['孩子课太多排不开','周末都被兴趣班占满了','作业写到十一点哪有时间','等放假再学吧'],
+   effective:'2026-01-01 00:00:00 至 2026-12-31 23:59:59',
+   tags:[{g:'异议类型',t:'时间异议'},{g:'适用学段',t:'初中'}]},
+  {q:'我先跟孩子爸爸商量一下再说。',
+   a:'应该的，孩子的教育决定确实需要家里达成一致。为了方便您和爱人沟通，我把孩子的学情诊断报告和课程方案发您微信，里面有具体薄弱点和提升路径。今晚您二位看完，我明天上午再和您同步爸爸关心的问题，您看可以吗？',
+   cat:['促单关单','决策拖延'],
+   similar:['做不了主，得问孩子妈','家里人还没统一意见','孩子自己不想学，我再劝劝','过两天给你答复','让孩子期中考完再说','我们再开个家庭会议','爷爷奶奶不同意报'],
+   effective:'永久',
+   tags:[{g:'异议类型',t:'决策人缺席'},{g:'客户阶段',t:'二次跟进'},{g:'适用学段',t:'小学'}]}
+];
+function catDisplay(cat){
+  const full=cat.join('-');
+  return full.length>15?`<span class="category-text" title="${full}">${full.slice(0,15)}…</span>`:`<span class="category-text" title="${full}">${full}</span>`;
+}
+function cardTagsHtml(tags){
+  const shown=tags.slice(0,4);
+  const allTitle=tags.map(x=>x.g+': '+x.t).join('，');
+  return `<span style="display:flex;gap:6px;align-items:center;" title="${allTitle}">${shown.map(x=>`<span class="tag tag-primary" style="height:20px;">${x.t}</span>`).join('')}${tags.length>4?'<span style="color:var(--text-placeholder);">…</span>':''}</span>`;
+}
+function renderScripts(){
+  document.getElementById('scriptList').innerHTML = scripts.map((s,i)=>`
+    <div class="script-card">
+      <div class="script-card-head">
+        <span class="script-q-label">标准问题</span>
+        <span class="script-q-text">${s.q}</span>
+        <button class="btn btn-primary btn-sm" onclick="openScriptDetail(${i})">查看详情</button>
+      </div>
+      <div class="script-card-body"><span class="ans-label">标准答案：</span>${s.a}</div>
+      <div class="script-card-foot">
+        <span>分类：${catDisplay(s.cat)}</span>
+        <span>相似问法：${s.similar.length}个</span>
+        <span>生效时间：${s.effective==='永久'?'永久':s.effective.split(' 至 ')[1].split(' ')[0]}</span>
+        ${cardTagsHtml(s.tags)}
+      </div>
+    </div>`).join('') + `
+    <div class="pagination">
+      <span>共 86 条</span>
+      <button class="page-btn">&#8249;</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">&#8250;</button>
+      <select class="select" style="height:28px;width:90px;font-size:12px;" onchange="toast('已切换每页条数（原型演示）')"><option>10条/页</option><option>20条/页</option><option>30条/页</option><option>40条/页</option></select>
+      <span>前往</span><input class="input" style="width:44px;height:28px;padding:0 6px;text-align:center;" value="1" onkeyup="if(event.key==='Enter')toast('已跳转（原型演示）')"><span>页</span>
+    </div>`;
+}
+renderScripts();
+function openScriptDetail(i){
+  const s=scripts[i];
+  const groups={};
+  s.tags.forEach(x=>{ (groups[x.g]=groups[x.g]||[]).push(x.t); });
+  document.getElementById('scriptDetailBody').innerHTML=`
+    <div class="desc-row"><div class="desc-k">标准问法</div><div class="desc-v" style="font-weight:600;">${s.q}</div></div>
+    <div class="desc-row"><div class="desc-k">相似问法</div><div class="desc-v">${s.similar.length?s.similar.map((x,n)=>`${n+1}. ${x}`).join('<br>'):'暂无相似问法'}</div></div>
+    <div class="desc-row"><div class="desc-k">标准答案</div><div class="desc-v">${s.a||'暂无答案'}</div></div>
+    <div class="desc-row"><div class="desc-k">分类</div><div class="desc-v">${s.cat.length?s.cat.join(' > '):'未分类'}</div></div>
+    <div class="desc-row"><div class="desc-k">标签</div><div class="desc-v">${Object.keys(groups).length?Object.entries(groups).map(([g,ts])=>`<div style="margin-bottom:6px;"><span style="color:var(--text-secondary);font-size:12.5px;margin-right:8px;">${g}</span>${ts.map(t=>`<span class="tag tag-primary" style="height:20px;margin-right:5px;">${t}</span>`).join('')}</div>`).join(''):'暂无标签'}</div></div>
+    <div class="desc-row"><div class="desc-k">生效时间</div><div class="desc-v">${s.effective}</div></div>`;
+  openDlg('dlgScriptDetail');
+}
+/* ===== 选择标签弹窗（按标签组勾选，每组默认最多10个可展开） ===== */
+let tempTagSel=new Set();
+let tagGroupExpanded={};
+function openTagSelector(){
+  tempTagSel=new Set(selectedScriptTags.map(x=>x.g+'|'+x.t));
+  tagGroupExpanded={};
+  document.getElementById('tagSelKw').value='';
+  renderTagSelector();
+  openDlg('dlgTagSelector');
+}
+function renderTagSelector(){
+  const kw=document.getElementById('tagSelKw').value.trim();
+  document.getElementById('tagSelGroups').innerHTML=scriptTagGroups.map(gp=>{
+    let tags=gp.tags.filter(t=>!kw||t.includes(kw));
+    if(!tags.length) return '';
+    const expanded=tagGroupExpanded[gp.group]||!!kw;
+    const shown=expanded?tags:tags.slice(0,10);
+    return `<div style="margin-bottom:16px;">
+      <div style="font-weight:600;font-size:13.5px;margin-bottom:8px;">${gp.group}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        ${shown.map(t=>{
+          const key=gp.group+'|'+t;
+          const on=tempTagSel.has(key);
+          return `<span class="tag ${on?'tag-primary':'tag-info'}" style="cursor:pointer;user-select:none;" onclick="toggleTempTag('${key}')">${t}${on?' ✓':''}</span>`;
+        }).join('')}
+        ${!expanded&&tags.length>10?`<button class="btn-link" style="font-size:12px;" onclick="tagGroupExpanded['${gp.group}']=true;renderTagSelector()">显示更多（${tags.length-10}）</button>`:''}
+      </div>
+    </div>`;
+  }).join('')||'<div style="text-align:center;color:var(--text-placeholder);padding:30px;">无匹配标签</div>';
+  document.getElementById('tagSelCount').textContent='已选 '+tempTagSel.size+' 个标签';
+}
+function toggleTempTag(key){
+  tempTagSel.has(key)?tempTagSel.delete(key):tempTagSel.add(key);
+  renderTagSelector();
+}
+function confirmTagSelector(){
+  selectedScriptTags=[...tempTagSel].map(k=>{ const [g,t]=k.split('|'); return {g,t}; });
+  renderScriptSelTags();
+  closeDlg('dlgTagSelector');
+  toast('已按所选标签筛选（原型演示）');
+}
+function renderScriptSelTags(){
+  const box=document.getElementById('scriptSelTags');
+  box.innerHTML=selectedScriptTags.length
+    ?selectedScriptTags.map((x,i)=>`<span class="tag tag-primary">${x.g}: ${x.t} <i class="close" onclick="selectedScriptTags.splice(${i},1);renderScriptSelTags()">×</i></span>`).join('')
+    :'<span style="color:var(--text-placeholder);font-size:13px;">未选择标签</span>';
+}
+renderScriptSelTags();
+/* ===== 左侧分类树搜索 ===== */
+function filterScriptTree(){
+  const kw=document.getElementById('treeSearchInput').value.trim();
+  document.querySelectorAll('#scriptTreeBox .tree-node').forEach(n=>{
+    const txt=n.querySelector('span').textContent.replace('▸','').trim();
+    n.style.display=(!kw||txt.includes(kw)||txt==='全部')?'':'none';
+  });
+}
+
+/* ====================== 页面2：任务管理 mock ====================== */
+const tasks=[
+  {id:1024,name:'9月新人首周陪练考核',memberCount:32,status:'进行中',mode:'考试模式',creator:'王倩',op:'王倩',created:'2026-09-01 10:00:00',begin:'2026-09-01 12:00:00',end:'2026-09-12 23:59:59'},
+  {id:1023,name:'价格异议处理专项练习',memberCount:18,status:'进行中',mode:'场景练习',creator:'周立成',op:'周立成',created:'2026-08-28 15:30:00',begin:'2026-08-29 00:00:00',end:'2026-09-15 23:59:59'},
+  {id:1022,name:'8月老员工话术复训',memberCount:45,status:'已结束',mode:'考试模式',creator:'李映萍',op:'王倩',created:'2026-08-10 09:12:00',begin:'2026-08-11 00:00:00',end:'2026-08-31 23:59:59'},
+  {id:1021,name:'学情沟通场景演练',memberCount:12,status:'未开始',mode:'自由练习',creator:'李映萍',op:'李映萍',created:'2026-09-08 17:20:00',begin:'2026-09-15 00:00:00',end:'2026-09-30 23:59:59'}
+];
+const stTag={'未开始':'tag-info','进行中':'tag-warning','已结束':'tag-success'};
+const mdTag={'自由练习':'tag-success','场景练习':'tag-primary','考试模式':'tag-warning'};
+document.getElementById('taskTbody').innerHTML=tasks.map((t,i)=>`
+  <tr>
+    <td>${t.id}</td><td>${t.name}</td>
+    <td><button class="btn-link" onclick="openTaskMembers(${i})">${t.memberCount}</button></td>
+    <td><span class="tag ${stTag[t.status]}">${t.status}</span></td>
+    <td><span class="tag ${mdTag[t.mode]}">${t.mode}</span></td>
+    <td>${t.creator}</td><td>${t.op}</td><td>${t.created}</td><td>${t.begin}</td><td>${t.end}</td>
+    <td>${t.status==='未开始'?`<button class="btn-link" onclick="openTaskDialog(true,'${t.name}')">编辑</button><button class="btn-link danger" onclick="toast('任务「${t.name}」已删除（原型演示）')">删除</button>`:t.status==='进行中'?`<button class="btn-link" onclick="openTaskDialog(true,'${t.name}')">编辑</button><button class="btn-link danger" onclick="toast('任务「${t.name}」已结束（原型演示）')">结束</button>`:'<span style="color:var(--text-placeholder)">—</span>'}</td>
+  </tr>`).join('');
+function openTaskDialog(isEdit,name){
+  document.getElementById('dlgTaskTitle').textContent=isEdit?'编辑任务':'新建任务';
+  document.getElementById('taskNameInput').value=isEdit?(name||''):'';
+  openDlg('dlgTask');
+}
+/* ===== 学习场景：面板选择，支持标签筛选与全选 ===== */
+let pickedScenes=[];
+let sceneChecked=new Set();
+function sceneTypeBadgeHtml(t){ return t==='AI客户'?'<span class="badge" style="margin-left:0;background:#e1f3ff;color:var(--primary);">AI客户</span>':'<span class="badge badge-exam" style="margin-left:0;">问答对练</span>'; }
+function publishedScenes(){ return scenarios.filter(s=>s.status==='已发布'); }
+function isFreeMode(){ const sel=document.getElementById('taskModeSel'); return sel&&sel.value==='自由练习'; }
+function sceneFiltered(){
+  const kw=document.getElementById('sceneKwInput').value.trim();
+  const tag=document.getElementById('sceneTagFilter').value;
+  return publishedScenes()
+    .filter(s=>!isFreeMode()||s.type==='AI客户')
+    .filter(s=>!pickedScenes.some(p=>p.name===s.name))
+    .filter(s=>(!kw||s.name.includes(kw))&&(tag==='全部标签'||s.tags.includes(tag)));
+}
+function onTaskModeChange(){
+  const hint=document.getElementById('scenePickHint');
+  hint.textContent=isFreeMode()?'仅可选择「已发布」状态的场景；自由练习模式仅可选择 AI客户类型场景':'仅可选择「已发布」状态的场景';
+  if(isFreeMode()){
+    const removed=pickedScenes.filter(s=>s.type!=='AI客户');
+    if(removed.length){
+      pickedScenes=pickedScenes.filter(s=>s.type==='AI客户');
+      renderScenePicked();
+      toastErr('自由练习模式不支持问答对练场景，已移除：'+removed.map(s=>s.name).join('、'));
+    }
+    sceneChecked=new Set([...sceneChecked].filter(n=>{const s=scenarios.find(x=>x.name===n);return s&&s.type==='AI客户';}));
+  }
+  if(document.getElementById('scenePickPanel').style.display!=='none') renderScenePickTable();
+}
+function toggleScenePanel(forceClose){
+  const p=document.getElementById('scenePickPanel');
+  const show=forceClose?false:p.style.display==='none';
+  p.style.display=show?'':'none';
+  if(show){
+    sceneChecked=new Set();
+    document.getElementById('sceneKwInput').value='';
+    const tagSel=document.getElementById('sceneTagFilter');
+    tagSel.innerHTML='<option>全部标签</option>'+sceneTags.map(t=>`<option>${t.name}</option>`).join('');
+    renderScenePickTable();
+  }
+}
+function renderScenePickTable(){
+  const list=sceneFiltered();
+  document.getElementById('scenePickTbody').innerHTML=list.length?list.map(s=>`
+    <tr>
+      <td><input type="checkbox" ${sceneChecked.has(s.name)?'checked':''} onchange="this.checked?sceneChecked.add('${s.name}'):sceneChecked.delete('${s.name}');updateSceneCount()"></td>
+      <td>${s.name}</td>
+      <td>${sceneTypeBadgeHtml(s.type)}</td>
+      <td>${s.stage}</td>
+      <td style="display:flex;gap:4px;flex-wrap:wrap;">${s.tags.map(t=>`<span class="tag tag-primary" style="height:20px;">${t}</span>`).join('')}</td>
+    </tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--text-placeholder);padding:20px;">无匹配场景</td></tr>';
+  updateSceneCount();
+}
+function updateSceneCount(){
+  document.getElementById('scenePickCount').textContent='已勾选 '+sceneChecked.size+' 个场景';
+  const list=sceneFiltered();
+  const chk=document.getElementById('sceneAllChk');
+  chk.checked=list.length>0&&list.every(s=>sceneChecked.has(s.name));
+}
+function sceneToggleAll(chk){
+  sceneFiltered().forEach(s=>chk?sceneChecked.add(s.name):sceneChecked.delete(s.name));
+  renderScenePickTable();
+}
+function sceneConfirm(){
+  scenarios.forEach(s=>{ if(sceneChecked.has(s.name)&&!pickedScenes.some(p=>p.name===s.name)) pickedScenes.push(s); });
+  toggleScenePanel(true); renderScenePicked();
+  toast('已添加所选场景');
+}
+function renderScenePicked(){
+  const box=document.getElementById('scenePickedList');
+  box.innerHTML=pickedScenes.map((s,i)=>
+    `<div class="course-pick-item"><span><i class="drag-handle">⠿</i>${s.name}<span style="margin-left:8px;">${sceneTypeBadgeHtml(s.type)}</span></span><button class="btn-link danger" onclick="pickedScenes.splice(${i},1);renderScenePicked()">删除</button></div>`
+  ).join('');
+  box.style.display=pickedScenes.length?'':'none';
+}
+setTimeout(()=>{ pickedScenes=[scenarios[0],scenarios[7]]; renderScenePicked(); },0);
+/* ===== 学员：组织架构树选人面板（质培中台交互） ===== */
+const orgData={
+  '电销一部/一组':['刘根','严雯蕊','李里','柯永烽'],
+  '电销一部/二组':['王京阳','段凯','陈鹏','曹婷婷'],
+  '电销二部/一组':['蔡霜','唐龙','石杰'],
+  '电销二部/二组':['陈盈','吕兴强','刘雨阳']
+};
+let stuSelected=new Set(['刘根','严雯蕊','王京阳']);
+let curOrgKey=null;
+function renderOrgTree(){
+  document.getElementById('orgTree').innerHTML=`
+    <div class="org-node">武汉电销中心</div>
+    <div class="org-node lv2 ${curOrgKey==='电销一部/一组'?'active':''}" onclick="pickOrgNode('电销一部/一组')">电销一部 / 一组</div>
+    <div class="org-node lv2 ${curOrgKey==='电销一部/二组'?'active':''}" onclick="pickOrgNode('电销一部/二组')">电销一部 / 二组</div>
+    <div class="org-node lv2 ${curOrgKey==='电销二部/一组'?'active':''}" onclick="pickOrgNode('电销二部/一组')">电销二部 / 一组</div>
+    <div class="org-node lv2 ${curOrgKey==='电销二部/二组'?'active':''}" onclick="pickOrgNode('电销二部/二组')">电销二部 / 二组</div>`;
+}
+function pickOrgNode(key){ curOrgKey=key; renderOrgTree(); renderOrgMembers(); }
+function renderOrgMembers(){
+  const box=document.getElementById('orgMembers');
+  if(!curOrgKey){ box.innerHTML='<div class="org-empty">请先在左侧选择架构</div>'; document.getElementById('orgAllWrap').style.display='none'; return; }
+  const members=orgData[curOrgKey];
+  box.innerHTML=members.map(m=>`<label><input type="checkbox" ${stuSelected.has(m)?'checked':''} onchange="orgToggleMember('${m}',this.checked)"> ${m}</label>`).join('');
+  document.getElementById('orgAllWrap').style.display='';
+  document.getElementById('orgAllChk').checked=members.every(m=>stuSelected.has(m));
+  updateOrgCount();
+}
+function orgToggleMember(name,chk){ chk?stuSelected.add(name):stuSelected.delete(name); renderOrgMembers(); }
+function orgToggleAll(chk){ (orgData[curOrgKey]||[]).forEach(m=>chk?stuSelected.add(m):stuSelected.delete(m)); renderOrgMembers(); }
+function updateOrgCount(){ document.getElementById('orgCount').textContent='已选 '+stuSelected.size+' 人'; }
+function toggleOrgPanel(forceClose){
+  const p=document.getElementById('orgPanel');
+  const show=forceClose?false:p.style.display==='none';
+  p.style.display=show?'':'none';
+  if(show){ renderOrgTree(); renderOrgMembers(); updateOrgCount(); }
+}
+/* ===== 姓名搜索直接添加（交互同学习项目-添加人员：搜索框位于「添加学员」按钮右侧） ===== */
+function renderStuSearchDrop(){
+  const drop=document.getElementById('stuSearchDrop');
+  const kw=document.getElementById('stuSearchInput').value.trim();
+  if(!kw){ drop.style.display='none'; drop.innerHTML=''; return; }
+  const hits=[];
+  Object.entries(orgData).forEach(([org,members])=>members.forEach(m=>{ if(m.includes(kw)) hits.push([m,org]); }));
+  drop.innerHTML=hits.length
+    ? hits.map(([m,org])=>`<div style="padding:8px 12px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:8px;" onmouseover="this.style.background='#f5f7fa'" onmouseout="this.style.background=''" onmousedown="event.preventDefault();stuSearchAdd('${m}')"><span>${m} <span style="color:var(--text-placeholder);font-size:12px;">（${org}）</span></span>${stuSelected.has(m)?'<span style="color:var(--success);font-size:12px;">✓ 已添加</span>':'<span style="color:var(--primary);font-size:12px;">添加</span>'}</div>`).join('')
+    : '<div style="padding:14px;color:var(--text-placeholder);font-size:13px;text-align:center;">未找到匹配人员</div>';
+  drop.style.display='';
+}
+function stuSearchAdd(name){
+  if(stuSelected.has(name)){ toastErr(name+' 已在已选学员中'); return; }
+  stuSelected.add(name);
+  renderStuTags();
+  toast('已添加学员：'+name);
+  renderStuSearchDrop();
+  if(document.getElementById('orgPanel').style.display!=='none') renderOrgMembers();
+}
+function orgConfirm(){ renderStuTags(); toggleOrgPanel(true); toast('已添加 '+stuSelected.size+' 名学员'); }
+function renderStuTags(){
+  document.getElementById('stuTags').innerHTML=[...stuSelected].map(m=>
+    `<span class="tag tag-info">${m} <i class="close" onclick="stuSelected.delete('${m}');renderStuTags()">×</i></span>`).join('');
+}
+renderStuTags();
+/* ===== 对话记录+评估报告（电销样式） ===== */
+function rrBubble(who,time,text){
+  if(who==='me') return `<div style="text-align:center;color:var(--text-placeholder);font-size:11px;margin:10px 0 4px;">${time}</div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:2px;">
+      <div style="max-width:75%;"><div style="background:var(--primary);color:#fff;border-radius:8px;padding:8px 12px;font-size:13.5px;line-height:1.7;">${text}</div>
+      <div style="text-align:right;margin-top:3px;"><button class="btn-link" style="font-size:12px;" onclick="toast('播放该句录音（原型演示）')">▷ 播放</button></div></div>
+      <span class="avatar" style="width:32px;height:32px;flex-shrink:0;background:var(--info-light);color:var(--text-regular);">我</span>
+    </div>`;
+  return `<div style="text-align:center;color:var(--text-placeholder);font-size:11px;margin:10px 0 4px;">${time}</div>
+    <div style="display:flex;gap:8px;margin-bottom:2px;">
+      <span class="avatar" style="width:32px;height:32px;flex-shrink:0;">${who}</span>
+      <div style="max-width:75%;"><div style="background:#fff;border:1px solid var(--border-lighter);border-radius:8px;padding:8px 12px;font-size:13.5px;line-height:1.7;">${text}</div>
+      <div style="margin-top:3px;"><button class="btn-link" style="font-size:12px;" onclick="toast('播放该句录音（原型演示）')">▷ 播放</button></div></div>
+    </div>`;
+}
+/* ===== 客户详情-通话记录：查看转写（语音转文字+评分评判结果） ===== */
+function openCallTranscript(ci,ri){
+  const c=custPool[ci];
+  const r=c.calls[ri];
+  document.getElementById('dlgRecordReportTitle').textContent=c.nick+' · 通话转写（'+r.time+'）';
+  document.getElementById('rrDur').textContent=r.dur.replace('分',':').replace('秒','').split(':').map(x=>String(x).padStart(2,'0')).join(':');
+  const av=c.nick.slice(-2,-1)||'洋';
+  document.getElementById('rrChat').innerHTML=r.transcript||[
+    rrBubble('me',r.time+':02','你好，请问是'+c.nick+'吗？我是洋葱学园的李老师。'),
+    rrBubble(av,r.time+':10','嗯，你好，是我。有什么事吗？'),
+    rrBubble('me',r.time+':21','孩子最近完成了学情诊断，我给您反馈一下结果，顺便聊聊学习安排。'),
+    rrBubble(av,r.time+':35','好，你说。孩子数学确实一直不太理想。'),
+    rrBubble('me',r.time+':58','诊断显示孩子主要薄弱在函数图像这块，我们有针对性的专项练习…'),
+    rrBubble(av,r.time+':30','那费用怎么算？太贵的话我要考虑一下。')
+  ].join('');
+  if(r.score){
+    document.getElementById('rrEval').innerHTML=`
+      <div style="color:var(--danger);font-size:17px;font-weight:700;margin-bottom:12px;">通话评分：${r.score} 分</div>
+      <div style="font-weight:700;color:var(--text-primary);margin-bottom:8px;">评判结果：</div>
+      <p>得分明细：<br>- 4(开场白)+4(挖需)+3(学情分析)+3(产介)+2(报价)+2(异议处理)+2(促单关单)=20分<br>- 满分35分，折算百分制总分 ${r.score} 分</p>
+      <p style="margin-top:8px;font-weight:600;color:var(--text-primary);">得分点：</p>
+      <p>- 1、开场白（5分）：含身份、来意2个核心点，符合B级标准，得4分。<br>
+      - 2、挖需（5分）：提出2个开放式问题并识别1个学习问题，符合B级标准，得4分。<br>
+      - 3、学情分析（5分）：结合诊断结果指出"函数图像"薄弱环节，但未分析成因，符合C+级标准，得3分。<br>
+      - 4、产介（5分）：介绍了专项练习但未关联提升路径，得3分。<br>
+      - 5、报价/异议处理/促单关单：价格异议出现后应对偏保守，未完成关单动作，各得2分。</p>
+      <p style="margin-top:8px;font-weight:600;color:var(--text-primary);">改进建议：</p>
+      <p>学情分析后应先给出可验证的提升路径再报价；面对价格顾虑按"共情→拆解价值→免费诊断钩子"话术推进，并在结尾约定明确的下一步动作。</p>`;
+  }else{
+    document.getElementById('rrEval').innerHTML=`
+      <div style="text-align:center;padding:60px 20px;color:var(--text-secondary);">
+        <div style="font-size:40px;margin-bottom:14px;">⏱</div>
+        <div style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">本次通话未参与评分</div>
+        <div style="font-size:13px;line-height:1.8;">通话时长 ${r.dur}，未达到 5 分钟评分门槛。<br>通话时长超过 5 分钟的通话才会自动生成评分评判结果。</div>
+      </div>`;
+  }
+  openDlg('dlgRecordReport');
+}
+function openRecordReport(member,mode,item){
+  document.getElementById('dlgRecordReportTitle').textContent=item+' · '+member;
+  const av=member.slice(0,1);
+  document.getElementById('rrChat').innerHTML=[
+    rrBubble('me','2026-09-10 11:57:56','全是，你好，我是洋葱学院的老师。'),
+    rrBubble(av,'2026-09-10 11:58:09','你打电话有什么事？'),
+    rrBubble('me','2026-09-10 11:58:17','你家孩子最近学习的效果怎么样'),
+    rrBubble(av,'2026-09-10 11:58:30','孩子升入初二后成绩下降到中等水平了，你们这边能怎么帮到孩子呢？'),
+    rrBubble('me','2026-09-10 11:58:52','我们有针对初二数学的专项提升课程，可以先给孩子做个学情诊断。'),
+    rrBubble(av,'2026-09-10 11:59:10','诊断要收费吗？太贵的话就不用了。')
+  ].join('');
+  const isExam=mode==='考试模式';
+  document.getElementById('rrEval').innerHTML=`
+    <div style="color:var(--danger);font-size:17px;font-weight:700;margin-bottom:12px;">任务得分：17 分</div>
+    <div style="font-weight:700;color:var(--text-primary);margin-bottom:8px;">评估结果：</div>
+    <p>得分明细：<br>- 3(开场白)+3(挖需)+0(学情分析)+0(产介)+0(报价)+0(异议处理)+0(促单关单)=6分<br>- 满分35分，折算百分制总分 17 分</p>
+    <p style="margin-top:8px;font-weight:600;color:var(--text-primary);">得分点：</p>
+    <p>- 1、开场白（5分）：<br>
+    &nbsp;&nbsp;- 评判标准：A级（5分）：含身份、来意2个核心点，增设话题引发兴趣；B级（4分）：含身份、来意2个核心点；C级（3分）：自我介绍缺身份或来意其中一项；D级（1-2分）：未做自我介绍且引起反感。<br>
+    &nbsp;&nbsp;- 当前判断依据及得分情况：评估对象仅说明自身身份为洋葱学院的老师，未表明来意，符合C级标准，得3分。</p>
+    <p>- 2、挖需（5分）：<br>
+    &nbsp;&nbsp;- 评判标准：A级（5分）：提出≥3个问题，定位2个及以上学习问题，回应需求并做价值外展/总结；B级（4分）：2个开放式问题，识别1个学习问题，仅回应无跳转；C级（3分）：提出1个问题，无回应直接跳转；D级（1-2分）：无挖需动作。<br>
+    &nbsp;&nbsp;- 当前判断依据及得分情况：评估对象仅提出1个挖需问题，家长回复孩子学情后，未做任何回应总结，直接跳转介绍课程，符合C级标准，得3分。</p>
+    <p>- 3、学情分析（5分）：<br>
+    &nbsp;&nbsp;- 评判标准：A级（5分）：结合客户描述做专业学情分析，指出具体薄弱环节与成因；B级（4分）：有分析但缺乏针对性；C级（3分）：仅复述客户描述；D级（1-2分）：无学情分析动作。<br>
+    &nbsp;&nbsp;- 当前判断依据及得分情况：评估对象未对家长反馈的"成绩下降到中等水平"做任何分析，直接推荐课程，得0分。</p>
+    <p>- 4、产介/报价/异议处理/促单关单（各5分）：<br>
+    &nbsp;&nbsp;- 当前判断依据及得分情况：通话在异议出现后未继续推进，产介不完整、未报价、未处理"收费"异议、无促单动作，均得0分。</p>
+    <p style="margin-top:8px;font-weight:600;color:var(--text-primary);">改进建议：</p>
+    <p>开场需补充来意说明；挖需后先总结共情再转产介；家长提出价格顾虑时按"共情→拆解价值→免费诊断钩子"话术应对，并在结尾约定明确的下一步动作。</p>
+    ${isExam?'<p style="margin-top:8px;"><span class="tag tag-danger">考核结果：未通过</span></p>':''}`;
+  openDlg('dlgRecordReport');
+}
+/* ===== 查看学员：进入子页面 ===== */
+let currentTask=null;
+const taskMembers=[
+  {name:'刘根',org:'电销一部/一组',job:1,fin:3,total:3,last:'2026-09-05 14:22',score:88},
+  {name:'严雯蕊',org:'电销一部/一组',job:1,fin:2,total:3,last:'2026-09-06 09:10',score:'—'},
+  {name:'王京阳',org:'电销一部/二组',job:2,fin:1,total:3,last:'2026-09-04 19:45',score:'—'}
+];
+function openTaskMembers(i){
+  currentTask=tasks[i];
+  document.getElementById('tmPageTitle').textContent='学员明细 · '+currentTask.name;
+  document.getElementById('tmPageSub').innerHTML=`任务模式：<span class="tag ${mdTag[currentTask.mode]}" style="height:20px;">${currentTask.mode}</span>　任务状态：<span class="tag ${stTag[currentTask.status]}" style="height:20px;">${currentTask.status}</span>　${currentTask.begin} ~ ${currentTask.end}`;
+  document.getElementById('btnTaskReport').style.display = currentTask.status==='已结束' ? '' : 'none';
+  document.getElementById('taskMemberTbody').innerHTML=taskMembers.map((m,idx)=>`
+    <tr>
+      <td>${m.name}</td><td>${m.org}</td>
+      <td><span class="progress-bar"><i style="width:${Math.round(m.fin/m.total*100)}%"></i></span> ${m.fin}/${m.total}</td>
+      <td>${m.last}</td><td>${m.score}</td>
+      <td><button class="btn-link" id="mdBtn${idx}" onclick="toggleMemberDetailRow(${idx})">查看明细</button><button class="btn-link" onclick="openMemberReport(${idx})">查看报告</button></td>
+    </tr>
+    <tr class="member-detail-row" id="mdRow${idx}" style="display:none;"><td colspan="6" style="background:#f8f9fb;padding:14px 20px;" id="mdRowBody${idx}"></td></tr>`).join('');
+  document.querySelectorAll('.page-view').forEach(p=>p.classList.remove('show'));
+  document.getElementById('page-taskMembers').classList.add('show');
+  document.getElementById('crumb').textContent='任务管理 / 学员明细';
+}
+function backToTaskList(){
+  document.querySelectorAll('.page-view').forEach(p=>p.classList.remove('show'));
+  document.getElementById('page-tasks').classList.add('show');
+  document.getElementById('crumb').textContent='任务管理';
+}
+function openTaskReport(){
+  document.getElementById('dlgTaskReportTitle').textContent='任务报告 · '+(currentTask?currentTask.name:'');
+  openDlg('dlgTaskReport');
+}
+/* ===== 查看报告：学员整体评价与分析 ===== */
+const memberReports={
+  '刘根':{score:88,dims:[['开场破冰',92],['需求挖掘',88],['产品介绍',90],['异议处理',85],['促单关单',82]],
+    good:'开场自然、亲和力强，能快速与家长建立信任；产品介绍时善于结合学情诊断结果给出针对性方案，逻辑清晰。',
+    weak:'促单环节偏保守，面对家长犹豫时缺少限时优惠等推动动作；异议处理中对「和学校课程重复」类问题的应答不够简洁。',
+    comment:'整体表现优秀，已具备独立承接高意向线索的能力。建议重点打磨促单话术，参加「优惠关单」专项练习，并将其异议处理录音与优秀话术库对照复盘。'},
+  '严雯蕊':{score:76,dims:[['开场破冰',80],['需求挖掘',78],['产品介绍',75],['异议处理',72],['促单关单',70]],
+    good:'语速与情绪控制稳定，倾听意识好，能耐心让客户把顾虑说完再回应。',
+    weak:'需求挖掘停留在表层，追问深度不足，导致后续方案推荐针对性偏弱；面对价格异议时容易直接让步。',
+    comment:'基础扎实但缺少进攻性。建议先完成「需求挖掘」场景的专项练习，练习中重点使用追问三连（现象→影响→期望），价格异议参考话术库标准应答。'},
+  '王京阳':{score:64,dims:[['开场破冰',70],['需求挖掘',65],['产品介绍',66],['异议处理',58],['促单关单',60]],
+    good:'态度积极，对课程卖点记忆准确，介绍环节信息完整。',
+    weak:'开场偏模板化、容易被客户挂断；异议处理明显薄弱，遇到冷淡型客户时节奏被带走，多次出现抢话。',
+    comment:'当前完成进度落后（1/3），需督促按时完成剩余课程。建议从低难度画像开始循序渐进，先练「冷淡警惕型」应对策略，并安排组长旁听一次真实通话做对照辅导。'}
+};
+function openMemberReport(idx){
+  const m=taskMembers[idx];
+  const r=memberReports[m.name]||memberReports['严雯蕊'];
+  document.getElementById('dlgMemberReportTitle').textContent=m.name+' · 学员整体报告';
+  document.getElementById('memberReportBody').innerHTML=`
+    <div style="display:flex;gap:14px;margin-bottom:16px;">
+      <div style="flex:1;background:var(--primary-light);border-radius:6px;padding:12px 16px;text-align:center;"><div style="font-size:26px;font-weight:700;color:var(--primary);">${r.score}</div><div style="font-size:12px;color:var(--text-secondary);">综合得分</div></div>
+      <div style="flex:1;background:var(--warning-light);border-radius:6px;padding:12px 16px;text-align:center;"><div style="font-size:26px;font-weight:700;color:var(--warning);">${m.fin}/${m.total}</div><div style="font-size:12px;color:var(--text-secondary);">完成进度</div></div>
+    </div>
+    <h3 style="margin:6px 0 10px;color:var(--text-primary);">一、能力维度分析</h3>
+    ${r.dims.map(d=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><span style="width:70px;font-size:13px;">${d[0]}</span><span class="progress-bar" style="width:220px;height:8px;"><i style="width:${d[1]}%"></i></span><span style="font-size:13px;color:var(--text-secondary);">${d[1]}</span></div>`).join('')}
+    <h3 style="margin:16px 0 10px;color:var(--text-primary);">二、优势表现</h3><p>${r.good}</p>
+    <h3 style="margin:16px 0 10px;color:var(--text-primary);">三、待改进项</h3><p>${r.weak}</p>
+    <h3 style="margin:16px 0 10px;color:var(--text-primary);">四、AI 综合评语与建议</h3><p>${r.comment}</p>`;
+  openDlg('dlgMemberReport');
+}
+/* ===== 查看明细：右侧浮出，内容随任务模式变化 ===== */
+const detailByMode={
+  '自由练习':{
+    tip:'自由练习模式：明细为该学员每条线索的练习情况',
+    head:'<tr><th>线索昵称</th><th>线索手机号</th><th>练习场景</th><th>练习次数</th><th>累计时长</th><th>最近练习时间</th><th>操作</th></tr>',
+    rows:[
+      ['张**家长','138****2245','小学｜学情沟通','3','14分32秒','2026-09-05 14:22'],
+      ['李**家长','159****8810','小学｜产品介绍','2','9分05秒','2026-09-04 20:11'],
+      ['王**学生','186****3372','初中｜通用学情沟通','1','5分48秒','2026-09-03 11:37']
+    ]
+  },
+  '场景练习':{
+    tip:'场景练习模式：明细为该学员每个场景的练习情况',
+    head:'<tr><th>场景名称</th><th>完成状态</th><th>练习次数</th><th>最高得分</th><th>最近练习时间</th><th>操作</th></tr>',
+    rows:[
+      ['小学｜学情沟通','<span class="tag tag-success">已完成</span>','4','91','2026-09-04 10:12'],
+      ['小学｜产品介绍','<span class="tag tag-success">已完成</span>','2','86','2026-09-03 15:40'],
+      ['小学｜优惠关单','<span class="tag tag-warning">进行中</span>','1','—','2026-09-05 14:22']
+    ]
+  },
+  '考试模式':{
+    tip:'考试模式：明细为该学员每个场景的考试情况',
+    head:'<tr><th>场景名称</th><th>考试状态</th><th>得分</th><th>考试时间</th><th>操作</th></tr>',
+    rows:[
+      ['小学｜学情沟通','<span class="tag tag-success">已交卷</span>','88','2026-08-25 15:40'],
+      ['小学｜产品介绍','<span class="tag tag-success">已交卷</span>','72','2026-08-27 10:12'],
+      ['小学｜优惠关单','<span class="tag tag-info">未开考</span>','—','—']
+    ]
+  }
+};
+function toggleMemberDetailRow(idx){
+  const row=document.getElementById('mdRow'+idx);
+  const open=row.style.display==='none';
+  // 手风琴：先收起其他行
+  taskMembers.forEach((_,i)=>{
+    const r=document.getElementById('mdRow'+i);
+    if(r) r.style.display='none';
+    const b=document.getElementById('mdBtn'+i);
+    if(b) b.textContent='查看明细';
+  });
+  if(!open) return;
+  const m=taskMembers[idx];
+  const mode=currentTask?currentTask.mode:'场景练习';
+  const cfg=detailByMode[mode]||detailByMode['场景练习'];
+  document.getElementById('mdRowBody'+idx).innerHTML=`
+    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">${m.name} · 任务完成明细（${mode}） — ${cfg.tip}</div>
+    <table class="el-table" style="background:#fff;border:1px solid var(--border-lighter);border-radius:4px;">
+      <thead>${cfg.head}</thead>
+      <tbody>${cfg.rows.map(r=>
+        `<tr>${r.map(c=>`<td>${c}</td>`).join('')}<td><button class="btn-link" onclick="openRecordReport('${m.name}','${mode}','${String(r[0]).replace(/<[^>]+>/g,'')}')">查看报告</button></td></tr>`
+      ).join('')}</tbody>
+    </table>`;
+  row.style.display='';
+  document.getElementById('mdBtn'+idx).textContent='收起明细';
+}
+
+/* ====================== 页面3：场景配置 mock ====================== */
+const scenarios=[
+  {name:'小学｜学情沟通',type:'AI客户',stage:'小学',scope:'家长',tags:['小学','学情沟通'],status:'已发布',updater:'王倩',time:'09/07 11:19',refRunning:true},
+  {name:'小学｜产品介绍',type:'AI客户',stage:'小学',scope:'家长',tags:['小学','产品介绍'],status:'已发布',updater:'王倩',time:'09/04 10:31',refRunning:false},
+  {name:'小学｜优惠关单',type:'AI客户',stage:'小学',scope:'家长',tags:['小学','优惠关单'],status:'已发布',updater:'周立成',time:'09/04 10:31',refRunning:false},
+  {name:'初中｜冷淡异议全流程',type:'AI客户',stage:'初中',scope:'家长',tags:['初中','全流程','高难度'],status:'已停用',updater:'王倩',time:'09/04 10:31',refRunning:false},
+  {name:'初中｜理性考虑全流程',type:'AI客户',stage:'初中',scope:'家长',tags:['初中','全流程','理性考虑'],status:'已发布',updater:'李映萍',time:'09/04 10:31',refRunning:true},
+  {name:'初中｜通用学情沟通',type:'AI客户',stage:'初中',scope:'通用',tags:['初中','学情沟通'],status:'已发布',updater:'王倩',time:'09/04 10:31',refRunning:false},
+  {name:'高中｜产品介绍',type:'AI客户',stage:'高中',scope:'家长',tags:['高中','产品介绍'],status:'已发布',updater:'周立成',time:'09/04 10:31',refRunning:false},
+  {name:'高中｜价格异议问答对练',type:'问答对练',stage:'高中',scope:'—',tags:['高中','优惠关单'],status:'已发布',updater:'李映萍',time:'09/04 10:31',refRunning:false},
+  {name:'高中｜优惠关单',type:'AI客户',stage:'高中',scope:'家长',tags:['高中','优惠关单'],status:'草稿',updater:'王倩',time:'09/04 10:31',refRunning:false}
+];
+const scStTag={'已发布':'tag-success','草稿':'tag-info','已停用':'tag-danger'};
+const scTypeBadge={'AI客户':'<span class="badge" style="margin-left:0;background:#e1f3ff;color:var(--primary);">AI客户</span>','问答对练':'<span class="badge badge-exam" style="margin-left:0;">问答对练</span>'};
+function scenarioOps(s,i){
+  if(s.status==='已发布'){
+    return `<button class="btn-link" onclick="openScenarioDialog(true,${i})">编辑</button><button class="btn-link danger" onclick="stopScenario(${i})">停用</button>`;
+  }
+  if(s.status==='草稿'){
+    return `<button class="btn-link" onclick="openScenarioDialog(true,${i})">编辑</button><button class="btn-link danger" onclick="toast('场景「${s.name}」已删除（原型演示）')">删除</button>`;
+  }
+  return `<button class="btn-link" onclick="toast('场景「${s.name}」已启用（原型演示）')">启用</button>`;
+}
+function stopScenario(i){
+  const s=scenarios[i];
+  if(s.refRunning){ toastErr('该场景正在被进行中的任务引用，不允许停用'); return; }
+  toast('场景「'+s.name+'」已停用（原型演示）');
+}
+function renderScenarios(){
+  document.getElementById('scenarioTbody').innerHTML=scenarios.map((s,i)=>`
+    <tr>
+      <td><button class="btn-link" style="font-weight:600;" onclick="openScenarioDetail(${i})">${s.name}</button></td>
+      <td>${scTypeBadge[s.type]}</td>
+      <td>${s.stage}</td><td>${s.scope}</td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap;">${s.tags.map(t=>`<span class="tag tag-primary" style="height:20px;">${t}</span>`).join('')}</td>
+      <td><span class="tag ${scStTag[s.status]}">${s.status}</span></td>
+      <td>${s.updater}</td><td>${s.time}</td>
+      <td>${scenarioOps(s,i)}</td>
+    </tr>`).join('');
+}
+renderScenarios();
+/* ===== 新建场景：先选类型 ===== */
+let pendingScenarioType=null;
+function openScenarioTypeDialog(){
+  pendingScenarioType=null;
+  document.getElementById('typeOptAI').classList.remove('selected');
+  document.getElementById('typeOptQA').classList.remove('selected');
+  const btn=document.getElementById('btnTypeConfirm'); btn.disabled=true; btn.style.opacity=.5;
+  openDlg('dlgScenarioType');
+}
+function pickScenarioType(t){
+  pendingScenarioType=t;
+  document.getElementById('typeOptAI').classList.toggle('selected',t==='AI客户');
+  document.getElementById('typeOptQA').classList.toggle('selected',t==='问答对练');
+  const btn=document.getElementById('btnTypeConfirm'); btn.disabled=false; btn.style.opacity=1;
+}
+function confirmScenarioType(){
+  if(!pendingScenarioType) return;
+  closeDlg('dlgScenarioType');
+  openScenarioEditPage(false,pendingScenarioType);
+}
+/* ===== 场景内容配置：新开页面（字段对齐 CRM-新建课程） ===== */
+function openScenarioEditPage(isEdit,type,name){
+  document.getElementById('seTitle').textContent=isEdit?'编辑场景':'新建场景';
+  document.getElementById('seNameInput').value=isEdit?(name||''):'';
+  const badge=document.getElementById('seTypeBadge');
+  badge.textContent=type;
+  badge.style.background=type==='AI客户'?'#e1f3ff':'var(--warning-light)';
+  badge.style.color=type==='AI客户'?'var(--primary)':'var(--warning)';
+  document.getElementById('seFieldsAI').style.display=type==='AI客户'?'':'none';
+  document.getElementById('seFieldsQA').style.display=type==='问答对练'?'':'none';
+  document.getElementById('seTestArea').style.display=type==='AI客户'?'flex':'none';
+  refreshScenarioTagSel();
+  if(type==='问答对练'){ toggleQaPanel(true); renderQaPicked(); }
+  document.querySelectorAll('.page-view').forEach(p=>p.classList.remove('show'));
+  document.getElementById('page-scenarioEdit').classList.add('show');
+  document.getElementById('crumb').textContent='场景配置 / '+(isEdit?'编辑场景':'新建场景');
+}
+function openScenarioDialog(isEdit,i){
+  const s=scenarios[i];
+  openScenarioEditPage(true,s.type,s.name);
+}
+function backToScenarioList(){
+  document.querySelectorAll('.page-view').forEach(p=>p.classList.remove('show'));
+  document.getElementById('page-scenarios').classList.add('show');
+  document.getElementById('crumb').textContent='场景配置';
+}
+/* ===== 问答对练：选择问题（交互同学习项目-选择课程） ===== */
+const qaBank=[
+  {q:'你们的课和学校老师讲的有什么区别？为什么要额外报？',a:'学校面向全班统一节奏，咱们的课根据孩子薄弱点定制…',cat:'需求挖掘'},
+  {q:'价格有点贵，我再考虑考虑吧。',a:'先共情再拆解课时单价，结合限时优惠推动决策…',cat:'异议处理'},
+  {q:'孩子平时没时间上课，作业都写不完。',a:'录播+直播结合，单节25分钟，碎片时间就能学…',cat:'异议处理'},
+  {q:'我先跟孩子爸爸商量一下再说。',a:'把学情报告和方案发微信，约定明天上午同步反馈…',cat:'促单关单'},
+  {q:'网上免费资源那么多，为什么要花钱？',a:'免费资源不成体系，缺少针对性诊断与督学服务…',cat:'异议处理'},
+  {q:'孩子自己不愿意学怎么办？',a:'先了解孩子抵触原因，用兴趣化内容与激励机制引导…',cat:'需求挖掘'}
+];
+let qaPicked=[qaBank[0],qaBank[1]];
+let qaChecked=new Set();
+function toggleQaPanel(forceClose){
+  const p=document.getElementById('qaPickPanel');
+  const show=forceClose?false:p.style.display==='none';
+  p.style.display=show?'':'none';
+  if(show){ qaChecked=new Set(); document.getElementById('qaKwInput').value=''; document.getElementById('qaCatSel').value='全部分类'; renderQaPickTable(); }
+}
+function renderQaPickTable(){
+  const kw=document.getElementById('qaKwInput').value.trim();
+  const cat=document.getElementById('qaCatSel').value;
+  const list=qaBank.filter(x=>!qaPicked.some(p=>p.q===x.q))
+    .filter(x=>(!kw||x.q.includes(kw))&&(cat==='全部分类'||x.cat===cat));
+  document.getElementById('qaPickTbody').innerHTML=list.length?list.map(x=>`
+    <tr>
+      <td><input type="checkbox" ${qaChecked.has(x.q)?'checked':''} onchange="this.checked?qaChecked.add('${x.q}'):qaChecked.delete('${x.q}');updateQaCount()"></td>
+      <td>${x.q}</td><td style="color:var(--text-secondary);">${x.a}</td><td>${x.cat}</td>
+    </tr>`).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--text-placeholder);padding:20px;">无匹配问题</td></tr>';
+  updateQaCount();
+}
+function updateQaCount(){ document.getElementById('qaPickCount').textContent='已勾选 '+qaChecked.size+' 个问题'; }
+function qaConfirm(){
+  qaBank.forEach(x=>{ if(qaChecked.has(x.q)&&!qaPicked.some(p=>p.q===x.q)) qaPicked.push(x); });
+  toggleQaPanel(true); renderQaPicked();
+  toast('已添加所选问题');
+}
+function renderQaPicked(){
+  document.getElementById('qaPickedTbody').innerHTML=qaPicked.length?qaPicked.map((x,i)=>`
+    <tr>
+      <td><i class="drag-handle">⠿</i></td>
+      <td>${x.q}</td><td style="color:var(--text-secondary);">${x.a}</td>
+      <td><button class="btn-link danger" onclick="qaPicked.splice(${i},1);renderQaPicked();renderQaPickTable&&document.getElementById('qaPickPanel').style.display!=='none'&&renderQaPickTable()">删除</button></td>
+    </tr>`).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--text-placeholder);padding:16px;">暂未选择问题</td></tr>';
+}
+/* ===== AI客户效果测试 ===== */
+function seTestSend(){
+  const inp=document.getElementById('seTestInput');
+  const v=inp.value.trim(); if(!v) return;
+  const box=document.getElementById('seTestMsgs');
+  if(box.querySelector('div[style*="padding-top"]')) box.innerHTML='';
+  box.innerHTML+=`<div style="text-align:right;margin-bottom:8px;"><span style="display:inline-block;background:var(--primary);color:#fff;border-radius:8px 8px 2px 8px;padding:6px 10px;max-width:85%;text-align:left;">${v}</span></div>`;
+  box.innerHTML+=`<div style="margin-bottom:8px;"><span style="display:inline-block;background:#fff;border:1px solid var(--border-lighter);border-radius:8px 8px 8px 2px;padding:6px 10px;max-width:85%;">嗯…你是哪个机构的老师？我最近挺忙的，有什么事你先说。</span></div>`;
+  box.scrollTop=box.scrollHeight; inp.value='';
+}
+/* ===== 场景只读详情 ===== */
+function openScenarioDetail(i){
+  const s=scenarios[i];
+  const common=`
+    <div class="detail-row"><div class="detail-label">场景类型</div><div class="detail-value">${scTypeBadge[s.type]}</div></div>
+    <div class="detail-row"><div class="detail-label">场景名称</div><div class="detail-value" style="font-weight:600;">${s.name}</div></div>
+    <div class="detail-row"><div class="detail-label">适用学段</div><div class="detail-value">${s.stage}</div></div>
+    <div class="detail-row"><div class="detail-label">场景标签</div><div class="detail-value">${s.tags.map(t=>`<span class="tag tag-primary" style="height:20px;margin-right:6px;">${t}</span>`).join('')}</div></div>
+    <div class="detail-row"><div class="detail-label">发布状态</div><div class="detail-value"><span class="tag ${scStTag[s.status]}">${s.status}</span></div></div>
+    <div class="detail-row"><div class="detail-label">更新人 / 时间</div><div class="detail-value">${s.updater} / ${s.time}</div></div>`;
+  const ai=`
+    <div class="detail-row"><div class="detail-label">客户身份范围</div><div class="detail-value">${s.scope}</div></div>
+    <div class="detail-row"><div class="detail-label">对话时间上限</div><div class="detail-value">5 分钟</div></div>
+    <div class="detail-row"><div class="detail-label">对话间隔时长</div><div class="detail-value">30 秒</div></div>
+    <div class="detail-row"><div class="detail-label">场景提示词</div><div class="detail-value"><div class="detail-block">【电话背景】销售外呼跟进已领取体验课的客户，孩子近期完成学情诊断。
+【训练流程】学情反馈 → 需求挖掘 → 方案推荐 → 处理异议 → 约定下一步。
+【禁止行为】不得保证提分结果、不得连续推销超过两轮、不得虚构优惠。
+【信息披露】客户信息逐步披露，销售追问具体时才补充细节。</div></div></div>
+    <div class="detail-row"><div class="detail-label">对话目标</div><div class="detail-value">完成学情反馈→需求挖掘→方案推荐→处理异议→约定下一步动作，全程保持真实客户状态。</div></div>
+    <div class="detail-row"><div class="detail-label">评价标准</div><div class="detail-value"><div class="detail-block">1. 开场破冰（20分）：30秒内完成自我介绍并确认客户身份；
+2. 需求挖掘（20分）：至少完成两轮有效追问，定位具体薄弱点；
+3. 产品介绍（20分）：结合学情诊断结果给出针对性方案；
+4. 异议处理（20分）：先共情后拆解，不得直接让步；
+5. 促单关单（20分）：结尾约定明确的下一步动作与时间。</div></div></div>`;
+  const qa=`
+    <div class="detail-row"><div class="detail-label">已选问题</div><div class="detail-value"><div class="detail-block">问题 1：你们的课和学校老师讲的有什么区别？
+标准答案：学校面向全班统一节奏，咱们的课根据孩子薄弱点定制…
+
+问题 2：价格有点贵，我再考虑考虑。
+标准答案：先共情再拆解课时单价，结合限时优惠推动决策…</div></div></div>
+    <div class="detail-row"><div class="detail-label">对话目标</div><div class="detail-value">针对客户常见异议问题，训练学员按标准答案框架（共情→拆解→推动）作答，提升异议处理能力。</div></div>
+    <div class="detail-row"><div class="detail-label">评价标准</div><div class="detail-value"><div class="detail-block">1. 答案要点覆盖（40分）：命中标准答案核心要点；
+2. 表达结构（30分）：符合"先共情、再拆解、后推动"三段论；
+3. 表达自然度（30分）：口语化、无背稿感，语速与停顿得当。</div></div></div>`;
+  document.getElementById('dlgScenarioDetailTitle').textContent='场景详情 · '+s.name;
+  document.getElementById('scenarioDetailBody').innerHTML=common+(s.type==='AI客户'?ai:qa);
+  openDlg('dlgScenarioDetail');
+}
+/* ===== 标签管理（交互同课程管理-分类管理） ===== */
+let sceneTags=[
+  {name:'学情沟通',refCount:3,creator:'王倩',time:'2026-09-01 10:20'},
+  {name:'产品介绍',refCount:2,creator:'王倩',time:'2026-09-01 10:20'},
+  {name:'优惠关单',refCount:3,creator:'周立成',time:'2026-09-01 10:18'},
+  {name:'全流程',refCount:2,creator:'王倩',time:'2026-08-30 16:02'},
+  {name:'高难度',refCount:1,creator:'李映萍',time:'2026-08-30 15:44'},
+  {name:'理性考虑',refCount:1,creator:'王倩',time:'2026-08-28 11:09'},
+  {name:'小学',refCount:3,creator:'王倩',time:'2026-08-25 09:30'},
+  {name:'初中',refCount:3,creator:'王倩',time:'2026-08-25 09:30'},
+  {name:'高中',refCount:3,creator:'王倩',time:'2026-08-25 09:30'},
+  {name:'新客',refCount:0,creator:'李映萍',time:'2026-09-08 14:12'}
+];
+let tagEditingIdx=-1;
+function openTagManage(){ tagEditingIdx=-1; closeTagAdd(); renderTags(); openDlg('dlgTagManage'); }
+function renderTags(){
+  document.getElementById('tagCount').textContent='共 '+sceneTags.length+' 个标签';
+  document.getElementById('tagTbody').innerHTML=sceneTags.map((t,i)=>`
+    <tr>
+      <td>${tagEditingIdx===i?`<input class="input" style="width:180px;" maxlength="20" id="tagEditInput" value="${t.name}">`:t.name}</td>
+      <td>${t.refCount}</td><td>${t.creator}</td><td>${t.time}</td>
+      <td>${tagEditingIdx===i
+        ?`<button class="btn-link" onclick="saveTagEdit(${i})">保存</button><button class="btn-link" style="color:var(--text-regular)" onclick="tagEditingIdx=-1;renderTags()">取消</button>`
+        :`<button class="btn-link" onclick="tagEditingIdx=${i};closeTagAdd();renderTags()">编辑</button>${t.refCount===0?`<button class="btn-link danger" onclick="removeTag(${i})">删除</button>`:''}`}</td>
+    </tr>`).join('');
+  refreshScenarioTagSel(); refreshScTagFilter();
+}
+document.getElementById('scenarioTagSel').addEventListener('change',function(){
+  const v=this.value; if(!v) return;
+  const box=document.getElementById('scenarioTagPicked');
+  if([...box.querySelectorAll('.tag')].some(t=>t.textContent.trim().startsWith(v))){ this.value=''; return; }
+  const span=document.createElement('span'); span.className='tag tag-primary';
+  span.innerHTML=v+' <i class="close" onclick="this.parentNode.remove()">×</i>';
+  box.appendChild(span); this.value='';
+});
+function openTagAdd(){ tagEditingIdx=-1; renderTags(); document.getElementById('tagAddForm').style.display=''; document.getElementById('tagAddInput').value=''; }
+function closeTagAdd(){ const f=document.getElementById('tagAddForm'); if(f) f.style.display='none'; }
+function addTag(){
+  const name=document.getElementById('tagAddInput').value.trim();
+  if(!name) return toastErr('请输入标签名称');
+  if(sceneTags.some(t=>t.name===name)) return toastErr('标签名称不可与现有标签重复');
+  sceneTags.unshift({name,refCount:0,creator:'李映萍',time:'2026-09-09 17:30'});
+  closeTagAdd(); renderTags(); toast('新增成功');
+}
+function saveTagEdit(i){
+  const name=document.getElementById('tagEditInput').value.trim();
+  if(!name) return toastErr('请输入标签名称');
+  sceneTags[i].name=name; tagEditingIdx=-1; renderTags(); toast('修改成功');
+}
+function removeTag(i){
+  if(confirm('确认删除标签「'+sceneTags[i].name+'」？')){ sceneTags.splice(i,1); renderTags(); toast('删除成功'); }
+}
+function refreshScenarioTagSel(){
+  const sel=document.getElementById('scenarioTagSel');
+  if(sel) sel.innerHTML='<option value="">选择标签（可在「标签管理」中维护）</option>'+sceneTags.map(t=>`<option>${t.name}</option>`).join('');
+}
+function refreshScTagFilter(){
+  const sel=document.getElementById('scTagFilterSel');
+  if(sel) sel.innerHTML='<option>全部标签</option>'+sceneTags.map(t=>`<option>${t.name}</option>`).join('');
+}
+renderTags();
+
+/* ====================== 页面4：行为画像库 mock ====================== */
+const personaPromptSample=`【配合程度】
+愿意沟通，但先观察对方是否专业；不会一开始就交代全部问题。
+
+【沟通风格】
+理性、克制，表达日常化，偶尔因长期没有改善而流露焦虑。
+
+【信息披露方式】
+先说模糊现象，销售追问具体且有耐心时，再逐步补充一个细节。
+
+【信任建立与决策】
+销售能准确复述现状、分析有依据并给出可验证下一步时，信任逐步提升。
+
+【价格敏感与质疑方式】
+不单纯追求最低价，更关注投入是否真正解决问题。
+
+【情绪特点】
+整体稳定，谈到长期困扰时略显焦虑，受到夸大承诺时会恢复谨慎。`;
+const personaHangupSample=`当出现以下任一情况时，你可以不耐烦地说一句结束语然后主动挂断电话：
+1. 对方连续两轮以上强行推销课程或反复报价；
+2. 对方多轮答非所问，没有回应你提出的具体问题；
+3. 你已明确表示拒绝或要挂电话，对方仍继续纠缠。
+结束语示例：「行了行了，我在忙，先这样啊」「你们这就是推销吧，不需要，再见」。
+说完结束语后在末尾输出标记 [挂断]。`;
+const personas=[
+  {name:'理性焦虑型',scope:'家长',status:'已发布',updater:'王倩',time:'09/04 10:31',hangup:''},
+  {name:'效果验证型',scope:'家长',status:'已发布',updater:'王倩',time:'09/04 10:31',hangup:''},
+  {name:'预算谨慎比价型',scope:'家长',status:'已发布',updater:'周立成',time:'09/04 10:31',hangup:personaHangupSample},
+  {name:'冷淡警惕型',scope:'家长',status:'已发布',updater:'李映萍',time:'09/04 10:31',hangup:personaHangupSample},
+  {name:'沉稳理性考虑型',scope:'家长',status:'已发布',updater:'王倩',time:'09/04 10:31',hangup:''},
+  {name:'有限配合通用型',scope:'通用',status:'已停用',updater:'王倩',time:'09/04 10:31',hangup:''},
+  {name:'学习焦虑直接型',scope:'学生',status:'草稿',updater:'李映萍',time:'09/04 10:31',hangup:''}
+];
+function personaOps(p,i){
+  if(p.status==='已发布') return `<button class="btn-link" onclick="openPersonaDialog(true,${i})">编辑</button><button class="btn-link danger" onclick="toast('画像「${p.name}」已停用（原型演示）')">停用</button>`;
+  if(p.status==='草稿') return `<button class="btn-link" onclick="openPersonaDialog(true,${i})">编辑</button><button class="btn-link danger" onclick="toast('画像「${p.name}」已删除（原型演示）')">删除</button>`;
+  return `<button class="btn-link" onclick="toast('画像「${p.name}」已启用（原型演示）')">启用</button>`;
+}
+document.getElementById('personaTbody').innerHTML=personas.map((p,i)=>`
+  <tr>
+    <td><button class="btn-link" style="font-weight:600;" onclick="openPersonaDetail(${i})">${p.name}</button></td>
+    <td>${p.scope}</td>
+    <td><span class="tag ${scStTag[p.status]}">${p.status}</span></td>
+    <td>${p.updater}</td><td>${p.time}</td>
+    <td>${personaOps(p,i)}</td>
+  </tr>`).join('');
+function openPersonaDialog(isEdit,i){
+  const p=isEdit?personas[i]:null;
+  document.getElementById('dlgPersonaTitle').textContent=isEdit?'编辑行为画像':'新建行为画像';
+  document.getElementById('personaNameInput').value=p?p.name:'';
+  document.getElementById('personaScopeSel').value=p?p.scope:'通用';
+  document.getElementById('personaPromptArea').value=p?personaPromptSample:'';
+  document.getElementById('personaHangupArea').value=p?(p.hangup||''):'';
+  openDlg('dlgPersona');
+}
+function openPersonaDetail(i){
+  const p=personas[i];
+  document.getElementById('dlgPersonaDetailTitle').textContent='画像详情 · '+p.name;
+  document.getElementById('personaDetailBody').innerHTML=`
+    <div class="detail-row"><div class="detail-label">画像名称</div><div class="detail-value" style="font-weight:600;">${p.name}</div></div>
+    <div class="detail-row"><div class="detail-label">适用身份范围</div><div class="detail-value">${p.scope}</div></div>
+    <div class="detail-row"><div class="detail-label">发布状态</div><div class="detail-value"><span class="tag ${scStTag[p.status]}">${p.status}</span></div></div>
+    <div class="detail-row"><div class="detail-label">更新人 / 时间</div><div class="detail-value">${p.updater} / ${p.time}</div></div>
+    <div class="detail-row"><div class="detail-label">行为提示词</div><div class="detail-value"><div class="detail-block">${personaPromptSample}</div></div></div>
+    <div class="detail-row"><div class="detail-label">挂断提示词</div><div class="detail-value">${p.hangup?`<div class="detail-block">${p.hangup}</div>`:'<span style="color:var(--text-placeholder)">—（该画像客户不会主动挂断）</span>'}</div></div>`;
+  openDlg('dlgPersonaDetail');
+}
+
+/* ====================== 页面5-1/5-2：客户池 & 客户详情 mock ====================== */
+function rnd(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function rndId(){ let s='YC'; const chars='ABCDEFGHJKLMNPQRSTUVWXYZ0123456789'; for(let i=0;i<8;i++) s+=chars[Math.floor(Math.random()*chars.length)]; return s; }
+function rndPhone(){ return '1'+rnd(['3','5','7','8','9'])+String(Math.floor(Math.random()*1e9)).padStart(9,'0'); }
+function rndTime(sm,em){ const t=new Date(2026,sm-1+Math.floor(Math.random()*(em-sm+1)),1+Math.floor(Math.random()*27),Math.floor(Math.random()*24),Math.floor(Math.random()*60)); return `2026-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')} ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`; }
+function maybe(v,p){ return Math.random()<(p??0.75)?v:''; }
+/* 当前学员进行中的自由练习任务（多于1个时申请客户需先选任务） */
+const myFreeTasks=['9月自由外呼陪练','9月新人客户池专项练习'];
+/* 已结束的自由练习任务：所属线索不可再拨打（一键拨打置灰） */
+const endedFreeTasks=['8月自由外呼陪练'];
+function taskEnded(name){ return endedFreeTasks.includes(name); }
+function genCustomer(){
+  return {
+    ycid:rndId(), phone:rndPhone(),
+    payTime:maybe(rndTime(3,8),0.6), watchTime:maybe(rndTime(7,9),0.8),
+    intent:rnd(['高','中','低','']),
+    nick:'洋葱用户'+Math.floor(1000+Math.random()*9000),
+    loc:maybe(rnd(['湖南省长沙市','湖北省武汉市','广东省深圳市','四川省成都市','河南省郑州市','浙江省杭州市']),0.85),
+    grade:maybe(rnd(['三年级','四年级','五年级','六年级','初一','初二','初三','高一','高二']),0.85),
+    regTime:rndTime(1,6), vip:rnd(['是','否','否']), custType:rnd(['新增','存量','唤醒']),
+    scene:rnd(['小学｜学情沟通','小学｜产品介绍','小学｜优惠关单']),
+    persona:rnd(['理性焦虑型','效果验证型','预算谨慎比价型','冷淡警惕型','沉稳理性考虑型']),
+    voice:rnd(['温柔女声-成年家长','沉稳男声-成年家长','李奶奶']),
+    task:rnd([...myFreeTasks,'8月自由外呼陪练']),
+    claimTime:rndTime(9,9),
+    calls:[{time:'2026-09-09 16:40',dur:'6分12秒',durSec:372,score:82,result:'已接通',hangupBy:'销售',transcript:null}]
+  };
+}
+/* 匹配到的行为画像若配置了「挂断提示词」，该客户可能主动挂断（对应 personas 中 hangup 非空的画像） */
+function custCanHangup(c){ const p=personas.find(x=>x.name===c.persona); return !!(p&&p.hangup); }
+const custPool=[genCustomer(),genCustomer(),genCustomer(),genCustomer()];
+const intentTag={'高':'tag-danger','中':'tag-warning','低':'tag-info'};
+function fmtEmpty(v){ return v||'<span style="color:var(--text-placeholder)">—</span>'; }
+function renderCustPool(){
+  document.getElementById('custPoolTbody').innerHTML=custPool.map((c,i)=>`
+    <tr>
+      <td><button class="btn-link" style="font-weight:600;" onclick="openCustomerDetail(${i})">${c.ycid}</button></td>
+      <td>${c.phone}</td>
+      <td>${fmtEmpty(c.payTime)}</td><td>${fmtEmpty(c.watchTime)}</td>
+      <td>${c.intent?`<span class="tag ${intentTag[c.intent]}">${c.intent}</span>`:'<span style="color:var(--text-placeholder)">—</span>'}</td>
+      <td>${fmtEmpty(c.claimTime)}</td>
+      <td>${fmtEmpty(c.task)}${taskEnded(c.task)?' <span class="tag tag-info" style="height:20px;">已结束</span>':''}</td>
+      <td>${taskEnded(c.task)?'<span class="btn-link" style="color:var(--text-placeholder);cursor:not-allowed;" title="所属任务已结束，无法拨打">一键拨打</span>':`<button class="btn-link" onclick="startAiCall(${i})">一键拨打</button>`}<button class="btn-link" onclick="openCustomerDetail(${i})">查看详情</button></td>
+    </tr>`).join('');
+}
+renderCustPool();
+function goCustomerPool(){
+  document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
+  document.querySelector('[data-page="customerPool"]').classList.add('active');
+  document.querySelectorAll('.page-view').forEach(p=>p.classList.remove('show'));
+  document.getElementById('page-customerPool').classList.add('show');
+  document.getElementById('crumb').textContent='客户池';
+}
+function openApplyTaskDrop(ev){
+  ev.stopPropagation();
+  if(myFreeTasks.length===0){ toastErr('当前没有进行中的自由练习任务，无法申请客户'); return; }
+  if(myFreeTasks.length===1){ applyCustomer(myFreeTasks[0]); return; } /* 仅一个任务时直接申请 */
+  const drop=document.getElementById('applyTaskDrop');
+  if(drop.style.display!=='none'){ drop.style.display='none'; return; }
+  document.getElementById('applyTaskDropList').innerHTML=myFreeTasks.map(t=>
+    `<div style="padding:10px 12px;cursor:pointer;font-size:13.5px;display:flex;justify-content:space-between;align-items:center;" onmouseover="this.style.background='#f5f7fa'" onmouseout="this.style.background=''" onclick="pickApplyTask('${t}')"><span>${t}</span><span class="tag tag-success" style="height:20px;">进行中</span></div>`).join('');
+  drop.style.display='';
+  setTimeout(()=>document.addEventListener('click',closeApplyTaskDrop,{once:true}),0);
+}
+function closeApplyTaskDrop(){ const d=document.getElementById('applyTaskDrop'); if(d) d.style.display='none'; }
+function pickApplyTask(taskName){
+  closeApplyTaskDrop();
+  applyCustomer(taskName);
+}
+function applyCustomer(taskName){
+  const c=genCustomer();
+  c.task=taskName||myFreeTasks[0];
+  const now=new Date();
+  c.claimTime=`2026-09-10 ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  custPool.unshift(c); renderCustPool();
+  toast(`申请成功：任务「${c.task}」· 按你的学段（小学）匹配场景「${c.scene}」· 行为画像「${c.persona}」· 音色「${c.voice}」，AI客户已生成`);
+}
+/* ===== 客户详情 ===== */
+let currentCustIdx=0;
+let cdTab='order';
+function openCustomerDetail(i){
+  currentCustIdx=i;
+  const c=custPool[i];
+  document.getElementById('cdAvatar').textContent=c.nick.slice(-2,-1)||'洋';
+  document.getElementById('cdName').textContent=c.nick;
+  document.getElementById('cdSub').innerHTML='';
+  /* 所属任务已结束：一键拨打置灰不可点击 */
+  const callBtn=document.getElementById('cdCallBtn');
+  const ended=taskEnded(c.task);
+  callBtn.disabled=ended;
+  callBtn.style.opacity=ended?.5:1;
+  callBtn.style.cursor=ended?'not-allowed':'pointer';
+  callBtn.title=ended?'所属任务已结束，无法拨打':'';
+  const cells=[
+    ['客户昵称',c.nick],['所在地',c.loc],['用户手机号',c.phone],
+    ['年级',c.grade],['用户洋葱 ID',c.ycid],['注册时间',c.regTime],
+    ['是否为会员',c.vip],['客户类型',c.custType],['最近一次看课时间',c.watchTime],
+    ['最近一次付费时间',c.payTime],['意向度',c.intent?`<span class="tag ${intentTag[c.intent]}">${c.intent}</span>`:''],['','']
+  ];
+  document.getElementById('cdGrid').innerHTML=cells.map(x=>x[0]?`<div class="cd-cell"><div class="k">${x[0]}</div><div class="v">${fmtEmpty(x[1])}</div></div>`:'<div class="cd-cell" style="background:#fff;"></div>').join('');
+  cdTab='order';
+  document.querySelectorAll('.cd-tab').forEach((t,idx)=>t.classList.toggle('active',idx===0));
+  renderCdTab();
+  document.querySelectorAll('.page-view').forEach(p=>p.classList.remove('show'));
+  document.getElementById('page-customerDetail').classList.add('show');
+  document.getElementById('crumb').textContent='客户池 / 客户详情';
+}
+function backToCustomerPool(){
+  document.querySelectorAll('.page-view').forEach(p=>p.classList.remove('show'));
+  document.getElementById('page-customerPool').classList.add('show');
+  document.getElementById('crumb').textContent='客户池';
+}
+function pickCdTab(el,tab){
+  document.querySelectorAll('.cd-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active'); cdTab=tab; renderCdTab();
+}
+function emptyBlock(t){ return `<div style="text-align:center;color:var(--text-placeholder);padding:40px 0;">${t}</div>`; }
+function isPrimary(g){ return /年级/.test(g||''); }
+function isJunior(g){ return /^初/.test(g||''); }
+function stageOf(g){ return isPrimary(g)?'小学':isJunior(g)?'初中':'高中'; }
+/* 观看记录默认视频库：学段 × 科目，每组 10 条［视频名称，知识点名称］ */
+const videoBank={
+'小学':{
+'语文':[['《拼音总动员：声母与韵母》','拼音拼读规则'],['《查字典的两种方法》','音序查字法与部首查字法'],['《比喻句和拟人句》','修辞手法辨析'],['《看图写话入门》','观察顺序与完整表达'],['《古诗诵读：静夜思》','古诗意象与情感理解'],['《标点符号的正确使用》','逗号句号引号用法'],['《阅读理解：找中心句》','段落主旨概括'],['《作文开头结尾技巧》','首尾呼应写法'],['《近义词反义词辨析》','词语积累与运用'],['《课文精讲：草船借箭》','名著情节梳理']],
+'数学':[['《分数的初步认识》','分数的意义与大小比较'],['《小数乘法竖式计算》','小数乘法运算法则'],['《长方体和正方体》','立体图形的表面积'],['《植树问题巧解》','间隔问题建模'],['《鸡兔同笼专题》','假设法解应用题'],['《九九乘法表速记》','乘法口诀运用'],['《四则混合运算》','运算顺序与括号使用'],['《平行四边形与梯形》','图形特征与面积计算'],['《简易方程入门》','用字母表示数'],['《统计图初步》','条形图与折线图读图']],
+'英语':[['《26个字母自然拼读》','字母音与拼读规则'],['《日常问候用语》','情景对话表达'],['《数字与颜色单词》','基础词汇积累'],['《一般现在时入门》','动词第三人称单数'],['《家庭成员主题词汇》','名词单复数变化'],['《What&#39;s this? 句型练习》','指示代词用法'],['《英语儿歌磨耳朵》','听力语感培养'],['《介词 in/on/under》','方位介词辨析'],['《My Day 日常作息表达》','时间表达法'],['《动物主题绘本阅读》','阅读理解入门']]
+},
+'初中':{
+'语文':[['《记叙文六要素》','记叙文阅读要点'],['《文言文实词积累》','常见实词释义'],['《古诗鉴赏：意象与情感》','诗歌鉴赏方法'],['《议论文三要素》','论点论据论证'],['《病句辨析与修改》','常见语病类型'],['《名著导读：朝花夕拾》','名著内容梳理'],['《说明文的说明方法》','列数字打比方举例子'],['《作文审题立意》','材料作文写法'],['《文言虚词"之"的用法》','虚词用法辨析'],['《环境描写的作用》','描写手法分析']],
+'数学':[['《一元一次方程解法》','等式性质与移项'],['《全等三角形判定》','SSS/SAS判定定理'],['《有理数混合运算》','运算顺序与符号法则'],['《一次函数图像》','k、b对图像的影响'],['《因式分解专题》','提公因式与公式法'],['《二元一次方程组》','代入法与加减消元法'],['《勾股定理及应用》','直角三角形三边关系'],['《平面直角坐标系》','点的坐标特征'],['《分式的运算》','约分通分法则'],['《圆的基本性质》','垂径定理与圆周角']],
+'英语':[['《一般过去时精讲》','动词过去式变化规则'],['《宾语从句语序》','从句引导词用法'],['《被动语态入门》','be+过去分词结构'],['《形容词副词比较级》','比较级最高级变化'],['《完形填空解题技巧》','上下文线索定位'],['《现在完成时辨析》','since与for用法'],['《阅读理解主旨题》','快速定位中心句'],['《情态动词 must/can》','情态动词含义辨析'],['《英语写作：邀请信》','应用文格式规范'],['《动词不定式用法》','to do作宾语与状语']],
+'物理':[['《光的反射与折射》','光路图作图规则'],['《凸透镜成像规律》','物距像距关系'],['《欧姆定律精讲》','电流电压电阻关系'],['《串并联电路分析》','电路连接方式辨析'],['《浮力与阿基米德原理》','物体浮沉条件判断'],['《压强的计算》','固体液体压强公式'],['《杠杆平衡条件》','力臂画法与计算'],['《声音的产生与传播》','音调响度音色辨析'],['《物态变化》','熔化凝固汽化液化'],['《电功率计算》','额定功率与实际功率']],
+'化学':[['《化学式与化合价》','化合价口诀运用'],['《质量守恒定律》','化学方程式配平'],['《酸碱盐的性质》','常见酸碱反应规律'],['《氧气的实验室制取》','制氧装置与验满方法'],['《金属活动性顺序》','置换反应发生条件'],['《溶液与溶解度》','溶质质量分数计算'],['《二氧化碳的性质》','CO₂的检验与用途'],['《化学实验基本操作》','常用仪器使用规范'],['《燃烧与灭火》','燃烧三条件与灭火原理'],['《原子结构初步》','原子核与核外电子排布']],
+'生物':[['《细胞的结构》','动植物细胞的区别'],['《光合作用与呼吸作用》','物质与能量转化'],['《人体的消化系统》','消化与吸收过程'],['《血液循环的途径》','体循环与肺循环'],['《生态系统的组成》','食物链与食物网'],['《遗传与变异初步》','基因与性状的关系'],['《种子萌发的条件》','对照实验设计'],['《人体的呼吸过程》','肺泡处的气体交换'],['《显微镜的使用》','对光与调焦步骤'],['《传染病与免疫》','传染病流行三环节']],
+'地理':[['《经纬网定位》','经度纬度判读'],['《地球的运动》','自转公转与昼夜四季'],['《等高线地形图》','山脊山谷判读'],['《中国的行政区划》','34个省级行政区'],['《天气与气候》','常见天气符号识别'],['《中国的地形地势》','三级阶梯特征'],['《世界的气候类型》','气候分布与成因'],['《长江与黄河》','水文特征比较'],['《亚洲的自然环境》','地形河流气候特点'],['《地图三要素》','比例尺方向与图例']],
+'历史':[['《秦统一中国》','中央集权制度建立'],['《汉武帝巩固大一统》','推恩令与独尊儒术'],['《隋唐科举制》','科举制度的创立与影响'],['《宋代经济的发展》','经济重心南移'],['《明清君主专制强化》','军机处与八股取士'],['《鸦片战争》','近代史开端与不平等条约'],['《辛亥革命》','武昌起义与中华民国建立'],['《五四运动》','新民主主义革命的开端'],['《抗日战争》','全民族抗战重大战役'],['《新中国的成立》','开国大典与历史意义']],
+'道德与法治':[['《认识自我 悦纳自己》','自我认知与自尊自信'],['《友谊的真谛》','交友原则与网上交往'],['《师生交往之道》','正确对待老师的批评'],['《家的意味》','孝亲敬长的情感与责任'],['《法律为我们护航》','未成年人的特殊保护'],['《公民的基本权利》','人身权与受教育权'],['《宪法是根本法》','宪法的地位与作用'],['《维护国家利益》','总体国家安全观'],['《社会主义核心价值观》','三个层面内容解读'],['《依法行使权利》','权利边界与维权途径']]
+},
+'高中':{
+'语文':[['《文言文特殊句式》','判断句被动句倒装句'],['《诗歌鉴赏：手法题规范作答》','表现手法与答题模板'],['《小说阅读：情节作用题》','情节结构分析'],['《议论文写作：分论点设置》','并列式与递进式结构'],['《文言实词推断技巧》','语境推断法'],['《散文阅读：句子含义题》','表层义与深层义'],['《名句默写高频篇目》','理解性默写训练'],['《成语辨析专题》','高频易错成语'],['《作文素材积累与运用》','热点素材多角度运用'],['《整本书阅读：红楼梦》','人物关系与主题理解']],
+'数学':[['《函数的单调性》','单调区间与导数判定'],['《立体几何向量法》','空间向量求二面角'],['《三角函数图像变换》','平移伸缩变换规律'],['《数列通项公式》','累加法与构造法'],['《圆锥曲线离心率》','焦点弦与几何性质'],['《导数与函数极值》','利用导数求极值最值'],['《概率与统计：分布列》','离散型随机变量'],['《直线与圆的位置关系》','弦长与切线问题'],['《等差等比数列求和》','错位相减与裂项相消'],['《不等式恒成立问题》','参变分离与最值法']],
+'英语':[['《定语从句精讲》','关系代词与关系副词'],['《非谓语动词》','doing/done/to do辨析'],['《虚拟语气》','if从句与愿望表达'],['《完形填空高频词复现》','语篇逻辑与词汇复现'],['《读后续写技巧》','情节构思与语言升格'],['《七选五解题策略》','段首段尾句定位'],['《应用文写作：建议信》','高分句型与结构'],['《名词性从句》','主语宾语表语同位语从句'],['《长难句分析》','句子主干拆解'],['《语法填空：无提示词》','冠词介词连词考点']],
+'物理':[['《匀变速直线运动规律》','运动学公式与图像'],['《牛顿第二定律应用》','整体法与隔离法'],['《平抛与圆周运动》','曲线运动的分解'],['《机械能守恒定律》','功能关系判断'],['《静电场与电场强度》','电场线与电势分析'],['《闭合电路欧姆定律》','电动势与内阻计算'],['《磁场与安培力》','左手定则应用'],['《电磁感应：楞次定律》','感应电流方向判断'],['《动量守恒定律》','碰撞问题分类讨论'],['《万有引力与航天》','卫星运行参数比较']],
+'化学':[['《物质的量与摩尔计算》','n=m/M=V/Vm换算'],['《氧化还原反应》','电子转移与配平'],['《离子反应与离子方程式》','离子共存判断'],['《元素周期律》','金属性非金属性递变'],['《化学平衡移动》','勒夏特列原理应用'],['《电离平衡与pH计算》','弱电解质的电离'],['《原电池与电解池》','电极反应式书写'],['《有机化学：同分异构体》','官能团与系统命名'],['《铝及其化合物》','两性氢氧化物转化'],['《化学反应速率》','影响因素与图像分析']],
+'生物':[['《细胞膜的结构与功能》','流动镶嵌模型'],['《有丝分裂与减数分裂》','分裂图像辨析'],['《孟德尔遗传定律》','分离定律与自由组合'],['《DNA的复制与转录》','中心法则解读'],['《光合作用两阶段》','光反应暗反应曲线分析'],['《神经调节：兴奋传导》','突触结构与传递'],['《体液调节：血糖平衡》','胰岛素与胰高血糖素'],['《基因工程基本操作》','工具酶与载体'],['《种群与群落》','种群增长曲线'],['《生态系统能量流动》','能量传递效率计算']],
+'地理':[['《大气环流与气压带风带》','三圈环流成因'],['《水循环与洋流》','洋流分布规律'],['《地质构造与地貌》','背斜向斜判断'],['《自然地理环境整体性》','要素相互作用'],['《人口迁移与城市化》','推拉理论分析'],['《农业区位因素》','自然与社会经济因素'],['《工业区位选择》','主导因素判断'],['《区域可持续发展》','荒漠化治理措施'],['《地球运动：时差计算》','地方时与区时换算'],['《气候类型判读》','以温定带以水定型']],
+'历史':[['《分封制与宗法制》','西周政治制度特点'],['《商鞅变法与秦制》','中央集权制度奠基'],['《罗马法的起源与发展》','从习惯法到成文法'],['《英国君主立宪制》','权利法案与责任内阁'],['《辛亥革命与民国建立》','三民主义评价'],['《新民主主义革命历程》','从五四到新中国'],['《改革开放的决策》','十一届三中全会意义'],['《世界市场的形成》','新航路开辟与殖民扩张'],['《罗斯福新政》','国家干预经济模式'],['《经济全球化趋势》','世贸组织与区域集团化']],
+'道德与法治':[['《商品与货币》','商品二因素与货币职能'],['《价格变动的影响》','供求关系与价值规律'],['《我国的基本经济制度》','公有制为主体多种所有制'],['《人民代表大会制度》','根本政治制度解读'],['《中国共产党的领导》','党的性质与执政方式'],['《哲学：物质与意识》','唯物论基本原理'],['《矛盾分析法》','对立统一与两点论重点论'],['《实践与认识》','认识的反复性与无限性'],['《文化的继承与创新》','传统文化的当代价值'],['《依法治国方略》','科学立法严格执法']]
+}
+};
+function renderCdTab(){
+  const c=custPool[currentCustIdx];
+  const body=document.getElementById('cdTabBody');
+  if(cdTab==='order'){
+    if(!c.payTime){ body.innerHTML=emptyBlock('暂无订单记录'); return; }
+    body.innerHTML=`<table class="el-table"><thead><tr><th>订单号</th><th>商品名称</th><th>订单金额</th><th>支付时间</th><th>订单状态</th></tr></thead><tbody>
+      <tr><td>DD${Math.floor(1e9+Math.random()*9e9)}</td><td>${rnd(['数学思维体验营','洋葱学园VIP月卡','暑期数学专项包'])}</td><td>¥${rnd(['9.9','49','199'])}</td><td>${c.payTime}</td><td><span class="tag tag-success">已支付</span></td></tr>
+    </tbody></table>`;
+  }else if(cdTab==='watch'){
+    if(!c.watchTime){ body.innerHTML=emptyBlock('暂无观看记录'); return; }
+    /* 按客户学段从「学段×科目」默认视频库中跨科目随机抽取（列表不展示科目） */
+    const bank=videoBank[stageOf(c.grade)];
+    const pool=[];
+    Object.values(bank).forEach(vs=>vs.forEach(v=>pool.push(v)));
+    const picks=pool.sort(()=>Math.random()-.5).slice(0,3+Math.floor(Math.random()*3));
+    body.innerHTML=`<table class="el-table"><thead><tr><th>视频名称</th><th>知识点名称</th><th>观看时间</th></tr></thead><tbody>
+      ${picks.map((v,i)=>`<tr><td>${v[0]}</td><td>${v[1]}</td><td>${i===0?c.watchTime:rndTime(6,8)}</td></tr>`).join('')}
+    </tbody></table>`;
+  }else if(cdTab==='study'){
+    if(!c.grade){ body.innerHTML=emptyBlock('暂无学情报告'); return; }
+    const subjects=[...(isPrimary(c.grade)?['数学','语文','英语']:isJunior(c.grade)?['数学','物理','英语']:['数学','物理','化学'])].sort(()=>Math.random()-.5).slice(0,2+Math.floor(Math.random()*2));
+    body.innerHTML=`<table class="el-table"><thead><tr><th>科目</th><th>题目准确率</th><th>学习时长</th></tr></thead><tbody>
+      ${subjects.map(s=>{const acc=35+Math.floor(Math.random()*55);return `<tr><td>${s}</td><td><span class="progress-bar"><i style="width:${acc}%"></i></span> ${acc}%</td><td>${Math.floor(Math.random()*12)}小时${Math.floor(Math.random()*60)}分钟</td></tr>`;}).join('')}
+    </tbody></table>`;
+  }else{
+    if(!c.calls.length){ body.innerHTML=emptyBlock('暂无通话记录，点击右上角「一键拨打」开始练习'); return; }
+    body.innerHTML=`<table class="el-table"><thead><tr><th>通话时间</th><th>通话时长</th><th>通话结果</th><th>挂断方</th><th>评分</th><th>操作</th></tr></thead><tbody>
+      ${c.calls.map((r,ri)=>`<tr><td>${r.time}</td><td>${r.dur}</td><td><span class="tag ${r.result==='客户挂断'?'tag-danger':'tag-success'}">${r.result||'已接通'}</span></td>
+        <td><span class="tag ${r.hangupBy==='AI客户'?'tag-danger':'tag-info'}">${r.hangupBy||'销售'}</span></td>
+        <td>${r.score?`<b style="color:var(--primary);">${r.score}</b>`:'<span style="color:var(--text-placeholder)" title="通话时长不足5分钟，不参与评分">—</span>'}</td>
+        <td><button class="btn-link" onclick="openCallTranscript(${currentCustIdx},${ri})">查看转写</button></td></tr>`).join('')}
+    </tbody></table>
+    <div class="form-tip" style="margin-top:8px;">通话时长超过 5 分钟的通话才会进行评分</div>`;
+  }
+}
+/* ===== AI外呼通话 ===== */
+let callTimer2=null, callSec2=0, callConnected=false, callTurns=0, callUsed={};
+let aiHangupDone=false, callSalesyStreak=0; /* AI主动挂断：每通最多一次；连续推销/报价轮数计数 */
+/* ===== 语音能力（浏览器原生 ASR + TTS，模拟真实通话） ===== */
+const SR2=window.SpeechRecognition||window.webkitSpeechRecognition;
+let recog2=null, micOn2=false, aiSpeaking2=false, zhVoice2=null;
+function pickZhVoice2(){
+  const vs=speechSynthesis.getVoices();
+  zhVoice2=vs.find(v=>/zh[-_]CN/i.test(v.lang)&&/Tingting|Xiaoxiao|婷婷|Sinji|Meijia/i.test(v.name))
+    ||vs.find(v=>/zh[-_]CN/i.test(v.lang))||vs.find(v=>/^zh/i.test(v.lang))||null;
+}
+if('speechSynthesis' in window){ pickZhVoice2(); speechSynthesis.onvoiceschanged=pickZhVoice2; }
+function callSpeak(text){
+  if(!('speechSynthesis' in window)) return;
+  const u=new SpeechSynthesisUtterance(text.replace(/…/g,'，').replace(/["「」]/g,''));
+  if(zhVoice2) u.voice=zhVoice2;
+  u.lang='zh-CN'; u.rate=1.05; u.pitch=1.1;
+  aiSpeaking2=true;
+  document.getElementById('speakInd2').classList.add('show');
+  pauseRecog2(); // 客户讲话时暂停收音，避免把 TTS 识别成销售的话
+  u.onend=u.onerror=()=>{
+    aiSpeaking2=false;
+    document.getElementById('speakInd2').classList.remove('show');
+    if(micOn2&&callConnected) resumeRecog2();
+  };
+  speechSynthesis.speak(u);
+}
+function initRecog2(){
+  const r=new SR2();
+  r.lang='zh-CN'; r.continuous=true; r.interimResults=true;
+  r.onresult=e=>{
+    let interim='', final='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const t=e.results[i][0].transcript;
+      if(e.results[i].isFinal) final+=t; else interim+=t;
+    }
+    const ipt=document.getElementById('callInput');
+    if(!ipt) return;
+    if(interim) ipt.value=interim;
+    if(final.trim()){ ipt.value=final.trim(); callSend(ipt.value); }
+  };
+  r.onend=()=>{ if(micOn2&&callConnected&&!aiSpeaking2){ try{r.start();}catch(e){} } };
+  r.onerror=ev=>{
+    if(ev.error==='not-allowed'||ev.error==='service-not-allowed'){
+      micOn2=false; updateMicUI2();
+      toastErr('未获得麦克风权限，请在浏览器允许麦克风后重试');
+    }
+  };
+  return r;
+}
+function pauseRecog2(){ if(recog2){ try{recog2.abort();}catch(e){} } }
+function resumeRecog2(){ if(recog2){ try{recog2.start();}catch(e){} } }
+function toggleCallMic(){
+  if(!SR2){ toastErr('当前浏览器不支持语音识别，请使用 Chrome 浏览器'); return; }
+  micOn2=!micOn2;
+  if(micOn2){
+    recog2=recog2||initRecog2();
+    if(!aiSpeaking2) resumeRecog2();
+    toast('语音通话已开启，直接对麦克风说话即可');
+  }else{
+    pauseRecog2();
+    toast('已切回文字输入模式');
+  }
+  updateMicUI2();
+}
+function updateMicUI2(){
+  const b=document.getElementById('micBtn2');
+  if(!b) return; /* 已改为按住说话交互，旧语音开关 UI 不存在 */
+  b.classList.toggle('on',micOn2);
+}
+const callReplies={
+  greet:['喂，你好…你是哪位？我在忙，有什么事你说。','嗯，洋葱学园？我好像给孩子领过你们的课。'],
+  pain:['成绩嘛…就是数学有点跟不上，作业老是拖到很晚。','考试成绩中等吧，主要是应用题老丢分，我也挺头疼的。'],
+  price:['多少钱啊？要是太贵就算了，之前报的班都没什么效果。','有优惠吗？我得先看看值不值这个价。'],
+  effect:['你们这个课真的有用吗？能不能先证明给我看？','别的机构也都这么说，你们跟他们有什么区别？'],
+  trial:['免费试听？那可以让孩子先试试，什么时候能安排？','测评是免费的吧？不收费的话可以做一个。'],
+  delay:['我得跟孩子爸爸商量一下，你过两天再打给我吧。','这样，你先把资料发我微信上，我看完再说。'],
+  close:['行吧，那你把报名链接发我，我今晚看一下。','如果试听效果好，我们就定下来。'],
+  fallback:['嗯…你继续说。','这个我不太清楚，你能具体讲讲吗？','哦，是这样啊。']
+};
+function startAiCall(i){
+  currentCustIdx=i;
+  const c=custPool[i];
+  if(taskEnded(c.task)){ toastErr('该线索所属任务「'+c.task+'」已结束，无法拨打'); return; }
+  callSec2=0; callConnected=false; callTurns=0; callUsed={};
+  aiHangupDone=false; callSalesyStreak=0;
+  document.getElementById('ccAv').textContent=c.nick.slice(-2,-1)||'洋';
+  document.getElementById('ccName').textContent=c.nick;
+  document.getElementById('ccPhone').textContent=c.phone;
+  document.getElementById('ccStatus').textContent='正在拨号…';
+  document.getElementById('ccTimer').textContent='00:00';
+  document.getElementById('callChatBox').innerHTML='';
+  document.getElementById('callPanel').classList.remove('connected');
+  document.getElementById('miniName').textContent=c.nick;
+  document.getElementById('miniTimer').textContent='00:00';
+  document.getElementById('callMask').classList.remove('collapsed');
+  document.getElementById('callMask').classList.add('show');
+  callSys('正在呼叫 '+c.phone+'（AI模拟外呼）…');
+  setTimeout(()=>{
+    callConnected=true;
+    document.getElementById('callPanel').classList.add('connected');
+    document.getElementById('ccStatus').textContent='● 通话中';
+    callSys('已接通 · 通话录音与实时转写已开启');
+    callTimer2=setInterval(()=>{
+      callSec2++;
+      const tt=String(Math.floor(callSec2/60)).padStart(2,'0')+':'+String(callSec2%60).padStart(2,'0');
+      document.getElementById('ccTimer').textContent=tt;
+      document.getElementById('miniTimer').textContent=tt;
+    },1000);
+    callAiSay('喂？你好，哪位？',600);
+  },1600);
+}
+function callSys(t){
+  const box=document.getElementById('callChatBox');
+  box.insertAdjacentHTML('beforeend',`<div class="cmsg sys"><div class="bubble">—— ${t} ——</div></div>`);
+  box.scrollTop=box.scrollHeight;
+}
+function callAddMsg(who,text){
+  const box=document.getElementById('callChatBox');
+  const c=custPool[currentCustIdx];
+  const av=who==='ai'?(c.nick.slice(-2,-1)||'洋'):'李';
+  const name=who==='ai'?c.nick+'（AI客户）':'我（销售）';
+  box.insertAdjacentHTML('beforeend',`<div class="cmsg ${who==='ai'?'ai':'me'}"><div class="m-av">${av}</div><div><div class="who">${name}</div><div class="bubble">${text}</div></div></div>`);
+  box.scrollTop=box.scrollHeight;
+}
+function callAiSay(text,delay){
+  const box=document.getElementById('callChatBox');
+  const tid='ctp'+Date.now();
+  const c=custPool[currentCustIdx];
+  setTimeout(()=>{
+    box.insertAdjacentHTML('beforeend',`<div class="cmsg ai" id="${tid}"><div class="m-av">${c.nick.slice(-2,-1)||'洋'}</div><div><div class="who">对方正在说话…</div><div class="bubble"><span class="ctyping"><i></i><i></i><i></i></span></div></div></div>`);
+    box.scrollTop=box.scrollHeight;
+    setTimeout(()=>{ document.getElementById(tid)?.remove(); callAddMsg('ai',text); callSpeak(text); },800+Math.min(text.length*30,1600));
+  },delay||300);
+}
+function callPickReply(input){
+  const rules=[
+    [/你好|您好|打扰|我是|洋葱|老师/,'greet'],
+    [/成绩|学习|情况|年级|薄弱|作业|考试|怎么样/,'pain'],
+    [/价格|费用|钱|优惠|多少|元|活动|折/,'price'],
+    [/效果|提分|案例|师资|课程|区别|服务/,'effect'],
+    [/试听|体验|免费|测评|诊断|试一试/,'trial'],
+    [/考虑|商量|再联系|微信|方便|下次/,'delay'],
+    [/成交|下单|付款|报名|链接|支付|确定/,'close']
+  ];
+  for(const [re,key] of rules){
+    if(re.test(input)&&callReplies[key]){
+      callUsed[key]=callUsed[key]||0;
+      const arr=callReplies[key];
+      return arr[Math.min(callUsed[key]++,arr.length-1)];
+    }
+  }
+  callUsed._fb=callUsed._fb||0;
+  return callReplies.fallback[callUsed._fb++%callReplies.fallback.length];
+}
+function callSend(text){
+  if(!callConnected){ toastErr('电话还未接通，请稍候…'); return; }
+  if(aiHangupDone){ toastErr('对方已挂断'); return; }
+  const v=(text||'').trim(); if(!v) return;
+  callAddMsg('me',v); callTurns++;
+  if(maybeAiHangup(v)) return;
+  callAiSay(callPickReply(v),500);
+}
+/* ===== 按住说话（交互同课程练习页）：点击麦克风模拟录音→识别转写→自动发送 ===== */
+const callMyLines=['你好，请问是家长吗？我是洋葱学园的李老师。','孩子最近数学学习情况怎么样？作业完成得顺利吗？','我们有针对孩子薄弱点的专项提升课程，可以先做个免费学情诊断。','现在报名有限时优惠活动，价格很划算，要不要了解一下？','这个课程优惠后只要99元，今天下单还送试听课，现在给您发报名链接？'];
+let callRecording=false;
+function callMicPress(){
+  if(!callConnected){ toastErr('电话还未接通，请稍候…'); return; }
+  if(aiHangupDone){ toastErr('对方已挂断'); return; }
+  if(callRecording) return;
+  callRecording=true;
+  const btn=document.getElementById('callMicBtn');
+  btn.classList.add('rec');
+  setTimeout(()=>{
+    btn.classList.remove('rec');
+    callRecording=false;
+    callSend(callMyLines[Math.min(callTurns,callMyLines.length-1)]);
+  },1500);
+}
+/* ===== AI主动挂断（模拟：正式版由对练模型按画像「挂断提示词」判定并输出 [挂断] 标记） ===== */
+const aiHangupLines=['行了行了，我这边在忙，先这样啊。','你们这就是推销吧？我不需要，再见。','我说了再考虑，你老这样我很烦，挂了啊。'];
+function maybeAiHangup(input){
+  const c=custPool[currentCustIdx];
+  if(!custCanHangup(c)) return false;          /* 画像未配置挂断提示词，不会主动挂断 */
+  if(aiHangupDone) return false;               /* 每通电话最多触发一次 */
+  const salesy=/价格|费用|多少钱|优惠|折|活动|报名|下单|付款|链接|支付|课程|买/.test(input);
+  callSalesyStreak=salesy?callSalesyStreak+1:0;
+  const prob=callSalesyStreak>=2?0.5:(salesy?0.25:0.1);
+  if(Math.random()>=prob) return false;
+  aiHangupDone=true;
+  const line=rnd(aiHangupLines);
+  callAiSay(line,500);
+  setTimeout(aiHangupEnd,500+800+Math.min(line.length*30,1600)+1200);
+  return true;
+}
+function aiHangupEnd(){
+  callSys('对方已挂断');
+  const st=document.getElementById('ccStatus');
+  st.textContent='● 对方已挂断'; st.style.color='var(--danger)';
+  clearInterval(callTimer2);
+  setTimeout(()=>{ hangupCall(true); st.style.color=''; },1500);
+}
+function collapseCall(){ document.getElementById('callMask').classList.add('collapsed'); }
+function expandCall(){ document.getElementById('callMask').classList.remove('collapsed'); }
+function hangupCall(byAI){
+  clearInterval(callTimer2);
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  micOn2=false; pauseRecog2(); updateMicUI2();
+  aiSpeaking2=false;
+  document.getElementById('speakInd2').classList.remove('show');
+  document.getElementById('callMask').classList.remove('show');
+  document.getElementById('callMask').classList.remove('collapsed');
+  if(callConnected&&callTurns>0){
+    const c=custPool[currentCustIdx];
+    const now=new Date();
+    const scored=callSec2>300;
+    c.calls.unshift({
+      time:`2026-09-10 ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,
+      dur:`${Math.floor(callSec2/60)}分${callSec2%60}秒`,
+      durSec:callSec2,
+      result:byAI?'客户挂断':'已接通',
+      hangupBy:byAI?'AI客户':'销售',
+      score:scored?[92,85,78,66][Math.min(3,Math.max(0,3-Math.floor(callTurns/3)))]:null,
+      transcript:document.getElementById('callChatBox').innerHTML
+    });
+    if(byAI) toastErr('客户主动挂断了电话，录音与转写已保存'+(scored?'，评分报告生成中…':'（时长不足5分钟，本次不参与评分）'));
+    else toast(scored?'通话已结束，录音与转写已保存，评分报告生成中…':'通话已结束，时长不足5分钟，本次不参与评分');
+    if(document.getElementById('page-customerDetail').classList.contains('show')&&cdTab==='call') renderCdTab();
+  }else{
+    toastErr('通话已取消');
+  }
+}
+
+/* ====================== 页面7：角色音色管理 mock ====================== */
+const roleVoices=[
+  {id:101,name:'周女士',type:'家长',voiceId:'zh_female_wenrou_v2'},
+  {id:102,name:'王先生',type:'家长',voiceId:'zh_male_chenwen_v2'},
+  {id:103,name:'李奶奶',type:'家长',voiceId:'zh_female_nainai_v1'},
+  {id:104,name:'小宇同学',type:'学生',voiceId:'zh_male_shaonian_v1'},
+  {id:105,name:'小雨同学',type:'学生',voiceId:'zh_female_shaonv_v1'}
+];
+const roleTypeTag={'家长':'tag-primary','学生':'tag-success'};
+document.getElementById('roleVoiceTbody').innerHTML=roleVoices.map(r=>`
+  <tr>
+    <td>${r.id}</td><td>${r.name}</td>
+    <td><span class="tag ${roleTypeTag[r.type]}">${r.type}</span></td>
+    <td>${r.voiceId}</td>
+    <td><button class="btn-link" onclick="openRoleVoiceDialog(true,'${r.name}','${r.voiceId}','${r.type}')">编辑</button></td>
+  </tr>`).join('');
+function openRoleVoiceDialog(isEdit,name,voiceId,type){
+  document.getElementById('dlgRoleVoiceTitle').textContent=isEdit?'编辑角色':'新增角色';
+  document.getElementById('rvNameInput').value=isEdit?(name||''):'';
+  document.getElementById('rvVoiceInput').value=isEdit?(voiceId||''):'';
+  document.getElementById('rvTypeSel').value=isEdit?(type||'家长'):'家长';
+  document.getElementById('rvSubmitBtn').textContent=isEdit?'保存':'新增';
+  openDlg('dlgRoleVoice');
+}
+
+/* ====================== 页面8：用户管理 mock ====================== */
+/* 角色配色对齐 roleType()：超级管理员=danger，管理员=warning，学员=info，其余=primary */
+const roleOptions=['超级管理员','管理员','培训师','学员'];
+function roleTagCls(r){ return r.includes('超级管理员')?'tag-danger':r.includes('管理员')?'tag-warning':r.includes('学员')?'tag-info':'tag-primary'; }
+const sysUsers=[
+  {name:'刘根',orgs:['电销一部/一组'],roles:['学员'],mail:'liugen859@guanghe.tv',stage:'小学',join:'2025-03-10',leave:'',created:'2025-03-10 09:00',updated:'2026-09-01 10:22'},
+  {name:'严雯蕊',orgs:['电销一部/一组'],roles:['学员'],mail:'yanwenrui798@guanghe.tv',stage:'小学',join:'2025-06-22',leave:'',created:'2025-06-22 09:00',updated:'2026-08-30 15:04'},
+  {name:'李里',orgs:['电销一部/一组','电销机动组'],roles:['学员'],mail:'lili@guanghe.tv',stage:'初中',join:'2024-11-05',leave:'',created:'2024-11-05 09:00',updated:'2026-09-05 11:40'},
+  {name:'王京阳',orgs:['电销一部/二组'],roles:['学员'],mail:'wangjingyang044@guanghe.tv',stage:'初中',join:'2025-01-18',leave:'',created:'2025-01-18 09:00',updated:'2026-09-02 18:11'},
+  {name:'段凯',orgs:['电销一部/二组'],roles:['学员'],mail:'duankai464@guanghe.tv',stage:'',join:'2026-08-01',leave:'',created:'2026-08-01 09:00',updated:'2026-08-01 09:00'},
+  {name:'蔡霜',orgs:['电销二部/一组'],roles:['学员'],mail:'caishuang596@guanghe.tv',stage:'高中',join:'2025-09-30',leave:'2026-09-01',created:'2025-09-30 09:00',updated:'2026-09-01 09:30'},
+  {name:'王倩',orgs:['电销一部'],roles:['管理员','培训师'],mail:'wangqian@guanghe.tv',stage:'',join:'2023-05-12',leave:'',created:'2023-05-12 09:00',updated:'2026-07-15 14:02'},
+  {name:'李映萍',orgs:['武汉电销'],roles:['超级管理员'],mail:'liyingping@guanghe.tv',stage:'',join:'2022-07-01',leave:'',created:'2022-07-01 09:00',updated:'2026-06-20 10:10'}
+];
+const stageTag={'小学':'tag-success','初中':'tag-warning','高中':'tag-danger'};
+let userChecked=new Set();
+let editingUserIdx=-1;
+function renderUserOrgTree(){
+  document.getElementById('userOrgTree').innerHTML=`
+    <div class="org-node active">武汉电销</div>
+    <div class="org-node lv2">电销一部 / 一组</div>
+    <div class="org-node lv2">电销一部 / 二组</div>
+    <div class="org-node lv2">电销二部 / 一组</div>
+    <div class="org-node lv2">电销二部 / 二组</div>`;
+  document.querySelectorAll('#userOrgTree .org-node').forEach(n=>n.onclick=function(){
+    document.querySelectorAll('#userOrgTree .org-node').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('userOrgTitle').innerHTML=this.textContent+' <span style="color:var(--text-secondary);font-weight:400;font-size:13px;">（8人）</span>';
+  });
+}
+function renderUsers(){
+  document.getElementById('usersTbody').innerHTML=sysUsers.map((u,i)=>`
+    <tr>
+      <td><input type="checkbox" ${userChecked.has(i)?'checked':''} onchange="this.checked?userChecked.add(${i}):userChecked.delete(${i});updateUserBatchBtns()"></td>
+      <td>${u.name}</td>
+      <td>${u.orgs[0]}${u.orgs.length>1?` <span class="tag tag-info" title="${u.orgs.join('，')}" style="height:20px;">+${u.orgs.length-1}</span>`:''}</td>
+      <td style="display:flex;gap:5px;flex-wrap:wrap;">${u.roles.map(r=>`<span class="tag ${roleTagCls(r)}">${r}</span>`).join('')}</td>
+      <td>${u.mail}</td>
+      <td>${u.stage?`<span class="tag ${stageTag[u.stage]}">${u.stage}</span>`:'<span style="color:var(--text-placeholder)">-</span>'}</td>
+      <td>${u.join}</td><td>${u.leave||'-'}</td><td>${u.created}</td><td>${u.updated}</td>
+      <td><button class="btn-link" onclick="openUserEdit(${i})">编辑</button></td>
+    </tr>`).join('');
+  updateUserBatchBtns();
+}
+function updateUserBatchBtns(){
+  const n=userChecked.size;
+  ['btnBatchRole','btnBatchStage'].forEach(id=>{
+    const b=document.getElementById(id);
+    b.disabled=n===0; b.style.opacity=n===0?.6:1;
+  });
+  document.getElementById('btnBatchRole').textContent='批量编辑角色'+(n?`（${n}）`:'');
+  document.getElementById('btnBatchStage').textContent='批量编辑学段'+(n?`（${n}）`:'');
+  document.getElementById('userAllChk').checked=n===sysUsers.length;
+}
+function userToggleAll(chk){
+  userChecked=chk?new Set(sysUsers.map((_,i)=>i)):new Set();
+  renderUsers();
+}
+function openUserEdit(i){
+  editingUserIdx=i;
+  const u=sysUsers[i];
+  document.getElementById('dlgUserEditTitle').textContent='编辑 — '+u.name;
+  document.getElementById('ueName').textContent=u.name;
+  document.getElementById('ueMail').textContent=u.mail;
+  document.getElementById('ueOrg').innerHTML=u.orgs.join('<br>');
+  document.getElementById('ueRoleGroup').innerHTML=roleOptions.map(r=>
+    `<label><input type="checkbox" value="${r}" ${u.roles.includes(r)?'checked':''}>${r}</label>`).join('');
+  document.getElementById('ueStageSel').value=u.stage||'未设置';
+  openDlg('dlgUserEdit');
+}
+function saveUserEdit(){
+  const u=sysUsers[editingUserIdx];
+  u.roles=[...document.querySelectorAll('#ueRoleGroup input:checked')].map(x=>x.value);
+  const st=document.getElementById('ueStageSel').value;
+  u.stage=st==='未设置'?'':st;
+  u.updated='2026-09-10 15:55';
+  renderUsers(); closeDlg('dlgUserEdit'); toast('已更新');
+}
+function openBatchStage(){
+  if(!userChecked.size) return;
+  document.getElementById('bsPicked').innerHTML=[...userChecked].map(i=>`<span class="tag tag-info" style="height:auto;padding:4px 8px;">${sysUsers[i].name}（${sysUsers[i].stage||'未设置'}）</span>`).join('');
+  openDlg('dlgBatchStage');
+}
+function saveBatchStage(){
+  const st=document.getElementById('bsStageSel').value;
+  const n=userChecked.size;
+  userChecked.forEach(i=>{ sysUsers[i].stage=st==='未设置'?'':st; sysUsers[i].updated='2026-09-10 15:55'; });
+  userChecked=new Set();
+  renderUsers(); closeDlg('dlgBatchStage'); toast(n+' 人学段已更新');
+}
+renderUserOrgTree(); renderUsers();
+
+/* ====================== 页面5：我的任务 mock ====================== */
+const myTasks=[
+  {name:'9月新人首周陪练考核',status:'进行中',mode:'考试模式',fin:1,total:3,begin:'2026-09-01 12:00:00',end:'2026-09-12 23:59:59'},
+  {name:'9月自由外呼陪练',status:'进行中',mode:'自由练习',fin:0,total:0,begin:'2026-09-01 00:00:00',end:'2026-09-30 23:59:59'},
+  {name:'价格异议处理专项练习',status:'进行中',mode:'场景练习',fin:2,total:2,begin:'2026-08-29 00:00:00',end:'2026-09-15 23:59:59'},
+  {name:'8月老员工话术复训',status:'已结束',mode:'考试模式',fin:3,total:3,begin:'2026-08-11 00:00:00',end:'2026-08-31 23:59:59'},
+  {name:'7月学情沟通场景演练',status:'已结束',mode:'场景练习',fin:2,total:4,begin:'2026-07-01 00:00:00',end:'2026-07-31 23:59:59'}
+];
+document.getElementById('myTaskTbody').innerHTML=myTasks.map((t,ti)=>{
+  let op, progress;
+  if(t.mode==='自由练习'){
+    progress='—';
+    op=t.status==='已结束'?'<button class="btn-link" onclick="goCustomerPool()">详情</button>':'<button class="btn-link" onclick="goCustomerPool()">去练习</button>';
+  }else{
+    progress=`<span class="progress-bar"><i style="width:${Math.round(t.fin/Math.max(t.total,1)*100)}%"></i></span> ${t.fin}/${t.total}`;
+    if(t.status==='已结束') op=`<button class="btn-link" onclick="openMyTaskDetail(${ti})">详情</button>`;
+    else if(t.fin<t.total) op=`<button class="btn-link" onclick="openMyTaskDetail(${ti})">去练习</button>`;
+    else op=`<button class="btn-link" onclick="openMyTaskDetail(${ti})">详情</button>`;
+  }
+  return `<tr>
+    <td>${t.name}</td>
+    <td><span class="tag ${stTag[t.status]}">${t.status}</span></td>
+    <td><span class="tag ${mdTag[t.mode]}">${t.mode}</span></td>
+    <td>${progress}</td>
+    <td>${t.begin}</td><td>${t.end}</td><td>${op}</td>
+  </tr>`;
+}).join('');
+/* ===== 任务详情：课程卡片（交互同CRM我的任务） ===== */
+const myTaskCourses={
+  '考试模式':[
+    {name:'K12数学首单转化-标准流程',type:'AI客户',finished:true,score:92,target:'完成学情反馈→需求挖掘→方案推荐→处理异议→约定下一步动作，全程保持真实客户状态。'},
+    {name:'优惠关单-限时活动话术',type:'AI客户',finished:false,target:'在客户已认可课程价值的前提下，利用限时优惠推动客户当次通话内完成下单。'},
+    {name:'价格异议问答考核',type:'问答对练',finished:false,target:'针对价格类常见异议问题，按标准答案框架（共情→拆解→推动）作答。'}
+  ],
+  '场景练习':[
+    {name:'异议处理-价格顾虑专项',type:'问答对练',finished:true,score:92,count:3,records:['第1次练习（78分）','第2次练习（85分）','第3次练习（92分）'],target:'针对客户常见价格异议，训练学员按标准答案框架作答，提升异议处理能力。'},
+    {name:'小学｜学情沟通',type:'AI客户',finished:false,target:'围绕孩子学情诊断结果与家长沟通，完成两轮以上有效追问并给出针对性建议。'}
+  ]
+};
+let currentMyTask=null;
+let exerciseMode='voice_text';
+let modePanelIdx=-1;
+let currentExCourse=null;
+function openMyTaskDetail(ti){
+  currentMyTask=myTasks[ti];
+  modePanelIdx=-1;
+  renderMyTaskCards(-1);
+  openDlg('dlgMyTaskDetail');
+}
+/* expandIdx>=0 表示该卡片展开内联练习模式选择 */
+function renderMyTaskCards(expandIdx){
+  const isPractice=currentMyTask.mode==='场景练习';
+  const isExam=currentMyTask.mode==='考试模式';
+  const ended=currentMyTask.status==='已结束';
+  const courses=myTaskCourses[currentMyTask.mode]||myTaskCourses['考试模式'];
+  document.getElementById('myTaskCourseCards').innerHTML=courses.map((c,ci)=>{
+    let head=`<span>${c.name}</span><span class="badge ${c.type==='AI客户'?'':'badge-exam'}" style="margin-left:0;${c.type==='AI客户'?'background:#e1f3ff;color:var(--primary);':''}">${c.type}</span>`;
+    if(c.finished){
+      head+=`<span class="tag tag-success">已完成</span><span style="font-size:14px;font-weight:400;">得分 <b style="color:var(--primary);">${c.score}</b> 分</span>`;
+      if(isPractice&&c.count) head+=`<span style="font-size:13px;color:var(--text-secondary);font-weight:400;">共练习 ${c.count} 次</span>`;
+    }
+    let recordSel='';
+    if(isPractice&&c.finished&&c.records){
+      recordSel=`<div style="margin-bottom:8px;"><select class="select" style="width:280px;">${c.records.map((r,i)=>`<option ${i===c.records.length-1?'selected':''}>${r}</option>`).join('')}</select></div>`;
+    }
+    let btns='';
+    if(ended){
+      btns=c.finished?`<button class="btn btn-primary" onclick="openMyCourseReport(${ci})">详情</button>`:'<span style="color:var(--danger);font-weight:600;font-size:13px;">未完成</span>';
+    }else if(isPractice){
+      if(c.finished) btns+=`<button class="btn btn-primary" onclick="openMyCourseReport(${ci})">详情</button>`;
+      btns+=`<button class="btn btn-primary" onclick="toggleModePanel(${ci})">${expandIdx===ci?'收起':`开始第${(c.count||0)+1}次练习`}</button>`;
+    }else{
+      btns=c.finished?`<button class="btn btn-primary" onclick="openMyCourseReport(${ci})">详情</button>`:`<button class="btn btn-primary" onclick="toggleModePanel(${ci})">${expandIdx===ci?'收起':'开始练习'}</button>`;
+    }
+    /* 内联练习模式选择区 */
+    let modePanel='';
+    if(expandIdx===ci){
+      modePanel=`
+      <div style="width:100%;margin-top:12px;border-top:1px dashed var(--border-lighter);padding-top:12px;">
+        <div style="font-size:13px;color:var(--text-regular);margin-bottom:10px;">请选择AI练习模式：</div>
+        <div class="mode-option ${exerciseMode==='voice_text'?'active':''}" style="padding:10px 12px;margin-bottom:8px;" onclick="pickInlineMode('voice_text')">
+          <div class="mode-icon" style="width:36px;height:36px;font-size:16px;background:#e1f3ff;color:var(--primary);">🎙️</div>
+          <div style="flex:1;">
+            <div class="mode-title" style="font-size:14px;">语音+文本对练</div>
+            <div class="mode-desc" style="font-size:12.5px;">支持语音合成和文本显示，完整体验</div>
+          </div>
+          <div class="custom-radio ${exerciseMode==='voice_text'?'checked':''}"><i></i></div>
+        </div>
+        <div class="mode-option ${exerciseMode==='text_only'?'active':''} ${isExam?'disabled':''}" style="padding:10px 12px;margin-bottom:8px;" onclick="pickInlineMode('text_only')">
+          <div class="mode-icon" style="width:36px;height:36px;font-size:16px;background:var(--success-light);color:var(--success);">💬</div>
+          <div style="flex:1;">
+            <div class="mode-title" style="font-size:14px;">纯文本对练</div>
+            <div class="mode-desc" style="font-size:12.5px;">${isExam?'考试模式下不支持纯文本对练，仅支持语音对练模式':'仅返回纯文本内容，快速响应，高效练习'}</div>
+          </div>
+          <div class="custom-radio ${exerciseMode==='text_only'?'checked':''}"><i></i></div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:5px;"><span style="color:var(--warning);">ⓘ</span>注意：销售侧在进行对练时，仍需要通过发送语音进行对练</div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;">
+          <button class="btn btn-sm" onclick="toggleModePanel(-1)">取消</button>
+          <button class="btn btn-primary btn-sm" onclick="startExercise(${ci})">开始练习</button>
+        </div>
+      </div>`;
+    }
+    return `<div class="course-card2" style="flex-wrap:wrap;">
+      <div style="flex:1;min-width:0;">
+        <div class="cc-title">${head}</div>
+        ${recordSel}
+        <div class="cc-target" title="${c.target}">练习说明：${c.target}</div>
+      </div>
+      <div class="cc-btns">${btns}</div>
+      ${modePanel}
+    </div>`;
+  }).join('');
+}
+function toggleModePanel(ci){
+  modePanelIdx=(modePanelIdx===ci||ci<0)?-1:ci;
+  if(modePanelIdx>=0) exerciseMode='voice_text';
+  renderMyTaskCards(modePanelIdx);
+}
+function pickInlineMode(m){
+  if(m==='text_only'&&currentMyTask&&currentMyTask.mode==='考试模式') return;
+  exerciseMode=m;
+  renderMyTaskCards(modePanelIdx);
+}
+/* 我的任务-课程详情：打开对话记录+评估报告抽屉 */
+function openMyCourseReport(ci){
+  const courses=myTaskCourses[currentMyTask.mode]||myTaskCourses['考试模式'];
+  const c=courses[ci];
+  openRecordReport('李映萍',currentMyTask.mode,c.name);
+}
+/* ===== 课程练习全屏（样式同电销CRM） ===== */
+let exTimer=null, exSec=0, exTurns=0, exRecording=false;
+function startExercise(ci){
+  const courses=myTaskCourses[currentMyTask.mode]||myTaskCourses['考试模式'];
+  currentExCourse=courses[ci];
+  modePanelIdx=-1;
+  closeDlg('dlgMyTaskDetail');
+  document.getElementById('exCourseName').textContent=currentExCourse.name;
+  document.getElementById('exTarget').textContent=currentExCourse.target;
+  document.getElementById('exMaxDur').textContent='5 分钟';
+  document.getElementById('exBotName').textContent='周女士';
+  document.getElementById('exBotRole').textContent='孩子妈妈';
+  document.getElementById('exChat').innerHTML='<div class="cmsg sys"><div class="bubble">—— 练习已开始，请用开场白发起对话（'+(exerciseMode==='voice_text'?'语音+文本模式':'纯文本模式')+'） ——</div></div>';
+  exSec=0; exTurns=0; exRecording=false;
+  document.getElementById('exTimer').textContent='⏱ 00:00:00';
+  document.getElementById('exFinishBtn').disabled=true;
+  document.getElementById('exMicBtn').classList.remove('rec');
+  clearInterval(exTimer);
+  exTimer=setInterval(()=>{
+    exSec++;
+    const h=String(Math.floor(exSec/3600)).padStart(2,'0'),m=String(Math.floor(exSec%3600/60)).padStart(2,'0'),s=String(exSec%60).padStart(2,'0');
+    document.getElementById('exTimer').textContent='⏱ '+h+':'+m+':'+s;
+  },1000);
+  document.getElementById('dlgExercise').classList.add('show');
+}
+const exMyLines=['你好，请问是周女士吗？我是洋葱学园的李老师。','孩子最近数学学习情况怎么样？作业完成得顺利吗？','我们有针对初二数学的专项提升课程，可以先给孩子做个免费学情诊断。','诊断是免费的，做完我把报告发您，咱们再约时间详细聊方案。'];
+function exAddMsg(who,text){
+  const box=document.getElementById('exChat');
+  const av=who==='ai'?'周':'李';
+  const name=who==='ai'?'周女士（AI客户）':'我（销售）';
+  box.insertAdjacentHTML('beforeend',`<div class="cmsg ${who==='ai'?'ai':'me'}"><div class="m-av">${av}</div><div><div class="who">${name}</div><div class="bubble">${text}</div></div></div>`);
+  box.scrollTop=box.scrollHeight;
+}
+function exMicPress(){
+  if(exRecording) return;
+  exRecording=true;
+  const btn=document.getElementById('exMicBtn');
+  btn.classList.add('rec');
+  setTimeout(()=>{
+    btn.classList.remove('rec');
+    exRecording=false;
+    exAddMsg('me',exMyLines[Math.min(exTurns,exMyLines.length-1)]);
+    exTurns++;
+    document.getElementById('exFinishBtn').disabled=false;
+    const box=document.getElementById('exChat');
+    const tid='extp'+Date.now();
+    setTimeout(()=>{
+      box.insertAdjacentHTML('beforeend',`<div class="cmsg ai" id="${tid}"><div class="m-av">周</div><div><div class="who">对方正在说话…</div><div class="bubble"><span class="ctyping"><i></i><i></i><i></i></span></div></div></div>`);
+      box.scrollTop=box.scrollHeight;
+      setTimeout(()=>{
+        document.getElementById(tid)?.remove();
+        exAddMsg('ai',callPickReply(exMyLines[Math.min(exTurns-1,exMyLines.length-1)]));
+      },1000);
+    },400);
+  },1500);
+}
+function abandonExercise(silent){
+  clearInterval(exTimer);
+  document.getElementById('dlgExercise').classList.remove('show');
+  if(!silent) toastErr('已放弃本次练习，成绩不记录');
+}
+function finishExercise(){
+  clearInterval(exTimer);
+  document.getElementById('dlgExercise').classList.remove('show');
+  toast('练习已完成，评分报告生成中…');
+}
+function toggleExInfo(){
+  const b=document.getElementById('exInfoBody');
+  b.style.display=b.style.display==='none'?'':'none';
+}
+function toggleExLeft(){
+  const l=document.getElementById('exLeft');
+  const btn=document.getElementById('exCollapseBtn');
+  l.classList.toggle('hid');
+  btn.textContent=l.classList.contains('hid')?'›':'‹';
+}
+</script>
+</body>
+</html>
