@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>原型 - 人群排除包</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+    font-size: 14px; color: #606266; background: #f0f2f5;
+  }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 180px; background: #2d6fdf; color: #fff; flex-shrink: 0; }
+  .sidebar .logo { padding: 14px 16px; font-size: 17px; font-weight: 600; background: #2563c9; }
+  .sidebar .menu-group { padding: 12px 20px; font-size: 14px; color: #fff; }
+  .sidebar .menu-sub { padding: 10px 20px 10px 34px; font-size: 13px; color: rgba(255,255,255,.8); cursor: pointer; }
+  .sidebar .menu-sub.active { background: #1e2a78; color: #fff; }
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .content { padding: 20px; }
+  .el-card { background: #fff; border: 1px solid #e4e7ed; border-radius: 4px; box-shadow: 0 1px 2px 0 rgba(0,0,0,.05); padding: 20px; }
+  .page-title { font-size: 16px; font-weight: 600; color: #303133; margin-bottom: 16px; }
+  .filter-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+  .filter-item { display: flex; align-items: center; gap: 8px; }
+  .filter-item label { color: #606266; white-space: nowrap; }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .el-input, .el-select {
+    height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 12px;
+    font-size: 14px; color: #606266; background: #fff; font-family: inherit; outline: none;
+  }
+  .el-input:focus, .el-select:focus { border-color: #409eff; }
+  .el-input { width: 200px; }
+  .el-select { width: 160px; appearance: none; background-image: linear-gradient(45deg, transparent 50%, #c0c4cc 50%), linear-gradient(135deg, #c0c4cc 50%, transparent 50%); background-position: calc(100% - 16px) calc(50% - 2px), calc(100% - 11px) calc(50% - 2px); background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 28px; }
+  .el-table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #ebeef5; font-size: 14px; }
+  .el-table th, .el-table td { border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; padding: 10px 12px; text-align: center; }
+  .el-table th:last-child, .el-table td:last-child { border-right: none; }
+  .el-table th { background: #f5f7fa; color: #909399; font-weight: 500; }
+  .el-table td { color: #606266; }
+  .el-table tbody tr:hover td { background: #f5f7fa; }
+  .el-table tbody tr:last-child td { border-bottom: none; }
+  .el-button {
+    display: inline-block; line-height: 1; white-space: nowrap; cursor: pointer;
+    border: 1px solid #dcdfe6; color: #606266; background: #fff;
+    text-align: center; font-size: 14px; border-radius: 4px; padding: 9px 15px;
+    font-family: inherit; transition: .1s;
+  }
+  .el-button:hover { color: #409eff; border-color: #c6e2ff; background: #ecf5ff; }
+  .el-button--primary { color: #fff; background: #409eff; border-color: #409eff; }
+  .el-button--primary:hover { background: #66b1ff; border-color: #66b1ff; color: #fff; }
+  .el-button--primary:disabled { background: #a0cfff; border-color: #a0cfff; cursor: not-allowed; }
+  .el-button + .el-button { margin-left: 8px; }
+  .pagination {
+    display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 16px; color: #606266; font-size: 13px;
+  }
+  .page-btn {
+    min-width: 32px; height: 28px; border: 1px solid #dcdfe6; background: #fff; border-radius: 2px;
+    cursor: pointer; color: #606266; font-family: inherit;
+  }
+  .page-btn.active { background: #409eff; color: #fff; border-color: #409eff; }
+  .page-btn:disabled { color: #c0c4cc; cursor: not-allowed; }
+  .el-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 2000; overflow: auto; }
+  .el-overlay.show { display: block; }
+  .el-dialog {
+    position: relative; margin: 12vh auto 50px; background: #fff; border-radius: 4px;
+    box-shadow: 0 12px 32px 4px rgba(0,0,0,.04), 0 8px 20px rgba(0,0,0,.08);
+    width: 520px; max-width: 92vw;
+  }
+  .el-dialog__header { padding: 16px 20px; border-bottom: 1px solid #ebeef5; display: flex; justify-content: space-between; align-items: center; }
+  .el-dialog__title { font-size: 16px; font-weight: 600; color: #303133; }
+  .el-dialog__close { border: none; background: none; font-size: 18px; color: #909399; cursor: pointer; line-height: 1; }
+  .el-dialog__body { padding: 20px 24px; }
+  .el-dialog__footer { padding: 12px 20px 16px; text-align: right; border-top: 1px solid #ebeef5; }
+  .form-row { display: flex; align-items: flex-start; margin-bottom: 18px; }
+  .form-row .label { width: 110px; text-align: right; padding-right: 12px; line-height: 32px; color: #606266; flex-shrink: 0; }
+  .form-row .label .req { color: #f56c6c; margin-right: 2px; }
+  .form-row .control { flex: 1; }
+  .form-row .el-input, .form-row .el-select { width: 100%; }
+  .form-hint { margin-top: 6px; font-size: 12px; color: #909399; line-height: 1.4; }
+  .form-error { margin-top: 6px; font-size: 12px; color: #f56c6c; display: none; }
+  .form-error.show { display: block; }
+  .id-mode { display: flex; gap: 8px; margin-bottom: 8px; }
+  .id-mode label { display: flex; align-items: center; gap: 4px; cursor: pointer; color: #606266; }
+  .toast {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    background: #fff; border: 1px solid #e4e7ed; border-radius: 4px; padding: 10px 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.12); z-index: 3000; display: none; align-items: center; gap: 8px;
+  }
+  .toast.show { display: flex; }
+  .toast.success { color: #67c23a; }
+  .toast.error { color: #f56c6c; }
+  .empty { text-align: center; padding: 40px; color: #909399; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="logo">体验营CRM</div>
+    <div class="menu-group">运营工具</div>
+    <div class="menu-sub">投放管理</div>
+    <div class="menu-sub active">人群排除包</div>
+    <div class="menu-sub">其他工具</div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="el-card">
+        <div class="page-title">人群排除包</div>
+        <div class="filter-bar">
+          <div class="filter-item">
+            <label>渠道</label>
+            <select class="el-select" id="filterChannel" onchange="applyFilter()">
+              <option value="">全部</option>
+              <option value="抖音">抖音</option>
+              <option value="千川">千川</option>
+              <option value="小红书">小红书</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>投放账户ID</label>
+            <input class="el-input" id="filterAdAccountId" placeholder="精准匹配" onkeydown="if(event.key==='Enter')applyFilter()">
+          </div>
+          <button class="el-button" onclick="applyFilter()">查询</button>
+          <button class="el-button" onclick="resetFilter()">重置</button>
+        </div>
+        <div class="toolbar">
+          <div></div>
+          <button class="el-button el-button--primary" onclick="openAddDialog()">新增</button>
+        </div>
+        <table class="el-table">
+          <thead>
+            <tr>
+              <th>渠道</th>
+              <th>账户名</th>
+              <th>投放账户ID</th>
+              <th>子账号ID</th>
+              <th>添加人</th>
+              <th>添加时间</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="el-overlay" id="addOverlay">
+  <div class="el-dialog">
+    <div class="el-dialog__header">
+      <span class="el-dialog__title">新增人群排除包</span>
+      <button class="el-dialog__close" onclick="closeAddDialog()">×</button>
+    </div>
+    <div class="el-dialog__body">
+      <div class="form-row">
+        <div class="label"><span class="req">*</span>渠道</div>
+        <div class="control">
+          <select class="el-select" id="formChannel" onchange="onChannelChange()">
+            <option value="">请选择</option>
+            <option value="抖音">抖音</option>
+            <option value="千川">千川</option>
+            <option value="小红书">小红书</option>
+          </select>
+          <div class="form-error" id="errChannel">请选择渠道</div>
+        </div>
+      </div>
+
+      <div id="dyQcFields" style="display:none;">
+        <div class="form-row">
+          <div class="label"><span class="req">*</span>投放账户ID</div>
+          <div class="control">
+            <input class="el-input" id="formAdAccountId" placeholder="请输入投放账户ID">
+            <div class="form-error" id="errAdAccountId">请输入投放账户ID</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="xhsFields" style="display:none;">
+        <div class="form-row">
+          <div class="label"><span class="req">*</span>投放账户名称</div>
+          <div class="control">
+            <select class="el-select" id="formAccountName" onchange="onAccountNameChange()">
+              <option value="">请选择</option>
+            </select>
+            <div class="form-error" id="errAccountName">请选择投放账户名称</div>
+          </div>
+        </div>
+        <div id="xhsIdFields" style="display:none;">
+          <div class="form-row">
+            <div class="label"><span class="req">*</span>投放账户ID</div>
+            <div class="control">
+              <div class="id-mode">
+                <label><input type="radio" name="idMode" value="existing" checked onchange="onIdModeChange()"> 选择已有</label>
+                <label><input type="radio" name="idMode" value="new" onchange="onIdModeChange()"> 新增</label>
+              </div>
+              <select class="el-select" id="formXhsAdIdSelect"></select>
+              <input class="el-input" id="formXhsAdIdInput" placeholder="请输入新的投放账户ID" style="display:none;">
+              <div class="form-hint">可选择该账户下已有投放账户ID，或新增一个投放账户ID</div>
+              <div class="form-error" id="errXhsAdId">请配置投放账户ID</div>
+            </div>
+          </div>
+          <div class="form-row" id="xhsSubRow" style="display:none;">
+            <div class="label">子账号ID</div>
+            <div class="control">
+              <input class="el-input" id="formSubAccountId" placeholder="选填，填写后列表新增一条">
+              <div class="form-hint">选填。每保存一次新增一条记录；同一投放账户下不同子账号各占一行</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="el-dialog__footer">
+      <button class="el-button" onclick="closeAddDialog()">取消</button>
+      <button class="el-button el-button--primary" id="saveBtn" onclick="saveRecord()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // 小红书账户字典：账户名 -> 已有投放账户ID列表
+  const xhsAccounts = {
+    '汇咚-洋葱星球线上体验-私信-01': { ids: ['10992810'], type: '独立' },
+    '引潮-洋葱星球线上体验-私信-01': { ids: ['9209069'], type: '独立' },
+    '聚才-洋葱星球线上体验-私信-01': { ids: ['9648085'], type: '独立' },
+    '蜜橘-洋葱学园线上体验-私信-03': { ids: ['8310560'], type: '独立' },
+    'JX-洋葱学园线上体验-私信-01': { ids: ['8311339'], type: '独立' },
+    'JX-洋葱学园线上体验-私信-04': { ids: ['8310363'], type: '子账户' },
+    '灵犀-洋葱学园家长帮-私信-01': { ids: ['11839535'], type: '独立' },
+    '灵犀-洋葱学园家长帮-私信-02': { ids: ['12083727'], type: '独立' }
+  };
+
+  let records = [
+    { channel: '小红书', accountName: 'JX-洋葱学园线上体验-私信-01', adAccountId: '8311339', subAccountId: '68c29756d443d50015bde0d9', creator: '张三', createdAt: '2026-09-21 16:20:00' },
+    { channel: '小红书', accountName: 'JX-洋葱学园线上体验-私信-01', adAccountId: '8311339', subAccountId: '-', creator: '张三', createdAt: '2026-09-21 10:08:00' },
+    { channel: '千川', accountName: '-', adAccountId: 'QC-778899', subAccountId: '-', creator: '李四', createdAt: '2026-09-20 11:05:00' },
+    { channel: '抖音', accountName: '-', adAccountId: 'DY-556677', subAccountId: '-', creator: '王五', createdAt: '2026-09-19 09:40:00' },
+    { channel: '小红书', accountName: '汇咚-洋葱星球线上体验-私信-01', adAccountId: '10992810', subAccountId: '-', creator: '赵六', createdAt: '2026-09-18 14:12:00' },
+    { channel: '抖音', accountName: '-', adAccountId: 'DY-112233', subAccountId: '-', creator: '张三', createdAt: '2026-09-17 10:00:00' },
+    { channel: '小红书', accountName: '引潮-洋葱星球线上体验-私信-01', adAccountId: '9209069', subAccountId: '-', creator: '李四', createdAt: '2026-09-16 18:30:00' },
+    { channel: '千川', accountName: '-', adAccountId: 'QC-334455', subAccountId: '-', creator: '王五', createdAt: '2026-09-15 08:15:00' },
+    { channel: '抖音', accountName: '-', adAccountId: 'DY-998877', subAccountId: '-', creator: '赵六', createdAt: '2026-09-14 13:45:00' },
+    { channel: '小红书', accountName: '蜜橘-洋葱学园线上体验-私信-03', adAccountId: '8310560', subAccountId: '-', creator: '张三', createdAt: '2026-09-13 17:22:00' },
+    { channel: '千川', accountName: '-', adAccountId: 'QC-667788', subAccountId: '-', creator: '李四', createdAt: '2026-09-12 09:08:00' },
+    { channel: '抖音', accountName: '-', adAccountId: 'DY-445566', subAccountId: '-', creator: '王五', createdAt: '2026-09-11 15:50:00' },
+    { channel: '小红书', accountName: '灵犀-洋葱学园家长帮-私信-01', adAccountId: '11839535', subAccountId: '-', creator: '赵六', createdAt: '2026-09-10 11:11:00' }
+  ];
+
+  let filtered = [];
+  let page = 1;
+  const pageSize = 10;
+
+  function sortByTimeDesc(list) {
+    return list.slice().sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  }
+
+  function applyFilter() {
+    const channel = document.getElementById('filterChannel').value;
+    const adId = document.getElementById('filterAdAccountId').value.trim();
+    filtered = records.filter(r => {
+      if (channel && r.channel !== channel) return false;
+      if (adId && r.adAccountId !== adId) return false;
+      return true;
+    });
+    filtered = sortByTimeDesc(filtered);
+    page = 1;
+    renderTable();
+  }
+
+  function resetFilter() {
+    document.getElementById('filterChannel').value = '';
+    document.getElementById('filterAdAccountId').value = '';
+    applyFilter();
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    const total = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    if (page > totalPages) page = totalPages;
+    const start = (page - 1) * pageSize;
+    const pageData = filtered.slice(start, start + pageSize);
+
+    if (!pageData.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty">暂无数据</td></tr>';
+    } else {
+      tbody.innerHTML = pageData.map(r => `
+        <tr>
+          <td>${r.channel}</td>
+          <td>${r.accountName}</td>
+          <td>${r.adAccountId}</td>
+          <td>${r.subAccountId}</td>
+          <td>${r.creator}</td>
+          <td>${r.createdAt}</td>
+        </tr>
+      `).join('');
+    }
+
+    const pag = document.getElementById('pagination');
+    let btns = `<span>共 ${total} 条</span>`;
+    btns += `<button class="page-btn" ${page <= 1 ? 'disabled' : ''} onclick="gotoPage(${page - 1})">上一页</button>`;
+    for (let i = 1; i <= totalPages; i++) {
+      btns += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="gotoPage(${i})">${i}</button>`;
+    }
+    btns += `<button class="page-btn" ${page >= totalPages ? 'disabled' : ''} onclick="gotoPage(${page + 1})">下一页</button>`;
+    pag.innerHTML = btns;
+  }
+
+  function gotoPage(p) {
+    page = p;
+    renderTable();
+  }
+
+  function openAddDialog() {
+    clearFormErrors();
+    document.getElementById('formChannel').value = '';
+    document.getElementById('formAdAccountId').value = '';
+    document.getElementById('formAccountName').value = '';
+    document.getElementById('formSubAccountId').value = '';
+    document.getElementById('dyQcFields').style.display = 'none';
+    document.getElementById('xhsFields').style.display = 'none';
+    document.getElementById('xhsIdFields').style.display = 'none';
+    document.getElementById('xhsSubRow').style.display = 'none';
+    document.querySelector('input[name="idMode"][value="existing"]').checked = true;
+    onIdModeChange();
+    initAccountNameOptions();
+    document.getElementById('addOverlay').classList.add('show');
+  }
+
+  function closeAddDialog() {
+    document.getElementById('addOverlay').classList.remove('show');
+  }
+
+  function initAccountNameOptions() {
+    const sel = document.getElementById('formAccountName');
+    sel.innerHTML = '<option value="">请选择</option>' +
+      Object.keys(xhsAccounts).map(n => `<option value="${n}">${n}</option>`).join('');
+  }
+
+  function onChannelChange() {
+    clearFormErrors();
+    const channel = document.getElementById('formChannel').value;
+    document.getElementById('dyQcFields').style.display = (channel === '抖音' || channel === '千川') ? 'block' : 'none';
+    document.getElementById('xhsFields').style.display = channel === '小红书' ? 'block' : 'none';
+    if (channel !== '小红书') {
+      document.getElementById('xhsIdFields').style.display = 'none';
+      document.getElementById('formAccountName').value = '';
+    }
+  }
+
+  function onAccountNameChange() {
+    clearFormErrors();
+    const name = document.getElementById('formAccountName').value;
+    const wrap = document.getElementById('xhsIdFields');
+    if (!name) {
+      wrap.style.display = 'none';
+      return;
+    }
+    wrap.style.display = 'block';
+    const acc = xhsAccounts[name] || { ids: [], type: '独立' };
+    const ids = acc.ids || [];
+    const sel = document.getElementById('formXhsAdIdSelect');
+    sel.innerHTML = '<option value="">请选择</option>' + ids.map(id => `<option value="${id}">${id}</option>`).join('');
+    document.getElementById('formXhsAdIdInput').value = '';
+    document.getElementById('formSubAccountId').value = '';
+    document.getElementById('xhsSubRow').style.display = 'flex';
+    document.querySelector('input[name="idMode"][value="existing"]').checked = true;
+    onIdModeChange();
+  }
+
+  function onIdModeChange() {
+    const mode = document.querySelector('input[name="idMode"]:checked').value;
+    document.getElementById('formXhsAdIdSelect').style.display = mode === 'existing' ? 'block' : 'none';
+    document.getElementById('formXhsAdIdInput').style.display = mode === 'new' ? 'block' : 'none';
+  }
+
+  function clearFormErrors() {
+    ['errChannel', 'errAdAccountId', 'errAccountName', 'errXhsAdId'].forEach(id => {
+      document.getElementById(id).classList.remove('show');
+    });
+  }
+
+  function showErr(id) {
+    document.getElementById(id).classList.add('show');
+  }
+
+  function isDuplicate(channel, adAccountId, subAccountId) {
+    return records.some(r => {
+      if (r.channel !== channel) return false;
+      if (channel === '抖音' || channel === '千川') {
+        return r.adAccountId === adAccountId;
+      }
+      return r.adAccountId === adAccountId && r.subAccountId === subAccountId;
+    });
+  }
+
+  function nowStr() {
+    const d = new Date();
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  }
+
+  function saveRecord() {
+    clearFormErrors();
+    const channel = document.getElementById('formChannel').value;
+    if (!channel) { showErr('errChannel'); return; }
+
+    let accountName = '-';
+    let adAccountId = '';
+    let subAccountId = '-';
+
+    if (channel === '抖音' || channel === '千川') {
+      adAccountId = document.getElementById('formAdAccountId').value.trim();
+      if (!adAccountId) { showErr('errAdAccountId'); return; }
+    } else {
+      accountName = document.getElementById('formAccountName').value;
+      if (!accountName) { showErr('errAccountName'); return; }
+      const mode = document.querySelector('input[name="idMode"]:checked').value;
+      adAccountId = mode === 'existing'
+        ? document.getElementById('formXhsAdIdSelect').value
+        : document.getElementById('formXhsAdIdInput').value.trim();
+      if (!adAccountId) { showErr('errXhsAdId'); return; }
+      subAccountId = document.getElementById('formSubAccountId').value.trim() || '-';
+    }
+
+    if (isDuplicate(channel, adAccountId, subAccountId)) {
+      showToast('该配置已存在，不可重复添加', 'error');
+      return;
+    }
+
+    if (channel === '小红书') {
+      const mode = document.querySelector('input[name="idMode"]:checked').value;
+      if (mode === 'new') {
+        if (!xhsAccounts[accountName]) xhsAccounts[accountName] = { ids: [], type: '独立' };
+        if (!xhsAccounts[accountName].ids.includes(adAccountId)) {
+          xhsAccounts[accountName].ids.push(adAccountId);
+        }
+      }
+    }
+
+    records.unshift({
+      channel,
+      accountName,
+      adAccountId,
+      subAccountId,
+      creator: '当前用户',
+      createdAt: nowStr()
+    });
+
+    closeAddDialog();
+    showToast('保存成功', 'success');
+    applyFilter();
+  }
+
+  function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => { t.className = 'toast'; }, 2200);
+  }
+
+  applyFilter();
+</script>
+</body>
+</html>
