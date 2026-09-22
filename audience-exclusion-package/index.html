@@ -47,7 +47,17 @@
   .el-button:hover { color: #409eff; border-color: #c6e2ff; background: #ecf5ff; }
   .el-button--primary { color: #fff; background: #409eff; border-color: #409eff; }
   .el-button--primary:hover { background: #66b1ff; border-color: #66b1ff; color: #fff; }
-  .el-button--primary:disabled { background: #a0cfff; border-color: #a0cfff; cursor: not-allowed; }
+  .el-button--danger { color: #fff; background: #f56c6c; border-color: #f56c6c; }
+  .el-button--danger:hover { background: #f78989; border-color: #f78989; color: #fff; }
+  .el-link-btn {
+    background: none; border: none; padding: 0; font-size: 14px;
+    color: #409eff; cursor: pointer; font-family: inherit;
+  }
+  .el-link-btn:hover { color: #66b1ff; }
+  .el-link-btn.danger { color: #f56c6c; }
+  .el-link-btn.danger:hover { color: #f78989; }
+  .el-link-btn + .el-link-btn { margin-left: 12px; }
+  .el-dialog.sm { width: 420px; margin-top: 20vh; }
   .el-button + .el-button { margin-left: 8px; }
   .pagination {
     display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 16px; color: #606266; font-size: 13px;
@@ -134,6 +144,7 @@
               <th>子账号ID</th>
               <th>添加人</th>
               <th>添加时间</th>
+              <th>操作</th>
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>
@@ -147,7 +158,7 @@
 <div class="el-overlay" id="addOverlay">
   <div class="el-dialog">
     <div class="el-dialog__header">
-      <span class="el-dialog__title">新增人群排除包</span>
+      <span class="el-dialog__title" id="formTitle">新增人群排除包</span>
       <button class="el-dialog__close" onclick="closeAddDialog()">×</button>
     </div>
     <div class="el-dialog__body">
@@ -202,7 +213,7 @@
             <div class="label">子账号ID</div>
             <div class="control">
               <input class="el-input" id="formSubAccountId" placeholder="选填，填写后列表新增一条">
-              <div class="form-hint">选填。每保存一次新增一条记录；同一投放账户下不同子账号各占一行</div>
+              <div class="form-hint">选填。未填时列表展示「-」；保存后按当前行更新，不额外新增行</div>
             </div>
           </div>
         </div>
@@ -211,6 +222,22 @@
     <div class="el-dialog__footer">
       <button class="el-button" onclick="closeAddDialog()">取消</button>
       <button class="el-button el-button--primary" id="saveBtn" onclick="saveRecord()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="el-overlay" id="deleteOverlay">
+  <div class="el-dialog sm">
+    <div class="el-dialog__header">
+      <span class="el-dialog__title">删除确认</span>
+      <button class="el-dialog__close" onclick="closeDeleteDialog()">×</button>
+    </div>
+    <div class="el-dialog__body">
+      <p>确定删除该条人群排除包？删除后不可恢复。</p>
+    </div>
+    <div class="el-dialog__footer">
+      <button class="el-button" onclick="closeDeleteDialog()">取消</button>
+      <button class="el-button el-button--danger" onclick="confirmDelete()">确定</button>
     </div>
   </div>
 </div>
@@ -231,20 +258,23 @@
   };
 
   let records = [
-    { channel: '小红书', accountName: 'JX-洋葱学园线上体验-私信-01', adAccountId: '8311339', subAccountId: '68c29756d443d50015bde0d9', creator: '张三', createdAt: '2026-09-21 16:20:00' },
-    { channel: '小红书', accountName: 'JX-洋葱学园线上体验-私信-01', adAccountId: '8311339', subAccountId: '-', creator: '张三', createdAt: '2026-09-21 10:08:00' },
-    { channel: '千川', accountName: '-', adAccountId: 'QC-778899', subAccountId: '-', creator: '李四', createdAt: '2026-09-20 11:05:00' },
-    { channel: '抖音', accountName: '-', adAccountId: 'DY-556677', subAccountId: '-', creator: '王五', createdAt: '2026-09-19 09:40:00' },
-    { channel: '小红书', accountName: '汇咚-洋葱星球线上体验-私信-01', adAccountId: '10992810', subAccountId: '-', creator: '赵六', createdAt: '2026-09-18 14:12:00' },
-    { channel: '抖音', accountName: '-', adAccountId: 'DY-112233', subAccountId: '-', creator: '张三', createdAt: '2026-09-17 10:00:00' },
-    { channel: '小红书', accountName: '引潮-洋葱星球线上体验-私信-01', adAccountId: '9209069', subAccountId: '-', creator: '李四', createdAt: '2026-09-16 18:30:00' },
-    { channel: '千川', accountName: '-', adAccountId: 'QC-334455', subAccountId: '-', creator: '王五', createdAt: '2026-09-15 08:15:00' },
-    { channel: '抖音', accountName: '-', adAccountId: 'DY-998877', subAccountId: '-', creator: '赵六', createdAt: '2026-09-14 13:45:00' },
-    { channel: '小红书', accountName: '蜜橘-洋葱学园线上体验-私信-03', adAccountId: '8310560', subAccountId: '-', creator: '张三', createdAt: '2026-09-13 17:22:00' },
-    { channel: '千川', accountName: '-', adAccountId: 'QC-667788', subAccountId: '-', creator: '李四', createdAt: '2026-09-12 09:08:00' },
-    { channel: '抖音', accountName: '-', adAccountId: 'DY-445566', subAccountId: '-', creator: '王五', createdAt: '2026-09-11 15:50:00' },
-    { channel: '小红书', accountName: '灵犀-洋葱学园家长帮-私信-01', adAccountId: '11839535', subAccountId: '-', creator: '赵六', createdAt: '2026-09-10 11:11:00' }
+    { id: 1, channel: '小红书', accountName: 'JX-洋葱学园线上体验-私信-01', adAccountId: '8311339', subAccountId: '68c29756d443d50015bde0d9', creator: '张三', createdAt: '2026-09-21 16:20:00' },
+    { id: 2, channel: '小红书', accountName: 'JX-洋葱学园线上体验-私信-01', adAccountId: '8311339', subAccountId: '-', creator: '张三', createdAt: '2026-09-21 10:08:00' },
+    { id: 3, channel: '千川', accountName: '-', adAccountId: 'QC-778899', subAccountId: '-', creator: '李四', createdAt: '2026-09-20 11:05:00' },
+    { id: 4, channel: '抖音', accountName: '-', adAccountId: 'DY-556677', subAccountId: '-', creator: '王五', createdAt: '2026-09-19 09:40:00' },
+    { id: 5, channel: '小红书', accountName: '汇咚-洋葱星球线上体验-私信-01', adAccountId: '10992810', subAccountId: '-', creator: '赵六', createdAt: '2026-09-18 14:12:00' },
+    { id: 6, channel: '抖音', accountName: '-', adAccountId: 'DY-112233', subAccountId: '-', creator: '张三', createdAt: '2026-09-17 10:00:00' },
+    { id: 7, channel: '小红书', accountName: '引潮-洋葱星球线上体验-私信-01', adAccountId: '9209069', subAccountId: '-', creator: '李四', createdAt: '2026-09-16 18:30:00' },
+    { id: 8, channel: '千川', accountName: '-', adAccountId: 'QC-334455', subAccountId: '-', creator: '王五', createdAt: '2026-09-15 08:15:00' },
+    { id: 9, channel: '抖音', accountName: '-', adAccountId: 'DY-998877', subAccountId: '-', creator: '赵六', createdAt: '2026-09-14 13:45:00' },
+    { id: 10, channel: '小红书', accountName: '蜜橘-洋葱学园线上体验-私信-03', adAccountId: '8310560', subAccountId: '-', creator: '张三', createdAt: '2026-09-13 17:22:00' },
+    { id: 11, channel: '千川', accountName: '-', adAccountId: 'QC-667788', subAccountId: '-', creator: '李四', createdAt: '2026-09-12 09:08:00' },
+    { id: 12, channel: '抖音', accountName: '-', adAccountId: 'DY-445566', subAccountId: '-', creator: '王五', createdAt: '2026-09-11 15:50:00' },
+    { id: 13, channel: '小红书', accountName: '灵犀-洋葱学园家长帮-私信-01', adAccountId: '11839535', subAccountId: '-', creator: '赵六', createdAt: '2026-09-10 11:11:00' }
   ];
+  let nextId = 14;
+  let editingId = null;
+  let pendingDeleteId = null;
 
   let filtered = [];
   let page = 1;
@@ -263,7 +293,7 @@
       return true;
     });
     filtered = sortByTimeDesc(filtered);
-    page = 1;
+    if (resetPage !== false) page = 1;
     renderTable();
   }
 
@@ -282,7 +312,7 @@
     const pageData = filtered.slice(start, start + pageSize);
 
     if (!pageData.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty">暂无数据</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="empty">暂无数据</td></tr>';
     } else {
       tbody.innerHTML = pageData.map(r => `
         <tr>
@@ -292,6 +322,10 @@
           <td>${r.subAccountId}</td>
           <td>${r.creator}</td>
           <td>${r.createdAt}</td>
+          <td>
+            <button class="el-link-btn" onclick="openEditDialog(${r.id})">编辑</button>
+            <button class="el-link-btn danger" onclick="openDeleteDialog(${r.id})">删除</button>
+          </td>
         </tr>
       `).join('');
     }
@@ -312,6 +346,8 @@
   }
 
   function openAddDialog() {
+    editingId = null;
+    document.getElementById('formTitle').textContent = '新增人群排除包';
     clearFormErrors();
     document.getElementById('formChannel').value = '';
     document.getElementById('formAdAccountId').value = '';
@@ -327,7 +363,26 @@
     document.getElementById('addOverlay').classList.add('show');
   }
 
+  function openEditDialog(id) {
+    const rec = records.find(r => r.id === id);
+    if (!rec) return;
+    editingId = id;
+    document.getElementById('formTitle').textContent = '编辑人群排除包';
+    clearFormErrors();
+    initAccountNameOptions();
+    document.getElementById('formChannel').value = rec.channel;
+    onChannelChange();
+    if (rec.channel === '抖音' || rec.channel === '千川') {
+      document.getElementById('formAdAccountId').value = rec.adAccountId;
+    } else {
+      document.getElementById('formAccountName').value = rec.accountName;
+      fillXhsAccountFields(rec.accountName, rec.adAccountId, rec.subAccountId);
+    }
+    document.getElementById('addOverlay').classList.add('show');
+  }
+
   function closeAddDialog() {
+    editingId = null;
     document.getElementById('addOverlay').classList.remove('show');
   }
 
@@ -356,16 +411,25 @@
       wrap.style.display = 'none';
       return;
     }
+    fillXhsAccountFields(name, '', '');
+  }
+
+  function fillXhsAccountFields(name, adAccountId, subAccountId) {
+    const wrap = document.getElementById('xhsIdFields');
     wrap.style.display = 'block';
     const acc = xhsAccounts[name] || { ids: [], type: '独立' };
-    const ids = acc.ids || [];
+    const ids = acc.ids.slice();
+    if (adAccountId && !ids.includes(adAccountId)) ids.push(adAccountId);
     const sel = document.getElementById('formXhsAdIdSelect');
     sel.innerHTML = '<option value="">请选择</option>' + ids.map(id => `<option value="${id}">${id}</option>`).join('');
-    document.getElementById('formXhsAdIdInput').value = '';
-    document.getElementById('formSubAccountId').value = '';
-    document.getElementById('xhsSubRow').style.display = 'flex';
-    document.querySelector('input[name="idMode"][value="existing"]').checked = true;
+    const useExisting = !adAccountId || ids.includes(adAccountId);
+    document.querySelector('input[name="idMode"][value="existing"]').checked = useExisting;
+    document.querySelector('input[name="idMode"][value="new"]').checked = !useExisting;
     onIdModeChange();
+    if (useExisting) sel.value = adAccountId || '';
+    else document.getElementById('formXhsAdIdInput').value = adAccountId || '';
+    document.getElementById('formSubAccountId').value = (!subAccountId || subAccountId === '-') ? '' : subAccountId;
+    document.getElementById('xhsSubRow').style.display = 'flex';
   }
 
   function onIdModeChange() {
@@ -384,8 +448,9 @@
     document.getElementById(id).classList.add('show');
   }
 
-  function isDuplicate(channel, adAccountId, subAccountId) {
+  function isDuplicate(channel, adAccountId, subAccountId, excludeId) {
     return records.some(r => {
+      if (excludeId && r.id === excludeId) return false;
       if (r.channel !== channel) return false;
       if (channel === '抖音' || channel === '千川') {
         return r.adAccountId === adAccountId;
@@ -423,7 +488,7 @@
       subAccountId = document.getElementById('formSubAccountId').value.trim() || '-';
     }
 
-    if (isDuplicate(channel, adAccountId, subAccountId)) {
+    if (isDuplicate(channel, adAccountId, subAccountId, editingId)) {
       showToast('该配置已存在，不可重复添加', 'error');
       return;
     }
@@ -438,7 +503,20 @@
       }
     }
 
+    if (editingId) {
+      const rec = records.find(r => r.id === editingId);
+      rec.channel = channel;
+      rec.accountName = accountName;
+      rec.adAccountId = adAccountId;
+      rec.subAccountId = subAccountId;
+      closeAddDialog();
+      showToast('保存成功', 'success');
+      applyFilter(false);
+      return;
+    }
+
     records.unshift({
+      id: nextId++,
       channel,
       accountName,
       adAccountId,
@@ -450,6 +528,24 @@
     closeAddDialog();
     showToast('保存成功', 'success');
     applyFilter();
+  }
+
+  function openDeleteDialog(id) {
+    pendingDeleteId = id;
+    document.getElementById('deleteOverlay').classList.add('show');
+  }
+
+  function closeDeleteDialog() {
+    pendingDeleteId = null;
+    document.getElementById('deleteOverlay').classList.remove('show');
+  }
+
+  function confirmDelete() {
+    if (pendingDeleteId == null) return;
+    records = records.filter(r => r.id !== pendingDeleteId);
+    closeDeleteDialog();
+    showToast('删除成功', 'success');
+    applyFilter(false);
   }
 
   function showToast(msg, type) {
