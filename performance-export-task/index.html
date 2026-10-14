@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>电销CRM - 绩效 · 导出任务</title>
+<style>
+  :root {
+    --pri: #409eff;
+    --pri-d: #337ecc;
+    --pri-l: #ecf5ff;
+    --suc: #67c23a;
+    --dan: #f56c6c;
+    --t1: #303133;
+    --t2: #606266;
+    --t3: #909399;
+    --bd: #dcdfe6;
+    --line: #ebeef5;
+    --bg: #f0f2f5;
+    --sb: #1f2d3d;
+    --sb2: #18222c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+    color: var(--t1);
+    background: var(--bg);
+    font-size: 13px;
+  }
+  button, input, select { font-family: inherit; }
+  .app { display: flex; height: 100vh; overflow: hidden; }
+
+  .sidebar {
+    width: 168px;
+    background: var(--sb);
+    color: rgba(255,255,255,.72);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .logo {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    background: #18222c;
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .logo i {
+    width: 22px; height: 22px; border-radius: 4px;
+    background: var(--pri);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-style: normal; font-size: 12px; font-weight: 700;
+  }
+  .menu { flex: 1; overflow-y: auto; padding: 6px 0 16px; }
+  .menu::-webkit-scrollbar { width: 0; }
+  .mi, .si {
+    display: flex; align-items: center; gap: 8px;
+    height: 36px; padding: 0 14px; cursor: pointer; font-size: 13px;
+    white-space: nowrap;
+  }
+  .mi:hover, .si:hover { color: #fff; }
+  .mi .arr { margin-left: auto; font-size: 10px; opacity: .6; }
+  .badge {
+    margin-left: auto; background: #f56c6c; color: #fff;
+    font-size: 10px; line-height: 16px; min-width: 16px; text-align: center;
+    border-radius: 8px; padding: 0 4px;
+  }
+  .sub { background: var(--sb2); }
+  .si { height: 34px; padding-left: 36px; font-size: 12px; color: rgba(255,255,255,.62); }
+  .si.act { background: var(--pri); color: #fff; }
+
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .topbar {
+    height: 46px; background: #fff; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; padding: 0 12px; gap: 10px; flex-shrink: 0;
+  }
+  .tabs { display: flex; align-items: flex-end; height: 100%; gap: 2px; }
+  .tab {
+    height: 32px; padding: 0 12px; border: 1px solid transparent; border-bottom: none;
+    border-radius: 4px 4px 0 0; color: var(--t2); font-size: 12px;
+    display: flex; align-items: center; gap: 6px; cursor: pointer; margin-bottom: -1px;
+  }
+  .tab.act { color: var(--pri); background: var(--pri-l); border-color: #d9ecff; }
+  .tab .x { color: var(--t3); font-size: 12px; }
+  .notice {
+    margin-left: 12px; color: #e6a23c; font-size: 12px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .top-right { margin-left: auto; display: flex; align-items: center; gap: 12px; color: var(--t2); font-size: 12px; }
+  .avatar {
+    width: 24px; height: 24px; border-radius: 50%; background: var(--pri); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 12px;
+  }
+
+  .content { flex: 1; overflow: auto; padding: 12px; }
+  .card { background: #fff; border-radius: 4px; min-height: calc(100% - 0px); padding: 0 16px 16px; }
+
+  .page-tabs { display: flex; border-bottom: 1px solid var(--line); margin: 0 -16px 12px; padding: 0 16px; }
+  .pt {
+    padding: 12px 16px 10px; cursor: pointer; color: var(--t2); position: relative; font-size: 14px;
+  }
+  .pt.act { color: var(--pri); font-weight: 500; }
+  .pt.act::after {
+    content: ""; position: absolute; left: 16px; right: 16px; bottom: -1px; height: 2px; background: var(--pri);
+  }
+
+  .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .sel, .datebox {
+    height: 32px; border: 1px solid var(--bd); border-radius: 4px; background: #fff;
+    color: var(--t1); padding: 0 10px; font-size: 13px; outline: none;
+  }
+  .sel { min-width: 140px; color: var(--t3); }
+  .sel.has { color: var(--t1); }
+  .datebox { width: 176px; color: var(--t1); }
+  .to { color: var(--t3); font-size: 12px; }
+  .btn {
+    height: 32px; padding: 0 14px; border-radius: 4px; border: 1px solid var(--bd);
+    background: #fff; color: var(--t2); cursor: pointer; font-size: 13px;
+  }
+  .btn:hover { color: var(--pri); border-color: #c6e2ff; background: var(--pri-l); }
+  .btn.pri { background: var(--pri); border-color: var(--pri); color: #fff; }
+  .btn.pri:hover { background: #66b1ff; border-color: #66b1ff; color: #fff; }
+  .btn:disabled { opacity: .6; cursor: not-allowed; }
+  .spacer { flex: 1; }
+  .filters .actions { margin-left: auto; display: flex; gap: 8px; }
+
+  .legend { display: flex; align-items: center; gap: 14px; color: var(--t3); font-size: 12px; margin-bottom: 8px; }
+  .down { color: var(--suc); font-style: normal; }
+  .up { color: var(--dan); font-style: normal; }
+
+  .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 2px; }
+  table { border-collapse: collapse; min-width: 1680px; width: 100%; }
+  th, td { border-bottom: 1px solid var(--line); padding: 8px 10px; text-align: left; white-space: nowrap; font-size: 12px; font-weight: 400; }
+  th { background: #fafafa; color: var(--t2); position: sticky; top: 0; z-index: 1; }
+  tbody tr:hover td { background: #f5f7fa; }
+  td.num { font-variant-numeric: tabular-nums; }
+  .sort { color: #c0c4cc; margin-left: 2px; font-size: 10px; }
+
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    display: none; align-items: center; justify-content: center; z-index: 20;
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    width: 920px; max-width: calc(100vw - 48px);
+    background: #fff; border-radius: 4px; box-shadow: 0 8px 24px rgba(0,0,0,.16);
+    display: flex; flex-direction: column; overflow: visible;
+  }
+  .modal-hd {
+    height: 48px; padding: 0 16px; display: flex; align-items: center;
+    border-bottom: 1px solid var(--line); font-size: 16px; font-weight: 500;
+  }
+  .modal-x {
+    margin-left: auto; width: 28px; height: 28px; border: none; background: transparent;
+    cursor: pointer; color: var(--t3); font-size: 18px; border-radius: 4px;
+  }
+  .modal-x:hover { background: #f5f7fa; color: var(--t1); }
+  .modal-bd { padding: 0 20px 20px; overflow: visible; }
+  .mtabs { display: flex; border-bottom: 1px solid var(--line); margin: 0 -20px 16px; padding: 0 20px; }
+  .mtab { padding: 12px 4px; margin-right: 24px; cursor: pointer; color: var(--t2); position: relative; }
+  .mtab.act { color: var(--pri); }
+  .mtab.act::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--pri); }
+  .pane { display: none; }
+  .pane.act { display: block; }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; margin-bottom: 8px; color: var(--t1); }
+  .field label em { color: var(--dan); font-style: normal; margin-right: 4px; }
+  .hint { color: var(--t3); font-size: 12px; margin-top: 6px; line-height: 1.6; }
+  .err { color: var(--dan); font-size: 12px; margin-top: 6px; min-height: 0; }
+  .range { display: flex; align-items: center; gap: 8px; }
+
+  .picker { position: relative; }
+  .picker-box {
+    min-height: 32px; border: 1px solid var(--bd); border-radius: 4px; background: #fff;
+    padding: 3px 28px 3px 8px; cursor: pointer; display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+    position: relative;
+  }
+  .picker-box:hover, .picker.open .picker-box { border-color: var(--pri); }
+  .picker-box .ph { color: var(--t3); font-size: 13px; line-height: 24px; }
+  .picker-box .caret { position: absolute; right: 8px; top: 8px; color: var(--t3); font-size: 12px; }
+  .tag {
+    background: #f0f2f5; color: var(--t1); border-radius: 3px; padding: 0 6px;
+    height: 22px; display: inline-flex; align-items: center; gap: 4px; font-size: 12px;
+  }
+  .tag b { font-weight: 400; color: var(--t3); cursor: pointer; }
+  .tag b:hover { color: var(--dan); }
+  .drop {
+    display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px);
+    background: #fff; border: 1px solid var(--line); border-radius: 4px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 8; max-height: 280px; overflow: auto;
+  }
+  .picker.open .drop { display: block; }
+  .drop-search { padding: 8px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: #fff; }
+  .drop-search input {
+    width: 100%; height: 30px; border: 1px solid var(--bd); border-radius: 4px; padding: 0 8px; outline: none;
+  }
+  .drop-search input:focus { border-color: var(--pri); }
+  .scope-tip { padding: 8px 12px; color: var(--t3); font-size: 12px; background: #fafafa; border-bottom: 1px solid var(--line); }
+  .team { padding: 8px 12px 2px; color: var(--t2); font-weight: 500; }
+  .g-row, .team-row {
+    display: flex; align-items: center; gap: 8px; padding: 6px 12px; cursor: pointer; font-size: 13px;
+  }
+  .g-row { padding-left: 32px; }
+  .g-row:hover, .team-row:hover { background: #f5f7fa; }
+  .g-row input, .team-row input { accent-color: var(--pri); }
+  .dept { padding: 8px 12px 0; font-size: 12px; color: var(--pri); }
+  .locked {
+    padding: 8px 12px 10px; color: #c0c4cc; font-size: 12px; border-top: 1px solid var(--line); margin-top: 4px;
+  }
+
+  .form-ft { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+  #pane-result .table-wrap { max-height: 360px; overflow: auto; }
+  .result-table { min-width: 100%; }
+  .result-table th, .result-table td { white-space: normal; vertical-align: middle; }
+  .status-pending { color: var(--t3); display: inline-flex; align-items: center; gap: 6px; }
+  .status-fail { color: var(--dan); }
+  .link {
+    background: none; border: none; color: var(--pri); cursor: pointer; padding: 0; font-size: 12px;
+  }
+  .link:hover { color: var(--pri-d); text-decoration: underline; }
+  .spin {
+    width: 12px; height: 12px; border: 2px solid #dcdfe6; border-top-color: var(--pri);
+    border-radius: 50%; animation: spin .8s linear infinite; display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty { text-align: center; color: var(--t3); padding: 36px 0; }
+  .new-row td { background: #f0f9eb; }
+
+  .toast {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    background: #fff; border: 1px solid #e1f3d8; color: var(--suc);
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    padding: 10px 16px; border-radius: 4px; z-index: 30; display: none; font-size: 13px;
+  }
+  .toast.show { display: block; }
+  .toast.warn { color: #e6a23c; border-color: #faecd8; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo"><i>销</i>电销CRM</div>
+    <div class="menu">
+      <div class="mi">线索池</div>
+      <div class="mi">个人工作台 <span class="badge">8</span></div>
+      <div class="mi">公海池</div>
+      <div class="mi">客户管理</div>
+      <div class="mi">数据统计 <span class="arr">▾</span></div>
+      <div class="sub">
+        <div class="si">个人排行榜</div>
+        <div class="si">小组排行榜</div>
+        <div class="si">团队排行榜</div>
+        <div class="si">营收</div>
+        <div class="si act">绩效</div>
+        <div class="si">当配转化统计</div>
+        <div class="si">当配外呼统计</div>
+        <div class="si">客服推送统计</div>
+        <div class="si">坐席接收统计</div>
+        <div class="si">挽单成功率统计</div>
+        <div class="si">转介绍业绩统计</div>
+        <div class="si">转介绍排行榜</div>
+        <div class="si">优秀案例审核率</div>
+        <div class="si">近期跟进统计</div>
+      </div>
+      <div class="mi">活动管理</div>
+    </div>
+  </aside>
+
+  <section class="main">
+    <header class="topbar">
+      <div class="tabs">
+        <div class="tab">首页</div>
+        <div class="tab">专属链接（新） <span class="x">×</span></div>
+        <div class="tab">订单列表 <span class="x">×</span></div>
+        <div class="tab act">绩效 <span class="x">×</span></div>
+      </div>
+      <div class="notice">今日已拨，优质线索池上限70次　今日已拨，自助线索池上限20次</div>
+      <div class="top-right"><span class="avatar">李</span> liyingping</div>
+    </header>
+
+    <div class="content">
+      <div class="card">
+        <div class="page-tabs">
+          <div class="pt" data-dim="clue">线索维度</div>
+          <div class="pt act" data-dim="family">家庭维度</div>
+        </div>
+
+        <div class="filters">
+          <select class="sel" id="filterGroup">
+            <option value="">请选择小组</option>
+          </select>
+          <select class="sel">
+            <option value="">请选择坐席</option>
+            <option>刘弥月</option>
+            <option>张何</option>
+            <option>黄丽</option>
+            <option>魏诗语</option>
+            <option>汪林文</option>
+          </select>
+          <select class="sel" id="filterFamily">
+            <option value="">请选择家庭类型</option>
+            <option>有家长手机且绑定学情</option>
+            <option>有家长手机未绑定学情</option>
+            <option>无家长手机且绑定学情</option>
+            <option>无家长手机未绑定学情</option>
+            <option>无手机</option>
+          </select>
+          <input class="datebox" type="text" value="2026-10-14 00:00:00" readonly>
+          <span class="to">至</span>
+          <input class="datebox" type="text" value="2026-10-14 23:59:59" readonly>
+          <button class="btn pri" id="btnSearch" type="button">搜索</button>
+          <button class="btn" id="btnReset" type="button">重置</button>
+          <div class="actions">
+            <button class="btn pri" id="btnExportTask" type="button">导出任务</button>
+            <button class="btn pri" id="btnExport" type="button">导出</button>
+          </div>
+        </div>
+
+        <div class="legend">
+          <span><i class="down">↓</i> 代表低于统计的平均值</span>
+          <span><i class="up">↑</i> 代表高于统计的平均值</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr id="thead"></tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="modal-mask" id="mask">
+  <div class="modal" role="dialog" aria-labelledby="modalTitle">
+    <div class="modal-hd">
+      <span id="modalTitle">导出任务</span>
+      <button class="modal-x" id="modalClose" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="modal-bd">
+      <div class="mtabs">
+        <div class="mtab act" data-pane="scope">导出范围</div>
+        <div class="mtab" data-pane="result">导出结果</div>
+      </div>
+
+      <div class="pane act" id="pane-scope">
+        <div class="field">
+          <label><em>*</em>选择小组</label>
+          <div class="picker" id="picker">
+            <div class="picker-box" id="pickerBox">
+              <span class="ph" id="pickerPh">请选择小组</span>
+              <span class="caret">▾</span>
+            </div>
+            <div class="drop" id="drop">
+              <div class="drop-search"><input id="groupSearch" type="text" placeholder="搜索小组"></div>
+              <div class="scope-tip" id="scopeTip"></div>
+              <div id="tree"></div>
+              <div class="locked">高中部、其他业务线小组不在当前账号架构内，未展示、不可选。</div>
+            </div>
+          </div>
+          <div class="err" id="groupErr"></div>
+        </div>
+
+        <div class="field">
+          <label><em>*</em>选择时间范围</label>
+          <div class="range">
+            <input class="datebox" id="startTime" type="datetime-local" step="1">
+            <span class="to">至</span>
+            <input class="datebox" id="endTime" type="datetime-local" step="1">
+          </div>
+          <div class="err" id="timeErr"></div>
+        </div>
+        <div class="form-ft">
+          <button class="btn pri" id="btnQueryExport" type="button">查询导出</button>
+        </div>
+      </div>
+
+      <div class="pane" id="pane-result">
+        <div class="table-wrap">
+          <table class="result-table">
+            <thead>
+              <tr>
+                <th style="width:160px">导出时间</th>
+                <th>小组</th>
+                <th style="width:280px">查询时间</th>
+                <th style="width:100px">导出人</th>
+                <th style="width:110px">导出结果</th>
+              </tr>
+            </thead>
+            <tbody id="taskBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const EXPORTER = "liyingping";
+const ORG = [
+  {
+    dept: "电销团队初中部",
+    teams: [
+      { name: "第一军团", groups: ["狂天卡小队"] },
+      { name: "无畏军团", groups: ["梦之队-张宇昊", "地推春暖队"] },
+      { name: "平级军团", groups: ["寒战队-高启", "无畏队-高吉"] },
+      { name: "业绩红团", groups: ["校人队-春波"] },
+      { name: "业绩蓝红团", groups: ["梦忆队-张凯", "星空队-高启", "业绩队-龙阳"] }
+    ]
+  },
+  {
+    dept: "电销团队小学部",
+    teams: [
+      { name: "星火军团", groups: ["小学四部-李夏"] }
+    ]
+  }
+];
+
+const COLS = ["拨打线索数","拨打转化率","拨打次数","有效通话时长","有效接通量","有效接通率","订单总额/元","订单数","付费用户数","均客单价/元","坐席名称","所属组名","所属小组","所属团队","所属学段"];
+
+const ROWS = [
+  ["740","0.8108%","1731","58:42:30","180","24%","10390","7","6","1815","刘弥月","16-单班","狂天卡小队","第一军团","电销团队初中部"],
+  ["597","1.1725%","1009","29:43:49","142","24%","9789","7","6","1391","张何","6-张宇","梦之队-张宇昊","无畏军团","电销团队初中部"],
+  ["361","6.9252%","885","38:06:11","142","39%","32346","26","25","1294","黄丽","7-朱婷婷","地推春暖队","无畏军团","电销团队初中部"],
+  ["4","0.0000%","8","0","0","0%","50","1","1","50","郭超","3-高超","寒战队-高启","平级军团","电销团队初中部"],
+  ["399","5.0633%","867","25:40:47","119","29%","24626","23","20","1231","魏诗语","7-朱婷婷","地推春暖队","无畏军团","电销团队初中部"],
+  ["1495","1.6054%","2328","138:29:48","270","18%","31382","27","24","1306","汪林文","10-余浪龙","校人队-春波","业绩红团","电销团队初中部"],
+  ["1159","0.7765%","1992","49:55:08","177","15%","7341","9","9","816","陈露","16-单班","狂天卡小队","第一军团","电销团队初中部"],
+  ["1159","0.9491%","3089","58:19:12","341","29%","18676","14","11","1698","马文波","20-何杨","梦忆队-张凯","业绩蓝红团","电销团队初中部"],
+  ["8","0.0000%","12","0","0","0%","498","1","1","498","周丹丹","11-周书丽","星空队-高启","业绩蓝红团","电销团队初中部"],
+  ["727","1.1004%","1498","68:38:35","241","33%","11684","8","8","1461","马艳","6-张宇","梦之队-张宇昊","无畏军团","电销团队初中部"],
+  ["552","2.3558%","1939","78:59:47","181","33%","28472","15","13","2190","曹新林","6-张宇","梦之队-张宇昊","无畏军团","电销团队初中部"],
+  ["650","1.3846%","1166","49:48:31","210","32%","10616","9","9","1179","曹芹","小学四部","小学四部-李夏","星火军团","电销团队小学部"],
+  ["613","1.6313%","1172","58:06:19","201","33%","17344","11","10","1733","乐清","12-龙阳","业绩队-龙阳","业绩蓝红团","电销团队初中部"],
+  ["407","3.6855%","740","19:55:08","111","27%","24695","15","15","1646","王超","13-高吉","无畏队-高吉","平级军团","电销团队初中部"],
+  ["992","0.7056%","2498","68:36:26","236","24%","16442","7","7","2349","李超","16-单班","狂天卡小队","第一军团","电销团队初中部"]
+];
+
+const ARROWS = {
+  0: ["down","up","up","up","up","down","up","up","down","up"],
+  1: ["up","up","down","down","down","down","down","up","down","down"],
+  2: ["up","up","down","up","up","up","up","up","up","up"],
+  4: ["up","up","down","down","down","up","up","up","up","up"],
+  6: ["down","down","up","up","down","down","down","down","down","down"]
+};
+
+let dimension = "family";
+let selected = new Set();
+let tasks = [
+  {
+    id: 1,
+    exportTime: "2026-10-14 09:18:26",
+    groups: ["狂天卡小队"],
+    queryTime: "2026-10-01 00:00:00 至 2026-10-13 23:59:59",
+    exporter: EXPORTER,
+    status: "success",
+    fresh: false
+  },
+  {
+    id: 2,
+    exportTime: "2026-10-13 18:42:11",
+    groups: ["梦之队-张宇昊", "地推春暖队"],
+    queryTime: "2026-10-06 00:00:00 至 2026-10-12 23:59:59",
+    exporter: EXPORTER,
+    status: "fail",
+    fresh: false
+  },
+  {
+    id: 3,
+    exportTime: "2026-10-14 11:46:03",
+    groups: ["校人队-春波"],
+    queryTime: "2026-10-14 00:00:00 至 2026-10-14 23:59:59",
+    exporter: EXPORTER,
+    status: "pending",
+    fresh: false
+  }
+];
+let taskSeq = 3;
+const pendingTimers = {};
+
+function allGroups() {
+  const list = [];
+  ORG.forEach(d => d.teams.forEach(t => t.groups.forEach(g => list.push({ dept: d.dept, team: t.name, group: g }))));
+  return list;
+}
+
+function pad(n) { return String(n).padStart(2, "0"); }
+function formatNow(d = new Date()) {
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+function toInputValue(text) {
+  return text.replace(" ", "T");
+}
+function fromInputValue(v) {
+  if (!v) return "";
+  const [date, time] = v.split("T");
+  const t = (time || "00:00").length === 5 ? time + ":00" : time;
+  return `${date} ${t}`;
+}
+
+function toast(msg, type) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "toast show" + (type === "warn" ? " warn" : "");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { el.className = "toast"; }, 2200);
+}
+
+function renderTable() {
+  document.getElementById("thead").innerHTML = COLS.map(c => `<th>${c}<span class="sort">↕</span></th>`).join("");
+  const group = document.getElementById("filterGroup").value;
+  const rows = ROWS.filter(r => !group || r[12] === group);
+  document.getElementById("tbody").innerHTML = rows.map((r, idx) => {
+    return "<tr>" + r.map((cell, i) => {
+      const arrowMap = ARROWS[idx];
+      const arrow = arrowMap && arrowMap[i] ? `<i class="${arrowMap[i]}">${arrowMap[i] === "up" ? "↑" : "↓"}</i>` : "";
+      const cls = i < 10 ? "num" : "";
+      return `<td class="${cls}">${cell}${arrow}</td>`;
+    }).join("") + "</tr>";
+  }).join("");
+}
+
+function fillGroupFilter() {
+  const sel = document.getElementById("filterGroup");
+  allGroups().forEach(g => {
+    const op = document.createElement("option");
+    op.value = g.group;
+    op.textContent = g.group;
+    sel.appendChild(op);
+  });
+}
+
+function renderPicker() {
+  const box = document.getElementById("pickerBox");
+  const ph = document.getElementById("pickerPh");
+  box.querySelectorAll(".tag").forEach(n => n.remove());
+  const names = [...selected];
+  ph.style.display = names.length ? "none" : "";
+  const show = names.slice(0, 3);
+  show.forEach(name => {
+    const tag = document.createElement("span");
+    tag.className = "tag";
+    tag.innerHTML = `${name}<b data-remove="${name}">×</b>`;
+    box.insertBefore(tag, ph);
+  });
+  if (names.length > 3) {
+    const more = document.createElement("span");
+    more.className = "tag";
+    more.textContent = `+${names.length - 3}`;
+    box.insertBefore(more, ph);
+  }
+}
+
+function renderTree() {
+  const kw = document.getElementById("groupSearch").value.trim();
+  const root = document.getElementById("tree");
+  root.innerHTML = "";
+  ORG.forEach(dept => {
+    const deptHit = dept.teams.some(t => t.groups.some(g => !kw || g.includes(kw) || t.name.includes(kw)));
+    if (!deptHit) return;
+    const deptEl = document.createElement("div");
+    deptEl.className = "dept";
+    deptEl.textContent = dept.dept;
+    root.appendChild(deptEl);
+    dept.teams.forEach(team => {
+      const groups = team.groups.filter(g => !kw || g.includes(kw) || team.name.includes(kw));
+      if (!groups.length) return;
+      const checked = groups.every(g => selected.has(g));
+      const teamRow = document.createElement("label");
+      teamRow.className = "team-row";
+      teamRow.innerHTML = `<input type="checkbox" data-team="${dept.dept}|${team.name}" ${checked ? "checked" : ""}> ${team.name}`;
+      root.appendChild(teamRow);
+      groups.forEach(g => {
+        const row = document.createElement("label");
+        row.className = "g-row";
+        row.innerHTML = `<input type="checkbox" data-group="${g}" ${selected.has(g) ? "checked" : ""}> ${g}`;
+        root.appendChild(row);
+      });
+    });
+  });
+  document.getElementById("scopeTip").textContent = "当前账号架构：电销团队初中部、电销团队小学部。只能勾选架构内的小组。";
+}
+
+function renderTasks() {
+  const body = document.getElementById("taskBody");
+  if (!tasks.length) {
+    body.innerHTML = `<tr><td class="empty" colspan="5">暂无导出任务</td></tr>`;
+    return;
+  }
+  body.innerHTML = tasks.map(t => {
+    let result = "";
+    if (t.status === "pending") result = `<span class="status-pending"><i class="spin"></i>下载中</span>`;
+    else if (t.status === "fail") result = `<span class="status-fail">下载失败</span>`;
+    else result = `<button class="link" type="button" data-download="${t.id}">下载</button>`;
+    return `<tr class="${t.fresh ? "new-row" : ""}">
+      <td>${t.exportTime}</td>
+      <td>${t.groups.join("、")}</td>
+      <td>${t.queryTime}</td>
+      <td>${t.exporter}</td>
+      <td>${result}</td>
+    </tr>`;
+  }).join("");
+}
+
+function openModal(pane) {
+  document.getElementById("mask").classList.add("show");
+  switchPane(pane || "scope");
+  document.getElementById("groupErr").textContent = "";
+  document.getElementById("timeErr").textContent = "";
+}
+function closeModal() {
+  document.getElementById("mask").classList.remove("show");
+  document.getElementById("picker").classList.remove("open");
+}
+function switchPane(name) {
+  document.querySelectorAll(".mtab").forEach(el => el.classList.toggle("act", el.dataset.pane === name));
+  document.getElementById("pane-scope").classList.toggle("act", name === "scope");
+  document.getElementById("pane-result").classList.toggle("act", name === "result");
+  if (name === "result") renderTasks();
+}
+
+function validate() {
+  let ok = true;
+  const gErr = document.getElementById("groupErr");
+  const tErr = document.getElementById("timeErr");
+  gErr.textContent = "";
+  tErr.textContent = "";
+  if (!selected.size) {
+    gErr.textContent = "请选择小组";
+    ok = false;
+  }
+  const start = document.getElementById("startTime").value;
+  const end = document.getElementById("endTime").value;
+  if (!start || !end) {
+    tErr.textContent = "请选择时间范围";
+    ok = false;
+  } else if (new Date(start) > new Date(end)) {
+    tErr.textContent = "开始时间不能晚于结束时间";
+    ok = false;
+  }
+  return ok;
+}
+
+function submitExport() {
+  if (!validate()) return;
+  const task = {
+    id: ++taskSeq,
+    exportTime: formatNow(),
+    groups: [...selected],
+    queryTime: `${fromInputValue(document.getElementById("startTime").value)} 至 ${fromInputValue(document.getElementById("endTime").value)}`,
+    exporter: EXPORTER,
+    status: "pending",
+    fresh: true
+  };
+  tasks.forEach(t => { t.fresh = false; });
+  tasks.unshift(task);
+  switchPane("result");
+  toast("已提交数仓，正在按小组和时间范围计算");
+  clearTimeout(pendingTimers[task.id]);
+  pendingTimers[task.id] = setTimeout(() => {
+    const current = tasks.find(t => t.id === task.id);
+    if (current && current.status === "pending") {
+      current.status = "success";
+      renderTasks();
+    }
+  }, 2000);
+}
+
+function downloadTask(id) {
+  const task = tasks.find(t => t.id === Number(id));
+  if (!task || task.status !== "success") return;
+  const header = COLS.join(",");
+  const lines = ROWS.filter(r => task.groups.includes(r[12])).map(r => r.map(c => `"${c}"`).join(","));
+  const csv = "\uFEFF" + [header, ...lines].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  const stamp = task.exportTime.replace(/[-:\s]/g, "");
+  const name = task.groups.length === 1 ? task.groups[0] : `${task.groups[0]}等${task.groups.length}个小组`;
+  a.href = URL.createObjectURL(blob);
+  a.download = `绩效导出_${name}_${stamp}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast("文件已开始下载");
+}
+
+document.getElementById("btnExportTask").addEventListener("click", () => openModal("scope"));
+document.getElementById("modalClose").addEventListener("click", closeModal);
+document.getElementById("mask").addEventListener("click", e => { if (e.target.id === "mask") closeModal(); });
+document.querySelectorAll(".mtab").forEach(el => el.addEventListener("click", () => switchPane(el.dataset.pane)));
+document.querySelectorAll(".pt").forEach(el => el.addEventListener("click", () => {
+  dimension = el.dataset.dim;
+  document.querySelectorAll(".pt").forEach(n => n.classList.toggle("act", n === el));
+  renderTable();
+}));
+
+document.getElementById("pickerBox").addEventListener("click", e => {
+  const remove = e.target.dataset.remove;
+  if (remove) {
+    selected.delete(remove);
+    renderPicker();
+    renderTree();
+    return;
+  }
+  document.getElementById("picker").classList.toggle("open");
+});
+document.addEventListener("click", e => {
+  if (!document.getElementById("picker").contains(e.target)) {
+    document.getElementById("picker").classList.remove("open");
+  }
+});
+document.getElementById("groupSearch").addEventListener("input", renderTree);
+document.getElementById("tree").addEventListener("change", e => {
+  const group = e.target.dataset.group;
+  const teamKey = e.target.dataset.team;
+  if (group) {
+    if (e.target.checked) selected.add(group);
+    else selected.delete(group);
+  }
+  document.getElementById("groupErr").textContent = "";
+  if (teamKey) {
+    const [dept, team] = teamKey.split("|");
+    const found = ORG.find(d => d.dept === dept).teams.find(t => t.name === team);
+    found.groups.forEach(g => {
+      if (e.target.checked) selected.add(g);
+      else selected.delete(g);
+    });
+  }
+  renderPicker();
+  renderTree();
+});
+
+document.getElementById("btnQueryExport").addEventListener("click", submitExport);
+document.getElementById("taskBody").addEventListener("click", e => {
+  const id = e.target.dataset.download;
+  if (id) downloadTask(id);
+});
+document.getElementById("btnExport").addEventListener("click", () => toast("已按当前列表筛选导出"));
+document.getElementById("btnSearch").addEventListener("click", () => {
+  const sel = document.getElementById("filterGroup");
+  sel.classList.toggle("has", !!sel.value);
+  renderTable();
+  toast("已按筛选条件查询");
+});
+document.getElementById("btnReset").addEventListener("click", () => {
+  document.getElementById("filterGroup").value = "";
+  document.getElementById("filterGroup").classList.remove("has");
+  document.getElementById("filterFamily").value = "";
+  renderTable();
+});
+document.getElementById("filterGroup").addEventListener("change", e => {
+  e.target.classList.toggle("has", !!e.target.value);
+});
+
+document.getElementById("startTime").value = "2026-10-01T00:00:00";
+document.getElementById("endTime").value = "2026-10-14T23:59:59";
+
+setTimeout(() => {
+  const pending = tasks.find(t => t.id === 3 && t.status === "pending");
+  if (pending) {
+    pending.status = "success";
+    renderTasks();
+  }
+}, 2800);
+
+fillGroupFilter();
+renderTable();
+renderPicker();
+renderTree();
+renderTasks();
+</script>
+</body>
+</html>
