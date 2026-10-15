@@ -6,29 +6,42 @@
 <title>AI质培中台 - 课程完成标准与作业管理</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif; background:#f0f2f5; color:#303133; font-size:13px; line-height:1.5; }
-  button, input, select, textarea { font-family:inherit; font-size:13px; }
-  .layout { display:flex; min-height:100vh; }
-  .sidebar { width:220px; background:#001529; color:rgba(255,255,255,.65); flex-shrink:0; }
-  .logo-bar { height:56px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:16px; gap:8px; }
-  .logo-icon { width:28px; height:28px; background:#409eff; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:700; }
-  .menu-title { padding:12px 20px 4px; font-size:12px; color:rgba(255,255,255,.35); }
-  .menu-item { margin:2px 8px; padding:10px 12px; cursor:pointer; display:flex; align-items:center; gap:8px; border-radius:4px; }
-  .menu-item:hover { color:#fff; background:rgba(255,255,255,.08); }
+  html, body { height:100%; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang SC","Microsoft YaHei",sans-serif; background:#f2f3f5; color:#303133; font-size:14px; line-height:1.5; }
+  button, input, select, textarea { font-family:inherit; font-size:14px; }
+  .layout { display:flex; height:100%; }
+  .sidebar { width:220px; background:#001529; color:rgba(255,255,255,.65); flex-shrink:0; display:flex; flex-direction:column; }
+  .logo { height:56px; display:flex; align-items:center; justify-content:center; gap:8px; overflow:hidden; }
+  .logo-icon { width:32px; height:32px; border-radius:8px; background:#409eff; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0; }
+  .logo-title { color:#fff; font-size:18px; font-weight:600; white-space:nowrap; }
+  .menu { flex:1; overflow:auto; }
+  .menu-sub, .menu-item { height:56px; display:flex; align-items:center; gap:8px; padding:0 20px; color:rgba(255,255,255,.65); cursor:pointer; font-size:14px; }
+  .menu-sub:hover, .menu-item:hover { color:#fff; background:rgba(255,255,255,.08); }
+  .menu-item { padding-left:48px; border-radius:4px; }
   .menu-item.active { color:#fff; background:#409eff; }
-  .menu-item.disabled { cursor:default; }
-  .menu-item.disabled:hover { color:rgba(255,255,255,.65); background:transparent; }
-  .main { flex:1; min-width:0; display:flex; flex-direction:column; }
-  .header { height:56px; background:#fff; border-bottom:1px solid #e4e7ed; display:flex; align-items:center; justify-content:space-between; padding:0 16px; }
-  .breadcrumb { display:flex; align-items:center; gap:6px; color:#909399; }
-  .breadcrumb .curr { color:#303133; font-weight:500; }
-  .breadcrumb button { border:0; background:none; color:#409eff; cursor:pointer; padding:0; }
-  .user-info { display:flex; align-items:center; gap:8px; color:#606266; }
+  .menu-children { display:none; }
+  .menu-group.open .menu-children { display:block; }
+  .menu-ico { width:16px; height:16px; flex-shrink:0; }
+  .menu-arrow { margin-left:auto; width:12px; height:12px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:rotate(-45deg); }
+  .menu-group.open .menu-arrow { transform:rotate(45deg); }
+  .main { flex:1; min-width:0; display:flex; flex-direction:column; background:#f2f3f5; }
+  .header { height:56px; background:#fff; border-bottom:1px solid #e4e7ed; display:flex; align-items:center; justify-content:space-between; padding:0 16px; flex-shrink:0; }
+  .header-left, .user-info { display:flex; align-items:center; gap:16px; }
+  .fold { width:18px; height:18px; color:#303133; }
+  .breadcrumb { display:flex; align-items:center; gap:8px; color:#606266; font-size:14px; }
+  .breadcrumb .sep { color:#c0c4cc; }
+  .breadcrumb .curr { color:#303133; }
+  .user-info { color:#303133; cursor:pointer; gap:6px; }
   .avatar { width:28px; height:28px; border-radius:50%; background:#409eff; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; }
-  .content { padding:12px; flex:1; }
-  .card { background:#fff; border:1px solid #ebeef5; border-radius:4px; }
-  .filter-panel { padding:16px 16px 0; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
-  .input, select, textarea { height:32px; padding:0 10px; border:1px solid #dcdfe6; border-radius:4px; color:#606266; background:#fff; outline:none; }
+  .caret { width:12px; height:12px; color:#909399; }
+  .content { padding:10px; flex:1; overflow:auto; }
+  .card { background:#fff; border:1px solid #ebeef5; border-radius:4px; padding:20px; }
+  .filter-form, .filter-panel { display:flex; flex-wrap:wrap; align-items:center; }
+  .fi { display:flex; align-items:center; gap:12px; margin:0 32px 18px 0; }
+  .fi.right { margin-left:auto; margin-right:0; }
+  .filter-panel { gap:12px; }
+  .filter-panel > * { margin-bottom:18px; }
+  .input, select, textarea { height:32px; padding:0 11px; border:1px solid #dcdfe6; border-radius:4px; color:#606266; background:#fff; outline:none; }
   textarea.input { height:auto; padding:8px 10px; resize:vertical; }
   .input:focus, select:focus, textarea:focus { border-color:#409eff; }
   .input.err { border-color:#f56c6c; }
@@ -42,11 +55,17 @@
   .btn.link:hover { background:none; text-decoration:underline; }
   .btn.link.danger { color:#f56c6c; }
   .btn.link:disabled { color:#c0c4cc; text-decoration:none; }
-  .spacer { margin-left:auto; display:flex; gap:8px; }
-  table { width:100%; border-collapse:collapse; }
-  th { background:#f5f7fa; color:#909399; font-weight:500; text-align:left; padding:10px 12px; border-bottom:1px solid #ebeef5; white-space:nowrap; }
-  td { padding:10px 12px; border-bottom:1px solid #ebeef5; color:#606266; vertical-align:middle; }
-  tr:hover td { background:#fafafa; }
+  .spacer { margin-left:auto; display:flex; gap:12px; }
+  .table-scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th { background:#f6f7fa; color:#303133; font-weight:600; text-align:left; padding:8px 12px; border-bottom:1px solid #ebeef5; white-space:nowrap; }
+  td { padding:8px 12px; border-bottom:1px solid #ebeef5; color:#606266; vertical-align:middle; background:#fff; }
+  tbody tr:hover td { background:#f5f7fa; }
+  .sticky-left, .sticky-right { position:sticky; z-index:1; }
+  .sticky-left { left:0; }
+  .sticky-right { right:0; box-shadow:-1px 0 0 #ebeef5; }
+  thead .sticky-left, thead .sticky-right { z-index:2; background:#f6f7fa; }
+  .ops .btn.link + .btn.link { margin-left:12px; }
   .link { color:#409eff; cursor:pointer; background:none; border:0; padding:0; }
   .link:hover { text-decoration:underline; }
   .tag { display:inline-block; padding:0 8px; height:22px; line-height:20px; border-radius:4px; font-size:12px; border:1px solid transparent; }
@@ -56,7 +75,13 @@
   .tag.blue { background:#ecf5ff; color:#409eff; border-color:#d9ecff; }
   .tag.red { background:#fef0f0; color:#f56c6c; border-color:#fde2e2; }
   .tag.purple { background:#f4ecff; color:#7c4dff; border-color:#e6d8ff; }
-  .pager { padding:12px 16px; display:flex; justify-content:flex-end; color:#606266; gap:8px; align-items:center; }
+  .pager { margin-top:16px; display:flex; justify-content:flex-end; align-items:center; gap:8px; color:#606266; font-size:14px; }
+  .pager-btn { min-width:32px; height:32px; padding:0 4px; border:0; border-radius:2px; background:#f0f2f5; color:#606266; }
+  .pager-btn.active { background:#409eff; color:#fff; }
+  .pager-size, .pager-jump { height:32px; border:1px solid #dcdfe6; border-radius:4px; background:#fff; color:#606266; padding:0 8px; }
+  .pager-jump { width:48px; text-align:center; }
+  .head { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+  .head-title { font-size:16px; font-weight:600; color:#303133; }
   .drawer-mask, .modal-mask { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; display:none; }
   .drawer-mask.show, .modal-mask.show { display:block; }
   .modal-mask { z-index:1200; display:none; align-items:center; justify-content:center; }
@@ -120,18 +145,36 @@
 <body>
 <div class="layout">
   <aside class="sidebar">
-    <div class="logo-bar"><span class="logo-icon">质</span>AI质培中台</div>
-    <div class="menu-title">在线学习</div>
-    <div class="menu-item active" data-nav="course">课程管理</div>
-    <div class="menu-item" data-nav="homework">作业管理</div>
-    <div class="menu-item disabled">学习项目</div>
-    <div class="menu-item disabled">课程中心</div>
-    <div class="menu-item" data-nav="learn">我的学习</div>
+    <div class="logo"><span class="logo-icon">质</span><span class="logo-title">AI质培中台</span></div>
+    <div class="menu">
+      <div class="menu-group">
+        <div class="menu-sub"><svg class="menu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z"/></svg><span>工作台</span><i class="menu-arrow"></i></div>
+      </div>
+      <div class="menu-group open" id="menu-learn">
+        <div class="menu-sub" id="toggle-learn"><svg class="menu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 5.5A2.5 2.5 0 0 1 6.5 8H20"/></svg><span>在线学习</span><i class="menu-arrow"></i></div>
+        <div class="menu-children">
+          <div class="menu-item active" data-nav="course">课程管理</div>
+          <div class="menu-item" data-nav="homework">作业管理</div>
+          <div class="menu-item">学习项目</div>
+          <div class="menu-item">课程中心</div>
+          <div class="menu-item" data-nav="learn">我的学习</div>
+        </div>
+      </div>
+      <div class="menu-group">
+        <div class="menu-sub"><svg class="menu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z"/></svg><span>在线考试</span><i class="menu-arrow"></i></div>
+      </div>
+      <div class="menu-group">
+        <div class="menu-sub"><svg class="menu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9c.3.7.9 1.2 1.6 1.3H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>系统管理</span><i class="menu-arrow"></i></div>
+      </div>
+    </div>
   </aside>
   <div class="main">
     <header class="header">
-      <div class="breadcrumb" id="crumb"></div>
-      <div class="user-info"><span style="color:#909399">培训管理员</span><span class="avatar">李</span>李营平</div>
+      <div class="header-left">
+        <svg class="fold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h10M4 18h16"/></svg>
+        <div class="breadcrumb" id="crumb"></div>
+      </div>
+      <div class="user-info"><span class="avatar">李</span><span>李营平</span><svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
     </header>
     <div class="content" id="app"></div>
   </div>
@@ -163,13 +206,37 @@ const courses = [
   {
     id: 1,
     name: "新人产品通关课",
-    category: "产品知识",
+    category: "产品知识，新人培训",
+    isPublic: true,
     status: "已发布",
+    referenceCount: 2,
+    completedCount: 18,
+    learnerCount: 46,
+    updater: "王敏",
+    updatedAt: "2026-10-14 16:28",
+    refs: [
+      { name: "新人培养计划", time: "2026-09-01 ~ 2026-10-31", status: "进行中" },
+      { name: "Q3专项提升", time: "2026-07-01 ~ 2026-09-30", status: "已结束" }
+    ],
     coursewares: [
       { uid: 1, name: "开场话术演示", type: "video", duration: 750, standard: "1", watched: 0, position: 0, docPage: 1, docDone: false },
       { uid: 2, name: "异议处理手册", type: "doc", duration: 0, pages: 3, standard: "", watched: 0, position: 0, docPage: 1, docDone: false },
       { uid: 3, name: "成交案例复盘", type: "video", duration: 480, standard: "3", watched: 0, position: 0, docPage: 1, docDone: false }
     ]
+  },
+  {
+    id: 2,
+    name: "异议处理进阶",
+    category: "销售技巧",
+    isPublic: false,
+    status: "草稿",
+    referenceCount: 0,
+    completedCount: 0,
+    learnerCount: 0,
+    updater: "李营平",
+    updatedAt: "2026-10-15 09:40",
+    refs: [],
+    coursewares: []
   }
 ];
 let uidSeq = 10;
@@ -244,9 +311,18 @@ function fmt(sec) {
 }
 function fmtDur(sec) {
   if (!sec) return "—";
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  return s ? m + "分" + s + "秒" : m + "分钟";
+  return formatDuration(sec);
+}
+function formatDuration(seconds) {
+  const s = Math.max(0, Math.floor(seconds || 0));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const parts = [];
+  if (h) parts.push(h + "小时");
+  if (m) parts.push(m + "分");
+  if (sec || !parts.length) parts.push(sec + "秒");
+  return parts.join("");
 }
 function nowStamp() {
   const d = new Date();
@@ -301,8 +377,7 @@ document.getElementById("mask").onclick = closeDrawer;
 
 function setCrumb(parts) {
   document.getElementById("crumb").innerHTML = parts.map((p, i) => {
-    const sep = i ? '<span>/</span>' : "";
-    if (p.nav) return sep + '<button data-nav="' + p.nav + '">' + esc(p.text) + "</button>";
+    const sep = i ? '<span class="sep">/</span>' : "";
     return sep + '<span class="' + (i === parts.length - 1 ? "curr" : "") + '">' + esc(p.text) + "</span>";
   }).join("");
 }
@@ -318,40 +393,169 @@ function render() {
   else if (view === "hw-detail") renderDetail();
 }
 
+function courseStatusTag(status) {
+  const cls = status === "已发布" ? "green" : status === "已下架" ? "red" : "gray";
+  return `<span class="tag ${cls}">${esc(status)}</span>`;
+}
+function courseOps(c) {
+  const ops = [];
+  if (c.status !== "已下架") ops.push(`<button class="btn link" data-edit-course="${c.id}">编辑</button>`);
+  if (c.status !== "已发布") ops.push(`<button class="btn link" data-course-act="publish" data-id="${c.id}">${c.status === "已下架" ? "重新发布" : "发布"}</button>`);
+  else if (!c.referenceCount) ops.push(`<button class="btn link" data-course-act="offline" data-id="${c.id}">下架</button>`);
+  if (c.status === "草稿") ops.push(`<button class="btn link danger" data-course-act="del" data-id="${c.id}">删除</button>`);
+  return ops.join("");
+}
 function renderCourse() {
   setCrumb([{ text: "在线学习" }, { text: "课程管理" }]);
   document.getElementById("app").innerHTML = `
     <div class="card">
-      <div class="filter-panel">
-        <input class="input" placeholder="课程名称" style="width:180px">
-        <select><option>分类</option><option>产品知识</option></select>
-        <select><option>状态</option><option>已发布</option><option>草稿</option><option>已下架</option></select>
-        <select><option>公开属性</option><option>公开课</option><option>非公开</option></select>
-        <button class="btn primary" id="course-query">查询</button>
-        <button class="btn" id="course-reset">重置</button>
-        <div class="spacer"><button class="btn primary" id="add-course">新增课程</button></div>
+      <div class="filter-form">
+        <div class="fi"><input class="input" placeholder="课程名称" style="width:200px"></div>
+        <div class="fi"><select style="width:150px"><option>分类</option><option>全部分类</option><option>产品知识</option><option>新人培训</option><option>销售技巧</option></select></div>
+        <div class="fi"><select style="width:130px"><option>状态</option><option>草稿</option><option>已发布</option><option>已下架</option></select></div>
+        <div class="fi"><select style="width:130px"><option>公开属性</option><option>公开课</option><option>非公开</option></select></div>
+        <div class="fi"><button class="btn primary" id="course-query">查询</button><button class="btn" id="course-reset">重置</button></div>
+        <div class="fi right"><button class="btn primary" id="add-course">新增课程</button><button class="btn" id="course-category">分类管理</button></div>
       </div>
-      <table>
-        <thead><tr><th>课程名称</th><th>课程分类</th><th>课件数</th><th>课程时长</th><th>课程状态</th><th>操作</th></tr></thead>
-        <tbody>
-          ${courses.map(c => `<tr>
-            <td>${esc(c.name)}</td>
-            <td>${esc(c.category)}</td>
-            <td>${c.coursewares.length}</td>
-            <td>${fmtDur(videoTotal(c.coursewares))}</td>
-            <td><span class="tag green">${esc(c.status)}</span></td>
-            <td><button class="btn link" data-edit-course="${c.id}">编辑</button></td>
-          </tr>`).join("")}
-        </tbody>
-      </table>
-      <div class="pager">共 ${courses.length} 条</div>
+      <div class="table-scroll">
+        <table class="course-table">
+          <thead><tr>
+            <th class="sticky-left" style="min-width:180px">课程名称</th>
+            <th style="min-width:120px">课程分类</th>
+            <th style="width:90px">课件数</th>
+            <th style="width:120px">课程时长</th>
+            <th style="width:100px">公开属性</th>
+            <th style="width:90px">课程状态</th>
+            <th style="width:110px">被项目引用</th>
+            <th style="width:100px">完成/报名</th>
+            <th style="width:90px">更新人</th>
+            <th style="width:170px">更新时间</th>
+            <th class="sticky-right" style="width:160px">操作</th>
+          </tr></thead>
+          <tbody>
+            ${courses.map(c => {
+              const docOnly = c.coursewares.length > 0 && c.coursewares.every(w => w.type === "doc");
+              return `<tr>
+                <td class="sticky-left"><button class="link" data-course-name="${c.id}">${esc(c.name)}</button></td>
+                <td>${esc(c.category || "-")}</td>
+                <td>${c.coursewares.length}</td>
+                <td>${docOnly ? "文档课件" : formatDuration(videoTotal(c.coursewares))}</td>
+                <td><span class="tag ${c.isPublic ? "blue" : "gray"}">${c.isPublic ? "公开课" : "非公开"}</span></td>
+                <td>${courseStatusTag(c.status)}</td>
+                <td>${c.referenceCount ? `<button class="link" data-course-ref="${c.id}">${c.referenceCount} 个项目</button>` : "0"}</td>
+                <td>${c.learnerCount ? `<button class="link" data-course-learners="${c.id}">${c.completedCount}/${c.learnerCount}</button>` : "0/0"}</td>
+                <td>${esc(c.updater || "-")}</td>
+                <td>${esc(c.updatedAt || "-")}</td>
+                <td class="sticky-right ops">${courseOps(c)}</td>
+              </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <span>共 ${courses.length} 条</span>
+        <select class="pager-size"><option>10条/页</option><option selected>20条/页</option><option>50条/页</option><option>100条/页</option></select>
+        <button class="pager-btn" disabled>‹</button>
+        <button class="pager-btn active">1</button>
+        <button class="pager-btn" disabled>›</button>
+        <span>前往</span>
+        <input class="pager-jump" value="1">
+        <span>页</span>
+      </div>
     </div>`;
   document.getElementById("add-course").onclick = () => openCourseEditor(null);
+  document.getElementById("course-category").onclick = () => toast("分类管理沿用现有抽屉");
   document.getElementById("course-query").onclick = () => toast("已按当前条件查询");
   document.getElementById("course-reset").onclick = () => toast("已重置筛选");
   document.getElementById("app").querySelectorAll("[data-edit-course]").forEach(btn => {
     btn.onclick = () => openCourseEditor(Number(btn.dataset.editCourse));
   });
+  document.getElementById("app").querySelectorAll("[data-course-name]").forEach(btn => {
+    btn.onclick = () => openCourseDetail(Number(btn.dataset.courseName));
+  });
+  document.getElementById("app").querySelectorAll("[data-course-ref]").forEach(btn => {
+    btn.onclick = () => openCourseRef(Number(btn.dataset.courseRef));
+  });
+  document.getElementById("app").querySelectorAll("[data-course-learners]").forEach(btn => {
+    btn.onclick = () => openCourseLearners(Number(btn.dataset.courseLearners));
+  });
+  document.getElementById("app").querySelectorAll("[data-course-act]").forEach(btn => {
+    btn.onclick = () => onCourseAction(Number(btn.dataset.id), btn.dataset.courseAct);
+  });
+}
+function openCourseDetail(id) {
+  const c = courses.find(x => x.id === id);
+  openDrawer(c.name, `
+    <div class="form-row"><div class="form-label">课程名称</div><div class="form-ctrl" style="line-height:32px">${esc(c.name)}</div></div>
+    <div class="form-row"><div class="form-label">课程分类</div><div class="form-ctrl" style="line-height:32px">${esc(c.category || "-")}</div></div>
+    <div class="form-row"><div class="form-label">公开属性</div><div class="form-ctrl" style="line-height:32px">${c.isPublic ? "公开课" : "非公开"}</div></div>
+    <div class="form-row"><div class="form-label">课程状态</div><div class="form-ctrl" style="line-height:32px">${esc(c.status)}</div></div>
+    <div class="section-title">课程课件（${c.coursewares.length}）</div>
+    <table>
+      <thead><tr><th>序号</th><th>课件名称</th><th>类型</th><th>时长</th><th>完成标准</th></tr></thead>
+      <tbody>${c.coursewares.map((w, i) => `<tr>
+        <td>${i + 1}</td><td>${esc(w.name)}</td>
+        <td><span class="tag ${w.type === "video" ? "blue" : "orange"}">${w.type === "video" ? "视频" : "文档"}</span></td>
+        <td>${w.type === "video" ? formatDuration(w.duration) : "—"}</td>
+        <td>${w.type === "video" ? esc(w.standard || "—") + " 分钟" : "看完全部文件"}</td>
+      </tr>`).join("") || `<tr><td colspan="5" class="empty">暂无课件</td></tr>`}</tbody>
+    </table>
+  `, `<button class="btn" id="detail-close">关闭</button>`);
+  document.getElementById("detail-close").onclick = closeDrawer;
+}
+function openCourseRef(id) {
+  const c = courses.find(x => x.id === id);
+  openDrawer("被项目引用 — 《" + c.name + "》", `
+    <table>
+      <thead><tr><th>项目名称</th><th>项目时间</th><th>项目状态</th><th>操作</th></tr></thead>
+      <tbody>${(c.refs || []).map(r => `<tr>
+        <td>${esc(r.name)}</td><td>${esc(r.time)}</td>
+        <td><span class="tag ${r.status === "进行中" ? "blue" : "gray"}">${esc(r.status)}</span></td>
+        <td><button class="btn link" disabled>查看</button></td>
+      </tr>`).join("")}</tbody>
+    </table>
+    <p class="help">被项目引用的课程不能下架；如需下架，请先在对应项目中移除该课程。</p>
+  `, "", "narrow");
+}
+function openCourseLearners(id) {
+  const c = courses.find(x => x.id === id);
+  openDrawer("报名人员进度 — 《" + c.name + "》", `
+    <table>
+      <thead><tr><th>姓名</th><th>部门</th><th>学习进度</th><th>状态</th><th>完成时间</th></tr></thead>
+      <tbody>
+        <tr><td>张伟</td><td>华东一部</td><td>100%</td><td><span class="tag green">已完成</span></td><td>2026-10-12 11:20</td></tr>
+        <tr><td>陈静</td><td>华东一部</td><td>46%</td><td><span class="tag blue">学习中</span></td><td>—</td></tr>
+      </tbody>
+    </table>
+  `, "", "narrow");
+}
+async function onCourseAction(id, act) {
+  const c = courses.find(x => x.id === id);
+  if (!c) return;
+  if (act === "publish") {
+    if (!c.coursewares.length) return toast("发布前请至少添加一个课件", "warn");
+    const ok = await ask("确认" + (c.status === "已下架" ? "重新发布" : "发布") + "课程「" + c.name + "」？");
+    if (!ok) return;
+    c.status = "已发布";
+    toast("发布成功", "ok");
+    render();
+    return;
+  }
+  if (act === "offline") {
+    const ok = await ask("确认下架课程「" + c.name + "」？");
+    if (!ok) return;
+    c.status = "已下架";
+    toast("下架成功", "ok");
+    render();
+    return;
+  }
+  if (act === "del") {
+    const ok = await ask("确认删除草稿课程「" + c.name + "」？");
+    if (!ok) return;
+    courses.splice(courses.findIndex(x => x.id === id), 1);
+    toast("删除成功", "ok");
+    render();
+  }
 }
 
 function cloneCoursewares(list) {
@@ -496,7 +700,20 @@ function saveCourse(publish) {
     const active = src.coursewares.find(w => w.uid === activeCwUid);
     if (!active && src.coursewares[0]) activeCwUid = src.coursewares[0].uid;
   } else if (editingCourse.name) {
-    courses.push({ ...editingCourse, id: ++uidSeq, status: publish ? "已发布" : "草稿", coursewares: editingCourse.coursewares.map(w => ({ ...w })) });
+    const n = nowStamp();
+    courses.push({
+      ...editingCourse,
+      id: ++uidSeq,
+      status: publish ? "已发布" : "草稿",
+      isPublic: true,
+      referenceCount: 0,
+      completedCount: 0,
+      learnerCount: 0,
+      updater: CURRENT_USER,
+      updatedAt: n.text,
+      refs: [],
+      coursewares: editingCourse.coursewares.map(w => ({ ...w }))
+    });
   }
   closeDrawer();
   toast(publish ? "已保存" : "已保存草稿", "ok");
@@ -912,12 +1129,15 @@ function gradeTag(grade) {
 function renderDetail() {
   const h = homeworks.find(x => x.id === detailHwId);
   if (!h) { view = "homework"; render(); return; }
-  setCrumb([{ text: "在线学习" }, { text: "作业管理", nav: "homework" }, { text: "作业明细" }]);
+  setCrumb([{ text: "在线学习" }, { text: "作业管理" }, { text: "作业明细" }]);
   const rows = detailRecords();
   document.getElementById("app").innerHTML = `
+    <div class="head">
+      <button class="btn" id="back-hw">‹ 返回</button>
+      <span class="head-title">作业明细 — ${esc(h.name)}</span>
+    </div>
     <div class="card">
       <div class="filter-panel">
-        <strong style="margin-right:8px">${esc(h.name)}</strong>
         <input class="input" id="d-name" placeholder="姓名" style="width:140px" value="${esc(detailFilter.name)}">
         <select id="d-status">
           <option value="">完成状态</option>
@@ -948,6 +1168,7 @@ function renderDetail() {
       </table>
       <div class="pager">共 ${rows.length} 条</div>
     </div>`;
+  document.getElementById("back-hw").onclick = () => { view = "homework"; render(); };
   document.getElementById("d-query").onclick = () => {
     detailFilter.name = document.getElementById("d-name").value;
     detailFilter.status = document.getElementById("d-status").value;
@@ -1014,6 +1235,9 @@ function exportDetail() {
   toast("已导出当前筛选结果", "ok");
 }
 
+document.getElementById("toggle-learn").onclick = () => {
+  document.getElementById("menu-learn").classList.toggle("open");
+};
 document.body.addEventListener("click", e => {
   const nav = e.target.closest("[data-nav]");
   if (!nav) return;
