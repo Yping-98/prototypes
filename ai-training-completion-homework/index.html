@@ -82,6 +82,58 @@
   .pager-jump { width:48px; text-align:center; }
   .head { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
   .head-title { font-size:16px; font-weight:600; color:#303133; }
+  .stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:16px; }
+  .stat-card { background:#fff; border:1px solid #ebeef5; border-radius:4px; padding:16px 20px; }
+  .stat-num { font-size:26px; font-weight:600; color:#303133; }
+  .stat-num.blue { color:#409eff; }
+  .stat-num.green { color:#67c23a; }
+  .stat-label { margin-top:4px; color:#909399; }
+  .progress { display:flex; align-items:center; gap:8px; min-width:120px; }
+  .progress-track { flex:1; height:8px; background:#ebeef5; border-radius:100px; overflow:hidden; }
+  .progress.thick .progress-track { height:10px; }
+  .progress-bar { height:100%; background:#409eff; border-radius:100px; }
+  .progress-text { min-width:42px; font-size:12px; color:#606266; white-space:nowrap; }
+  .date-range { height:32px; display:inline-flex; align-items:center; gap:8px; padding:0 11px; border:1px solid #dcdfe6; border-radius:4px; background:#fff; color:#a8abb2; }
+  .mine-stat { display:flex; gap:16px; margin-bottom:8px; }
+  .mine-stat .item { flex:1; padding:16px 20px; background:#fff; border:1px solid #ebeef5; border-radius:8px; }
+  .mine-stat span { display:block; font-size:13px; color:#909399; }
+  .mine-stat b { display:block; margin-top:8px; font-size:24px; font-weight:600; color:#303133; }
+  .subtabs { display:flex; border-bottom:1px solid #e4e7ed; margin:4px 0 12px; }
+  .subtabs button { height:40px; padding:0 20px; border:0; background:none; color:#303133; cursor:pointer; }
+  .subtabs button.active { color:#409eff; box-shadow:inset 0 -2px 0 #409eff; }
+  .icon-btn { width:24px; height:24px; border-radius:50%; border:1px solid #dcdfe6; background:#fff; color:#606266; cursor:pointer; }
+  .icon-btn:disabled { color:#c0c4cc; cursor:not-allowed; }
+  .learn-page { display:flex; flex-direction:column; gap:6px; }
+  .learn-bar { display:flex; align-items:center; gap:12px; }
+  .learn-title { font-size:16px; font-weight:600; }
+  .learn-count { font-size:13px; color:#909399; }
+  .alert { margin-top:6px; padding:8px 12px; background:#ecf5ff; color:#409eff; border-radius:4px; font-size:13px; }
+  .stage-row { display:flex; gap:10px; min-height:420px; }
+  .stage-main { flex:3; min-width:0; padding:16px; background:#fff; border:1px solid #ebeef5; border-radius:8px; }
+  .stage-now { margin-bottom:12px; font-weight:600; }
+  .stage-list { flex:1; min-width:260px; max-width:340px; padding:16px; background:#fff; border:1px solid #ebeef5; border-radius:8px; display:flex; flex-direction:column; }
+  .stage-list-title { font-weight:600; margin-bottom:10px; }
+  .course-head, .cw { display:flex; align-items:center; gap:8px; padding:10px; border-radius:6px; cursor:pointer; }
+  .course-head:hover, .cw:hover { background:#f5f7fa; }
+  .cw.active, .course-head.active { background:#ecf5ff; }
+  .course-head.locked, .cw.locked { color:#c0c4cc; cursor:not-allowed; }
+  .course-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cw-sub { margin-top:2px; font-size:12px; color:#909399; }
+  .course-cws { padding-left:14px; }
+  .stage-tip { margin-top:8px; font-size:12px; color:#909399; }
+  .pass-line { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .time-line { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .tabs { display:flex; gap:0; border-bottom:1px solid #e4e7ed; margin-bottom:16px; }
+  .tabs button { height:40px; padding:0 16px; border:0; background:none; color:#303133; cursor:pointer; border-bottom:2px solid transparent; }
+  .tabs button.active { color:#409eff; border-bottom-color:#409eff; }
+  .q-box { border:1px solid #ebeef5; border-radius:4px; padding:12px; margin-bottom:12px; background:#fff; }
+  .thumb-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .thumb { width:72px; height:72px; object-fit:cover; border:1px solid #ebeef5; border-radius:4px; }
+  .thumb-wrap { position:relative; }
+  .thumb-wrap button { position:absolute; top:-6px; right:-6px; width:18px; height:18px; border:0; border-radius:50%; background:#f56c6c; color:#fff; cursor:pointer; }
+  .catalog-item { padding:12px; border-bottom:1px solid #ebeef5; cursor:pointer; }
+  .catalog-item.active { background:#ecf5ff; }
+  .catalog-item.locked { color:#c0c4cc; cursor:not-allowed; }
   .drawer-mask, .modal-mask { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; display:none; }
   .drawer-mask.show, .modal-mask.show { display:block; }
   .modal-mask { z-index:1200; display:none; align-items:center; justify-content:center; }
@@ -90,6 +142,7 @@
   .drawer.show { display:flex; }
   .drawer.narrow { width:640px; }
   .drawer.score { width:720px; }
+  .drawer.wide { width:900px; }
   .drawer-hd, .drawer-ft { height:56px; padding:0 20px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
   .drawer-hd { border-bottom:1px solid #ebeef5; font-size:16px; font-weight:600; }
   .drawer-ft { border-top:1px solid #ebeef5; justify-content:flex-end; gap:8px; }
@@ -155,13 +208,16 @@
         <div class="menu-children">
           <div class="menu-item active" data-nav="course">课程管理</div>
           <div class="menu-item" data-nav="homework">作业管理</div>
-          <div class="menu-item">学习项目</div>
+          <div class="menu-item" data-nav="project">学习项目</div>
           <div class="menu-item">课程中心</div>
           <div class="menu-item" data-nav="learn">我的学习</div>
         </div>
       </div>
-      <div class="menu-group">
-        <div class="menu-sub"><svg class="menu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z"/></svg><span>在线考试</span><i class="menu-arrow"></i></div>
+      <div class="menu-group" id="menu-exam">
+        <div class="menu-sub" id="toggle-exam"><svg class="menu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z"/></svg><span>在线考试</span><i class="menu-arrow"></i></div>
+        <div class="menu-children">
+          <div class="menu-item" data-nav="exam">考试管理</div>
+        </div>
       </div>
       <div class="menu-group">
         <div class="menu-sub"><svg class="menu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9c.3.7.9 1.2 1.6 1.3H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>系统管理</span><i class="menu-arrow"></i></div>
@@ -284,6 +340,42 @@ const homeworks = [
   }
 ];
 let hwSeq = 10;
+const project = {
+  name: "新人30天成长营",
+  range: "2026-10-01 至 2026-10-31",
+  description: "新人产品与作业通关",
+  status: "进行中",
+  startAt: "2026-10-01",
+  endAt: "2026-10-31",
+  learnerCount: 46,
+  completedCount: 18,
+  updater: "王敏",
+  updatedAt: "2026-10-14",
+  pointRule: "课程制",
+  projectPoints: "",
+  order: "按课程顺序",
+  items: [
+    { uid: 1, kind: "course", name: "开场话术演示", points: "10", done: true, granted: false },
+    { uid: 2, kind: "homework", name: "新人首周作业", hwId: 1, done: false, answers: [] },
+    { uid: 3, kind: "course", name: "成交案例复盘", points: "20", done: false, granted: false }
+  ]
+};
+let itemSeq = 10;
+let editProject = null;
+let editProjectIndex = -1;
+let projTab = "info";
+let activeItemUid = 2;
+const exams = [{
+  id: 1, name: "新人结业考试", points: "", status: "未开始", description: "完成全部课程后参加",
+  paperName: "新人结业试卷", paperScore: 100, passScore: 60,
+  startAt: "2026-10-20 09:00:00", endAt: "2026-10-31 18:00:00",
+  durationMinutes: 60, memberCount: 46, attendedCount: 0
+}];
+let learnTab = "course";
+let learnCourseTab = "";
+let learnProjectTab = "";
+let expandedItemUid = 2;
+const projects = [project];
 let hwFilter = { name: "", status: "" };
 let detailHwId = null;
 let detailFilter = { name: "", status: "", project: "" };
@@ -383,14 +475,18 @@ function setCrumb(parts) {
 }
 
 function render() {
+  const nav = view === "player" || view === "proj-learn" ? "learn" : view === "hw-detail" ? "homework" : view;
   document.querySelectorAll(".menu-item[data-nav]").forEach(el => {
-    el.classList.toggle("active", el.dataset.nav === (view === "player" ? "learn" : view === "hw-detail" ? "homework" : view));
+    el.classList.toggle("active", el.dataset.nav === nav);
   });
   if (view === "course") renderCourse();
   else if (view === "learn") renderLearn();
   else if (view === "player") renderPlayer();
   else if (view === "homework") renderHomework();
   else if (view === "hw-detail") renderDetail();
+  else if (view === "project") renderProject();
+  else if (view === "proj-learn") renderProjLearn();
+  else if (view === "exam") renderExam();
 }
 
 function courseStatusTag(status) {
@@ -404,6 +500,30 @@ function courseOps(c) {
   else if (!c.referenceCount) ops.push(`<button class="btn link" data-course-act="offline" data-id="${c.id}">下架</button>`);
   if (c.status === "草稿") ops.push(`<button class="btn link danger" data-course-act="del" data-id="${c.id}">删除</button>`);
   return ops.join("");
+}
+function pagerBar(total) {
+  return `<div class="pager">
+    <span>共 ${total} 条</span>
+    <select class="pager-size"><option>10条/页</option><option selected>20条/页</option><option>50条/页</option><option>100条/页</option></select>
+    <button class="pager-btn" disabled>‹</button>
+    <button class="pager-btn active">1</button>
+    <button class="pager-btn" disabled>›</button>
+    <span>前往</span>
+    <input class="pager-jump" value="1">
+    <span>页</span>
+  </div>`;
+}
+function progressHtml(percent, label, thick) {
+  const p = Math.max(0, Math.min(100, Number(percent) || 0));
+  return `<div class="progress${thick ? " thick" : ""}"><div class="progress-track"><div class="progress-bar" style="width:${p}%"></div></div><span class="progress-text">${label == null ? p + "%" : label}</span></div>`;
+}
+function tagOf(label) {
+  const map = { "草稿": "gray", "已结束": "gray", "未开始": "orange", "进行中": "blue", "学习中": "blue", "已完成": "green", "已发布": "green", "已下架": "red", "已上架": "green" };
+  return `<span class="tag ${map[label] || "gray"}">${esc(label)}</span>`;
+}
+function examTag(status) {
+  const map = { "草稿": "gray", "未开始": "orange", "进行中": "green", "已结束": "red" };
+  return `<span class="tag ${map[status] || "gray"}">${esc(status)}</span>`;
 }
 function renderCourse() {
   setCrumb([{ text: "在线学习" }, { text: "课程管理" }]);
@@ -724,19 +844,121 @@ function renderLearn() {
   stopPlay(false);
   setCrumb([{ text: "在线学习" }, { text: "我的学习" }]);
   const c = courses[0];
+  const courseSeconds = c.coursewares.reduce((s, w) => s + (w.duration || 0), 0);
+  const courseRows = [{
+    name: c.name,
+    categories: (c.category || "").split("，").filter(Boolean),
+    courseStatus: c.status,
+    docOnly: c.coursewares.length > 0 && c.coursewares.every(w => w.type === "doc"),
+    duration: courseSeconds,
+    progress: 46,
+    learningStatus: "学习中",
+    lastLearnAt: "2026-10-14 16:28:00"
+  }].filter(row => !learnCourseTab || (learnCourseTab === "learning" && row.learningStatus === "学习中") || (learnCourseTab === "completed" && row.learningStatus === "已完成") || (learnCourseTab === "offline" && row.courseStatus === "已下架"));
+  const courseCount = project.items.filter(it => it.kind === "course").length;
+  const doneCourses = project.items.filter(it => it.kind === "course" && it.done).length;
+  const projectRows = [{
+    name: project.name,
+    time: (project.startAt || "") + " ~ " + (project.endAt || ""),
+    courseCount,
+    status: project.status,
+    doneCourses,
+    learningStatus: "学习中",
+    lastLearnAt: "2026-10-14 16:28:00"
+  }].filter(row => !learnProjectTab || (learnProjectTab === "learning" && row.learningStatus === "学习中") || (learnProjectTab === "completed" && row.learningStatus === "已完成") || (learnProjectTab === "not_started" && row.learningStatus === "未开始") || (learnProjectTab === "expired" && row.learningStatus === "已过期"));
+  const courseTabs = [["", "全部"], ["learning", "学习中"], ["completed", "已完成"], ["offline", "已下架"]];
+  const projectTabs = [["", "全部"], ["not_started", "未开始"], ["learning", "学习中"], ["completed", "已完成"], ["expired", "已过期"]];
   document.getElementById("app").innerHTML = `
-    <div class="card" style="padding:16px">
-      <div class="section-title">继续学习</div>
-      <table>
-        <thead><tr><th>课程名称</th><th>课件</th><th>操作</th></tr></thead>
-        <tbody><tr>
-          <td>${esc(c.name)}</td>
-          <td>${c.coursewares.length} 个</td>
-          <td><button class="btn link" id="go-learn">继续学习</button></td>
-        </tr></tbody>
-      </table>
+    <div class="card">
+      <div class="tabs">
+        <button class="${learnTab === "course" ? "active" : ""}" data-ltab="course">我的课程</button>
+        <button class="${learnTab === "project" ? "active" : ""}" data-ltab="project">学习项目</button>
+      </div>
+      ${learnTab === "course" ? `
+        <div class="mine-stat">
+          <div class="item"><span>已报名课程</span><b>1</b></div>
+          <div class="item"><span>学习中</span><b class="stat-num blue">1</b></div>
+          <div class="item"><span>已完成</span><b class="stat-num green">0</b></div>
+          <div class="item"><span>累计学习时长</span><b>${formatDuration(courseSeconds)}</b></div>
+        </div>
+        <div class="subtabs">
+          ${courseTabs.map(([k, label]) => `<button class="${learnCourseTab === k ? "active" : ""}" data-csub="${k}">${label}</button>`).join("")}
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr>
+            <th class="sticky-left" style="min-width:160px">课程名称</th>
+            <th style="min-width:120px">课程分类</th>
+            <th style="width:90px">课程状态</th>
+            <th style="width:110px">课程时长</th>
+            <th style="width:160px">我的进度</th>
+            <th style="width:90px">学习状态</th>
+            <th style="width:180px">最近学习时间</th>
+            <th class="sticky-right" style="width:120px">操作</th>
+          </tr></thead>
+          <tbody>${courseRows.map(row => `<tr>
+            <td class="sticky-left">${esc(row.name)}</td>
+            <td>${row.categories.map(name => `<span class="tag gray" style="margin:0 4px 4px 0">${esc(name)}</span>`).join("")}</td>
+            <td>${tagOf(row.courseStatus)}</td>
+            <td>${row.docOnly ? "文档课件" : formatDuration(row.duration)}</td>
+            <td>${progressHtml(row.progress, null, true)}</td>
+            <td>${tagOf(row.learningStatus)}</td>
+            <td>${esc(row.lastLearnAt)}</td>
+            <td class="sticky-right"><button class="btn link" id="go-learn">继续学习</button></td>
+          </tr>`).join("") || `<tr><td colspan="8" class="empty">暂无数据</td></tr>`}
+          </tbody>
+        </table></div>
+      ` : `
+        <div class="mine-stat">
+          <div class="item"><span>学习中</span><b class="stat-num blue">1</b></div>
+          <div class="item"><span>已完成</span><b class="stat-num green">0</b></div>
+          <div class="item"><span>累计学习时长</span><b>${formatDuration(courseSeconds)}</b></div>
+        </div>
+        <div class="subtabs">
+          ${projectTabs.map(([k, label]) => `<button class="${learnProjectTab === k ? "active" : ""}" data-psub="${k}">${label}</button>`).join("")}
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr>
+            <th class="sticky-left" style="min-width:160px">项目名称</th>
+            <th style="width:200px">项目时间</th>
+            <th style="width:80px">课程数</th>
+            <th style="width:90px">项目状态</th>
+            <th style="width:180px">我的进度</th>
+            <th style="width:90px">学习状态</th>
+            <th style="width:180px">最近学习时间</th>
+            <th class="sticky-right" style="width:120px">操作</th>
+          </tr></thead>
+          <tbody>${projectRows.map(row => `<tr>
+            <td class="sticky-left">${esc(row.name)}</td>
+            <td>${esc(row.time)}</td>
+            <td>${row.courseCount}</td>
+            <td>${tagOf(row.status)}</td>
+            <td>${progressHtml(row.courseCount ? Math.round(row.doneCourses / row.courseCount * 100) : 0, row.doneCourses + "/" + row.courseCount, true)}</td>
+            <td>${tagOf(row.learningStatus)}</td>
+            <td>${esc(row.lastLearnAt)}</td>
+            <td class="sticky-right"><button class="btn link" id="go-project">继续学习</button></td>
+          </tr>`).join("") || `<tr><td colspan="8" class="empty">暂无数据</td></tr>`}
+          </tbody>
+        </table></div>
+      `}
     </div>`;
-  document.getElementById("go-learn").onclick = () => {
+  document.querySelectorAll("[data-ltab]").forEach(btn => {
+    btn.onclick = () => { learnTab = btn.dataset.ltab; render(); };
+  });
+  document.querySelectorAll("[data-csub]").forEach(btn => {
+    btn.onclick = () => { learnCourseTab = btn.dataset.csub; render(); };
+  });
+  document.querySelectorAll("[data-psub]").forEach(btn => {
+    btn.onclick = () => { learnProjectTab = btn.dataset.psub; render(); };
+  });
+  const goProject = document.getElementById("go-project");
+  if (goProject) goProject.onclick = () => {
+    activeItemUid = project.items.find(it => !isItemLocked(it) && !it.done)?.uid || project.items[0].uid;
+    expandedItemUid = activeItemUid;
+    view = "proj-learn";
+    render();
+  };
+  const goLearn = document.getElementById("go-learn");
+  if (goLearn) goLearn.onclick = () => {
     const first = c.coursewares.find(w => w.type === "video") || c.coursewares[0];
     activeCwUid = first.uid;
     view = "player";
@@ -1235,8 +1457,556 @@ function exportDetail() {
   toast("已导出当前筛选结果", "ok");
 }
 
+function sanitizePositive(value) {
+  let v = String(value || "").replace(/[^\d.]/g, "");
+  const dot = v.indexOf(".");
+  if (dot >= 0) v = v.slice(0, dot + 1) + v.slice(dot + 1).replace(/\./g, "");
+  return v;
+}
+function isPositive(value) {
+  return /^\d+(\.\d+)?$/.test(String(value)) && Number(value) > 0;
+}
+function isItemLocked(item) {
+  if (project.order !== "按课程顺序") return false;
+  const idx = project.items.findIndex(x => x.uid === item.uid);
+  return idx > 0 && !project.items[idx - 1].done;
+}
+function renderProject() {
+  setCrumb([{ text: "在线学习" }, { text: "学习项目" }]);
+  const ongoing = projects.filter(p => p.status === "进行中");
+  const rate = ongoing.length ? Math.round(ongoing.reduce((s, p) => s + (p.learnerCount ? p.completedCount / p.learnerCount : 0), 0) / ongoing.length * 100) : 0;
+  document.getElementById("app").innerHTML = `
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-num">${projects.length}</div><div class="stat-label">全部项目</div></div>
+      <div class="stat-card"><div class="stat-num blue">${ongoing.length}</div><div class="stat-label">进行中</div></div>
+      <div class="stat-card"><div class="stat-num green">${rate}%</div><div class="stat-label">整体完成率（进行中）</div></div>
+    </div>
+    <div class="card">
+      <div class="filter-form">
+        <div class="fi"><input class="input" id="proj-q-name" placeholder="输入项目名称关键词" style="width:200px"></div>
+        <div class="fi"><select id="proj-q-status" style="width:130px"><option value="">全部状态</option><option>草稿</option><option>未开始</option><option>进行中</option><option>已结束</option></select></div>
+        <div class="fi"><div class="date-range" style="width:360px"><span>开始日期</span><span style="color:#606266">至</span><span>结束日期</span></div></div>
+        <div class="fi"><button class="btn primary" id="proj-query">查询</button><button class="btn" id="proj-reset">重置</button></div>
+        <div class="fi right"><button class="btn primary" id="add-project">+ 新建项目</button></div>
+      </div>
+      <div class="table-scroll"><table>
+        <thead><tr>
+          <th class="sticky-left" style="min-width:180px">项目名称</th>
+          <th style="width:200px">项目时间</th>
+          <th style="width:80px;text-align:center">课程数</th>
+          <th style="width:90px;text-align:center">应学人数</th>
+          <th style="width:90px;text-align:center">完成人数</th>
+          <th style="width:150px">完成率</th>
+          <th style="width:90px">项目状态</th>
+          <th style="width:90px">更新人</th>
+          <th style="width:120px">更新时间</th>
+          <th class="sticky-right" style="width:170px">操作</th>
+        </tr></thead>
+        <tbody>${projects.map((p, i) => {
+          const pct = p.learnerCount ? Math.round((p.completedCount || 0) / p.learnerCount * 100) : 0;
+          const time = p.startAt && p.endAt ? p.startAt + " ~ " + p.endAt : (p.range || "—");
+          return `<tr>
+            <td class="sticky-left"><button class="link" data-project-name="${i}">${esc(p.name || "未命名项目")}</button></td>
+            <td>${esc(time)}</td>
+            <td style="text-align:center">${p.items.length}</td>
+            <td style="text-align:center">${p.learnerCount || 0}</td>
+            <td style="text-align:center">${p.completedCount || 0}</td>
+            <td>${p.learnerCount ? progressHtml(pct) : "—"}</td>
+            <td>${tagOf(p.status)}</td>
+            <td>${esc(p.updater || "—")}</td>
+            <td>${esc(p.updatedAt || "—")}</td>
+            <td class="sticky-right ops">
+              ${p.status !== "已结束" ? `<button class="btn link" data-edit-project="${i}">编辑</button>` : ""}
+              ${p.status === "草稿" ? `<button class="btn link" data-publish-project="${i}" style="color:#67c23a">发布</button><button class="btn link danger" data-del-project="${i}">删除</button>` : ""}
+            </td>
+          </tr>`;
+        }).join("")}</tbody>
+      </table></div>
+      ${pagerBar(projects.length)}
+    </div>`;
+  document.getElementById("add-project").onclick = () => openProjectEditor(false);
+  document.getElementById("proj-query").onclick = () => toast("已按当前条件查询");
+  document.getElementById("proj-reset").onclick = () => { document.getElementById("proj-q-name").value = ""; document.getElementById("proj-q-status").value = ""; toast("已重置筛选"); };
+  document.querySelectorAll("[data-edit-project]").forEach(btn => {
+    btn.onclick = () => openProjectEditor(true, Number(btn.dataset.editProject));
+  });
+  document.querySelectorAll("[data-project-name]").forEach(btn => {
+    btn.onclick = () => openProjectDetail(Number(btn.dataset.projectName));
+  });
+}
+function openProjectDetail(index) {
+  const p = projects[index];
+  const time = p.startAt && p.endAt ? p.startAt + " ~ " + p.endAt : (p.range || "—");
+  openDrawer("项目详情 — " + (p.name || "未命名"), `
+    <div class="help" style="margin-bottom:12px">仅供查看，如需修改请使用列表操作列的「编辑」</div>
+    <div class="section-title">基础信息</div>
+    <div class="form-row"><div class="form-label">项目名称</div><div class="form-ctrl" style="line-height:32px">${esc(p.name)}</div></div>
+    <div class="form-row"><div class="form-label">项目时间</div><div class="form-ctrl" style="line-height:32px">${esc(time)}</div></div>
+    <div class="form-row"><div class="form-label">项目状态</div><div class="form-ctrl" style="line-height:32px">${tagOf(p.status)}</div></div>
+    <div class="form-row"><div class="form-label">项目说明</div><div class="form-ctrl" style="line-height:32px">${esc(p.description || "暂无说明")}</div></div>
+    <div class="section-title">项目课程（${p.items.length}）</div>
+    <table>
+      <thead><tr><th style="width:60px;text-align:center">顺序</th><th>课程名称</th><th style="width:100px">课程状态</th><th style="width:100px;text-align:center">完成人数</th></tr></thead>
+      <tbody>${p.items.map((it, i) => `<tr>
+        <td style="text-align:center">${i + 1}</td>
+        <td>${esc(it.name)}</td>
+        <td>${it.kind === "homework" ? tagOf("已上架") : tagOf("已发布")}</td>
+        <td style="text-align:center">${it.kind === "course" ? (it.done ? "1" : "0") + "/" + (p.learnerCount || 0) : "—"}</td>
+      </tr>`).join("")}</tbody>
+    </table>
+  `, `<button class="btn" id="detail-close">关闭</button>`, "score");
+  document.getElementById("detail-close").onclick = closeDrawer;
+}
+function openProjectEditor(isEdit, index) {
+  editProject = isEdit ? JSON.parse(JSON.stringify(projects[index])) : null;
+  editProjectIndex = isEdit ? index : -1;
+  if (!isEdit) {
+    editProject = {
+      name: "",
+      range: "",
+      description: "",
+      pointRule: "",
+      projectPoints: "",
+      order: "",
+      status: "草稿",
+      items: []
+    };
+  }
+  projTab = "info";
+  drawProjectEditor(isEdit);
+}
+function drawProjectEditor(isEdit) {
+  const p = editProject;
+  const pointsField = p.pointRule === "项目制"
+    ? `<div class="form-row"><div class="form-label"><span class="req">*</span>项目总积分</div><div class="form-ctrl"><input class="input" id="proj-points" value="${esc(p.projectPoints)}" placeholder="请输入大于 0 的数字" style="width:220px"><div class="help">完成项目内全部课程后发放一次</div></div></div>`
+    : "";
+  openDrawer(isEdit ? "编辑项目 — " + (p.name || "未命名") : "新建学习项目", `
+    ${isEdit ? `<div class="tabs">
+      <button class="${projTab==="info"?"active":""}" data-ptab="info">基础信息</button>
+      <button class="${projTab==="course"?"active":""}" data-ptab="course">课程管理</button>
+      <button class="${projTab==="member"?"active":""}" data-ptab="member">人员管理</button>
+    </div>` : `<div class="section-title">基础信息</div>`}
+    ${projTab==="info" || !isEdit ? `
+      <div class="form-row"><div class="form-label"><span class="req">*</span>项目名称</div><div class="form-ctrl"><input class="input" id="proj-name" style="width:100%" maxlength="50" value="${esc(p.name)}" placeholder="如：新人 30 天成长营（9月批次）"></div></div>
+      <div class="form-row"><div class="form-label">项目时间</div><div class="form-ctrl"><input class="input" id="proj-range" style="width:280px" value="${esc(p.range)}"></div></div>
+      <div class="form-row"><div class="form-label">项目说明</div><div class="form-ctrl"><textarea class="input" id="proj-desc" rows="3" style="width:100%">${esc(p.description)}</textarea></div></div>
+      <div class="form-row"><div class="form-label">积分规则</div><div class="form-ctrl radios">
+        <label><input type="radio" name="point-rule" value="" ${p.pointRule===""?"checked":""}> 不设置</label>
+        <label><input type="radio" name="point-rule" value="项目制" ${p.pointRule==="项目制"?"checked":""}> 项目制</label>
+        <label><input type="radio" name="point-rule" value="课程制" ${p.pointRule==="课程制"?"checked":""}> 课程制</label>
+        <div class="help">非必填。不选择表示该项目没有积分。项目制需完成全部课程才发放；课程制完成一门课程即发放该课程积分。</div>
+      </div></div>
+      ${pointsField}
+      <div class="form-row"><div class="form-label"><span class="req">*</span>学习顺序</div><div class="form-ctrl radios">
+        <label><input type="radio" name="learn-order" value="按课程顺序" ${p.order==="按课程顺序"?"checked":""}> 按课程顺序</label>
+        <label><input type="radio" name="learn-order" value="自由选择" ${p.order==="自由选择"?"checked":""}> 自由选择</label>
+        <div class="help">按课程顺序时，完成上一项后才可学习下一项。自由选择时，课程和作业都可直接学习。</div>
+      </div></div>
+    ` : ""}
+    ${projTab==="course" || !isEdit ? `
+      ${!isEdit ? `<div class="section-title">项目课程</div>` : ""}
+      <div class="cw-bar">
+        <button class="btn primary" id="pick-course">+ 从课程池添加课程</button>
+        <button class="btn primary" id="pick-hw">从作业库中添加作业</button>
+        <span class="hint" style="margin-left:auto">学员端按此顺序展示，已选 ${p.items.length} / 20</span>
+      </div>
+      <div id="hw-pick"></div>
+      <div class="table-scroll"><table>
+        <thead><tr>
+          <th style="width:60px;text-align:center">顺序</th>
+          <th style="min-width:180px">课程名称</th>
+          <th style="width:90px">课程状态</th>
+          ${isEdit ? `<th style="width:80px;text-align:center">课件数</th>` : ""}
+          <th style="width:90px;text-align:center">完成人数</th>
+          ${p.pointRule==="课程制" ? `<th style="width:110px">课程积分</th>` : ""}
+          <th style="width:110px">排序</th>
+          <th style="width:80px">操作</th>
+        </tr></thead>
+        <tbody>
+          ${p.items.map((it, i) => `<tr>
+            <td style="text-align:center">${i + 1}</td>
+            <td>${esc(it.name)}${it.kind==="homework" ? ` <span class="tag orange">作业</span>` : ""}</td>
+            <td>${it.kind==="homework" ? tagOf("已上架") : tagOf("已发布")}</td>
+            ${isEdit ? `<td style="text-align:center">${it.kind==="homework" ? "—" : "3"}</td>` : ""}
+            <td style="text-align:center">${it.kind==="course" ? "0" : "—"}</td>
+            ${p.pointRule==="课程制" ? `<td>${it.kind==="course" ? `<input class="input short course-point" data-uid="${it.uid}" value="${esc(it.points)}" placeholder="积分">` : "提交即完成"}</td>` : ""}
+            <td>
+              <button class="icon-btn" data-move="${i}" data-dir="-1" ${i===0?"disabled":""} title="上移">↑</button>
+              <button class="icon-btn" data-move="${i}" data-dir="1" ${i===p.items.length-1?"disabled":""} title="下移">↓</button>
+            </td>
+            <td><button class="btn link danger" data-remove-item="${it.uid}">移除</button></td>
+          </tr>`).join("") || `<tr><td colspan="8" class="empty">暂未添加课程，请从课程池选择</td></tr>`}
+        </tbody>
+      </table></div>
+      ${p.pointRule==="课程制" ? `<p class="help">课程制下每门课程都要填写大于 0 的积分。作业提交即完成，不发放课程积分。</p>` : ""}
+      ${p.pointRule==="项目制" ? `<p class="help">项目制在全部课程完成后发放项目总积分。已完成的学员不因本次修改补发或改写积分。</p>` : ""}
+    ` : ""}
+    ${projTab==="member" && isEdit ? `
+      <div class="cw-bar">
+        <button class="btn primary">+ 添加人员</button>
+        <input class="input" placeholder="搜索姓名直接添加人员" style="width:260px;margin-left:12px">
+        <span class="hint" style="margin-left:auto">支持按人员或按组织批量选择</span>
+      </div>
+      <table>
+        <thead><tr><th style="width:100px">姓名</th><th>部门</th><th style="width:150px">项目进度</th><th style="width:90px">状态</th><th style="width:120px">开始时间</th><th style="width:120px">完成时间</th><th style="width:140px">操作</th></tr></thead>
+        <tbody>
+          <tr><td>张伟</td><td>华东一部</td><td>${progressHtml(100, "2/2")}</td><td>${tagOf("已完成")}</td><td>2026-10-02</td><td>2026-10-12</td><td><button class="btn link">查看详情</button><button class="btn link danger">移除</button></td></tr>
+          <tr><td>陈静</td><td>华东一部</td><td>${progressHtml(50, "1/2")}</td><td>${tagOf("学习中")}</td><td>2026-10-03</td><td>—</td><td><button class="btn link">查看详情</button><button class="btn link danger">移除</button></td></tr>
+        </tbody>
+      </table>
+    ` : ""}
+  `, isEdit
+    ? `<button class="btn" id="proj-cancel">取消</button><button class="btn primary" id="proj-save">保存全部修改</button>`
+    : `<button class="btn" id="proj-cancel">取消</button><button class="btn" id="proj-draft">保存草稿</button><button class="btn primary" id="proj-save">保存并发布</button>`, "wide");
+  bindProjectEditor(isEdit);
+}
+function readProjectBasics() {
+  const name = document.getElementById("proj-name");
+  if (name) editProject.name = name.value;
+  const range = document.getElementById("proj-range");
+  if (range) editProject.range = range.value;
+  const desc = document.getElementById("proj-desc");
+  if (desc) editProject.description = desc.value;
+  const rule = document.querySelector('input[name="point-rule"]:checked');
+  if (rule) editProject.pointRule = rule.value;
+  const order = document.querySelector('input[name="learn-order"]:checked');
+  if (order) editProject.order = order.value;
+  const pts = document.getElementById("proj-points");
+  if (pts) editProject.projectPoints = pts.value;
+  document.querySelectorAll(".course-point").forEach(input => {
+    const item = editProject.items.find(x => x.uid === Number(input.dataset.uid));
+    if (item) item.points = input.value;
+  });
+}
+function bindProjectEditor(isEdit) {
+  document.querySelectorAll("[data-ptab]").forEach(btn => {
+    btn.onclick = () => { readProjectBasics(); projTab = btn.dataset.ptab; drawProjectEditor(isEdit); };
+  });
+  document.querySelectorAll('input[name="point-rule"]').forEach(el => {
+    el.onchange = () => { readProjectBasics(); drawProjectEditor(isEdit); };
+  });
+  const pts = document.getElementById("proj-points");
+  if (pts) pts.oninput = () => { pts.value = sanitizePositive(pts.value); editProject.projectPoints = pts.value; };
+  document.querySelectorAll(".course-point").forEach(input => {
+    input.oninput = () => {
+      input.value = sanitizePositive(input.value);
+      const item = editProject.items.find(x => x.uid === Number(input.dataset.uid));
+      if (item) item.points = input.value;
+    };
+  });
+  const pickHw = document.getElementById("pick-hw");
+  if (pickHw) pickHw.onclick = () => toggleHomeworkPick(isEdit);
+  const pickCourse = document.getElementById("pick-course");
+  if (pickCourse) pickCourse.onclick = () => {
+    readProjectBasics();
+    if (editProject.items.length >= 20) return toast("项目课程不超过 20 门", "warn");
+    editProject.items.push({ uid: ++itemSeq, kind: "course", name: "异议处理手册", points: "", done: false, granted: false });
+    drawProjectEditor(isEdit);
+  };
+  document.querySelectorAll("[data-move]").forEach(btn => {
+    btn.onclick = () => {
+      if (btn.disabled) return;
+      readProjectBasics();
+      const i = Number(btn.dataset.move);
+      const j = i + Number(btn.dataset.dir);
+      const arr = editProject.items;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      drawProjectEditor(isEdit);
+    };
+  });
+  document.querySelectorAll("[data-remove-item]").forEach(btn => {
+    btn.onclick = () => {
+      readProjectBasics();
+      editProject.items = editProject.items.filter(x => x.uid !== Number(btn.dataset.removeItem));
+      drawProjectEditor(isEdit);
+    };
+  });
+  document.getElementById("proj-cancel").onclick = closeDrawer;
+  const save = document.getElementById("proj-save");
+  if (save) save.onclick = () => saveProject(isEdit);
+  const draft = document.getElementById("proj-draft");
+  if (draft) draft.onclick = () => saveProject(isEdit);
+}
+function toggleHomeworkPick(isEdit) {
+  const box = document.getElementById("hw-pick");
+  if (!box) return;
+  if (box.dataset.open === "1") { box.innerHTML = ""; box.dataset.open = ""; return; }
+  box.dataset.open = "1";
+  const list = homeworks.filter(h => h.status === "上架");
+  box.innerHTML = `<div class="inline-panel">
+    <div class="section-title">选择已上架作业</div>
+    ${list.map(h => `<label style="display:block;margin-bottom:8px"><input type="checkbox" class="hw-check" value="${h.id}"> ${esc(h.name)}（${h.questions.length} 题）</label>`).join("") || `<div class="empty">暂无上架作业</div>`}
+    <button class="btn primary" id="hw-pick-ok">确定</button>
+    <button class="btn" id="hw-pick-cancel">取消</button>
+  </div>`;
+  document.getElementById("hw-pick-cancel").onclick = () => { box.innerHTML = ""; box.dataset.open = ""; };
+  document.getElementById("hw-pick-ok").onclick = () => {
+    readProjectBasics();
+    const ids = [...document.querySelectorAll(".hw-check:checked")].map(el => Number(el.value));
+    for (const id of ids) {
+      const hw = homeworks.find(h => h.id === id);
+      if (editProject.items.some(it => it.kind === "homework" && it.hwId === id)) {
+        toast("该作业已添加", "warn");
+        continue;
+      }
+      if (editProject.items.length >= 20) { toast("项目课程不超过 20 门", "warn"); break; }
+      editProject.items.push({ uid: ++itemSeq, kind: "homework", name: hw.name, hwId: id, done: false, answers: [] });
+    }
+    drawProjectEditor(isEdit);
+  };
+}
+function saveProject(isEdit) {
+  readProjectBasics();
+  if (!editProject.name.trim()) return toast("请输入项目名称", "warn");
+  if (!editProject.order) return toast("请选择学习顺序", "warn");
+  if (editProject.pointRule === "项目制" && !isPositive(editProject.projectPoints)) return toast("请输入大于 0 的数字", "warn");
+  if (editProject.pointRule === "课程制" && editProject.items.some(it => it.kind === "course" && !isPositive(it.points))) {
+    return toast("请输入大于 0 的数字", "warn");
+  }
+  const saved = {
+    name: editProject.name.trim(),
+    range: editProject.range,
+    description: editProject.description,
+    status: editProject.status || "进行中",
+    pointRule: editProject.pointRule,
+    projectPoints: editProject.projectPoints,
+    order: editProject.order,
+    items: editProject.items
+  };
+  if (editProjectIndex >= 0) projects[editProjectIndex] = Object.assign(projects[editProjectIndex], saved);
+  else projects.push(saved);
+  closeDrawer();
+  toast(isEdit ? "已保存。已完成学员的积分不变，只对尚未完成的学员生效" : "已保存", "ok");
+  view = "project";
+  render();
+}
+function renderProjLearn() {
+  setCrumb([{ text: "在线学习" }, { text: "我的学习" }, { text: "项目学习" }]);
+  const item = project.items.find(x => x.uid === activeItemUid) || project.items[0];
+  const doneCount = project.items.filter(it => it.done).length;
+  document.getElementById("app").innerHTML = `
+    <div class="learn-page">
+      <div class="card" style="padding:8px 12px">
+        <div class="learn-bar">
+          <button class="btn" id="back-proj">‹ 返回</button>
+          <span class="learn-title">《${esc(project.name)}》</span>
+          ${tagOf("学习中")}
+          <span class="learn-count">已完成 ${doneCount}/${project.items.length} 个内容</span>
+        </div>
+        <div class="alert">项目说明：${esc(project.description || "暂无说明")}</div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-main" id="learn-main"></div>
+        <div class="stage-list">
+          <div class="stage-list-title">项目课程</div>
+          <div>
+            ${project.items.map(it => {
+              const locked = isItemLocked(it);
+              const open = expandedItemUid === it.uid;
+              const sub = locked ? "未解锁" : it.done ? "已完成" : "未开始";
+              return `<div class="course">
+                <div class="course-head ${locked ? "locked" : ""} ${it.uid === item.uid ? "active" : ""}" data-item="${it.uid}">
+                  <span>${locked ? "锁" : it.done ? "✓" : "▸"}</span>
+                  <span class="course-name">${esc(it.name)}</span>
+                  <span>${open ? "⌄" : "›"}</span>
+                </div>
+                ${open ? `<div class="course-cws"><div class="cw ${it.uid === item.uid ? "active" : ""} ${locked ? "locked" : ""}" data-item="${it.uid}">
+                  <span>${it.kind === "homework" ? "写" : "播"}</span>
+                  <div><div>${it.kind === "homework" ? "作业题目" : esc(it.name)}</div><div class="cw-sub">${it.kind === "homework" ? "作业" : "课件"} · ${sub}</div></div>
+                </div></div>` : ""}
+              </div>`;
+            }).join("")}
+          </div>
+          <div class="stage-tip">${project.order === "按课程顺序" ? "需按顺序学习，完成上一项后解锁下一项" : "可自由选择课程和作业"}</div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById("back-proj").onclick = () => { learnTab = "project"; view = "learn"; render(); };
+  document.querySelectorAll("[data-item]").forEach(el => {
+    el.onclick = () => {
+      const target = project.items.find(x => x.uid === Number(el.dataset.item));
+      if (isItemLocked(target)) return toast("请先完成前面的内容", "warn");
+      if (expandedItemUid === target.uid && el.classList.contains("course-head")) {
+        expandedItemUid = 0;
+      } else {
+        expandedItemUid = target.uid;
+        activeItemUid = target.uid;
+      }
+      render();
+    };
+  });
+  const main = document.getElementById("learn-main");
+  if (item.kind === "homework" && !isItemLocked(item)) renderHomeworkAnswer(main, item);
+  else main.innerHTML = `<div class="stage-now">${esc(item.name)}</div><div class="empty">${item.done ? "该课程已完成，不因之后新增或修改积分而补发。" : "当前为课程，学习过程沿用现有课程学习。完成该课程后，按当时的积分规则发放。"}</div>`;
+}
+function renderHomeworkAnswer(main, item) {
+  const hw = homeworks.find(h => h.id === item.hwId) || homeworks.find(h => h.name === item.name);
+  if (!hw) { main.innerHTML = `<p class="help">未找到作业</p>`; return; }
+  if (!item.answers || item.answers.length !== hw.questions.length) {
+    item.answers = hw.questions.map((_, i) => item.answers?.[i] || { text: "", images: [] });
+  }
+  const ready = item.answers.every(a => (a.text && a.text.trim()) || (a.images && a.images.length));
+  main.innerHTML = `
+    <div class="section-title">${esc(hw.name)}</div>
+    ${item.done ? `<p class="help">作业已提交，记为完成。</p>` : ""}
+    ${hw.questions.map((q, i) => `<div class="q-box">
+      <div class="q-hd"><b>题目 ${i + 1}</b><span class="tag blue">问答题</span></div>
+      <div style="margin-bottom:8px">${esc(q.title)}</div>
+      <textarea class="input ans-text" data-qi="${i}" rows="3" style="width:100%" placeholder="请输入回答" ${item.done?"disabled":""}>${esc(item.answers[i].text)}</textarea>
+      <div class="thumb-row" id="thumbs-${i}">
+        ${(item.answers[i].images || []).map((src, n) => `<div class="thumb-wrap"><img class="thumb" src="${src}" alt=""><button data-del-img="${i}" data-n="${n}" ${item.done?"disabled":""}>×</button></div>`).join("")}
+      </div>
+      <div style="margin-top:8px"><button class="btn" data-upload="${i}" ${item.done?"disabled":""}>上传图片</button><span class="hint">最多 3 张，也可只填写文字</span></div>
+    </div>`).join("")}
+    <button class="btn primary" id="submit-hw" ${ready && !item.done ? "" : "disabled"}>提交</button>`;
+  main.querySelectorAll(".ans-text").forEach(el => {
+    el.oninput = () => {
+      item.answers[Number(el.dataset.qi)].text = el.value;
+      const ready = item.answers.every(a => (a.text && a.text.trim()) || (a.images && a.images.length));
+      const submit = document.getElementById("submit-hw");
+      if (submit && !item.done) submit.disabled = !ready;
+    };
+  });
+  main.querySelectorAll("[data-upload]").forEach(btn => {
+    btn.onclick = () => {
+      const i = Number(btn.dataset.upload);
+      if (item.answers[i].images.length >= 3) return toast("最多上传 3 张图片", "warn");
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.onchange = () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        if (!file.type.startsWith("image/")) return toast("请上传图片", "warn");
+        const reader = new FileReader();
+        reader.onload = () => {
+          item.answers[i].images.push(reader.result);
+          renderProjLearn();
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    };
+  });
+  main.querySelectorAll("[data-del-img]").forEach(btn => {
+    btn.onclick = () => {
+      item.answers[Number(btn.dataset.delImg)].images.splice(Number(btn.dataset.n), 1);
+      renderProjLearn();
+    };
+  });
+  const submit = document.getElementById("submit-hw");
+  if (submit) submit.onclick = () => {
+    if (submit.disabled) return;
+    item.done = true;
+    const coursesDone = project.items.filter(x => x.kind === "course").every(x => x.done);
+    if (project.pointRule === "项目制" && coursesDone && isPositive(project.projectPoints)) {
+      toast("作业已提交。全部课程已完成，获得项目积分 " + project.projectPoints, "ok");
+    } else toast("作业已提交，记为完成", "ok");
+    renderProjLearn();
+  };
+}
+function examOps(ex) {
+  const editLabel = ex.status === "已结束" ? "重新上线" : "编辑";
+  const score = ex.status !== "草稿" && ex.status !== "未开始" ? `<button class="btn link">成绩</button>` : "";
+  const publish = ex.status === "草稿" ? `<button class="btn link" style="color:#67c23a">发布</button>` : "";
+  const withdraw = ex.status === "未开始" ? `<button class="btn link" style="color:#e6a23c">撤回</button>` : "";
+  const del = ex.status === "草稿" ? `<button class="btn link danger">删除</button>` : "";
+  return `${score}<button class="btn link" data-edit-exam="${ex.id}">${editLabel}</button>${publish}${withdraw}${del}`;
+}
+function renderExam() {
+  setCrumb([{ text: "在线考试" }, { text: "考试管理" }]);
+  document.getElementById("app").innerHTML = `
+    <div class="card">
+      <div class="filter-form">
+        <div class="fi"><input class="input" placeholder="考试名称关键词" style="width:190px"></div>
+        <div class="fi"><select style="width:120px"><option value="">状态</option><option>草稿</option><option>未开始</option><option>进行中</option><option>已结束</option></select></div>
+        <div class="fi"><div class="date-range" style="width:240px"><span>开始日期</span><span style="color:#606266">至</span><span>结束日期</span></div></div>
+        <div class="fi"><button class="btn primary" id="exam-query">查询</button><button class="btn" id="exam-reset">重置</button></div>
+        <div class="fi right"><button class="btn primary" id="add-exam">新建考试</button></div>
+      </div>
+      <div class="table-scroll"><table>
+        <thead><tr>
+          <th class="sticky-left" style="min-width:160px">考试名称</th>
+          <th style="min-width:140px">关联试卷</th>
+          <th style="width:200px">考试时间</th>
+          <th style="width:80px">时长</th>
+          <th style="width:70px;text-align:center">总分</th>
+          <th style="width:70px;text-align:center">合格分</th>
+          <th style="width:70px;text-align:center">应考</th>
+          <th style="width:70px;text-align:center">已考</th>
+          <th style="width:140px">参考率</th>
+          <th style="width:90px">积分</th>
+          <th style="width:90px">状态</th>
+          <th class="sticky-right" style="width:160px">操作</th>
+        </tr></thead>
+        <tbody>${exams.map(ex => `<tr>
+          <td class="sticky-left">${esc(ex.name)}</td>
+          <td>${esc(ex.paperName || "—")}</td>
+          <td>${ex.startAt ? esc(ex.startAt) + " ~ " + esc(ex.endAt) : "—"}</td>
+          <td>${ex.durationMinutes ? ex.durationMinutes + " 分钟" : "不限时"}</td>
+          <td style="text-align:center">${ex.paperScore || "—"}</td>
+          <td style="text-align:center">${ex.passScore || "—"}</td>
+          <td style="text-align:center">${ex.memberCount || 0}</td>
+          <td style="text-align:center">${ex.attendedCount || 0}</td>
+          <td>${progressHtml(ex.memberCount ? Math.round((ex.attendedCount || 0) / ex.memberCount * 100) : 0)}</td>
+          <td>${ex.points ? esc(ex.points) : "—"}</td>
+          <td>${examTag(ex.status)}</td>
+          <td class="sticky-right ops">${examOps(ex)}</td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+      ${pagerBar(exams.length)}
+    </div>`;
+  document.getElementById("add-exam").onclick = () => openExamEditor(null);
+  document.getElementById("exam-query").onclick = () => toast("已按当前条件查询");
+  document.getElementById("exam-reset").onclick = () => toast("已重置筛选");
+  document.querySelectorAll("[data-edit-exam]").forEach(btn => {
+    btn.onclick = () => openExamEditor(Number(btn.dataset.editExam));
+  });
+}
+function openExamEditor(id) {
+  const src = id ? exams.find(x => x.id === id) : { id: 0, name: "", points: "", description: "", status: "草稿", paperName: "", paperScore: 100, passScore: 60, startAt: "", endAt: "", durationMinutes: 60 };
+  openDrawer(id ? "编辑考试" : "新建考试", `
+    <div class="form-row"><div class="form-label" style="width:90px"><span class="req">*</span>考试名称</div><div class="form-ctrl"><input class="input" id="exam-name" style="width:100%" maxlength="50" value="${esc(src.name)}" placeholder="请输入考试名称"></div></div>
+    <div class="form-row"><div class="form-label" style="width:90px">考试说明</div><div class="form-ctrl"><textarea class="input" id="exam-desc" rows="2" maxlength="200" style="width:100%" placeholder="选填，不超过 200 字">${esc(src.description || "")}</textarea></div></div>
+    <div class="form-row"><div class="form-label" style="width:90px"><span class="req">*</span>关联试卷</div><div class="form-ctrl"><select id="exam-paper" style="width:100%"><option ${src.paperName ? "" : "selected"} value="">选择已发布试卷</option><option selected>${esc(src.paperName || "新人结业试卷")}（${src.paperScore || 100}分）</option></select><div class="help">仅可选择「已发布」状态的试卷</div></div></div>
+    <div class="form-row"><div class="form-label" style="width:90px"></div><div class="form-ctrl"><div class="pass-line"><span>试卷总分：<b>${src.paperScore || 100}</b> 分</span><span>合格分数：</span><input class="input" id="exam-pass" value="${esc(src.passScore || 60)}" style="width:180px"></div><div class="help">合格分数不能超过试卷总分，达到合格分数判定为合格</div></div></div>
+    <div class="form-row"><div class="form-label" style="width:90px"><span class="req">*</span>考试时间</div><div class="form-ctrl"><div class="time-line"><input class="input" id="exam-start" value="${esc(src.startAt || "")}" placeholder="开始时间" style="width:220px"><span>至</span><input class="input" id="exam-end" value="${esc(src.endAt || "")}" placeholder="结束时间" style="width:220px"></div><div class="help">学员只能在考试时间范围内开始作答</div></div></div>
+    <div class="form-row"><div class="form-label" style="width:90px">答题时长</div><div class="form-ctrl"><input class="input" id="exam-duration" value="${esc(src.durationMinutes || 60)}" style="width:180px"> 分钟<div class="help">可选，不填则不限时，上限 120 分钟</div></div></div>
+    <div class="form-row"><div class="form-label" style="width:90px">积分</div><div class="form-ctrl"><input class="input" id="exam-points" value="${esc(src.points || "")}" placeholder="选填，大于 0 的数字" style="width:220px"><div class="help">非必填。填写后，学员完成考试时发放相应积分；不填写则完成考试没有积分。已完成的考试不补发、不改写。</div></div></div>
+    <div class="form-row"><div class="form-label" style="width:90px">参考人员</div><div class="form-ctrl"><input class="input" placeholder="搜索姓名或按组织添加" style="width:260px"><div class="help">沿用现有人员选择</div></div></div>
+  `, `<button class="btn" id="exam-cancel">取消</button>${src.status==="草稿"||!id?`<button class="btn" id="exam-draft">存草稿</button>`:""}<button class="btn primary" id="exam-save">${id && src.status!=="草稿" ? "保存全部修改" : "保存并发布"}</button>`, "score");
+  const points = document.getElementById("exam-points");
+  points.oninput = () => { points.value = sanitizePositive(points.value); };
+  document.getElementById("exam-cancel").onclick = closeDrawer;
+  const persist = () => {
+    const name = document.getElementById("exam-name").value.trim();
+    if (!name) return toast("请输入考试名称", "warn");
+    const value = points.value;
+    if (value && !isPositive(value)) return toast("请输入大于 0 的数字", "warn");
+    const extra = {
+      name,
+      description: document.getElementById("exam-desc").value,
+      points: value,
+      startAt: document.getElementById("exam-start").value,
+      endAt: document.getElementById("exam-end").value,
+      durationMinutes: Number(document.getElementById("exam-duration").value) || 0,
+      passScore: document.getElementById("exam-pass").value
+    };
+    if (id) Object.assign(src, extra);
+    else exams.unshift(Object.assign({ id: Date.now(), status: "草稿", paperName: "新人结业试卷", paperScore: 100, memberCount: 0, attendedCount: 0 }, extra));
+    closeDrawer();
+    toast("已保存", "ok");
+    render();
+  };
+  document.getElementById("exam-save").onclick = persist;
+  const draft = document.getElementById("exam-draft");
+  if (draft) draft.onclick = persist;
+}
 document.getElementById("toggle-learn").onclick = () => {
   document.getElementById("menu-learn").classList.toggle("open");
+};
+document.getElementById("toggle-exam").onclick = () => {
+  document.getElementById("menu-exam").classList.toggle("open");
 };
 document.body.addEventListener("click", e => {
   const nav = e.target.closest("[data-nav]");
