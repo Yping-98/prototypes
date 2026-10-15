@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI质培中台 - 课程完成标准与作业管理</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif; background:#f0f2f5; color:#303133; font-size:13px; line-height:1.5; }
+  button, input, select, textarea { font-family:inherit; font-size:13px; }
+  .layout { display:flex; min-height:100vh; }
+  .sidebar { width:220px; background:#001529; color:rgba(255,255,255,.65); flex-shrink:0; }
+  .logo-bar { height:56px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:16px; gap:8px; }
+  .logo-icon { width:28px; height:28px; background:#409eff; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:700; }
+  .menu-title { padding:12px 20px 4px; font-size:12px; color:rgba(255,255,255,.35); }
+  .menu-item { margin:2px 8px; padding:10px 12px; cursor:pointer; display:flex; align-items:center; gap:8px; border-radius:4px; }
+  .menu-item:hover { color:#fff; background:rgba(255,255,255,.08); }
+  .menu-item.active { color:#fff; background:#409eff; }
+  .menu-item.disabled { cursor:default; }
+  .menu-item.disabled:hover { color:rgba(255,255,255,.65); background:transparent; }
+  .main { flex:1; min-width:0; display:flex; flex-direction:column; }
+  .header { height:56px; background:#fff; border-bottom:1px solid #e4e7ed; display:flex; align-items:center; justify-content:space-between; padding:0 16px; }
+  .breadcrumb { display:flex; align-items:center; gap:6px; color:#909399; }
+  .breadcrumb .curr { color:#303133; font-weight:500; }
+  .breadcrumb button { border:0; background:none; color:#409eff; cursor:pointer; padding:0; }
+  .user-info { display:flex; align-items:center; gap:8px; color:#606266; }
+  .avatar { width:28px; height:28px; border-radius:50%; background:#409eff; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; }
+  .content { padding:12px; flex:1; }
+  .card { background:#fff; border:1px solid #ebeef5; border-radius:4px; }
+  .filter-panel { padding:16px 16px 0; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  .input, select, textarea { height:32px; padding:0 10px; border:1px solid #dcdfe6; border-radius:4px; color:#606266; background:#fff; outline:none; }
+  textarea.input { height:auto; padding:8px 10px; resize:vertical; }
+  .input:focus, select:focus, textarea:focus { border-color:#409eff; }
+  .input.err { border-color:#f56c6c; }
+  .input.short { width:88px; }
+  .btn { height:32px; padding:0 14px; border-radius:4px; border:1px solid #dcdfe6; background:#fff; color:#606266; cursor:pointer; display:inline-flex; align-items:center; gap:4px; }
+  .btn:hover { color:#409eff; border-color:#c6e2ff; background:#ecf5ff; }
+  .btn.primary { background:#409eff; border-color:#409eff; color:#fff; }
+  .btn.primary:hover { background:#66b1ff; border-color:#66b1ff; }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .btn.link { border:0; background:none; color:#409eff; height:auto; padding:0 4px; }
+  .btn.link:hover { background:none; text-decoration:underline; }
+  .btn.link.danger { color:#f56c6c; }
+  .btn.link:disabled { color:#c0c4cc; text-decoration:none; }
+  .spacer { margin-left:auto; display:flex; gap:8px; }
+  table { width:100%; border-collapse:collapse; }
+  th { background:#f5f7fa; color:#909399; font-weight:500; text-align:left; padding:10px 12px; border-bottom:1px solid #ebeef5; white-space:nowrap; }
+  td { padding:10px 12px; border-bottom:1px solid #ebeef5; color:#606266; vertical-align:middle; }
+  tr:hover td { background:#fafafa; }
+  .link { color:#409eff; cursor:pointer; background:none; border:0; padding:0; }
+  .link:hover { text-decoration:underline; }
+  .tag { display:inline-block; padding:0 8px; height:22px; line-height:20px; border-radius:4px; font-size:12px; border:1px solid transparent; }
+  .tag.gray { background:#f4f4f5; color:#909399; border-color:#e9e9eb; }
+  .tag.green { background:#f0f9eb; color:#67c23a; border-color:#e1f3d8; }
+  .tag.orange { background:#fdf6ec; color:#e6a23c; border-color:#faecd8; }
+  .tag.blue { background:#ecf5ff; color:#409eff; border-color:#d9ecff; }
+  .tag.red { background:#fef0f0; color:#f56c6c; border-color:#fde2e2; }
+  .tag.purple { background:#f4ecff; color:#7c4dff; border-color:#e6d8ff; }
+  .pager { padding:12px 16px; display:flex; justify-content:flex-end; color:#606266; gap:8px; align-items:center; }
+  .drawer-mask, .modal-mask { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; display:none; }
+  .drawer-mask.show, .modal-mask.show { display:block; }
+  .modal-mask { z-index:1200; display:none; align-items:center; justify-content:center; }
+  .modal-mask.show { display:flex; }
+  .drawer { position:fixed; top:0; right:0; height:100%; background:#fff; z-index:1001; display:none; flex-direction:column; box-shadow:-2px 0 8px rgba(0,0,0,.12); width:800px; max-width:100%; }
+  .drawer.show { display:flex; }
+  .drawer.narrow { width:640px; }
+  .drawer.score { width:720px; }
+  .drawer-hd, .drawer-ft { height:56px; padding:0 20px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+  .drawer-hd { border-bottom:1px solid #ebeef5; font-size:16px; font-weight:600; }
+  .drawer-ft { border-top:1px solid #ebeef5; justify-content:flex-end; gap:8px; }
+  .drawer-bd { flex:1; overflow:auto; padding:20px; }
+  .x { border:0; background:none; font-size:20px; color:#909399; cursor:pointer; }
+  .section-title { position:relative; padding-left:10px; margin:8px 0 14px; font-size:15px; font-weight:600; }
+  .section-title::before { content:""; position:absolute; left:0; top:3px; width:3px; height:16px; background:#409eff; border-radius:2px; }
+  .form-row { display:flex; margin-bottom:16px; }
+  .form-label { width:88px; text-align:right; padding-right:12px; line-height:32px; color:#606266; flex-shrink:0; }
+  .req { color:#f56c6c; margin-right:2px; }
+  .form-ctrl { flex:1; min-width:0; }
+  .help { margin-top:4px; color:#909399; font-size:12px; }
+  .cw-bar { display:flex; align-items:center; margin-bottom:12px; }
+  .inline-panel { padding:16px; margin-bottom:12px; background:#f5f7fa; border:1px solid #ebeef5; border-radius:8px; }
+  .radios label { margin-right:16px; line-height:32px; }
+  .std-cell { display:flex; align-items:center; gap:6px; }
+  .hint { color:#909399; font-size:12px; white-space:nowrap; }
+  .q-item { border:1px solid #ebeef5; border-radius:6px; padding:12px; margin-bottom:10px; background:#fafafa; }
+  .q-hd { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .count { text-align:right; color:#909399; font-size:12px; }
+  .answer { background:#f5f7fa; border-radius:4px; padding:10px 12px; margin:8px 0 14px; white-space:pre-wrap; }
+  .grade-list { display:flex; flex-wrap:wrap; gap:12px; }
+  .grade-list label { display:flex; align-items:center; gap:4px; }
+  .modal { width:420px; background:#fff; border-radius:4px; overflow:hidden; }
+  .modal-hd, .modal-ft { padding:14px 16px; }
+  .modal-hd { font-weight:600; border-bottom:1px solid #ebeef5; }
+  .modal-bd { padding:20px 16px; color:#606266; }
+  .modal-ft { display:flex; justify-content:flex-end; gap:8px; border-top:1px solid #ebeef5; }
+  .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#edf2fc; color:#909399; border:1px solid #e4e7ed; padding:10px 16px; border-radius:4px; z-index:2000; display:none; max-width:80vw; }
+  .toast.show { display:block; }
+  .toast.ok { background:#f0f9eb; color:#67c23a; border-color:#e1f3d8; }
+  .toast.warn { background:#fdf6ec; color:#e6a23c; border-color:#faecd8; }
+  .player-wrap { display:grid; grid-template-columns:1fr 280px; gap:12px; }
+  .stage { background:#111; border-radius:4px; min-height:320px; color:#fff; display:flex; flex-direction:column; }
+  .stage-view { flex:1; display:flex; align-items:center; justify-content:center; font-size:15px; padding:24px; text-align:center; }
+  .controls { display:flex; align-items:center; gap:10px; padding:10px 12px; background:#1f1f1f; }
+  .controls input[type=range] { flex:1; }
+  .time { color:#ddd; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .play-status { background:#fff; border:1px solid #ebeef5; border-radius:4px; padding:12px 14px; margin-top:12px; }
+  .play-status div { margin-bottom:4px; }
+  .side-item { padding:10px 12px; border-bottom:1px solid #ebeef5; cursor:pointer; }
+  .side-item.active { background:#ecf5ff; }
+  .doc-page { background:#fff; color:#303133; width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+  .empty { text-align:center; color:#909399; padding:28px 0; }
+  .back-row { margin-bottom:12px; }
+  @media (max-width: 900px) {
+    .sidebar { display:none; }
+    .player-wrap { grid-template-columns:1fr; }
+    .drawer, .drawer.narrow, .drawer.score { width:100%; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="logo-bar"><span class="logo-icon">质</span>AI质培中台</div>
+    <div class="menu-title">在线学习</div>
+    <div class="menu-item active" data-nav="course">课程管理</div>
+    <div class="menu-item" data-nav="homework">作业管理</div>
+    <div class="menu-item disabled">学习项目</div>
+    <div class="menu-item disabled">课程中心</div>
+    <div class="menu-item" data-nav="learn">我的学习</div>
+  </aside>
+  <div class="main">
+    <header class="header">
+      <div class="breadcrumb" id="crumb"></div>
+      <div class="user-info"><span style="color:#909399">培训管理员</span><span class="avatar">李</span>李营平</div>
+    </header>
+    <div class="content" id="app"></div>
+  </div>
+</div>
+
+<div class="drawer-mask" id="mask"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-hd"><span id="drawer-title"></span><button class="x" id="drawer-close">×</button></div>
+  <div class="drawer-bd" id="drawer-body"></div>
+  <div class="drawer-ft" id="drawer-foot"></div>
+</div>
+<div class="modal-mask" id="modal-mask">
+  <div class="modal">
+    <div class="modal-hd" id="modal-title">提示</div>
+    <div class="modal-bd" id="modal-body"></div>
+    <div class="modal-ft">
+      <button class="btn" id="modal-cancel">取消</button>
+      <button class="btn primary" id="modal-ok">确定</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const CURRENT_USER = "李营平";
+const GRADES = ["不合格", "合格", "良好", "优秀", "卓越"];
+
+const courses = [
+  {
+    id: 1,
+    name: "新人产品通关课",
+    category: "产品知识",
+    status: "已发布",
+    coursewares: [
+      { uid: 1, name: "开场话术演示", type: "video", duration: 750, standard: "1", watched: 0, position: 0, docPage: 1, docDone: false },
+      { uid: 2, name: "异议处理手册", type: "doc", duration: 0, pages: 3, standard: "", watched: 0, position: 0, docPage: 1, docDone: false },
+      { uid: 3, name: "成交案例复盘", type: "video", duration: 480, standard: "3", watched: 0, position: 0, docPage: 1, docDone: false }
+    ]
+  }
+];
+let uidSeq = 10;
+let editingCourse = null;
+let courseMode = "edit";
+
+const homeworks = [
+  {
+    id: 1, name: "新人首周作业", status: "上架", updater: "王敏", updatedAt: "2026-10-14 18:20", ts: 202610141820,
+    questions: [
+      { title: "请描述你在首次外呼中的开场结构" },
+      { title: "客户说太贵了时你会如何回应" },
+      { title: "请复盘一次未成交通话并写出改进点" }
+    ],
+    refs: [
+      { name: "新人培养计划", time: "2026-09-01 ~ 2026-10-31", status: "进行中" },
+      { name: "Q3专项提升", time: "2026-07-01 ~ 2026-09-30", status: "已结束" }
+    ],
+    records: [
+      { name: "张伟", dept: "华东一部", done: "已完成", grade: "", finishedAt: "2026-10-13 16:02", project: "新人培养计划", answers: ["先表明身份，再用一个和客户相关的问题打开话题，最后说明本次来意。", "先认同预算顾虑，再把价格拆成每天的使用成本，并补一个同类客户结果。", "上次急着报价，没有先问清决策人，下次会先确认谁拍板。"] },
+      { name: "陈静", dept: "华东一部", done: "已完成", grade: "良好", finishedAt: "2026-10-12 10:20", project: "新人培养计划", answers: ["问候、自我介绍、说明来意，控制在二十秒内。", "询问预算区间，再给出可替换方案。", "案例准备不足，下次会提前准备两个结果数据。"] },
+      { name: "刘洋", dept: "华北二部", done: "未完成", grade: "", finishedAt: "", project: "新人培养计划", answers: ["", "", ""] },
+      { name: "周婷", dept: "华南一部", done: "已完成", grade: "", finishedAt: "2026-10-14 09:41", project: "Q3专项提升", answers: ["用客户刚咨询过的产品做开场。", "先问贵的对比对象，再讲差异。", "结束前没有约下次沟通。"] }
+    ]
+  },
+  {
+    id: 2, name: "异议处理练习", status: "草稿", updater: "李营平", updatedAt: "2026-10-15 09:12", ts: 202610150912,
+    questions: [
+      { title: "请写出你遇到的一个常见异议" },
+      { title: "针对该异议给出回应话术" }
+    ],
+    refs: [],
+    records: []
+  },
+  {
+    id: 3, name: "成交复盘作业", status: "下架", updater: "赵磊", updatedAt: "2026-10-08 11:03", ts: 202610081103,
+    questions: [
+      { title: "复盘一次成交通话的关键转折" },
+      { title: "哪一句推动了客户决定" },
+      { title: "如果重来会删掉哪一段" },
+      { title: "给后来的同事留一条建议" }
+    ],
+    refs: [],
+    records: []
+  }
+];
+let hwSeq = 10;
+let hwFilter = { name: "", status: "" };
+let detailHwId = null;
+let detailFilter = { name: "", status: "", project: "" };
+let scoreRecord = null;
+let scoreMode = "score";
+let draftGrade = "";
+let editHw = null;
+
+let view = "course";
+let activeCwUid = 1;
+let playing = false;
+let playTimer = null;
+let syncBucket = 0;
+let lastSync = "尚未同步";
+let playerNote = "点击播放后开始累计观看时长";
+let confirmResolve = null;
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
+}
+function pad(n) { return String(n).padStart(2, "0"); }
+function fmt(sec) {
+  sec = Math.max(0, Math.floor(sec));
+  return pad(Math.floor(sec / 60)) + ":" + pad(sec % 60);
+}
+function fmtDur(sec) {
+  if (!sec) return "—";
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return s ? m + "分" + s + "秒" : m + "分钟";
+}
+function nowStamp() {
+  const d = new Date();
+  const text = d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes());
+  const ts = Number(text.replace(/\D/g, ""));
+  return { text, ts };
+}
+function videoTotal(list) {
+  return list.filter(c => c.type === "video").reduce((s, c) => s + (c.duration || 0), 0);
+}
+function maxMinutes(duration) { return Math.floor((duration || 0) / 60); }
+function toast(msg, type) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "toast show" + (type === "ok" ? " ok" : type === "warn" ? " warn" : "");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { el.className = "toast"; }, 2200);
+}
+function ask(message) {
+  return new Promise(resolve => {
+    confirmResolve = resolve;
+    document.getElementById("modal-body").textContent = message;
+    document.getElementById("modal-mask").classList.add("show");
+  });
+}
+document.getElementById("modal-cancel").onclick = () => {
+  document.getElementById("modal-mask").classList.remove("show");
+  if (confirmResolve) confirmResolve(false);
+  confirmResolve = null;
+};
+document.getElementById("modal-ok").onclick = () => {
+  document.getElementById("modal-mask").classList.remove("show");
+  if (confirmResolve) confirmResolve(true);
+  confirmResolve = null;
+};
+
+function openDrawer(title, html, foot, size) {
+  const drawer = document.getElementById("drawer");
+  drawer.className = "drawer show" + (size ? " " + size : "");
+  document.getElementById("mask").classList.add("show");
+  document.getElementById("drawer-title").textContent = title;
+  document.getElementById("drawer-body").innerHTML = html;
+  document.getElementById("drawer-foot").innerHTML = foot || "";
+}
+function closeDrawer() {
+  document.getElementById("drawer").classList.remove("show");
+  document.getElementById("mask").classList.remove("show");
+  document.getElementById("drawer-foot").innerHTML = "";
+}
+document.getElementById("drawer-close").onclick = closeDrawer;
+document.getElementById("mask").onclick = closeDrawer;
+
+function setCrumb(parts) {
+  document.getElementById("crumb").innerHTML = parts.map((p, i) => {
+    const sep = i ? '<span>/</span>' : "";
+    if (p.nav) return sep + '<button data-nav="' + p.nav + '">' + esc(p.text) + "</button>";
+    return sep + '<span class="' + (i === parts.length - 1 ? "curr" : "") + '">' + esc(p.text) + "</span>";
+  }).join("");
+}
+
+function render() {
+  document.querySelectorAll(".menu-item[data-nav]").forEach(el => {
+    el.classList.toggle("active", el.dataset.nav === (view === "player" ? "learn" : view === "hw-detail" ? "homework" : view));
+  });
+  if (view === "course") renderCourse();
+  else if (view === "learn") renderLearn();
+  else if (view === "player") renderPlayer();
+  else if (view === "homework") renderHomework();
+  else if (view === "hw-detail") renderDetail();
+}
+
+function renderCourse() {
+  setCrumb([{ text: "在线学习" }, { text: "课程管理" }]);
+  document.getElementById("app").innerHTML = `
+    <div class="card">
+      <div class="filter-panel">
+        <input class="input" placeholder="课程名称" style="width:180px">
+        <select><option>分类</option><option>产品知识</option></select>
+        <select><option>状态</option><option>已发布</option><option>草稿</option><option>已下架</option></select>
+        <select><option>公开属性</option><option>公开课</option><option>非公开</option></select>
+        <button class="btn primary" id="course-query">查询</button>
+        <button class="btn" id="course-reset">重置</button>
+        <div class="spacer"><button class="btn primary" id="add-course">新增课程</button></div>
+      </div>
+      <table>
+        <thead><tr><th>课程名称</th><th>课程分类</th><th>课件数</th><th>课程时长</th><th>课程状态</th><th>操作</th></tr></thead>
+        <tbody>
+          ${courses.map(c => `<tr>
+            <td>${esc(c.name)}</td>
+            <td>${esc(c.category)}</td>
+            <td>${c.coursewares.length}</td>
+            <td>${fmtDur(videoTotal(c.coursewares))}</td>
+            <td><span class="tag green">${esc(c.status)}</span></td>
+            <td><button class="btn link" data-edit-course="${c.id}">编辑</button></td>
+          </tr>`).join("")}
+        </tbody>
+      </table>
+      <div class="pager">共 ${courses.length} 条</div>
+    </div>`;
+  document.getElementById("add-course").onclick = () => openCourseEditor(null);
+  document.getElementById("course-query").onclick = () => toast("已按当前条件查询");
+  document.getElementById("course-reset").onclick = () => toast("已重置筛选");
+  document.getElementById("app").querySelectorAll("[data-edit-course]").forEach(btn => {
+    btn.onclick = () => openCourseEditor(Number(btn.dataset.editCourse));
+  });
+}
+
+function cloneCoursewares(list) {
+  return list.map(c => ({ ...c }));
+}
+function openCourseEditor(id) {
+  courseMode = id ? "edit" : "create";
+  if (id) {
+    const src = courses.find(c => c.id === id);
+    editingCourse = { id: src.id, name: src.name, category: src.category, status: src.status, coursewares: cloneCoursewares(src.coursewares) };
+  } else {
+    editingCourse = { id: 0, name: "", category: "产品知识", status: "草稿", coursewares: [] };
+  }
+  drawCourseEditor();
+}
+function drawCourseEditor() {
+  const c = editingCourse;
+  const total = videoTotal(c.coursewares);
+  const published = courseMode === "edit";
+  openDrawer(courseMode === "edit" ? "编辑课程" : "新建课程", `
+    <div class="form-row"><div class="form-label"><span class="req">*</span>课程名称</div>
+      <div class="form-ctrl"><input class="input" id="c-name" style="width:100%" maxlength="50" value="${esc(c.name)}" placeholder="请输入课程名称，不超过 50 个字符"></div>
+    </div>
+    <div class="section-title">课程课件</div>
+    <div class="cw-bar">
+      <button class="btn primary" id="add-cw">+ 添加课件</button>
+      <span class="hint" style="margin-left:auto">共 ${c.coursewares.length} 个课件${total ? " · 总时长 " + fmtDur(total) : ""}</span>
+    </div>
+    <div id="cw-panel"></div>
+    <table>
+      <thead><tr><th>序号</th><th>课件名称</th><th>类型</th><th>时长</th><th>完成标准</th><th>操作</th></tr></thead>
+      <tbody>
+        ${c.coursewares.map((w, i) => `<tr>
+          <td>${i + 1}</td>
+          <td>${esc(w.name)}</td>
+          <td><span class="tag ${w.type === "video" ? "blue" : "orange"}">${w.type === "video" ? "视频" : "文档"}</span></td>
+          <td>${w.type === "video" ? fmtDur(w.duration) : "—"}</td>
+          <td>${w.type === "video"
+            ? `<div class="std-cell"><input class="input short std-input ${w._err ? "err" : ""}" data-uid="${w.uid}" value="${esc(w.standard)}" inputmode="numeric" placeholder="分钟"><span>分钟</span><span class="hint">上限 ${maxMinutes(w.duration)} 分钟</span></div>`
+            : `<span class="hint">看完全部文件</span>`}</td>
+          <td><button class="btn link danger" data-del-cw="${w.uid}">删除</button></td>
+        </tr>`).join("") || `<tr><td colspan="6" class="empty">请添加课件</td></tr>`}
+      </tbody>
+    </table>
+    <p class="help">视频填写观看分钟数，达到该时长即完成，且不能超过该视频时长和课程总时长。文档不填写分钟数，看完全部文件即完成。</p>
+  `, published
+    ? `<button class="btn" id="c-cancel">取消</button><button class="btn primary" id="c-save">保存全部修改</button>`
+    : `<button class="btn" id="c-cancel">取消</button><button class="btn" id="c-draft">保存草稿</button><button class="btn primary" id="c-publish">保存并发布</button>`);
+  bindCourseEditor();
+}
+function bindCourseEditor() {
+  const name = document.getElementById("c-name");
+  if (name) name.oninput = () => { editingCourse.name = name.value; };
+  document.querySelectorAll(".std-input").forEach(input => {
+    input.oninput = () => {
+      input.value = input.value.replace(/\D/g, "");
+      const w = editingCourse.coursewares.find(x => x.uid === Number(input.dataset.uid));
+      if (w) { w.standard = input.value; w._err = false; }
+      input.classList.remove("err");
+    };
+  });
+  document.querySelectorAll("[data-del-cw]").forEach(btn => {
+    btn.onclick = () => {
+      editingCourse.coursewares = editingCourse.coursewares.filter(w => w.uid !== Number(btn.dataset.delCw));
+      drawCourseEditor();
+    };
+  });
+  const add = document.getElementById("add-cw");
+  if (add) add.onclick = () => toggleAddPanel();
+  const cancel = document.getElementById("c-cancel");
+  if (cancel) cancel.onclick = closeDrawer;
+  const save = document.getElementById("c-save");
+  if (save) save.onclick = () => saveCourse(true);
+  const draft = document.getElementById("c-draft");
+  if (draft) draft.onclick = () => saveCourse(false);
+  const pub = document.getElementById("c-publish");
+  if (pub) pub.onclick = () => saveCourse(true);
+}
+function toggleAddPanel() {
+  const box = document.getElementById("cw-panel");
+  if (!box) return;
+  if (box.dataset.open === "1") { box.innerHTML = ""; box.dataset.open = ""; return; }
+  box.dataset.open = "1";
+  box.innerHTML = `
+    <div class="inline-panel">
+      <div class="form-row"><div class="form-label">课件类型</div><div class="form-ctrl radios">
+        <label><input type="radio" name="cw-type" value="video" checked> 视频</label>
+        <label><input type="radio" name="cw-type" value="doc"> 文档</label>
+      </div></div>
+      <div class="form-row"><div class="form-label"><span class="req">*</span>课件名称</div>
+        <div class="form-ctrl"><input class="input" id="cw-name" maxlength="50" placeholder="请输入课件名称" style="width:320px"></div></div>
+      <div class="form-row"><div class="form-label"><span class="req">*</span>上传文件</div>
+        <div class="form-ctrl"><button class="btn" id="cw-file" type="button">选择文件</button><span class="hint" id="cw-file-name" style="margin-left:8px">视频将解析时长，文档按全部文件完成</span></div></div>
+      <button class="btn primary" id="cw-ok">确定</button>
+      <button class="btn" id="cw-cancel">取消</button>
+    </div>`;
+  let fileReady = false;
+  let fileDuration = 300;
+  document.getElementById("cw-file").onclick = () => {
+    fileReady = true;
+    const type = document.querySelector('input[name="cw-type"]:checked').value;
+    fileDuration = type === "video" ? 300 : 0;
+    document.getElementById("cw-file-name").textContent = type === "video" ? "已选择视频文件，时长 5 分钟" : "已选择文档文件";
+  };
+  document.getElementById("cw-cancel").onclick = () => { box.innerHTML = ""; box.dataset.open = ""; };
+  document.getElementById("cw-ok").onclick = () => {
+    const type = document.querySelector('input[name="cw-type"]:checked').value;
+    const title = document.getElementById("cw-name").value.trim();
+    if (!title) return toast("请输入课件名称", "warn");
+    if (!fileReady) return toast("请上传课件文件", "warn");
+    if (editingCourse.coursewares.some(w => w.name === title)) return toast("同一课程下课件名称不可重复", "warn");
+    editingCourse.coursewares.push({
+      uid: ++uidSeq, name: title, type, duration: type === "video" ? fileDuration : 0,
+      pages: type === "doc" ? 3 : 0, standard: "", watched: 0, position: 0, docPage: 1, docDone: false
+    });
+    drawCourseEditor();
+  };
+}
+function validateStandards() {
+  const total = videoTotal(editingCourse.coursewares);
+  let ok = true;
+  editingCourse.coursewares.forEach(w => {
+    w._err = false;
+    if (w.type !== "video") return;
+    if (!w.standard) { w._err = true; ok = false; toast("请填写视频课件的完成标准", "warn"); return; }
+    if (!/^\d+$/.test(w.standard) || Number(w.standard) <= 0) { w._err = true; ok = false; toast("完成标准仅可输入大于 0 的数字", "warn"); return; }
+    const seconds = Number(w.standard) * 60;
+    if (seconds > w.duration) { w._err = true; ok = false; toast("完成标准不能超过该视频时长", "warn"); return; }
+    if (seconds > total) { w._err = true; ok = false; toast("完成标准不能超过课程总时长", "warn"); }
+  });
+  return ok;
+}
+function saveCourse(publish) {
+  editingCourse.name = (document.getElementById("c-name")?.value || "").trim();
+  if (!editingCourse.name) return toast("请输入课程名称", "warn");
+  if (publish && !editingCourse.coursewares.length) return toast("发布前请至少添加一个课件", "warn");
+  if (!validateStandards()) { drawCourseEditor(); return; }
+  if (courseMode === "edit") {
+    const src = courses.find(c => c.id === editingCourse.id);
+    src.name = editingCourse.name;
+    src.coursewares = editingCourse.coursewares.map(w => ({ ...w }));
+    const active = src.coursewares.find(w => w.uid === activeCwUid);
+    if (!active && src.coursewares[0]) activeCwUid = src.coursewares[0].uid;
+  } else if (editingCourse.name) {
+    courses.push({ ...editingCourse, id: ++uidSeq, status: publish ? "已发布" : "草稿", coursewares: editingCourse.coursewares.map(w => ({ ...w })) });
+  }
+  closeDrawer();
+  toast(publish ? "已保存" : "已保存草稿", "ok");
+  render();
+}
+
+function renderLearn() {
+  stopPlay(false);
+  setCrumb([{ text: "在线学习" }, { text: "我的学习" }]);
+  const c = courses[0];
+  document.getElementById("app").innerHTML = `
+    <div class="card" style="padding:16px">
+      <div class="section-title">继续学习</div>
+      <table>
+        <thead><tr><th>课程名称</th><th>课件</th><th>操作</th></tr></thead>
+        <tbody><tr>
+          <td>${esc(c.name)}</td>
+          <td>${c.coursewares.length} 个</td>
+          <td><button class="btn link" id="go-learn">继续学习</button></td>
+        </tr></tbody>
+      </table>
+    </div>`;
+  document.getElementById("go-learn").onclick = () => {
+    const first = c.coursewares.find(w => w.type === "video") || c.coursewares[0];
+    activeCwUid = first.uid;
+    view = "player";
+    playerNote = "点击播放后开始累计观看时长";
+    lastSync = "尚未同步";
+    render();
+  };
+}
+
+function currentCourse() { return courses[0]; }
+function currentCw() { return currentCourse().coursewares.find(w => w.uid === activeCwUid) || currentCourse().coursewares[0]; }
+
+function renderPlayer() {
+  const course = currentCourse();
+  const cw = currentCw();
+  setCrumb([{ text: "在线学习" }, { text: "我的学习", nav: "learn" }, { text: "课程学习" }]);
+  const standardSec = cw.type === "video" && /^\d+$/.test(cw.standard) ? Number(cw.standard) * 60 : 0;
+  const done = cw.type === "video" ? cw.watched >= standardSec && standardSec > 0 : cw.docDone;
+  document.getElementById("app").innerHTML = `
+    <div class="back-row"><button class="btn" id="leave-learn">返回我的学习</button></div>
+    <div class="player-wrap">
+      <div>
+        <div class="stage">
+          ${cw.type === "video" ? `
+            <div class="stage-view" id="stage">${playing ? "正在播放 " + esc(cw.name) : done ? "该视频已完成" : esc(cw.name)}</div>
+            <div class="controls">
+              <button class="btn" id="toggle-play">${playing ? "暂停" : "播放"}</button>
+              <span class="time" id="play-clock">${fmt(cw.position)} / ${fmt(cw.duration)}</span>
+              <input type="range" id="seek" min="0" max="${cw.duration}" value="${cw.position}">
+            </div>` : `
+            <div class="doc-page"><div>第 ${cw.docPage} / ${cw.pages} 页<br>${esc(cw.name)}</div></div>
+            <div class="controls">
+              <button class="btn" id="doc-prev" ${cw.docPage <= 1 ? "disabled" : ""}>上一页</button>
+              <span class="time">第 ${cw.docPage} / ${cw.pages} 页</span>
+              ${cw.docPage < cw.pages
+                ? `<button class="btn primary" id="doc-next">下一页</button>`
+                : `<button class="btn primary" id="doc-finish" ${cw.docDone ? "disabled" : ""}>完成阅读</button>`}
+            </div>`}
+        </div>
+        <div class="play-status">
+          <div>课件：${esc(cw.name)}（${cw.type === "video" ? "视频" : "文档"}）</div>
+          ${cw.type === "video" ? `
+            <div>完成标准：${cw.standard ? esc(cw.standard) + " 分钟" : "未设置"}</div>
+            <div>已观看：${fmt(cw.watched)}（仅统计点击播放到暂停或退出的时间）</div>
+            <div>当前播放位置：${fmt(cw.position)}</div>
+            <div>最近同步：${esc(lastSync)}</div>
+            <div>状态：${esc(playerNote)}</div>
+            <div>${done ? '<span class="tag green">已完成</span>' : '<span class="tag gray">未完成</span>'}</div>
+          ` : `<div>完成标准：看完全部文件</div><div>${cw.docDone ? '<span class="tag green">已完成</span>' : '<span class="tag gray">未完成</span>'}</div>`}
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title" style="margin:12px">${esc(course.name)}</div>
+        ${course.coursewares.map(w => `<div class="side-item ${w.uid === cw.uid ? "active" : ""}" data-cw="${w.uid}">
+          <div>${esc(w.name)}</div>
+          <div class="hint">${w.type === "video" ? "视频 · " + (w.standard || "未设") + " 分钟" : "文档 · 看完全部文件"} · ${isCwDone(w) ? "已完成" : "未完成"}</div>
+        </div>`).join("")}
+      </div>
+    </div>`;
+  document.getElementById("leave-learn").onclick = () => { stopPlay(true); view = "learn"; render(); };
+  document.querySelectorAll("[data-cw]").forEach(el => {
+    el.onclick = () => {
+      stopPlay(true);
+      activeCwUid = Number(el.dataset.cw);
+      playerNote = "已切换课件";
+      render();
+    };
+  });
+  const toggle = document.getElementById("toggle-play");
+  if (toggle) toggle.onclick = () => { playing ? pauseByUser() : startPlay(); };
+  const seek = document.getElementById("seek");
+  if (seek) seek.oninput = () => {
+    cw.position = Number(seek.value);
+    playerNote = "拖动进度条只改变播放位置，不增加观看时长";
+    const clock = document.getElementById("play-clock");
+    if (clock) clock.textContent = fmt(cw.position) + " / " + fmt(cw.duration);
+    const note = document.querySelector(".play-status");
+    if (note) {
+      const lines = note.querySelectorAll("div");
+      if (lines[3]) lines[3].textContent = "当前播放位置：" + fmt(cw.position);
+      if (lines[5]) lines[5].textContent = "状态：" + playerNote;
+    }
+  };
+  const prev = document.getElementById("doc-prev");
+  const next = document.getElementById("doc-next");
+  const finish = document.getElementById("doc-finish");
+  if (prev) prev.onclick = () => { cw.docPage = Math.max(1, cw.docPage - 1); render(); };
+  if (next) next.onclick = () => { cw.docPage += 1; render(); };
+  if (finish) finish.onclick = () => {
+    cw.docDone = true;
+    toast("已看完全部文件，文档课件完成", "ok");
+    render();
+  };
+}
+function isCwDone(w) {
+  if (w.type === "doc") return !!w.docDone;
+  const need = /^\d+$/.test(w.standard) ? Number(w.standard) * 60 : Infinity;
+  return w.watched >= need;
+}
+function flushSync(cw) {
+  lastSync = "观看进度 " + fmt(cw.watched) + " · 当前播放 " + fmt(cw.position);
+  syncBucket = 0;
+}
+function startPlay() {
+  const cw = currentCw();
+  if (cw.type !== "video") return;
+  if (!/^\d+$/.test(cw.standard) || Number(cw.standard) <= 0) {
+    toast("请先在课程管理中填写该视频的完成标准", "warn");
+    return;
+  }
+  if (isCwDone(cw)) { playerNote = "该视频已完成"; renderPlayer(); return; }
+  playing = true;
+  playerNote = "播放中，正在累计观看时长";
+  clearInterval(playTimer);
+  playTimer = setInterval(() => {
+    const cur = currentCw();
+    if (!playing || view !== "player" || cur.type !== "video") return stopPlay(false);
+    cur.watched += 1;
+    cur.position = Math.min(cur.duration, cur.position + 1);
+    syncBucket += 1;
+    if (syncBucket >= 5) flushSync(cur);
+    const need = Number(cur.standard) * 60;
+    if (cur.watched >= need) {
+      flushSync(cur);
+      playing = false;
+      clearInterval(playTimer);
+      playerNote = "累计观看时长已达到完成标准";
+      toast("视频课件已完成", "ok");
+    }
+    if (view === "player") renderPlayer();
+  }, 1000);
+  renderPlayer();
+}
+function pauseByUser() {
+  const cw = currentCw();
+  if (cw.type === "video") flushSync(cw);
+  playing = false;
+  clearInterval(playTimer);
+  playerNote = "已暂停，停止累计";
+  if (view === "player") renderPlayer();
+}
+function stopPlay(sync) {
+  if (sync && playing) {
+    const cw = currentCw();
+    if (cw && cw.type === "video") flushSync(cw);
+  }
+  playing = false;
+  clearInterval(playTimer);
+}
+function pauseByLeave(reason) {
+  if (view !== "player" || !playing) return;
+  const cw = currentCw();
+  if (!cw || cw.type !== "video") return;
+  flushSync(cw);
+  playing = false;
+  clearInterval(playTimer);
+  playerNote = reason;
+  toast(reason, "warn");
+  renderPlayer();
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) pauseByLeave("已切换窗口，视频已暂停");
+});
+window.addEventListener("blur", () => pauseByLeave("已切换窗口，视频已暂停"));
+document.addEventListener("mouseout", e => {
+  if (!e.relatedTarget && !e.toElement) pauseByLeave("鼠标离开当前窗口，视频已暂停");
+});
+
+function filteredHomeworks() {
+  return homeworks
+    .filter(h => !hwFilter.name || h.name.includes(hwFilter.name.trim()))
+    .filter(h => !hwFilter.status || h.status === hwFilter.status)
+    .slice()
+    .sort((a, b) => b.ts - a.ts);
+}
+function renderHomework() {
+  setCrumb([{ text: "在线学习" }, { text: "作业管理" }]);
+  const list = filteredHomeworks();
+  document.getElementById("app").innerHTML = `
+    <div class="card">
+      <div class="filter-panel">
+        <input class="input" id="hw-name" placeholder="作业名称" style="width:180px" value="${esc(hwFilter.name)}">
+        <select id="hw-status">
+          <option value="">状态</option>
+          ${["草稿","上架","下架"].map(s => `<option value="${s}" ${hwFilter.status===s?"selected":""}>${s}</option>`).join("")}
+        </select>
+        <button class="btn primary" id="hw-query">查询</button>
+        <button class="btn" id="hw-reset">重置</button>
+        <div class="spacer"><button class="btn primary" id="hw-add">新增作业</button></div>
+      </div>
+      <table>
+        <thead><tr><th>作业名称</th><th>作业题数</th><th>状态</th><th>被项目引用</th><th>更新人</th><th>更新时间</th><th>操作</th></tr></thead>
+        <tbody>
+          ${list.map(h => `<tr>
+            <td><button class="link" data-hw-detail="${h.id}">${esc(h.name)}</button></td>
+            <td>${h.questions.length}</td>
+            <td><span class="tag ${h.status==="上架"?"green":h.status==="草稿"?"gray":"orange"}">${h.status}</span></td>
+            <td>${h.refs.length ? `<button class="link" data-hw-ref="${h.id}">${h.refs.length} 个项目</button>` : "0"}</td>
+            <td>${esc(h.updater)}</td>
+            <td>${esc(h.updatedAt)}</td>
+            <td>${hwActions(h)}</td>
+          </tr>`).join("") || `<tr><td colspan="7" class="empty">暂无作业</td></tr>`}
+        </tbody>
+      </table>
+      <div class="pager">共 ${list.length} 条</div>
+    </div>`;
+  document.getElementById("hw-query").onclick = () => {
+    hwFilter.name = document.getElementById("hw-name").value;
+    hwFilter.status = document.getElementById("hw-status").value;
+    render();
+  };
+  document.getElementById("hw-name").onkeydown = e => { if (e.key === "Enter") document.getElementById("hw-query").click(); };
+  document.getElementById("hw-reset").onclick = () => { hwFilter = { name: "", status: "" }; render(); };
+  document.getElementById("hw-add").onclick = () => openHwEditor(null);
+  document.getElementById("app").querySelectorAll("[data-hw-detail]").forEach(btn => btn.onclick = () => openHwReadonly(Number(btn.dataset.hwDetail)));
+  document.getElementById("app").querySelectorAll("[data-hw-ref]").forEach(btn => btn.onclick = () => openHwRef(Number(btn.dataset.hwRef)));
+  document.getElementById("app").querySelectorAll("[data-hw-act]").forEach(btn => btn.onclick = () => onHwAction(Number(btn.dataset.id), btn.dataset.hwAct));
+}
+function hwActions(h) {
+  const ops = [{ k: "detail", t: "明细" }];
+  if (h.status === "草稿") ops.push({ k: "edit", t: "编辑" }, { k: "up", t: "上架" }, { k: "del", t: "删除" });
+  else if (h.status === "上架") ops.push({ k: "edit", t: "编辑" }, { k: "down", t: "下架" });
+  else ops.push({ k: "up", t: "上架" });
+  return ops.map(o => `<button class="btn link ${o.k==="del"?"danger":""}" data-hw-act="${o.k}" data-id="${h.id}">${o.t}</button>`).join("");
+}
+async function onHwAction(id, act) {
+  const h = homeworks.find(x => x.id === id);
+  if (!h) return;
+  if (act === "detail") {
+    detailHwId = id;
+    detailFilter = { name: "", status: "", project: "" };
+    view = "hw-detail";
+    render();
+    return;
+  }
+  if (act === "edit") return openHwEditor(id);
+  if (act === "del") {
+    const ok = await ask("确认删除草稿作业「" + h.name + "」？");
+    if (!ok) return;
+    const idx = homeworks.findIndex(x => x.id === id);
+    homeworks.splice(idx, 1);
+    toast("删除成功", "ok");
+    render();
+    return;
+  }
+  if (act === "up") {
+    if (!h.questions.length) return toast("请至少添加一道题目后再上架", "warn");
+    const ok = await ask("确认上架作业「" + h.name + "」？");
+    if (!ok) return;
+    h.status = "上架";
+    touchHw(h);
+    toast("上架成功", "ok");
+    render();
+    return;
+  }
+  if (act === "down") {
+    const ok = await ask("确认下架作业「" + h.name + "」？");
+    if (!ok) return;
+    h.status = "下架";
+    touchHw(h);
+    toast("下架成功", "ok");
+    render();
+  }
+}
+function touchHw(h) {
+  const n = nowStamp();
+  h.updatedAt = n.text;
+  h.ts = n.ts;
+  h.updater = CURRENT_USER;
+}
+function openHwReadonly(id) {
+  const h = homeworks.find(x => x.id === id);
+  openDrawer("作业详情", `
+    <div class="form-row"><div class="form-label">作业名称</div><div class="form-ctrl" style="line-height:32px">${esc(h.name)}</div></div>
+    <div class="form-row"><div class="form-label">状态</div><div class="form-ctrl" style="line-height:32px">${esc(h.status)}</div></div>
+    <div class="form-row"><div class="form-label">作业题数</div><div class="form-ctrl" style="line-height:32px">${h.questions.length}</div></div>
+    <div class="section-title">题目</div>
+    ${h.questions.map((q, i) => `<div class="q-item"><div class="q-hd"><b>题目 ${i+1}</b><span class="tag blue">问答题</span></div><div>${esc(q.title)}</div></div>`).join("")}
+  `, `<button class="btn" id="ro-close">关闭</button>`, "narrow");
+  document.getElementById("ro-close").onclick = closeDrawer;
+}
+function openHwRef(id) {
+  const h = homeworks.find(x => x.id === id);
+  openDrawer("被项目引用 — 《" + h.name + "》", `
+    <table>
+      <thead><tr><th>项目名称</th><th>项目时间</th><th>项目状态</th><th>操作</th></tr></thead>
+      <tbody>${h.refs.map((r, i) => `<tr>
+        <td>${esc(r.name)}</td><td>${esc(r.time)}</td>
+        <td><span class="tag ${r.status==="进行中"?"green":"gray"}">${esc(r.status)}</span></td>
+        <td><button class="btn link" data-view-proj="${i}">查看</button></td>
+      </tr>`).join("")}</tbody>
+    </table>
+  `, "", "narrow");
+  document.querySelectorAll("[data-view-proj]").forEach(btn => {
+    btn.onclick = () => {
+      const r = h.refs[Number(btn.dataset.viewProj)];
+      openDrawer("项目详情 — " + r.name, `
+        <div class="form-row"><div class="form-label">项目名称</div><div class="form-ctrl" style="line-height:32px">${esc(r.name)}</div></div>
+        <div class="form-row"><div class="form-label">项目时间</div><div class="form-ctrl" style="line-height:32px">${esc(r.time)}</div></div>
+        <div class="form-row"><div class="form-label">项目状态</div><div class="form-ctrl" style="line-height:32px">${esc(r.status)}</div></div>
+        <p class="help">仅查看，不可编辑。</p>
+      `, `<button class="btn" id="back-ref">返回引用列表</button>`, "narrow");
+      document.getElementById("back-ref").onclick = () => openHwRef(id);
+    };
+  });
+}
+function openHwEditor(id) {
+  if (id) {
+    const src = homeworks.find(x => x.id === id);
+    editHw = { id: src.id, name: src.name, questions: src.questions.map(q => ({ title: q.title })) };
+  } else {
+    editHw = { id: 0, name: "", questions: [] };
+  }
+  drawHwEditor();
+}
+function drawHwEditor() {
+  openDrawer(editHw.id ? "编辑作业" : "新增作业", `
+    <div class="form-row"><div class="form-label"><span class="req">*</span>作业名称</div>
+      <div class="form-ctrl"><input class="input" id="hw-edit-name" style="width:100%" value="${esc(editHw.name)}" placeholder="请输入作业名称"></div></div>
+    <div class="cw-bar"><button class="btn primary" id="add-q">新增题目</button><span class="hint" style="margin-left:auto">题目均为问答题，题目名称不超过 200 字</span></div>
+    <div id="q-list">
+      ${editHw.questions.map((q, i) => `<div class="q-item">
+        <div class="q-hd"><span>题目 ${i+1}</span><span class="tag blue">问答题</span><button class="btn link danger" data-del-q="${i}">删除</button></div>
+        <textarea class="input" data-q="${i}" maxlength="200" rows="3" style="width:100%" placeholder="请输入题目名称">${esc(q.title)}</textarea>
+        <div class="count"><span class="q-count">${q.title.length}</span>/200</div>
+      </div>`).join("") || `<div class="empty">请新增题目</div>`}
+    </div>
+  `, `<button class="btn" id="hw-edit-cancel">取消</button><button class="btn primary" id="hw-edit-save">保存</button>`);
+  document.getElementById("hw-edit-name").oninput = e => { editHw.name = e.target.value; };
+  document.querySelectorAll("[data-q]").forEach(el => {
+    el.oninput = () => {
+      editHw.questions[Number(el.dataset.q)].title = el.value;
+      el.parentElement.querySelector(".q-count").textContent = el.value.length;
+    };
+  });
+  document.querySelectorAll("[data-del-q]").forEach(btn => {
+    btn.onclick = () => {
+      editHw.name = document.getElementById("hw-edit-name").value;
+      editHw.questions.splice(Number(btn.dataset.delQ), 1);
+      drawHwEditor();
+    };
+  });
+  document.getElementById("add-q").onclick = () => {
+    editHw.name = document.getElementById("hw-edit-name").value;
+    editHw.questions.push({ title: "" });
+    drawHwEditor();
+  };
+  document.getElementById("hw-edit-cancel").onclick = closeDrawer;
+  document.getElementById("hw-edit-save").onclick = saveHw;
+}
+function saveHw() {
+  editHw.name = document.getElementById("hw-edit-name").value.trim();
+  if (!editHw.name) return toast("请输入作业名称", "warn");
+  if (editHw.questions.some(q => !q.title.trim())) return toast("请输入题目名称", "warn");
+  if (editHw.questions.some(q => q.title.trim().length > 200)) return toast("题目名称不超过 200 字", "warn");
+  editHw.questions = editHw.questions.map(q => ({ title: q.title.trim() }));
+  if (editHw.id) {
+    const src = homeworks.find(x => x.id === editHw.id);
+    src.name = editHw.name;
+    src.questions = editHw.questions;
+    touchHw(src);
+  } else {
+    const n = nowStamp();
+    homeworks.push({
+      id: ++hwSeq, name: editHw.name, status: "草稿", updater: CURRENT_USER, updatedAt: n.text, ts: n.ts,
+      questions: editHw.questions, refs: [], records: []
+    });
+  }
+  closeDrawer();
+  toast("已保存", "ok");
+  view = "homework";
+  render();
+}
+
+function detailRecords() {
+  const h = homeworks.find(x => x.id === detailHwId);
+  if (!h) return [];
+  return h.records.filter(r => {
+    if (detailFilter.name && !r.name.includes(detailFilter.name.trim())) return false;
+    if (detailFilter.status && r.done !== detailFilter.status) return false;
+    if (detailFilter.project && !r.project.includes(detailFilter.project.trim())) return false;
+    return true;
+  });
+}
+function gradeTag(grade) {
+  if (!grade) return "—";
+  const cls = grade === "不合格" ? "red" : grade === "合格" ? "blue" : grade === "良好" ? "green" : grade === "优秀" ? "orange" : "purple";
+  return `<span class="tag ${cls}">${esc(grade)}</span>`;
+}
+function renderDetail() {
+  const h = homeworks.find(x => x.id === detailHwId);
+  if (!h) { view = "homework"; render(); return; }
+  setCrumb([{ text: "在线学习" }, { text: "作业管理", nav: "homework" }, { text: "作业明细" }]);
+  const rows = detailRecords();
+  document.getElementById("app").innerHTML = `
+    <div class="card">
+      <div class="filter-panel">
+        <strong style="margin-right:8px">${esc(h.name)}</strong>
+        <input class="input" id="d-name" placeholder="姓名" style="width:140px" value="${esc(detailFilter.name)}">
+        <select id="d-status">
+          <option value="">完成状态</option>
+          <option value="未完成" ${detailFilter.status==="未完成"?"selected":""}>未完成</option>
+          <option value="已完成" ${detailFilter.status==="已完成"?"selected":""}>已完成</option>
+        </select>
+        <input class="input" id="d-project" placeholder="项目名称" style="width:160px" value="${esc(detailFilter.project)}">
+        <button class="btn primary" id="d-query">查询</button>
+        <button class="btn" id="d-reset">重置</button>
+        <div class="spacer"><button class="btn primary" id="d-export">导出</button></div>
+      </div>
+      <table>
+        <thead><tr><th>姓名</th><th>部门</th><th>完成状态</th><th>作业成绩</th><th>完成时间</th><th>关联项目</th><th>操作</th></tr></thead>
+        <tbody>
+          ${rows.map((r, i) => `<tr>
+            <td>${esc(r.name)}</td><td>${esc(r.dept)}</td>
+            <td><span class="tag ${r.done==="已完成"?"green":"gray"}">${r.done}</span></td>
+            <td>${gradeTag(r.grade)}</td>
+            <td>${r.finishedAt || "—"}</td>
+            <td>${esc(r.project)}</td>
+            <td>${r.done === "已完成"
+              ? (r.grade
+                ? `<button class="btn link" data-score="view" data-idx="${i}">查看作业</button>`
+                : `<button class="btn link" data-score="score" data-idx="${i}">评分</button>`)
+              : "—"}</td>
+          </tr>`).join("") || `<tr><td colspan="7" class="empty">暂无作答记录</td></tr>`}
+        </tbody>
+      </table>
+      <div class="pager">共 ${rows.length} 条</div>
+    </div>`;
+  document.getElementById("d-query").onclick = () => {
+    detailFilter.name = document.getElementById("d-name").value;
+    detailFilter.status = document.getElementById("d-status").value;
+    detailFilter.project = document.getElementById("d-project").value;
+    render();
+  };
+  document.getElementById("d-reset").onclick = () => { detailFilter = { name:"", status:"", project:"" }; render(); };
+  document.getElementById("d-export").onclick = exportDetail;
+  document.querySelectorAll("[data-score]").forEach(btn => {
+    btn.onclick = () => openScore(btn.dataset.score, Number(btn.dataset.idx));
+  });
+}
+function openScore(mode, idx) {
+  const h = homeworks.find(x => x.id === detailHwId);
+  const rows = detailRecords();
+  scoreRecord = rows[idx];
+  scoreMode = mode;
+  draftGrade = scoreRecord.grade || "";
+  const title = (mode === "score" ? "评分 — " : "查看作业 — ") + scoreRecord.name;
+  openDrawer(title, `
+    ${h.questions.map((q, i) => `<div>
+      <div class="q-hd"><b>题目 ${i+1}</b><span class="tag blue">问答题</span></div>
+      <div>${esc(q.title)}</div>
+      <div class="answer">${esc(scoreRecord.answers[i] || "未作答")}</div>
+    </div>`).join("")}
+    <div class="section-title">作业成绩</div>
+    <div class="grade-list" id="grade-list">
+      ${GRADES.map(g => `<label><input type="radio" name="grade" value="${g}" ${draftGrade===g?"checked":""}>${g}</label>`).join("")}
+    </div>
+    <p class="help">单选。需保存后才会更新列表中的成绩，列表展示最近一次保存结果。</p>
+  `, `<button class="btn" id="score-cancel">取消</button><button class="btn primary" id="score-save" ${draftGrade?"":"disabled"}>保存</button>`, "score");
+  document.getElementById("grade-list").onchange = e => {
+    if (e.target.name === "grade") {
+      draftGrade = e.target.value;
+      document.getElementById("score-save").disabled = !draftGrade;
+    }
+  };
+  document.getElementById("score-cancel").onclick = closeDrawer;
+  document.getElementById("score-save").onclick = () => {
+    if (!draftGrade) return toast("请选择作业成绩", "warn");
+    scoreRecord.grade = draftGrade;
+    closeDrawer();
+    toast(scoreMode === "score" ? "成绩已保存" : "成绩已更新", "ok");
+    render();
+  };
+}
+function exportDetail() {
+  const h = homeworks.find(x => x.id === detailHwId);
+  const rows = detailRecords();
+  if (!rows.length) return toast("当前没有可导出的数据", "warn");
+  const headers = ["姓名","部门","完成状态","作业成绩","完成时间","关联项目"].concat(h.questions.map((_, i) => "题目" + (i+1)));
+  const lines = [headers.join(",")];
+  rows.forEach(r => {
+    const base = [r.name, r.dept, r.done, r.grade, r.finishedAt, r.project];
+    const answers = h.questions.map((_, i) => r.answers[i] || "");
+    lines.push(base.concat(answers).map(v => `"${String(v).replace(/"/g, '""')}"`).join(","));
+  });
+  const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = h.name + "-作业明细.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast("已导出当前筛选结果", "ok");
+}
+
+document.body.addEventListener("click", e => {
+  const nav = e.target.closest("[data-nav]");
+  if (!nav) return;
+  stopPlay(true);
+  closeDrawer();
+  view = nav.dataset.nav;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
