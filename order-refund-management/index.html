@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1V1服务订单退款功能 - 可交互原型</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",STHeiti,"Microsoft YaHei",sans-serif; background:#f0f2f5; color:#333; font-size:13px; }
+
+  /* 顶部视图切换栏 */
+  .top-bar {
+    position:sticky; top:0; z-index:1000;
+    height:46px; background:#1e293b; color:#fff;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px; box-shadow:0 2px 8px rgba(0,0,0,0.15);
+  }
+  .top-bar .title-group { display:flex; align-items:center; gap:12px; }
+  .top-bar .title { font-weight:600; font-size:15px; letter-spacing:0.5px; }
+  .top-bar .tag-badge { background:#0ea5e9; color:#fff; font-size:11px; padding:2px 8px; border-radius:10px; }
+  .top-bar .tabs { display:flex; gap:8px; }
+  .top-bar .tab-btn {
+    background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);
+    color:#cbd5e1; padding:5px 14px; border-radius:4px; cursor:pointer; font-size:12px;
+    transition:all 0.2s;
+  }
+  .top-bar .tab-btn:hover { background:rgba(255,255,255,0.2); color:#fff; }
+  .top-bar .tab-btn.active { background:#2563eb; border-color:#2563eb; color:#fff; font-weight:600; }
+  .top-bar .user-info { font-size:12px; color:#94a3b8; display:flex; align-items:center; gap:8px; }
+
+  /* 容器视图切换 */
+  .view-container { display:none; }
+  .view-container.active { display:flex; }
+
+  /* ================= CRM后台样式 ================= */
+  #crmView { display:flex; height:calc(100vh - 46px); overflow:hidden; }
+  
+  /* 左侧侧边栏 */
+  .crm-sidebar {
+    width:190px; background:#001529; color:#a6adb4; flex-shrink:0;
+    display:flex; flex-direction:column; user-select:none;
+  }
+  .crm-logo-area {
+    height:50px; background:#002140; display:flex; align-items:center;
+    padding:0 16px; color:#fff; font-weight:700; font-size:15px; gap:8px;
+  }
+  .crm-menu { flex:1; overflow-y:auto; padding:8px 0; }
+  .menu-group-title { font-size:11px; color:#595959; padding:8px 16px 4px; }
+  .crm-menu-item {
+    padding:10px 16px; display:flex; align-items:center; justify-content:space-between;
+    cursor:pointer; font-size:13px; color:#rgba(255,255,255,0.65); transition:color 0.2s;
+  }
+  .crm-menu-item:hover { color:#fff; }
+  .crm-menu-item .left { display:flex; align-items:center; gap:10px; }
+  .crm-menu-item .badge-count {
+    background:#ff4d4f; color:#fff; font-size:10px; padding:0 6px;
+    border-radius:10px; height:16px; line-height:16px;
+  }
+  .crm-submenu-item {
+    padding:9px 16px 9px 40px; cursor:pointer; font-size:12px;
+    display:flex; align-items:center; justify-content:space-between;
+    color:#a6adb4;
+  }
+  .crm-submenu-item:hover { color:#fff; }
+  .crm-submenu-item.active {
+    background:#1890ff; color:#fff; font-weight:500;
+  }
+
+  /* 右侧主体 */
+  .crm-main {
+    flex:1; display:flex; flex-direction:column; background:#f0f2f5; overflow:hidden;
+  }
+  /* 顶部导航与标签页 */
+  .crm-header-nav {
+    height:46px; background:#fff; border-bottom:1px solid #e8e8e8;
+    display:flex; align-items:center; justify-content:space-between; padding:0 16px;
+  }
+  .crm-header-tabs { display:flex; gap:6px; align-items:center; }
+  .tab-pill {
+    padding:4px 12px; background:#fafafa; border:1px solid #d9d9d9;
+    border-radius:3px; font-size:12px; color:#595959; cursor:pointer;
+    display:flex; align-items:center; gap:6px;
+  }
+  .tab-pill.active {
+    background:#e6f7ff; border-color:#91d5ff; color:#1890ff; font-weight:500;
+  }
+  .crm-header-tip { font-size:12px; color:#fa8c16; background:#fffbe6; border:1px solid #ffe58f; padding:2px 10px; border-radius:2px; }
+  .crm-header-actions { display:flex; align-items:center; gap:14px; color:#8c8c8c; font-size:13px; }
+
+  /* 内容卡片区 */
+  .crm-content {
+    flex:1; overflow:auto; padding:12px 16px; display:flex; flex-direction:column; gap:12px;
+  }
+  .crm-card {
+    background:#fff; border-radius:4px; padding:16px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  /* 搜索筛选表单 */
+  .filter-row {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+  }
+  .filter-inputs { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  .filter-input {
+    height:32px; border:1px solid #d9d9d9; border-radius:3px;
+    padding:0 10px; font-size:12px; width:160px; color:#333; outline:none;
+  }
+  .filter-input:focus { border-color:#40a9ff; box-shadow:0 0 0 2px rgba(24,144,255,0.2); }
+  .date-range-box {
+    display:flex; align-items:center; border:1px solid #d9d9d9; border-radius:3px;
+    padding:0 8px; height:32px; background:#fff; gap:6px;
+  }
+  .date-range-box input { border:none; outline:none; font-size:12px; width:125px; color:#555; }
+  .btn-search {
+    height:32px; padding:0 16px; background:#1890ff; color:#fff; border:none;
+    border-radius:3px; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:4px;
+  }
+  .btn-search:hover { background:#40a9ff; }
+  .btn-reset {
+    height:32px; padding:0 16px; background:#fff; color:#595959; border:1px solid #d9d9d9;
+    border-radius:3px; cursor:pointer; font-size:12px;
+  }
+  .btn-reset:hover { border-color:#40a9ff; color:#40a9ff; }
+  .btn-export {
+    height:32px; padding:0 16px; background:#1890ff; color:#fff; border:none;
+    border-radius:3px; cursor:pointer; font-size:12px;
+  }
+
+  /* 表格区域 */
+  .crm-table-container { margin-top:10px; overflow-x:auto; border:1px solid #f0f0f0; border-radius:4px; }
+  table.crm-table { width:100%; border-collapse:collapse; text-align:left; font-size:12px; }
+  table.crm-table th {
+    background:#fafafa; color:#595959; font-weight:600; padding:10px 12px;
+    border-bottom:1px solid #f0f0f0; white-space:nowrap;
+  }
+  table.crm-table td {
+    padding:11px 12px; border-bottom:1px solid #f0f0f0; color:#262626; vertical-align:middle;
+  }
+  table.crm-table tr:hover td { background:#fafafa; }
+  
+  /* 订单状态徽章 */
+  .status-tag {
+    display:inline-block; padding:2px 8px; border-radius:3px; font-size:12px; font-weight:500;
+  }
+  .status-tag.success { background:#f6ffed; border:1px solid #b7eb8f; color:#52c41a; }
+  .status-tag.partial { background:#e6f7ff; border:1px solid #91d5ff; color:#1890ff; }
+  .status-tag.refunded { background:#fff1f0; border:1px solid #ffa39e; color:#f5222d; }
+  .status-tag.refunding { background:#fffbe6; border:1px solid #ffe58f; color:#fa8c16; }
+  .status-tag.cancelled { background:#f5f5f5; border:1px solid #d9d9d9; color:#8c8c8c; }
+
+  /* 操作按钮 */
+  .op-btns { display:flex; align-items:center; gap:8px; white-space:nowrap; }
+  .btn-link {
+    background:none; border:none; color:#1890ff; cursor:pointer; font-size:12px; padding:0;
+    transition:color 0.2s;
+  }
+  .btn-link:hover { color:#40a9ff; text-decoration:underline; }
+  .btn-link:disabled, .btn-link.disabled {
+    color:#bfbfbf; cursor:not-allowed; text-decoration:none;
+  }
+  .btn-link.danger { color:#ff4d4f; }
+  .btn-link.danger:hover { color:#ff7875; }
+
+  /* 分页条 */
+  .pagination-bar {
+    display:flex; justify-content:flex-end; align-items:center; gap:12px;
+    padding-top:14px; font-size:12px; color:#8c8c8c;
+  }
+  .page-box {
+    width:26px; height:26px; border:1px solid #d9d9d9; border-radius:2px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .page-box.active { background:#1890ff; border-color:#1890ff; color:#fff; }
+
+  /* ================= 启思宇宙小程序样式 ================= */
+  #mpView {
+    justify-content:center; align-items:flex-start; padding:24px 16px;
+    min-height:calc(100vh - 46px); background:#eaedf2;
+  }
+  .split-layout {
+    display:flex; width:100%; height:calc(100vh - 46px); overflow:hidden;
+  }
+  .split-left { flex:1; border-right:2px solid #cbd5e1; overflow:hidden; }
+  .split-right {
+    width:420px; background:#f1f5f9; display:flex; flex-direction:column;
+    align-items:center; padding:16px 12px; overflow-y:auto; flex-shrink:0;
+  }
+  .split-title {
+    font-size:13px; font-weight:600; color:#475569; margin-bottom:10px;
+    display:flex; align-items:center; gap:6px;
+  }
+
+  /* 手机外壳 */
+  .phone-mockup {
+    width:375px; height:740px; background:#fff; border-radius:40px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.22), 0 0 0 10px #1e293b;
+    display:flex; flex-direction:column; overflow:hidden; position:relative;
+    flex-shrink:0;
+  }
+  /* 顶部灵动岛与原生状态栏 */
+  .phone-status-bar {
+    height:44px; background:#fff; padding:0 20px;
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:12px; font-weight:600; color:#000; flex-shrink:0; position:relative;
+  }
+  .island {
+    position:absolute; left:50%; transform:translateX(-50%); top:8px;
+    width:120px; height:28px; background:#000; border-radius:18px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 10px; color:#fff; font-size:10px;
+  }
+  .island-rider { display:flex; align-items:center; gap:4px; color:#facc15; font-size:10px; }
+  .island-time { color:#38bdf8; }
+
+  /* 小程序导航头 */
+  .mp-nav-header {
+    height:44px; background:#fff; display:flex; align-items:center;
+    justify-content:space-between; padding:0 16px; border-bottom:1px solid #f0f0f0;
+    flex-shrink:0;
+  }
+  .mp-nav-back { font-size:18px; cursor:pointer; color:#333; width:24px; }
+  .mp-nav-title { font-size:16px; font-weight:600; color:#1f2937; }
+  .mp-nav-capsule {
+    display:flex; align-items:center; border:1px solid #e2e8f0; border-radius:16px;
+    padding:3px 8px; gap:8px; font-size:11px; color:#64748b; background:#fafafa;
+  }
+
+  /* 小程序页面内容区 */
+  .mp-content {
+    flex:1; background:#f8fafc; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:12px;
+  }
+
+  /* 小程序订单卡片 */
+  .mp-order-card {
+    background:#fff; border-radius:12px; padding:14px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.05); cursor:pointer;
+    transition:transform 0.15s, box-shadow 0.15s;
+    border:1px solid #f1f5f9;
+  }
+  .mp-order-card:hover { transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,0.08); }
+  .mp-card-top {
+    display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;
+  }
+  .mp-goods-title { font-size:15px; font-weight:600; color:#1e293b; max-width:240px; }
+  .mp-order-status { font-size:13px; font-weight:600; }
+  .mp-order-status.paid { color:#10b981; }
+  .mp-order-status.refunding { color:#f97316; }
+  .mp-order-status.partial { color:#0284c7; }
+  .mp-order-status.refunded { color:#ef4444; }
+
+  .mp-card-row { font-size:12px; color:#64748b; margin-bottom:4px; }
+  .mp-card-bottom {
+    display:flex; justify-content:space-between; align-items:center; margin-top:10px;
+    padding-top:10px; border-top:1px dashed #f1f5f9;
+  }
+  .mp-order-price { font-size:16px; font-weight:700; color:#ef4444; }
+  .mp-tip-btn { font-size:11px; color:#0284c7; display:flex; align-items:center; gap:2px; }
+
+  /* 小程序退款记录/确认退款页面 */
+  .mp-refund-page {
+    position:absolute; inset:88px 0 0 0; background:#f8fafc;
+    display:flex; flex-direction:column; z-index:50;
+    transform:translateX(100%); transition:transform 0.25s ease;
+  }
+  .mp-refund-page.show { transform:translateX(0); }
+  .mp-refund-scroll { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:12px; }
+  
+  .mp-info-summary {
+    background:#fff; border-radius:10px; padding:14px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04); font-size:12px;
+  }
+  .mp-info-item { display:flex; justify-content:space-between; margin-bottom:6px; }
+  .mp-info-item:last-child { margin-bottom:0; }
+  .mp-info-label { color:#64748b; }
+  .mp-info-val { color:#1e293b; font-weight:500; }
+
+  .mp-record-card {
+    background:#fff; border-radius:10px; padding:14px;
+    border:1px solid #e2e8f0; position:relative;
+  }
+  .mp-record-header {
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;
+    padding-bottom:6px; border-bottom:1px solid #f8fafc;
+  }
+  .mp-record-no { font-size:12px; color:#94a3b8; }
+  .mp-record-status { font-size:12px; font-weight:600; padding:1px 6px; border-radius:3px; }
+  .mp-record-status.refunding { background:#ffedd5; color:#ea580c; }
+  .mp-record-status.success { background:#dcfce7; color:#16a34a; }
+  .mp-record-status.cancel { background:#f1f5f9; color:#94a3b8; }
+
+  .mp-record-body { font-size:12px; display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+  .mp-record-row { display:flex; }
+  .mp-record-lbl { width:68px; color:#64748b; flex-shrink:0; }
+  .mp-record-txt { color:#1e293b; word-break:break-all; }
+  .mp-record-money { color:#ef4444; font-weight:700; font-size:14px; }
+
+  .mp-btn-row {
+    display:flex; gap:10px; justify-content:flex-end;
+  }
+  .mp-action-btn {
+    padding:6px 14px; border-radius:18px; font-size:12px; font-weight:500;
+    cursor:pointer; border:none; transition:all 0.15s;
+  }
+  .mp-action-btn.primary { background:#0284c7; color:#fff; }
+  .mp-action-btn.primary:hover { background:#0369a1; }
+  .mp-action-btn.default { background:#fff; border:1px solid #cbd5e1; color:#475569; }
+  .mp-action-btn.default:hover { background:#f8fafc; border-color:#94a3b8; }
+
+  /* ================= 通用弹窗 Modal ================= */
+  .modal-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000;
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none; transition:opacity 0.2s ease;
+  }
+  .modal-overlay.show { opacity:1; pointer-events:auto; }
+
+  .modal-dialog {
+    background:#fff; border-radius:6px; width:480px; max-width:90vw;
+    box-shadow:0 8px 24px rgba(0,0,0,0.18); display:flex; flex-direction:column;
+    overflow:hidden; transform:scale(0.95); transition:transform 0.2s ease;
+  }
+  .modal-overlay.show .modal-dialog { transform:scale(1); }
+  .modal-dialog.wide { width:740px; }
+
+  .modal-header {
+    height:48px; border-bottom:1px solid #f0f0f0; padding:0 18px;
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:14px; font-weight:600; color:#262626;
+  }
+  .modal-close {
+    cursor:pointer; font-size:16px; color:#8c8c8c; border:none; background:none;
+  }
+  .modal-close:hover { color:#262626; }
+
+  .modal-body { padding:18px 20px; font-size:13px; max-height:75vh; overflow-y:auto; }
+  
+  .form-item { margin-bottom:16px; }
+  .form-item label {
+    display:block; margin-bottom:6px; font-weight:500; color:#262626;
+  }
+  .form-item label .required { color:#ff4d4f; margin-right:4px; }
+  .form-input-text {
+    width:100%; height:34px; border:1px solid #d9d9d9; border-radius:3px;
+    padding:0 10px; font-size:13px; outline:none; transition:border 0.2s;
+  }
+  .form-input-text:focus { border-color:#40a9ff; box-shadow:0 0 0 2px rgba(24,144,255,0.2); }
+  .form-textarea {
+    width:100%; height:80px; border:1px solid #d9d9d9; border-radius:3px;
+    padding:8px 10px; font-size:13px; outline:none; resize:none; font-family:inherit;
+  }
+  .form-textarea:focus { border-color:#40a9ff; box-shadow:0 0 0 2px rgba(24,144,255,0.2); }
+  .form-help { font-size:11px; color:#8c8c8c; margin-top:4px; display:flex; justify-content:space-between; }
+  .form-help.error { color:#ff4d4f; }
+
+  .modal-footer {
+    height:50px; border-top:1px solid #f0f0f0; padding:0 18px;
+    display:flex; align-items:center; justify-content:flex-end; gap:8px; background:#fafafa;
+  }
+  .btn-modal-cancel {
+    height:32px; padding:0 16px; border:1px solid #d9d9d9; background:#fff;
+    border-radius:3px; font-size:12px; cursor:pointer; color:#595959;
+  }
+  .btn-modal-cancel:hover { border-color:#40a9ff; color:#40a9ff; }
+  .btn-modal-ok {
+    height:32px; padding:0 16px; border:none; background:#1890ff; color:#fff;
+    border-radius:3px; font-size:12px; cursor:pointer;
+  }
+  .btn-modal-ok:hover { background:#40a9ff; }
+
+  /* 退款记录表格 */
+  table.record-table { width:100%; border-collapse:collapse; font-size:12px; }
+  table.record-table th {
+    background:#fafafa; padding:8px 10px; text-align:left; border-bottom:1px solid #f0f0f0; color:#595959;
+  }
+  table.record-table td {
+    padding:10px; border-bottom:1px solid #f0f0f0; color:#333;
+  }
+
+  /* 提示条 Toast */
+  .toast {
+    position:fixed; top:60px; left:50%; transform:translateX(-50%);
+    background:rgba(0,0,0,0.78); color:#fff; padding:8px 20px; border-radius:4px;
+    font-size:13px; z-index:3000; opacity:0; pointer-events:none; transition:opacity 0.25s;
+  }
+  .toast.show { opacity:1; }
+
+  /* 演示小提示卡片 */
+  .demo-note {
+    background:#eff6ff; border-left:4px solid #3b82f6; padding:8px 12px;
+    font-size:12px; color:#1e40af; border-radius:2px; margin-bottom:12px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+</style>
+</head>
+<body>
+
+<!-- 顶部全局导航栏：支持视图切换与联动演示 -->
+<div class="top-bar">
+  <div class="title-group">
+    <div class="title">1V1服务订单退款功能原型</div>
+    <span class="tag-badge">双端联动版</span>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchMainView('crm')">电销CRM视角</button>
+    <button class="tab-btn" onclick="switchMainView('mp')">启思宇宙小程序视角</button>
+    <button class="tab-btn" onclick="switchMainView('split')">双端并排联动演示</button>
+  </div>
+  <div class="user-info">
+    <span>当前登录人：<b>liyingping</b> (电销主管)</span>
+  </div>
+</div>
+
+<!-- 视角 1：电销 CRM 视图 -->
+<div id="crmView" class="view-container active">
+  <!-- 左侧一级/二级菜单 -->
+  <div class="crm-sidebar">
+    <div class="crm-logo-area">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#1890ff"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <span>电销CRM</span>
+    </div>
+    <div class="crm-menu">
+      <div class="crm-menu-item"><div class="left"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16z"/></svg><span>找线索</span></div></div>
+      <div class="crm-menu-item"><div class="left"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg><span>个人工作台</span></div><span class="badge-count">5</span></div>
+      <div class="crm-menu-item"><div class="left"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg><span>公海池</span></div></div>
+      <div class="crm-menu-item"><div class="left"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>客户管理</span></div></div>
+      <div class="crm-menu-item"><div class="left"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H6v-2h6v2zm4-4H6v-2h10v2zm0-4H6V7h10v2z"/></svg><span>订单管理</span></div></div>
+      <div class="crm-menu-item"><div class="left"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg><span>数据统计</span></div></div>
+      <div class="crm-menu-item"><div class="left"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2z"/></svg><span>活动管理</span></div></div>
+      <div class="crm-menu-item"><div class="left"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span>积分商城</span></div></div>
+      
+      <!-- 1V1服务（展开状态） -->
+      <div class="crm-menu-item" style="color:#fff;"><div class="left"><svg width="14" height="14" fill="#1890ff" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg><span>1V1服务</span></div><span style="font-size:10px;">▼</span></div>
+      <div class="crm-submenu-item">商品管理</div>
+      <div class="crm-submenu-item active">订单管理</div>
+
+      <div class="crm-menu-item"><div class="left"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg><span>系统设置</span></div></div>
+      <div class="crm-menu-item"><div class="left"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg><span>坐席管理</span></div></div>
+      <div class="crm-menu-item"><div class="left"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg><span>日常运营</span></div></div>
+      <div class="crm-menu-item"><div class="left"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg><span>销售人员管理</span></div></div>
+      <div class="crm-menu-item"><div class="left"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/></svg><span>企微机器人</span></div></div>
+      <div class="crm-menu-item"><div class="left"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 011 1v3a1 1 0 01-1 1h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 01-1-1v-3a1 1 0 011-1h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2z"/></svg><span>AI陪练台</span></div></div>
+    </div>
+  </div>
+
+  <!-- 主操作区 -->
+  <div class="crm-main">
+    <!-- 面包屑与标签 -->
+    <div class="crm-header-nav">
+      <div class="crm-header-tabs">
+        <div class="tab-pill">首页</div>
+        <div class="tab-pill">线索模型设置</div>
+        <div class="tab-pill">新增线索模型</div>
+        <div class="tab-pill active">订单管理 ×</div>
+      </div>
+      <div class="crm-header-tip">今日已领0，优质线索池上限70/日；今日已领0，自动线索池上限20/日</div>
+      <div class="crm-header-actions">
+        <span>消息</span>
+        <span>设置</span>
+        <span>头像 liyingping</span>
+      </div>
+    </div>
+
+    <!-- 订单列表主体内容 -->
+    <div class="crm-content">
+      <div class="demo-note">
+        <div>💡 <b>本次新增功能点说明：</b>在订单列表右侧新增【订单状态】和【操作】两列。支持对「支付成功 / 部分退款」订单发起退款申请；发起后可在「退款记录」中取消退款或编辑金额；小程序端实时联动呈现！</div>
+        <button class="btn-link" onclick="resetPrototypeData()" style="font-size:12px;">重置演示数据</button>
+      </div>
+
+      <div class="crm-card">
+        <!-- 筛选栏 -->
+        <div class="filter-row">
+          <div class="filter-inputs">
+            <input type="text" id="filterOrderId" class="filter-input" placeholder="请输入订单号">
+            <input type="text" id="filterPhone" class="filter-input" placeholder="请输入支付手机号">
+            <input type="text" id="filterGoodsName" class="filter-input" placeholder="请输入商品名称">
+            <div class="date-range-box">
+              <svg width="12" height="12" fill="#8c8c8c" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+              <input type="text" placeholder="支付时间-开始">
+              <span style="color:#bfbfbf;">至</span>
+              <input type="text" placeholder="支付时间-结束">
+            </div>
+            <button class="btn-search" onclick="searchOrders()">
+              <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              搜索
+            </button>
+            <button class="btn-reset" onclick="resetFilters()">重置</button>
+          </div>
+          <div>
+            <button class="btn-export">导出</button>
+          </div>
+        </div>
+
+        <!-- 订单数据表格（新增 订单状态、操作 两列） -->
+        <div class="crm-table-container">
+          <table class="crm-table">
+            <thead>
+              <tr>
+                <th>订单号</th>
+                <th>商品名称</th>
+                <th>实付价格</th>
+                <th>支付时间</th>
+                <th>支付手机号</th>
+                <th style="background:#e6f7ff; color:#0050b3;">订单状态（新增）</th>
+                <th style="background:#e6f7ff; color:#0050b3; width:140px;">操作（新增）</th>
+              </tr>
+            </thead>
+            <tbody id="crmOrderTableBody">
+              <!-- 动态渲染订单行 -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination-bar">
+          <span>共 <b id="totalOrderCount">4</b> 条</span>
+          <select style="height:26px; border:1px solid #d9d9d9; border-radius:2px; font-size:12px;">
+            <option>20条/页</option>
+            <option>50条/页</option>
+          </select>
+          <div class="page-box active">1</div>
+          <div class="page-box">&gt;</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 视角 2：启思宇宙小程序独立视图 -->
+<div id="mpView" class="view-container">
+  <div class="phone-mockup">
+    <!-- 状态栏与灵动岛 -->
+    <div class="phone-status-bar">
+      <span>12:05</span>
+      <div class="island">
+        <div class="island-rider">
+          <svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>
+          <span>送货中</span>
+        </div>
+        <span class="island-time">19分钟送达</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:4px;">
+        <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.28 19.57 10.59 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg>
+        <span>98</span>
+      </div>
+    </div>
+
+    <!-- 微信小程序顶栏 -->
+    <div class="mp-nav-header">
+      <div class="mp-nav-back">&lt;</div>
+      <div class="mp-nav-title">我的订单</div>
+      <div class="mp-nav-capsule">
+        <span>•••</span>
+        <span>⊙</span>
+      </div>
+    </div>
+
+    <!-- 我的订单卡片列表 -->
+    <div class="mp-content" id="mpOrderList">
+      <!-- 动态渲染小程序端订单卡片 -->
+    </div>
+
+    <!-- 小程序内页：退款记录 / 确认退款详情页 -->
+    <div id="mpRefundPage" class="mp-refund-page">
+      <div class="mp-nav-header" style="border-bottom:1px solid #e2e8f0;">
+        <div class="mp-nav-back" onclick="closeMpRefundPage()">&lt;</div>
+        <div class="mp-nav-title">退款记录</div>
+        <div style="width:24px;"></div>
+      </div>
+      <div class="mp-refund-scroll" id="mpRefundDetailContainer">
+        <!-- 动态渲染退款记录详情与确认退款按钮 -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 视角 3：双端并排联动视图 -->
+<div id="splitView" class="view-container">
+  <div class="split-layout">
+    <div class="split-left" id="splitCrmMount">
+      <!-- CRM 嵌入区 -->
+    </div>
+    <div class="split-right">
+      <div class="split-title">
+        <svg width="14" height="14" fill="#0284c7" viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
+        <span>启思宇宙小程序端实时预览</span>
+      </div>
+      <div id="splitMpMount">
+        <!-- 手机外壳嵌入区 -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 弹窗 1：申请退款弹窗 ================= -->
+<div class="modal-overlay" id="applyRefundModal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <span>申请退款</span>
+      <button class="modal-close" onclick="closeApplyRefundModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:10px 12px; margin-bottom:14px; font-size:12px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span style="color:#64748b;">订单编号：</span>
+          <span style="color:#1e293b; font-family:monospace;" id="modalOrderNo">-</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span style="color:#64748b;">已支付金额：</span>
+          <span style="color:#1e293b; font-weight:600;" id="modalPaidPrice">-</span>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span style="color:#64748b;">已退款金额：</span>
+          <span style="color:#10b981;" id="modalRefundedPrice">-</span>
+        </div>
+      </div>
+
+      <div class="form-item">
+        <label><span class="required">*</span>退款金额</label>
+        <input type="text" id="inputRefundAmount" class="form-input-text" placeholder="请输入退款金额，仅可输入正数" oninput="validateRefundAmount()">
+        <div class="form-help" id="refundAmountTip">
+          <span>上限 = 已支付金额 - 已退款金额 = <b id="maxRefundLimit">¥0.00</b></span>
+          <span id="amountError" style="color:#ff4d4f; display:none;"></span>
+        </div>
+      </div>
+
+      <div class="form-item">
+        <label>退款原因</label>
+        <textarea id="inputRefundReason" class="form-textarea" placeholder="请输入退款原因（200字符以内）" maxlength="200" oninput="updateReasonCount()"></textarea>
+        <div class="form-help">
+          <span>请详细说明退款原因，以便用户及财务核对</span>
+          <span id="reasonCharCount">0/200</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" onclick="closeApplyRefundModal()">取消</button>
+      <button class="btn-modal-ok" onclick="submitRefundApply()">提交申请</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 弹窗 2：退款记录弹窗 ================= -->
+<div class="modal-overlay" id="refundRecordModal">
+  <div class="modal-dialog wide">
+    <div class="modal-header">
+      <span>退款记录列表</span>
+      <button class="modal-close" onclick="closeRefundRecordModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:12px; color:#64748b;">
+        <span>订单号：<b id="recordModalOrderNo" style="font-family:monospace; color:#1e293b;">-</b></span>
+        <span>累计退款成功金额：<b id="recordModalTotalSuccess" style="color:#ef4444;">¥0.00</b></span>
+      </div>
+
+      <div style="border:1px solid #f0f0f0; border-radius:4px; overflow:hidden;">
+        <table class="record-table">
+          <thead>
+            <tr>
+              <th>发起人</th>
+              <th>退款金额</th>
+              <th>退款原因</th>
+              <th>退款状态</th>
+              <th>退款时间</th>
+              <th style="width:120px;">操作</th>
+            </tr>
+          </thead>
+          <tbody id="recordTableBody">
+            <!-- 动态渲染退款记录 -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" onclick="closeRefundRecordModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 弹窗 3：编辑退款弹窗 ================= -->
+<div class="modal-overlay" id="editRefundModal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <span>编辑退款信息</span>
+      <button class="modal-close" onclick="closeEditRefundModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-item">
+        <label><span class="required">*</span>退款金额</label>
+        <input type="text" id="editRefundAmount" class="form-input-text" placeholder="请输入修改后的金额" oninput="validateEditRefundAmount()">
+        <div class="form-help" id="editAmountTip">
+          <span>上限 = <b id="editMaxRefundLimit">¥0.00</b></span>
+          <span id="editAmountError" style="color:#ff4d4f; display:none;"></span>
+        </div>
+      </div>
+
+      <div class="form-item">
+        <label>退款原因</label>
+        <textarea id="editRefundReason" class="form-textarea" maxlength="200" oninput="updateEditReasonCount()"></textarea>
+        <div class="form-help">
+          <span>修改后的退款原因将同步至小程序端</span>
+          <span id="editReasonCharCount">0/200</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" onclick="closeEditRefundModal()">取消</button>
+      <button class="btn-modal-ok" onclick="saveEditedRefund()">保存更改</button>
+    </div>
+  </div>
+</div>
+
+<!-- 轻提示 Toast -->
+<div class="toast" id="globalToast">操作成功</div>
+
+<script>
+  // 核心 Mock 数据仓库（严格对接需求及 Image #1、Image #2）
+  let ordersData = [
+    {
+      id: "3N6W2026091810214587308174833071",
+      goodsName: "广告位-蓝色背景（v2）",
+      paidPrice: 0.01,
+      payTime: "2026-09-18 10:21:52",
+      phone: "15971423839",
+      refundRecords: [] // 初始无退款记录，状态为支付成功
+    },
+    {
+      id: "3N6W2026101014245084792174217526",
+      goodsName: "在线1对1-体验课",
+      paidPrice: 29.90,
+      payTime: "2026-10-10 14:24:57",
+      phone: "13806014947",
+      refundRecords: [
+        {
+          recordId: "REC101001",
+          initiator: "liyingping",
+          amount: 10.00,
+          reason: "学员时间冲突，申请减退部分课时费",
+          status: "退款成功", // 退款中 | 退款成功 | 取消退款
+          time: "2026-10-11 11:20:00"
+        }
+      ]
+    },
+    {
+      id: "3N6W2026100910160118897652872299",
+      goodsName: "在线1对1-体验课",
+      paidPrice: 29.90,
+      payTime: "2026-10-09 10:16:09",
+      phone: "15936336696",
+      refundRecords: [
+        {
+          recordId: "REC100901",
+          initiator: "liyingping",
+          amount: 29.90,
+          reason: "设备无法调试成功，协商全额退款",
+          status: "退款成功",
+          time: "2026-10-09 15:30:22"
+        }
+      ]
+    },
+    {
+      id: "3N6W2026100817254137819514296317",
+      goodsName: "在线1对1-体验课",
+      paidPrice: 29.90,
+      payTime: "2026-10-08 17:26:02",
+      phone: "13480148896",
+      refundRecords: [
+        {
+          recordId: "REC100801",
+          initiator: "liyingping",
+          amount: 29.90,
+          reason: "家长误操作申请，随后电话沟通取消",
+          status: "取消退款",
+          time: "2026-10-08 18:00:15"
+        }
+      ]
+    }
+  ];
+
+  // 备份用于重置
+  const initialOrdersJson = JSON.stringify(ordersData);
+
+  let currentActiveOrderId = null;
+  let currentEditingRecordId = null;
+  let currentSelectedMpOrderId = null;
+
+  // 状态计算工具：计算订单总成功退款金额
+  function getRefundedAmount(order) {
+    if (!order.refundRecords || order.refundRecords.length === 0) return 0;
+    return order.refundRecords
+      .filter(r => r.status === "退款成功")
+      .reduce((sum, r) => sum + Number(r.amount), 0);
+  }
+
+  // 状态计算工具：获取当前退款中记录
+  function getRefundingRecord(order) {
+    if (!order.refundRecords) return null;
+    return order.refundRecords.find(r => r.status === "退款中");
+  }
+
+  // 状态计算工具：计算 CRM 端订单状态
+  // 规则：支付成功、部分退款、已退款
+  function getCrmOrderStatus(order) {
+    const refunded = getRefundedAmount(order);
+    const paid = order.paidPrice;
+    if (refunded >= paid) {
+      return "已退款";
+    } else if (refunded > 0) {
+      return "部分退款";
+    } else {
+      return "支付成功";
+    }
+  }
+
+  // 小程序端订单状态展示规则：
+  // 存在退款中记录 -> 显示「退款中」
+  // 否则根据实际已退金额显示：已支付 / 部分退款 / 已退款
+  function getMpOrderStatus(order) {
+    const refunding = getRefundingRecord(order);
+    if (refunding) return "退款中";
+    const refunded = getRefundedAmount(order);
+    if (refunded >= order.paidPrice) return "已退款";
+    if (refunded > 0) return "部分退款";
+    return "已支付";
+  }
+
+  // 是否有历史发生过退款（包括退款中、退款成功、取消退款）
+  function hasRefundHistory(order) {
+    return order.refundRecords && order.refundRecords.length > 0;
+  }
+
+  // 渲染 CRM 订单列表
+  function renderCrmTable(filterList = ordersData) {
+    const tbody = document.getElementById("crmOrderTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    document.getElementById("totalOrderCount").innerText = filterList.length;
+
+    filterList.forEach(order => {
+      const orderStatus = getCrmOrderStatus(order);
+      const hasHistory = hasRefundHistory(order);
+      const isRefunding = !!getRefundingRecord(order);
+
+      // 按钮状态判定：
+      // 订单状态为支付成功/部分退款时，申请退款按钮可点击；
+      // 订单状态为已退款时，申请退款按钮不可点击。
+      // 若当前已有退款中记录，提示退款正在处理
+      const canApply = (orderStatus === "支付成功" || orderStatus === "部分退款") && !isRefunding;
+
+      let statusBadgeClass = "success";
+      if (orderStatus === "部分退款") statusBadgeClass = "partial";
+      if (orderStatus === "已退款") statusBadgeClass = "refunded";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="font-family:monospace; color:#1890ff;">${order.id}</td>
+        <td>${order.goodsName}</td>
+        <td style="font-weight:600;">¥${order.paidPrice.toFixed(2)}</td>
+        <td style="color:#595959;">${order.payTime}</td>
+        <td>${order.phone}</td>
+        <td>
+          <span class="status-tag ${statusBadgeClass}">${orderStatus}</span>
+          ${isRefunding ? '<span class="status-tag refunding" style="margin-left:4px;">退款审核中</span>' : ''}
+        </td>
+        <td>
+          <div class="op-btns">
+            <button class="btn-link ${canApply ? '' : 'disabled'}" ${canApply ? '' : 'disabled'} onclick="openApplyRefundModal('${order.id}')">申请退款</button>
+            ${hasHistory ? `<button class="btn-link" onclick="openRefundRecordModal('${order.id}')">退款记录</button>` : ''}
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // 渲染启思宇宙小程序「我的订单」卡片列表
+  function renderMpList() {
+    const listContainer = document.getElementById("mpOrderList");
+    if (!listContainer) return;
+    listContainer.innerHTML = "";
+
+    ordersData.forEach(order => {
+      const statusText = getMpOrderStatus(order);
+      let statusClass = "paid";
+      if (statusText === "退款中") statusClass = "refunding";
+      if (statusText === "部分退款") statusClass = "partial";
+      if (statusText === "已退款") statusClass = "refunded";
+
+      const card = document.createElement("div");
+      card.className = "mp-order-card";
+      card.onclick = () => openMpRefundPage(order.id);
+
+      card.innerHTML = `
+        <div class="mp-card-top">
+          <div class="mp-goods-title">${order.goodsName}</div>
+          <div class="mp-order-status ${statusClass}">${statusText}</div>
+        </div>
+        <div class="mp-card-row">订单编号：${order.id}</div>
+        <div class="mp-card-row">支付时间：${order.payTime}</div>
+        <div class="mp-card-bottom">
+          <div style="font-size:12px; color:#64748b;">实付金额</div>
+          <div class="mp-order-price">¥${order.paidPrice.toFixed(2)}</div>
+        </div>
+        ${statusText === '退款中' ? `
+          <div style="margin-top:8px; padding-top:8px; border-top:1px dashed #fed7aa; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; color:#ea580c; display:flex; align-items:center; gap:3px;">
+              ⚠️ 客服已发起退款申请，待您确认
+            </span>
+            <span class="mp-tip-btn">查看处理 &gt;</span>
+          </div>
+        ` : (hasRefundHistory(order) ? `
+          <div style="margin-top:8px; padding-top:8px; border-top:1px dashed #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; color:#64748b;">曾有退款记录</span>
+            <span class="mp-tip-btn">查看记录 &gt;</span>
+          </div>
+        ` : '')}
+      `;
+      listContainer.appendChild(card);
+    });
+  }
+
+  // 打开小程序退款记录/确认退款页面
+  function openMpRefundPage(orderId) {
+    currentSelectedMpOrderId = orderId;
+    const order = ordersData.find(o => o.id === orderId);
+    if (!order) return;
+
+    const page = document.getElementById("mpRefundPage");
+    const container = document.getElementById("mpRefundDetailContainer");
+    page.classList.add("show");
+
+    const refunded = getRefundedAmount(order);
+    const refundingRecord = getRefundingRecord(order);
+
+    let recordsHtml = "";
+    if (!order.refundRecords || order.refundRecords.length === 0) {
+      recordsHtml = `
+        <div style="text-align:center; padding:30px 0; color:#94a3b8; font-size:12px;">
+          暂无退款申请与记录
+        </div>
+      `;
+    } else {
+      order.refundRecords.forEach((rec, idx) => {
+        let statusBadge = "cancel";
+        if (rec.status === "退款中") statusBadge = "refunding";
+        if (rec.status === "退款成功") statusBadge = "success";
+
+        recordsHtml += `
+          <div class="mp-record-card">
+            <div class="mp-record-header">
+              <span class="mp-record-no">记录 #${rec.recordId || (idx+1)}</span>
+              <span class="mp-record-status ${statusBadge}">${rec.status}</span>
+            </div>
+            <div class="mp-record-body">
+              <div class="mp-record-row">
+                <span class="mp-record-lbl">退款金额：</span>
+                <span class="mp-record-txt mp-record-money">¥${Number(rec.amount).toFixed(2)}</span>
+              </div>
+              <div class="mp-record-row">
+                <span class="mp-record-lbl">退款原因：</span>
+                <span class="mp-record-txt">${rec.reason || '无'}</span>
+              </div>
+              <div class="mp-record-row">
+                <span class="mp-record-lbl">发起时间：</span>
+                <span class="mp-record-txt" style="color:#64748b;">${rec.time}</span>
+              </div>
+            </div>
+
+            ${rec.status === '退款中' ? `
+              <div class="mp-btn-row">
+                <button class="mp-action-btn default" onclick="mpCancelRefund('${order.id}', '${rec.recordId}')">取消退款</button>
+                <button class="mp-action-btn primary" onclick="mpConfirmRefund('${order.id}', '${rec.recordId}')">确认退款</button>
+              </div>
+            ` : `
+              <div style="font-size:11px; color:#94a3b8; text-align:right;">
+                ${rec.status === '退款成功' ? '✓ 已调用商户号完成原路退款' : '✕ 该退款申请已取消，未扣款'}
+              </div>
+            `}
+          </div>
+        `;
+      });
+    }
+
+    container.innerHTML = `
+      <div class="mp-info-summary">
+        <div class="mp-info-item">
+          <span class="mp-info-label">商品名称</span>
+          <span class="mp-info-val">${order.goodsName}</span>
+        </div>
+        <div class="mp-info-item">
+          <span class="mp-info-label">订单号</span>
+          <span class="mp-info-val" style="font-family:monospace; font-size:11px;">${order.id}</span>
+        </div>
+        <div class="mp-info-item">
+          <span class="mp-info-label">实付金额</span>
+          <span class="mp-info-val" style="color:#ef4444; font-weight:700;">¥${order.paidPrice.toFixed(2)}</span>
+        </div>
+        <div class="mp-info-item">
+          <span class="mp-info-label">已退金额</span>
+          <span class="mp-info-val" style="color:#10b981;">¥${refunded.toFixed(2)}</span>
+        </div>
+      </div>
+
+      <div style="font-size:13px; font-weight:600; color:#334155; margin-top:4px;">退款明细记录</div>
+      ${recordsHtml}
+    `;
+  }
+
+  function closeMpRefundPage() {
+    const page = document.getElementById("mpRefundPage");
+    if (page) page.classList.remove("show");
+  }
+
+  // 小程序端操作：确认退款（调用商户号退款）
+  function mpConfirmRefund(orderId, recordId) {
+    const order = ordersData.find(o => o.id === orderId);
+    if (!order) return;
+    const rec = order.refundRecords.find(r => r.recordId === recordId);
+    if (!rec) return;
+
+    if (confirm(`确认发起退款 ¥${rec.amount.toFixed(2)}？\n系统将调用商户号接口原路返还资金至用户支付账户。`)) {
+      showToast("正在调用微信支付商户号退款接口...");
+      setTimeout(() => {
+        rec.status = "退款成功";
+        rec.time = formatNow();
+        refreshAllViews();
+        openMpRefundPage(orderId);
+        showToast("商户号退款成功，资金已原路退回！");
+      }, 700);
+    }
+  }
+
+  // 小程序端操作：取消退款
+  function mpCancelRefund(orderId, recordId) {
+    const order = ordersData.find(o => o.id === orderId);
+    if (!order) return;
+    const rec = order.refundRecords.find(r => r.recordId === recordId);
+    if (!rec) return;
+
+    if (confirm("确定要取消此笔退款申请吗？取消后将不触发商户号退款。")) {
+      rec.status = "取消退款";
+      refreshAllViews();
+      openMpRefundPage(orderId);
+      showToast("已取消该退款申请");
+    }
+  }
+
+  // ================= CRM 弹窗操作 =================
+  // 1. 打开申请退款弹窗
+  function openApplyRefundModal(orderId) {
+    currentActiveOrderId = orderId;
+    const order = ordersData.find(o => o.id === orderId);
+    if (!order) return;
+
+    const paid = order.paidPrice;
+    const refunded = getRefundedAmount(order);
+    const maxLimit = Math.max(0, paid - refunded);
+
+    document.getElementById("modalOrderNo").innerText = order.id;
+    document.getElementById("modalPaidPrice").innerText = "¥" + paid.toFixed(2);
+    document.getElementById("modalRefundedPrice").innerText = "¥" + refunded.toFixed(2);
+    document.getElementById("maxRefundLimit").innerText = "¥" + maxLimit.toFixed(2);
+
+    document.getElementById("inputRefundAmount").value = "";
+    document.getElementById("inputRefundReason").value = "";
+    document.getElementById("amountError").style.display = "none";
+    document.getElementById("reasonCharCount").innerText = "0/200";
+
+    document.getElementById("applyRefundModal").classList.add("show");
+  }
+
+  function closeApplyRefundModal() {
+    document.getElementById("applyRefundModal").classList.remove("show");
+  }
+
+  function validateRefundAmount() {
+    const input = document.getElementById("inputRefundAmount");
+    const err = document.getElementById("amountError");
+    const val = input.value.trim();
+    if (!val) {
+      err.style.display = "none";
+      return false;
+    }
+
+    const num = Number(val);
+    const order = ordersData.find(o => o.id === currentActiveOrderId);
+    const maxLimit = Number((order.paidPrice - getRefundedAmount(order)).toFixed(2));
+
+    if (isNaN(num) || num <= 0) {
+      err.innerText = "仅可输入大于0的正数";
+      err.style.display = "inline";
+      return false;
+    }
+    if (num > maxLimit) {
+      err.innerText = `不可超过上限 ¥${maxLimit.toFixed(2)}`;
+      err.style.display = "inline";
+      return false;
+    }
+    err.style.display = "none";
+    return true;
+  }
+
+  function updateReasonCount() {
+    const val = document.getElementById("inputRefundReason").value;
+    document.getElementById("reasonCharCount").innerText = `${val.length}/200`;
+  }
+
+  // 提交申请退款
+  function submitRefundApply() {
+    const inputAmount = document.getElementById("inputRefundAmount").value.trim();
+    const inputReason = document.getElementById("inputRefundReason").value.trim();
+    const order = ordersData.find(o => o.id === currentActiveOrderId);
+
+    if (!inputAmount) {
+      alert("请输入退款金额");
+      return;
+    }
+    if (!validateRefundAmount()) {
+      alert("退款金额输入不合规，请检查提示");
+      return;
+    }
+
+    const amountNum = Number(Number(inputAmount).toFixed(2));
+    const newRecord = {
+      recordId: "REC" + Date.now().toString().slice(-6),
+      initiator: "liyingping",
+      amount: amountNum,
+      reason: inputReason || "CRM后台客服发起申请",
+      status: "退款中",
+      time: formatNow()
+    };
+
+    if (!order.refundRecords) order.refundRecords = [];
+    order.refundRecords.unshift(newRecord);
+
+    closeApplyRefundModal();
+    refreshAllViews();
+    showToast("退款申请已发起！小程序端状态已同步为【退款中】");
+  }
+
+  // 2. 打开退款记录弹窗
+  function openRefundRecordModal(orderId) {
+    currentActiveOrderId = orderId;
+    const order = ordersData.find(o => o.id === orderId);
+    if (!order) return;
+
+    document.getElementById("recordModalOrderNo").innerText = order.id;
+    document.getElementById("recordModalTotalSuccess").innerText = "¥" + getRefundedAmount(order).toFixed(2);
+
+    const tbody = document.getElementById("recordTableBody");
+    tbody.innerHTML = "";
+
+    if (!order.refundRecords || order.refundRecords.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#999; padding:20px;">暂无退款记录</td></tr>`;
+    } else {
+      order.refundRecords.forEach(rec => {
+        let tagClass = "refunding";
+        if (rec.status === "退款成功") tagClass = "success";
+        if (rec.status === "取消退款") tagClass = "cancelled";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${rec.initiator}</td>
+          <td style="font-weight:600; color:#ef4444;">¥${Number(rec.amount).toFixed(2)}</td>
+          <td style="max-width:180px; word-break:break-all;">${rec.reason || '-'}</td>
+          <td><span class="status-tag ${tagClass}">${rec.status}</span></td>
+          <td style="color:#666;">${rec.time}</td>
+          <td>
+            ${rec.status === '退款中' ? `
+              <div class="op-btns">
+                <button class="btn-link" onclick="openEditRefundModal('${order.id}', '${rec.recordId}')">编辑</button>
+                <button class="btn-link danger" onclick="crmCancelRefund('${order.id}', '${rec.recordId}')">取消退款</button>
+              </div>
+            ` : '<span style="color:#bfbfbf;">-</span>'}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById("refundRecordModal").classList.add("show");
+  }
+
+  function closeRefundRecordModal() {
+    document.getElementById("refundRecordModal").classList.remove("show");
+  }
+
+  // CRM 端取消退款
+  function crmCancelRefund(orderId, recordId) {
+    const order = ordersData.find(o => o.id === orderId);
+    if (!order) return;
+    const rec = order.refundRecords.find(r => r.recordId === recordId);
+    if (!rec) return;
+
+    if (confirm(`确认直接取消该笔 ¥${rec.amount.toFixed(2)} 的退款申请吗？`)) {
+      rec.status = "取消退款";
+      refreshAllViews();
+      openRefundRecordModal(orderId);
+      showToast("已取消退款申请，状态已变更为【取消退款】");
+    }
+  }
+
+  // 3. 打开编辑退款弹窗
+  function openEditRefundModal(orderId, recordId) {
+    currentActiveOrderId = orderId;
+    currentEditingRecordId = recordId;
+    const order = ordersData.find(o => o.id === orderId);
+    if (!order) return;
+    const rec = order.refundRecords.find(r => r.recordId === recordId);
+    if (!rec) return;
+
+    const maxLimit = Number((order.paidPrice - getRefundedAmount(order)).toFixed(2));
+    document.getElementById("editMaxRefundLimit").innerText = "¥" + maxLimit.toFixed(2);
+    document.getElementById("editRefundAmount").value = rec.amount.toFixed(2);
+    document.getElementById("editRefundReason").value = rec.reason;
+    document.getElementById("editReasonCharCount").innerText = `${rec.reason.length}/200`;
+    document.getElementById("editAmountError").style.display = "none";
+
+    document.getElementById("editRefundModal").classList.add("show");
+  }
+
+  function closeEditRefundModal() {
+    document.getElementById("editRefundModal").classList.remove("show");
+  }
+
+  function validateEditRefundAmount() {
+    const input = document.getElementById("editRefundAmount");
+    const err = document.getElementById("editAmountError");
+    const val = input.value.trim();
+    if (!val) { err.style.display = "none"; return false; }
+    const num = Number(val);
+    const order = ordersData.find(o => o.id === currentActiveOrderId);
+    const maxLimit = Number((order.paidPrice - getRefundedAmount(order)).toFixed(2));
+
+    if (isNaN(num) || num <= 0) {
+      err.innerText = "仅可输入大于0的正数";
+      err.style.display = "inline";
+      return false;
+    }
+    if (num > maxLimit) {
+      err.innerText = `不可超过上限 ¥${maxLimit.toFixed(2)}`;
+      err.style.display = "inline";
+      return false;
+    }
+    err.style.display = "none";
+    return true;
+  }
+
+  function updateEditReasonCount() {
+    const val = document.getElementById("editRefundReason").value;
+    document.getElementById("editReasonCharCount").innerText = `${val.length}/200`;
+  }
+
+  function saveEditedRefund() {
+    const val = document.getElementById("editRefundAmount").value.trim();
+    const reason = document.getElementById("editRefundReason").value.trim();
+    if (!val || !validateEditRefundAmount()) {
+      alert("退款金额输入不合规");
+      return;
+    }
+    const order = ordersData.find(o => o.id === currentActiveOrderId);
+    const rec = order.refundRecords.find(r => r.recordId === currentEditingRecordId);
+    if (rec) {
+      rec.amount = Number(Number(val).toFixed(2));
+      rec.reason = reason;
+      closeEditRefundModal();
+      refreshAllViews();
+      openRefundRecordModal(order.id);
+      showToast("退款信息已更新");
+    }
+  }
+
+  // 刷新所有视图
+  function refreshAllViews() {
+    renderCrmTable();
+    renderMpList();
+    if (currentSelectedMpOrderId) {
+      openMpRefundPage(currentSelectedMpOrderId);
+    }
+  }
+
+  // 工具函数：当前时间格式化
+  function formatNow() {
+    const d = new Date();
+    const pad = n => (n < 10 ? '0' + n : n);
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById("globalToast");
+    t.innerText = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2500);
+  }
+
+  // 重置原型演示数据
+  function resetPrototypeData() {
+    if (confirm("确定重置为初始原型演示数据吗？")) {
+      ordersData = JSON.parse(initialOrdersJson);
+      closeMpRefundPage();
+      refreshAllViews();
+      showToast("演示数据已重置");
+    }
+  }
+
+  // 搜索过滤支持
+  function searchOrders() {
+    const oid = document.getElementById("filterOrderId").value.trim();
+    const phone = document.getElementById("filterPhone").value.trim();
+    const name = document.getElementById("filterGoodsName").value.trim();
+
+    const filtered = ordersData.filter(o => {
+      const matchOid = !oid || o.id.includes(oid);
+      const matchPhone = !phone || o.phone.includes(phone);
+      const matchName = !name || o.goodsName.includes(name);
+      return matchOid && matchPhone && matchName;
+    });
+    renderCrmTable(filtered);
+  }
+
+  function resetFilters() {
+    document.getElementById("filterOrderId").value = "";
+    document.getElementById("filterPhone").value = "";
+    document.getElementById("filterGoodsName").value = "";
+    renderCrmTable(ordersData);
+  }
+
+  // 顶层视图切换逻辑
+  function switchMainView(mode) {
+    const btns = document.querySelectorAll(".top-bar .tab-btn");
+    btns.forEach(b => b.classList.remove("active"));
+    const vCrm = document.getElementById("crmView");
+    const vMp = document.getElementById("mpView");
+    const vSplit = document.getElementById("splitView");
+
+    // 还原挂载
+    const crmMain = document.querySelector(".crm-main");
+    const crmSidebar = document.querySelector(".crm-sidebar");
+    const phoneMock = document.querySelector(".phone-mockup");
+
+    if (mode === 'crm') {
+      btns[0].classList.add("active");
+      vCrm.appendChild(crmSidebar);
+      vCrm.appendChild(crmMain);
+      vCrm.classList.add("active");
+      vMp.classList.remove("active");
+      vSplit.classList.remove("active");
+    } else if (mode === 'mp') {
+      btns[1].classList.add("active");
+      vMp.appendChild(phoneMock);
+      vCrm.classList.remove("active");
+      vMp.classList.add("active");
+      vSplit.classList.remove("active");
+    } else if (mode === 'split') {
+      btns[2].classList.add("active");
+      document.getElementById("splitCrmMount").appendChild(crmSidebar);
+      document.getElementById("splitCrmMount").appendChild(crmMain);
+      document.getElementById("splitMpMount").appendChild(phoneMock);
+      vCrm.classList.remove("active");
+      vMp.classList.remove("active");
+      vSplit.classList.add("active");
+    }
+  }
+
+  // 初始化
+  window.onload = function() {
+    renderCrmTable();
+    renderMpList();
+  };
+</script>
+</body>
+</html>
