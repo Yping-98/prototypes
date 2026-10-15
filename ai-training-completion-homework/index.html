@@ -122,6 +122,16 @@
   .course-cws { padding-left:14px; }
   .stage-tip { margin-top:8px; font-size:12px; color:#909399; }
   .pass-line { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .import-block p { margin:16px 0 8px; line-height:1.6; }
+  .import-block p:first-child { margin-top:0; }
+  .no-file { color:#f56c6c; font-size:12px; padding-left:10px; margin-top:6px; }
+  .file-ok { color:#606266; font-size:12px; padding-left:10px; margin-top:6px; }
+  .member-tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .member-tag { display:inline-flex; align-items:center; gap:4px; height:24px; padding:0 8px; border:1px solid #d9ecff; background:#ecf5ff; color:#409eff; border-radius:4px; font-size:12px; }
+  .member-tag button { border:0; background:none; color:#409eff; cursor:pointer; line-height:1; }
+  .suggest { margin-top:6px; border:1px solid #ebeef5; border-radius:4px; background:#fff; }
+  .suggest button { display:block; width:100%; text-align:left; border:0; background:#fff; padding:8px 12px; cursor:pointer; }
+  .suggest button:hover { background:#f5f7fa; }
   .time-line { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
   .tabs { display:flex; gap:0; border-bottom:1px solid #e4e7ed; margin-bottom:16px; }
   .tabs button { height:40px; padding:0 16px; border:0; background:none; color:#303133; cursor:pointer; border-bottom:2px solid transparent; }
@@ -2078,7 +2088,7 @@ function renderPoints() {
         <div class="filter-form">
           <div class="fi"><input class="input" id="point-name" value="${esc(pointName)}" placeholder="搜索姓名" style="width:180px"></div>
           <div class="fi"><button class="btn primary" id="point-query">查询</button><button class="btn" id="point-reset">重置</button></div>
-          <div class="fi right"><button class="btn" id="point-export">导出</button></div>
+          <div class="fi right"><button class="btn primary" id="point-manage">管理积分</button><button class="btn" id="point-export">导出</button></div>
         </div>
         <div class="table-scroll"><table>
           <thead><tr>
@@ -2144,6 +2154,7 @@ function renderPoints() {
     document.getElementById("point-query").onclick = () => { pointName = nameInput.value; render(); };
     document.getElementById("point-reset").onclick = () => { pointName = ""; render(); };
     document.getElementById("point-export").onclick = () => downloadCsv("积分总览.csv", ["姓名", "部门", "当前积分"], users.map(u => [u.name, u.dept, u.points]));
+    document.getElementById("point-manage").onclick = () => openPointManage();
     document.querySelectorAll("[data-manage]").forEach(btn => btn.onclick = () => openPointManage(Number(btn.dataset.manage)));
     document.querySelectorAll("[data-detail]").forEach(btn => btn.onclick = () => openPointDetail(Number(btn.dataset.detail)));
   }
@@ -2160,46 +2171,207 @@ function renderPoints() {
     }));
   }
 }
-function openPointManage(id) {
-  const user = pointUsers.find(u => u.id === id);
+function applyPointChange(user, mode, value, reason) {
+  user.points += mode === "增加" ? value : -value;
+  pointLogs.push({ id: ++pointLogSeq, userId: user.id, type: mode, points: value, reason, time: nowStamp().text, operator: "管理员" });
+}
+function openPointManage(presetId) {
+  let tab = "single";
   let mode = "";
+  let points = "";
+  let reason = "";
+  const selected = presetId ? [presetId] : [];
+  let fileName = "";
+  let fileText = "";
+  let panelOpen = false;
+  let showTpl = false;
+  const readSingle = () => {
+    const input = document.getElementById("op-points");
+    if (input) points = input.value;
+    const reasonEl = document.getElementById("op-reason");
+    if (reasonEl) reason = reasonEl.value;
+    const checked = document.querySelector('input[name="point-op"]:checked');
+    if (checked) mode = checked.value;
+  };
   const draw = () => {
-    openDrawer("管理积分 — " + user.name, `
-      <div class="form-row"><div class="form-label">姓名</div><div class="form-ctrl" style="line-height:32px">${esc(user.name)}</div></div>
-      <div class="form-row"><div class="form-label">部门</div><div class="form-ctrl" style="line-height:32px">${esc(user.dept)}</div></div>
-      <div class="form-row"><div class="form-label">当前积分</div><div class="form-ctrl" style="line-height:32px">${user.points}</div></div>
-      <div class="form-row"><div class="form-label"><span class="req">*</span>操作</div><div class="form-ctrl radios">
-        <label><input type="radio" name="point-op" value="增加" ${mode === "增加" ? "checked" : ""}> 增加积分</label>
-        <label><input type="radio" name="point-op" value="减少" ${mode === "减少" ? "checked" : ""}> 减少积分</label>
-      </div></div>
-      ${mode ? `
-        <div class="form-row"><div class="form-label"><span class="req">*</span>积分</div><div class="form-ctrl"><input class="input" id="op-points" placeholder="请输入大于 0 的数字" style="width:220px"><div class="help">${mode === "减少" ? "不能超过当前积分 " + user.points : "增加后计入当前积分"}</div></div></div>
-        <div class="form-row"><div class="form-label">原因</div><div class="form-ctrl"><textarea class="input" id="op-reason" maxlength="200" rows="3" style="width:100%" placeholder="选填，不超过 200 字"></textarea><div class="count" id="op-count">0/200</div></div></div>
-      ` : `<p class="help">请先选择增加积分或减少积分</p>`}
-    `, `<button class="btn" id="op-cancel">取消</button><button class="btn primary" id="op-save" ${mode ? "" : "disabled"}>保存</button>`, "score");
+    const tags = selected.map(id => {
+      const user = pointUsers.find(u => u.id === id);
+      return `<span class="member-tag">${esc(user.name)}<button type="button" data-remove-user="${id}">×</button></span>`;
+    }).join("");
+    openDrawer("管理积分", `
+      <div class="tabs">
+        <button class="${tab === "single" ? "active" : ""}" data-manage-tab="single">单个处理</button>
+        <button class="${tab === "batch" ? "active" : ""}" data-manage-tab="batch">批量处理</button>
+      </div>
+      ${tab === "single" ? `
+        <div class="form-row"><div class="form-label"><span class="req">*</span>操作类型</div><div class="form-ctrl radios">
+          <label><input type="radio" name="point-op" value="增加" ${mode === "增加" ? "checked" : ""}> 增加积分</label>
+          <label><input type="radio" name="point-op" value="减少" ${mode === "减少" ? "checked" : ""}> 减少积分</label>
+        </div></div>
+        ${mode ? `<div class="form-row"><div class="form-label"><span class="req">*</span>积分</div><div class="form-ctrl"><input class="input" id="op-points" value="${esc(points)}" placeholder="请输入大于 0 的数字" style="width:220px"><div class="help">${mode === "减少" ? "不能超过所选人员各自的当前积分" : "增加后计入当前积分"}</div></div></div>` : `<p class="help">请先选择增加积分或减少积分</p>`}
+        <div class="form-row"><div class="form-label"><span class="req">*</span>人员</div><div class="form-ctrl">
+          <div class="cw-bar" style="margin-bottom:0">
+            <button class="btn primary" id="batch-people" type="button">+ 添加人员</button>
+            <input class="input" id="member-search" placeholder="搜索姓名直接添加人员" style="width:260px">
+          </div>
+          <div id="member-suggest"></div>
+          <div id="people-panel"></div>
+          <div class="member-tags">${tags || `<span class="hint">暂未添加人员</span>`}</div>
+        </div></div>
+        <div class="form-row"><div class="form-label">原因</div><div class="form-ctrl"><textarea class="input" id="op-reason" maxlength="200" rows="3" style="width:100%" placeholder="选填，不超过 200 字">${esc(reason)}</textarea><div class="count" id="op-count">${reason.length}/200</div></div></div>
+      ` : `
+        <div class="import-block">
+          <p>1、点击下方按钮打开在线模板，根据模板提示填写信息，并将其导出为Excel文件。</p>
+          <button class="btn primary" id="view-tpl" type="button">查看模板</button>
+          <div id="tpl-preview"></div>
+          <p>2、上传Excel文件</p>
+          <button class="btn" id="pick-file" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13a5 5 0 0 0 .35-9.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+            选择文件
+          </button>
+          <input id="point-file" type="file" accept=".csv,.xls,.xlsx" hidden>
+          ${fileName ? `<div class="file-ok">${esc(fileName)}</div>` : `<div class="no-file">未选择任何文件</div>`}
+        </div>
+      `}
+    `, `<button class="btn" id="op-cancel">取消</button><button class="btn primary" id="op-save" ${tab === "batch" && !fileName ? "disabled" : ""}>确定</button>`, "score");
+    document.querySelectorAll("[data-manage-tab]").forEach(btn => {
+      btn.onclick = () => { readSingle(); tab = btn.dataset.manageTab; draw(); };
+    });
     document.querySelectorAll('input[name="point-op"]').forEach(el => {
-      el.onchange = () => { mode = el.value; draw(); };
+      el.onchange = () => { readSingle(); mode = el.value; draw(); };
     });
     const input = document.getElementById("op-points");
-    if (input) input.oninput = () => {
-      input.value = sanitizePositive(input.value);
-      if (mode === "减少" && Number(input.value) > user.points) input.value = user.points ? String(user.points) : "";
+    if (input) input.oninput = () => { input.value = sanitizePositive(input.value); points = input.value; };
+    const reasonEl = document.getElementById("op-reason");
+    if (reasonEl) reasonEl.oninput = () => {
+      reason = reasonEl.value;
+      document.getElementById("op-count").textContent = reason.length + "/200";
     };
-    const reason = document.getElementById("op-reason");
-    if (reason) reason.oninput = () => { document.getElementById("op-count").textContent = reason.value.length + "/200"; };
+    const search = document.getElementById("member-search");
+    if (search) search.oninput = () => {
+      const kw = search.value.trim();
+      const box = document.getElementById("member-suggest");
+      const list = kw ? pointUsers.filter(u => u.name.includes(kw) && !selected.includes(u.id)) : [];
+      box.innerHTML = list.length ? `<div class="suggest">${list.map(u => `<button type="button" data-add-user="${u.id}">${esc(u.name)} · ${esc(u.dept)} · 当前 ${u.points}</button>`).join("")}</div>` : "";
+      box.querySelectorAll("[data-add-user]").forEach(btn => {
+        btn.onclick = () => {
+          readSingle();
+          selected.push(Number(btn.dataset.addUser));
+          search.value = "";
+          draw();
+        };
+      });
+    };
+    const batchBtn = document.getElementById("batch-people");
+    if (batchBtn) batchBtn.onclick = () => { panelOpen = !panelOpen; paintPeople(); };
+    document.querySelectorAll("[data-remove-user]").forEach(btn => {
+      btn.onclick = () => {
+        readSingle();
+        const idx = selected.indexOf(Number(btn.dataset.removeUser));
+        if (idx >= 0) selected.splice(idx, 1);
+        draw();
+      };
+    });
+    if (panelOpen) paintPeople();
+    const viewTpl = document.getElementById("view-tpl");
+    if (viewTpl) viewTpl.onclick = () => { showTpl = !showTpl; paintTpl(); };
+    if (showTpl) paintTpl();
+    const pick = document.getElementById("pick-file");
+    if (pick) pick.onclick = () => document.getElementById("point-file").click();
+    const fileInput = document.getElementById("point-file");
+    if (fileInput) fileInput.onchange = () => {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+      fileName = file.name;
+      const reader = new FileReader();
+      reader.onload = () => { fileText = String(reader.result || ""); draw(); };
+      reader.readAsText(file);
+    };
     document.getElementById("op-cancel").onclick = closeDrawer;
     document.getElementById("op-save").onclick = () => {
-      if (!mode) return;
-      const value = Number(input.value);
-      if (!isPositive(input.value)) return toast("请输入大于 0 的数字", "warn");
-      if (mode === "减少" && value > user.points) return toast("减少积分不能超过当前积分", "warn");
-      user.points += mode === "增加" ? value : -value;
-      pointLogs.push({ id: ++pointLogSeq, userId: user.id, type: mode, points: value, reason: reason.value.trim(), time: nowStamp().text, operator: "管理员" });
+      if (tab === "batch") return importPointFile();
+      readSingle();
+      if (!mode) return toast("请选择操作类型", "warn");
+      if (!isPositive(points)) return toast("请输入大于 0 的数字", "warn");
+      if (!selected.length) return toast("请选择人员", "warn");
+      const value = Number(points);
+      if (mode === "减少") {
+        const lack = selected.map(id => pointUsers.find(u => u.id === id)).filter(u => value > u.points);
+        if (lack.length) return toast("减少积分不能超过该人员当前积分：" + lack.map(u => u.name).join("、"), "warn");
+      }
+      selected.forEach(id => applyPointChange(pointUsers.find(u => u.id === id), mode, value, reason.trim()));
       closeDrawer();
       toast(mode === "增加" ? "已增加积分" : "已减少积分", "ok");
       render();
     };
   };
+  function paintPeople() {
+    const box = document.getElementById("people-panel");
+    if (!box) return;
+    if (!panelOpen) { box.innerHTML = ""; return; }
+    box.innerHTML = `<div class="inline-panel">
+      <div class="section-title">批量选择人员</div>
+      ${pointUsers.map(u => `<label style="display:block;margin-bottom:8px"><input type="checkbox" class="people-check" value="${u.id}" ${selected.includes(u.id) ? "checked" : ""}> ${esc(u.name)} · ${esc(u.dept)} · 当前 ${u.points}</label>`).join("")}
+      <button class="btn primary" id="people-ok" type="button">确定</button>
+      <button class="btn" id="people-cancel" type="button">取消</button>
+    </div>`;
+    document.getElementById("people-cancel").onclick = () => { panelOpen = false; box.innerHTML = ""; };
+    document.getElementById("people-ok").onclick = () => {
+      readSingle();
+      document.querySelectorAll(".people-check").forEach(el => {
+        const id = Number(el.value);
+        const idx = selected.indexOf(id);
+        if (el.checked && idx < 0) selected.push(id);
+        if (!el.checked && idx >= 0) selected.splice(idx, 1);
+      });
+      panelOpen = false;
+      draw();
+    };
+  }
+  function paintTpl() {
+    const box = document.getElementById("tpl-preview");
+    if (!box) return;
+    if (!showTpl) { box.innerHTML = ""; return; }
+    box.innerHTML = `<div class="inline-panel">
+      <div class="section-title">积分批量处理模板</div>
+      <table>
+        <thead><tr><th>姓名</th><th>操作类型</th><th>积分</th><th>原因</th></tr></thead>
+        <tbody><tr><td>张伟</td><td>增加积分</td><td>10</td><td>活动补发</td></tr></tbody>
+      </table>
+      <p class="help">操作类型填写「增加积分」或「减少积分」。减少积分不能超过该人员当前积分。</p>
+      <button class="btn primary" id="export-tpl" type="button">导出为 Excel</button>
+    </div>`;
+    document.getElementById("export-tpl").onclick = () => downloadCsv("积分批量处理模板.csv", ["姓名", "操作类型", "积分", "原因"], [["张伟", "增加积分", "10", "活动补发"]]);
+  }
+  function importPointFile() {
+    if (!fileName) return toast("未选择任何文件", "warn");
+    const lines = fileText.replace(/^\uFEFF/, "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+    if (lines.length < 2) return toast("文件中没有可导入的数据", "warn");
+    const body = lines.slice(1);
+    const errors = [];
+    let count = 0;
+    body.forEach((line, index) => {
+      const cells = line.split(",").map(cell => cell.replace(/^"|"$/g, "").trim());
+      const [name, opText, scoreText, why] = cells;
+      const user = pointUsers.find(u => u.name === name);
+      const op = opText === "增加积分" || opText === "增加" ? "增加" : opText === "减少积分" || opText === "减少" ? "减少" : "";
+      if (!user || !op || !isPositive(scoreText)) {
+        errors.push("第 " + (index + 2) + " 行无法识别");
+        return;
+      }
+      const value = Number(scoreText);
+      if (op === "减少" && value > user.points) {
+        errors.push(name + "减少积分不能超过当前积分");
+        return;
+      }
+      applyPointChange(user, op, value, why || "");
+      count += 1;
+    });
+    if (!count) return toast(errors[0] || "文件中没有可导入的数据", "warn");
+    closeDrawer();
+    toast(errors.length ? "已导入 " + count + " 条，" + errors[0] : "已导入 " + count + " 条", errors.length ? "warn" : "ok");
+    render();
+  }
   draw();
 }
 function openPointDetail(id) {
