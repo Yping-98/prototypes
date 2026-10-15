@@ -155,7 +155,7 @@
   .req { color:#f56c6c; margin-right:2px; }
   .form-ctrl { flex:1; min-width:0; }
   .help { margin-top:4px; color:#909399; font-size:12px; }
-  .cw-bar { display:flex; align-items:center; margin-bottom:12px; }
+  .cw-bar { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
   .inline-panel { padding:16px; margin-bottom:12px; background:#f5f7fa; border:1px solid #ebeef5; border-radius:8px; }
   .radios label { margin-right:16px; line-height:32px; }
   .std-cell { display:flex; align-items:center; gap:6px; }
@@ -200,8 +200,12 @@
   <aside class="sidebar">
     <div class="logo"><span class="logo-icon">质</span><span class="logo-title">AI质培中台</span></div>
     <div class="menu">
-      <div class="menu-group">
-        <div class="menu-sub"><svg class="menu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z"/></svg><span>工作台</span><i class="menu-arrow"></i></div>
+      <div class="menu-group" id="menu-home">
+        <div class="menu-sub" id="toggle-home"><svg class="menu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z"/></svg><span>工作台</span><i class="menu-arrow"></i></div>
+        <div class="menu-children">
+          <div class="menu-item">首页</div>
+          <div class="menu-item" data-nav="points">积分管理</div>
+        </div>
       </div>
       <div class="menu-group open" id="menu-learn">
         <div class="menu-sub" id="toggle-learn"><svg class="menu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 5.5A2.5 2.5 0 0 1 6.5 8H20"/></svg><span>在线学习</span><i class="menu-arrow"></i></div>
@@ -353,6 +357,7 @@ const project = {
   updatedAt: "2026-10-14",
   pointRule: "课程制",
   projectPoints: "",
+  coursePoints: "10",
   order: "按课程顺序",
   items: [
     { uid: 1, kind: "course", name: "开场话术演示", points: "10", done: true, granted: false },
@@ -371,6 +376,25 @@ const exams = [{
   startAt: "2026-10-20 09:00:00", endAt: "2026-10-31 18:00:00",
   durationMinutes: 60, memberCount: 46, attendedCount: 0
 }];
+const pointUsers = [
+  { id: 1, name: "张伟", dept: "华东一部", points: 128 },
+  { id: 2, name: "陈静", dept: "华东一部", points: 30 },
+  { id: 3, name: "刘洋", dept: "华北二部", points: 0 },
+  { id: 4, name: "周婷", dept: "华南一部", points: 60 }
+];
+let pointLogs = [
+  { id: 1, userId: 1, type: "增加", points: 10, reason: "完成新人产品通关课", time: "2026-10-12 11:20", operator: "张伟" },
+  { id: 2, userId: 1, type: "增加", points: 100, reason: "完成新人30天成长营", time: "2026-10-13 09:00", operator: "张伟" },
+  { id: 3, userId: 1, type: "增加", points: 20, reason: "活动补发", time: "2026-10-14 15:12", operator: "管理员" },
+  { id: 4, userId: 1, type: "减少", points: 2, reason: "录入有误扣回", time: "2026-10-14 16:40", operator: "管理员" },
+  { id: 5, userId: 2, type: "增加", points: 10, reason: "完成新人产品通关课", time: "2026-10-11 10:05", operator: "陈静" },
+  { id: 6, userId: 2, type: "增加", points: 20, reason: "完成新人结业考试", time: "2026-10-15 09:30", operator: "陈静" },
+  { id: 7, userId: 4, type: "增加", points: 60, reason: "完成新人30天成长营", time: "2026-10-10 18:22", operator: "周婷" }
+];
+let pointLogSeq = 10;
+let pointTab = "overview";
+let pointName = "";
+let logFilter = { name: "", type: "", from: "", to: "" };
 let learnTab = "course";
 let learnCourseTab = "";
 let learnProjectTab = "";
@@ -487,6 +511,7 @@ function render() {
   else if (view === "project") renderProject();
   else if (view === "proj-learn") renderProjLearn();
   else if (view === "exam") renderExam();
+  else if (view === "points") renderPoints();
 }
 
 function courseStatusTag(status) {
@@ -1567,6 +1592,7 @@ function openProjectEditor(isEdit, index) {
       description: "",
       pointRule: "",
       projectPoints: "",
+      coursePoints: "",
       order: "",
       status: "草稿",
       items: []
@@ -1577,8 +1603,11 @@ function openProjectEditor(isEdit, index) {
 }
 function drawProjectEditor(isEdit) {
   const p = editProject;
+  const infoVisible = projTab === "info" || !isEdit;
   const pointsField = p.pointRule === "项目制"
     ? `<div class="form-row"><div class="form-label"><span class="req">*</span>项目总积分</div><div class="form-ctrl"><input class="input" id="proj-points" value="${esc(p.projectPoints)}" placeholder="请输入大于 0 的数字" style="width:220px"><div class="help">完成项目内全部课程后发放一次</div></div></div>`
+    : p.pointRule === "课程制" && infoVisible
+    ? `<div class="form-row"><div class="form-label"><span class="req">*</span>课程积分</div><div class="form-ctrl"><input class="input" id="course-points" value="${esc(p.coursePoints || "")}" placeholder="请输入大于 0 的数字" style="width:220px"><div class="help">只填一个积分。每完成一门课程或提交一次作业，都发放该积分。</div></div></div>`
     : "";
   openDrawer(isEdit ? "编辑项目 — " + (p.name || "未命名") : "新建学习项目", `
     ${isEdit ? `<div class="tabs">
@@ -1594,7 +1623,7 @@ function drawProjectEditor(isEdit) {
         <label><input type="radio" name="point-rule" value="" ${p.pointRule===""?"checked":""}> 不设置</label>
         <label><input type="radio" name="point-rule" value="项目制" ${p.pointRule==="项目制"?"checked":""}> 项目制</label>
         <label><input type="radio" name="point-rule" value="课程制" ${p.pointRule==="课程制"?"checked":""}> 课程制</label>
-        <div class="help">非必填。不选择表示该项目没有积分。项目制需完成全部课程才发放；课程制完成一门课程即发放该课程积分。</div>
+        <div class="help">非必填。不选择表示该项目没有积分。项目制需完成全部课程才发放；课程制每完成一门课程或提交一次作业，都发放课程积分。</div>
       </div></div>
       ${pointsField}
       <div class="form-row"><div class="form-label"><span class="req">*</span>学习顺序</div><div class="form-ctrl radios">
@@ -1618,7 +1647,6 @@ function drawProjectEditor(isEdit) {
           <th style="width:90px">课程状态</th>
           ${isEdit ? `<th style="width:80px;text-align:center">课件数</th>` : ""}
           <th style="width:90px;text-align:center">完成人数</th>
-          ${p.pointRule==="课程制" ? `<th style="width:110px">课程积分</th>` : ""}
           <th style="width:110px">排序</th>
           <th style="width:80px">操作</th>
         </tr></thead>
@@ -1629,7 +1657,6 @@ function drawProjectEditor(isEdit) {
             <td>${it.kind==="homework" ? tagOf("已上架") : tagOf("已发布")}</td>
             ${isEdit ? `<td style="text-align:center">${it.kind==="homework" ? "—" : "3"}</td>` : ""}
             <td style="text-align:center">${it.kind==="course" ? "0" : "—"}</td>
-            ${p.pointRule==="课程制" ? `<td>${it.kind==="course" ? `<input class="input short course-point" data-uid="${it.uid}" value="${esc(it.points)}" placeholder="积分">` : "提交即完成"}</td>` : ""}
             <td>
               <button class="icon-btn" data-move="${i}" data-dir="-1" ${i===0?"disabled":""} title="上移">↑</button>
               <button class="icon-btn" data-move="${i}" data-dir="1" ${i===p.items.length-1?"disabled":""} title="下移">↓</button>
@@ -1638,7 +1665,6 @@ function drawProjectEditor(isEdit) {
           </tr>`).join("") || `<tr><td colspan="8" class="empty">暂未添加课程，请从课程池选择</td></tr>`}
         </tbody>
       </table></div>
-      ${p.pointRule==="课程制" ? `<p class="help">课程制下每门课程都要填写大于 0 的积分。作业提交即完成，不发放课程积分。</p>` : ""}
       ${p.pointRule==="项目制" ? `<p class="help">项目制在全部课程完成后发放项目总积分。已完成的学员不因本次修改补发或改写积分。</p>` : ""}
     ` : ""}
     ${projTab==="member" && isEdit ? `
@@ -1673,10 +1699,8 @@ function readProjectBasics() {
   if (order) editProject.order = order.value;
   const pts = document.getElementById("proj-points");
   if (pts) editProject.projectPoints = pts.value;
-  document.querySelectorAll(".course-point").forEach(input => {
-    const item = editProject.items.find(x => x.uid === Number(input.dataset.uid));
-    if (item) item.points = input.value;
-  });
+  const coursePts = document.getElementById("course-points");
+  if (coursePts) editProject.coursePoints = coursePts.value;
 }
 function bindProjectEditor(isEdit) {
   document.querySelectorAll("[data-ptab]").forEach(btn => {
@@ -1687,13 +1711,8 @@ function bindProjectEditor(isEdit) {
   });
   const pts = document.getElementById("proj-points");
   if (pts) pts.oninput = () => { pts.value = sanitizePositive(pts.value); editProject.projectPoints = pts.value; };
-  document.querySelectorAll(".course-point").forEach(input => {
-    input.oninput = () => {
-      input.value = sanitizePositive(input.value);
-      const item = editProject.items.find(x => x.uid === Number(input.dataset.uid));
-      if (item) item.points = input.value;
-    };
-  });
+  const coursePts = document.getElementById("course-points");
+  if (coursePts) coursePts.oninput = () => { coursePts.value = sanitizePositive(coursePts.value); editProject.coursePoints = coursePts.value; };
   const pickHw = document.getElementById("pick-hw");
   if (pickHw) pickHw.onclick = () => toggleHomeworkPick(isEdit);
   const pickCourse = document.getElementById("pick-course");
@@ -1732,13 +1751,29 @@ function toggleHomeworkPick(isEdit) {
   if (!box) return;
   if (box.dataset.open === "1") { box.innerHTML = ""; box.dataset.open = ""; return; }
   box.dataset.open = "1";
-  const list = homeworks.filter(h => h.status === "上架");
+  const picked = new Set();
   box.innerHTML = `<div class="inline-panel">
     <div class="section-title">选择已上架作业</div>
-    ${list.map(h => `<label style="display:block;margin-bottom:8px"><input type="checkbox" class="hw-check" value="${h.id}"> ${esc(h.name)}（${h.questions.length} 题）</label>`).join("") || `<div class="empty">暂无上架作业</div>`}
+    <div class="filter-form">
+      <div class="fi"><input class="input" id="hw-kw" placeholder="搜索作业名称" style="width:180px"></div>
+      <div class="fi"><span class="hint">仅可选择「已上架」状态的作业</span></div>
+    </div>
+    <div id="hw-pick-list"></div>
     <button class="btn primary" id="hw-pick-ok">确定</button>
     <button class="btn" id="hw-pick-cancel">取消</button>
   </div>`;
+  const paint = () => {
+    document.querySelectorAll(".hw-check").forEach(el => {
+      const id = Number(el.value);
+      if (el.checked) picked.add(id);
+      else picked.delete(id);
+    });
+    const keyword = document.getElementById("hw-kw").value.trim();
+    const list = homeworks.filter(h => h.status === "上架" && (!keyword || h.name.includes(keyword)));
+    document.getElementById("hw-pick-list").innerHTML = list.map(h => `<label style="display:block;margin-bottom:8px"><input type="checkbox" class="hw-check" value="${h.id}" ${picked.has(h.id) ? "checked" : ""}> ${esc(h.name)}（${h.questions.length} 题）</label>`).join("") || `<div class="empty">暂无匹配的上架作业</div>`;
+  };
+  paint();
+  document.getElementById("hw-kw").oninput = paint;
   document.getElementById("hw-pick-cancel").onclick = () => { box.innerHTML = ""; box.dataset.open = ""; };
   document.getElementById("hw-pick-ok").onclick = () => {
     readProjectBasics();
@@ -1760,9 +1795,7 @@ function saveProject(isEdit) {
   if (!editProject.name.trim()) return toast("请输入项目名称", "warn");
   if (!editProject.order) return toast("请选择学习顺序", "warn");
   if (editProject.pointRule === "项目制" && !isPositive(editProject.projectPoints)) return toast("请输入大于 0 的数字", "warn");
-  if (editProject.pointRule === "课程制" && editProject.items.some(it => it.kind === "course" && !isPositive(it.points))) {
-    return toast("请输入大于 0 的数字", "warn");
-  }
+  if (editProject.pointRule === "课程制" && !isPositive(editProject.coursePoints)) return toast("请输入大于 0 的数字", "warn");
   const saved = {
     name: editProject.name.trim(),
     range: editProject.range,
@@ -1770,6 +1803,7 @@ function saveProject(isEdit) {
     status: editProject.status || "进行中",
     pointRule: editProject.pointRule,
     projectPoints: editProject.projectPoints,
+    coursePoints: editProject.coursePoints,
     order: editProject.order,
     items: editProject.items
   };
@@ -1899,7 +1933,9 @@ function renderHomeworkAnswer(main, item) {
     if (submit.disabled) return;
     item.done = true;
     const coursesDone = project.items.filter(x => x.kind === "course").every(x => x.done);
-    if (project.pointRule === "项目制" && coursesDone && isPositive(project.projectPoints)) {
+    if (project.pointRule === "课程制" && isPositive(project.coursePoints)) {
+      toast("作业已提交，获得积分 " + project.coursePoints, "ok");
+    } else if (project.pointRule === "项目制" && coursesDone && isPositive(project.projectPoints)) {
       toast("作业已提交。全部课程已完成，获得项目积分 " + project.projectPoints, "ok");
     } else toast("作业已提交，记为完成", "ok");
     renderProjLearn();
@@ -2002,6 +2038,190 @@ function openExamEditor(id) {
   const draft = document.getElementById("exam-draft");
   if (draft) draft.onclick = persist;
 }
+function userLogs(userId) {
+  return pointLogs.filter(row => row.userId === userId).sort((a, b) => b.time.localeCompare(a.time));
+}
+function filteredLogs() {
+  return pointLogs.filter(row => {
+    const user = pointUsers.find(u => u.id === row.userId);
+    if (!user) return false;
+    if (logFilter.name && !user.name.includes(logFilter.name.trim())) return false;
+    if (logFilter.type && row.type !== logFilter.type) return false;
+    const day = row.time.slice(0, 10);
+    if (logFilter.from && day < logFilter.from) return false;
+    if (logFilter.to && day > logFilter.to) return false;
+    return true;
+  }).sort((a, b) => b.time.localeCompare(a.time));
+}
+function downloadCsv(filename, headers, rows) {
+  if (!rows.length) return toast("当前没有可导出的数据", "warn");
+  const lines = [headers.join(",")].concat(rows.map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")));
+  const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast("已导出当前筛选结果", "ok");
+}
+function renderPoints() {
+  setCrumb([{ text: "工作台" }, { text: "积分管理" }]);
+  const users = pointUsers.filter(u => !pointName.trim() || u.name.includes(pointName.trim()));
+  const logs = filteredLogs();
+  document.getElementById("app").innerHTML = `
+    <div class="card">
+      <div class="tabs">
+        <button class="${pointTab === "overview" ? "active" : ""}" data-point-tab="overview">积分总览</button>
+        <button class="${pointTab === "logs" ? "active" : ""}" data-point-tab="logs">积分记录</button>
+      </div>
+      ${pointTab === "overview" ? `
+        <div class="filter-form">
+          <div class="fi"><input class="input" id="point-name" value="${esc(pointName)}" placeholder="搜索姓名" style="width:180px"></div>
+          <div class="fi"><button class="btn primary" id="point-query">查询</button><button class="btn" id="point-reset">重置</button></div>
+          <div class="fi right"><button class="btn" id="point-export">导出</button></div>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr>
+            <th class="sticky-left" style="min-width:100px">姓名</th>
+            <th style="min-width:140px">部门</th>
+            <th style="width:120px">当前积分</th>
+            <th class="sticky-right" style="width:160px">操作</th>
+          </tr></thead>
+          <tbody>${users.map(u => `<tr>
+            <td class="sticky-left">${esc(u.name)}</td>
+            <td>${esc(u.dept)}</td>
+            <td>${u.points}</td>
+            <td class="sticky-right ops">
+              <button class="btn link" data-manage="${u.id}">管理积分</button>
+              <button class="btn link" data-detail="${u.id}">明细</button>
+            </td>
+          </tr>`).join("") || `<tr><td colspan="4" class="empty">暂无数据</td></tr>`}</tbody>
+        </table></div>
+        ${pagerBar(users.length)}
+      ` : `
+        <div class="filter-form">
+          <div class="fi"><input class="input" id="log-name" value="${esc(logFilter.name)}" placeholder="搜索姓名" style="width:180px"></div>
+          <div class="fi"><select id="log-type" style="width:120px">
+            <option value="">全部类型</option>
+            <option ${logFilter.type === "增加" ? "selected" : ""}>增加</option>
+            <option ${logFilter.type === "减少" ? "selected" : ""}>减少</option>
+          </select></div>
+          <div class="fi"><input class="input" id="log-from" type="date" value="${esc(logFilter.from)}" style="width:150px"><span style="margin:0 8px;color:#606266">至</span><input class="input" id="log-to" type="date" value="${esc(logFilter.to)}" style="width:150px"></div>
+          <div class="fi"><button class="btn primary" id="log-query">查询</button><button class="btn" id="log-reset">重置</button></div>
+          <div class="fi right"><button class="btn" id="log-export">导出</button></div>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr>
+            <th class="sticky-left" style="min-width:100px">姓名</th>
+            <th style="min-width:120px">部门</th>
+            <th style="width:80px">类型</th>
+            <th style="width:80px">积分</th>
+            <th style="min-width:180px">原因</th>
+            <th style="width:160px">时间</th>
+            <th style="width:100px">操作人</th>
+          </tr></thead>
+          <tbody>${logs.map(row => {
+            const user = pointUsers.find(u => u.id === row.userId);
+            return `<tr>
+              <td class="sticky-left">${esc(user.name)}</td>
+              <td>${esc(user.dept)}</td>
+              <td><span class="tag ${row.type === "增加" ? "green" : "red"}">${esc(row.type)}</span></td>
+              <td>${row.points}</td>
+              <td>${esc(row.reason || "—")}</td>
+              <td>${esc(row.time)}</td>
+              <td>${esc(row.operator)}</td>
+            </tr>`;
+          }).join("") || `<tr><td colspan="7" class="empty">暂无数据</td></tr>`}</tbody>
+        </table></div>
+        ${pagerBar(logs.length)}
+      `}
+    </div>`;
+  document.querySelectorAll("[data-point-tab]").forEach(btn => {
+    btn.onclick = () => { pointTab = btn.dataset.pointTab; render(); };
+  });
+  const nameInput = document.getElementById("point-name");
+  if (nameInput) {
+    document.getElementById("point-query").onclick = () => { pointName = nameInput.value; render(); };
+    document.getElementById("point-reset").onclick = () => { pointName = ""; render(); };
+    document.getElementById("point-export").onclick = () => downloadCsv("积分总览.csv", ["姓名", "部门", "当前积分"], users.map(u => [u.name, u.dept, u.points]));
+    document.querySelectorAll("[data-manage]").forEach(btn => btn.onclick = () => openPointManage(Number(btn.dataset.manage)));
+    document.querySelectorAll("[data-detail]").forEach(btn => btn.onclick = () => openPointDetail(Number(btn.dataset.detail)));
+  }
+  const logName = document.getElementById("log-name");
+  if (logName) {
+    document.getElementById("log-query").onclick = () => {
+      logFilter = { name: logName.value, type: document.getElementById("log-type").value, from: document.getElementById("log-from").value, to: document.getElementById("log-to").value };
+      render();
+    };
+    document.getElementById("log-reset").onclick = () => { logFilter = { name: "", type: "", from: "", to: "" }; render(); };
+    document.getElementById("log-export").onclick = () => downloadCsv("积分记录.csv", ["姓名", "部门", "类型", "积分", "原因", "时间", "操作人"], logs.map(row => {
+      const user = pointUsers.find(u => u.id === row.userId);
+      return [user.name, user.dept, row.type, row.points, row.reason, row.time, row.operator];
+    }));
+  }
+}
+function openPointManage(id) {
+  const user = pointUsers.find(u => u.id === id);
+  let mode = "";
+  const draw = () => {
+    openDrawer("管理积分 — " + user.name, `
+      <div class="form-row"><div class="form-label">姓名</div><div class="form-ctrl" style="line-height:32px">${esc(user.name)}</div></div>
+      <div class="form-row"><div class="form-label">部门</div><div class="form-ctrl" style="line-height:32px">${esc(user.dept)}</div></div>
+      <div class="form-row"><div class="form-label">当前积分</div><div class="form-ctrl" style="line-height:32px">${user.points}</div></div>
+      <div class="form-row"><div class="form-label"><span class="req">*</span>操作</div><div class="form-ctrl radios">
+        <label><input type="radio" name="point-op" value="增加" ${mode === "增加" ? "checked" : ""}> 增加积分</label>
+        <label><input type="radio" name="point-op" value="减少" ${mode === "减少" ? "checked" : ""}> 减少积分</label>
+      </div></div>
+      ${mode ? `
+        <div class="form-row"><div class="form-label"><span class="req">*</span>积分</div><div class="form-ctrl"><input class="input" id="op-points" placeholder="请输入大于 0 的数字" style="width:220px"><div class="help">${mode === "减少" ? "不能超过当前积分 " + user.points : "增加后计入当前积分"}</div></div></div>
+        <div class="form-row"><div class="form-label">原因</div><div class="form-ctrl"><textarea class="input" id="op-reason" maxlength="200" rows="3" style="width:100%" placeholder="选填，不超过 200 字"></textarea><div class="count" id="op-count">0/200</div></div></div>
+      ` : `<p class="help">请先选择增加积分或减少积分</p>`}
+    `, `<button class="btn" id="op-cancel">取消</button><button class="btn primary" id="op-save" ${mode ? "" : "disabled"}>保存</button>`, "score");
+    document.querySelectorAll('input[name="point-op"]').forEach(el => {
+      el.onchange = () => { mode = el.value; draw(); };
+    });
+    const input = document.getElementById("op-points");
+    if (input) input.oninput = () => {
+      input.value = sanitizePositive(input.value);
+      if (mode === "减少" && Number(input.value) > user.points) input.value = user.points ? String(user.points) : "";
+    };
+    const reason = document.getElementById("op-reason");
+    if (reason) reason.oninput = () => { document.getElementById("op-count").textContent = reason.value.length + "/200"; };
+    document.getElementById("op-cancel").onclick = closeDrawer;
+    document.getElementById("op-save").onclick = () => {
+      if (!mode) return;
+      const value = Number(input.value);
+      if (!isPositive(input.value)) return toast("请输入大于 0 的数字", "warn");
+      if (mode === "减少" && value > user.points) return toast("减少积分不能超过当前积分", "warn");
+      user.points += mode === "增加" ? value : -value;
+      pointLogs.push({ id: ++pointLogSeq, userId: user.id, type: mode, points: value, reason: reason.value.trim(), time: nowStamp().text, operator: "管理员" });
+      closeDrawer();
+      toast(mode === "增加" ? "已增加积分" : "已减少积分", "ok");
+      render();
+    };
+  };
+  draw();
+}
+function openPointDetail(id) {
+  const user = pointUsers.find(u => u.id === id);
+  const rows = userLogs(id);
+  openDrawer("积分明细 — " + user.name, `
+    <table>
+      <thead><tr><th>类型</th><th>积分</th><th>原因</th><th>时间</th><th>操作人</th></tr></thead>
+      <tbody>${rows.map(row => `<tr>
+        <td><span class="tag ${row.type === "增加" ? "green" : "red"}">${esc(row.type)}</span></td>
+        <td>${row.points}</td>
+        <td>${esc(row.reason || "—")}</td>
+        <td>${esc(row.time)}</td>
+        <td>${esc(row.operator)}</td>
+      </tr>`).join("") || `<tr><td colspan="5" class="empty">暂无积分记录</td></tr>`}</tbody>
+    </table>
+  `, `<button class="btn" id="detail-close">关闭</button>`, "score");
+  document.getElementById("detail-close").onclick = closeDrawer;
+}
+document.getElementById("toggle-home").onclick = () => {
+  document.getElementById("menu-home").classList.toggle("open");
+};
 document.getElementById("toggle-learn").onclick = () => {
   document.getElementById("menu-learn").classList.toggle("open");
 };
