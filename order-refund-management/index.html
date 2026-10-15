@@ -33,12 +33,12 @@
   .view-container.active { display:flex; }
 
   /* ================= CRM后台样式 ================= */
-  #crmView { display:flex; height:calc(100vh - 46px); overflow:hidden; }
+  #crmView.active { height:calc(100vh - 46px); overflow:hidden; }
   
   /* 左侧侧边栏 */
   .crm-sidebar {
     width:190px; background:#001529; color:#a6adb4; flex-shrink:0;
-    display:flex; flex-direction:column; user-select:none;
+    display:flex; flex-direction:column; user-select:none; height:100%; overflow:hidden;
   }
   .crm-logo-area {
     height:50px; background:#002140; display:flex; align-items:center;
@@ -68,12 +68,13 @@
 
   /* 右侧主体 */
   .crm-main {
-    flex:1; display:flex; flex-direction:column; background:#f0f2f5; overflow:hidden;
+    flex:1; min-width:0; height:100%; display:flex; flex-direction:column; background:#f0f2f5; overflow:hidden;
   }
   /* 顶部导航与标签页 */
   .crm-header-nav {
-    height:46px; background:#fff; border-bottom:1px solid #e8e8e8;
-    display:flex; align-items:center; justify-content:space-between; padding:0 16px;
+    min-height:46px; background:#fff; border-bottom:1px solid #e8e8e8;
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:6px 16px; flex-wrap:wrap;
   }
   .crm-header-tabs { display:flex; gap:6px; align-items:center; }
   .tab-pill {
@@ -84,7 +85,7 @@
   .tab-pill.active {
     background:#e6f7ff; border-color:#91d5ff; color:#1890ff; font-weight:500;
   }
-  .crm-header-tip { font-size:12px; color:#fa8c16; background:#fffbe6; border:1px solid #ffe58f; padding:2px 10px; border-radius:2px; }
+  .crm-header-tip { font-size:12px; color:#fa8c16; background:#fffbe6; border:1px solid #ffe58f; padding:2px 10px; border-radius:2px; max-width:360px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .crm-header-actions { display:flex; align-items:center; gap:14px; color:#8c8c8c; font-size:13px; }
 
   /* 内容卡片区 */
@@ -173,18 +174,38 @@
   .page-box.active { background:#1890ff; border-color:#1890ff; color:#fff; }
 
   /* ================= 启思宇宙小程序样式 ================= */
-  #mpView {
+  #mpView.active {
     justify-content:center; align-items:flex-start; padding:24px 16px;
     min-height:calc(100vh - 46px); background:#eaedf2;
   }
+  #splitView.active { height:calc(100vh - 46px); overflow:hidden; }
   .split-layout {
-    display:flex; width:100%; height:calc(100vh - 46px); overflow:hidden;
+    display:flex; width:100%; height:100%; min-width:0; overflow:hidden;
   }
-  .split-left { flex:1; border-right:2px solid #cbd5e1; overflow:hidden; }
+  .split-left {
+    flex:1; min-width:0; height:100%; display:flex; align-items:stretch;
+    border-right:1px solid #cbd5e1; overflow:hidden; background:#f0f2f5;
+  }
   .split-right {
-    width:420px; background:#f1f5f9; display:flex; flex-direction:column;
-    align-items:center; padding:16px 12px; overflow-y:auto; flex-shrink:0;
+    width:360px; height:100%; background:#f1f5f9; display:flex; flex-direction:column;
+    align-items:center; padding:12px 10px 16px; overflow:hidden; flex-shrink:0;
   }
+  #splitMpMount {
+    flex:1; min-height:0; width:100%; display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+  #splitView .phone-mockup {
+    width:320px; height:min(640px, calc(100vh - 150px)); max-height:calc(100vh - 150px);
+    border-width:8px; border-radius:28px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.16), 0 0 0 8px #1e293b;
+  }
+  #splitView .phone-status-bar { height:36px; padding:0 14px; }
+  #splitView .mp-nav-header { height:40px; }
+  #splitView .mp-refund-page { inset:36px 0 0 0; }
+  #splitView .mp-refund-scroll { padding:10px; gap:8px; }
+  #splitView .mp-info-summary,
+  #splitView .mp-record-card { padding:10px 12px; }
+  #splitView .mp-content { padding:10px; gap:8px; }
   .split-title {
     font-size:13px; font-weight:600; color:#475569; margin-bottom:10px;
     display:flex; align-items:center; gap:6px;
@@ -203,15 +224,6 @@
     display:flex; align-items:center; justify-content:space-between;
     font-size:12px; font-weight:600; color:#000; flex-shrink:0; position:relative;
   }
-  .island {
-    position:absolute; left:50%; transform:translateX(-50%); top:8px;
-    width:120px; height:28px; background:#000; border-radius:18px;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:0 10px; color:#fff; font-size:10px;
-  }
-  .island-rider { display:flex; align-items:center; gap:4px; color:#facc15; font-size:10px; }
-  .island-time { color:#38bdf8; }
-
   /* 小程序导航头 */
   .mp-nav-header {
     height:44px; background:#fff; display:flex; align-items:center;
@@ -258,7 +270,7 @@
 
   /* 小程序退款记录/确认退款页面 */
   .mp-refund-page {
-    position:absolute; inset:88px 0 0 0; background:#f8fafc;
+    position:absolute; inset:44px 0 0 0; background:#f8fafc;
     display:flex; flex-direction:column; z-index:50;
     transform:translateX(100%); transition:transform 0.25s ease;
   }
@@ -269,20 +281,18 @@
     background:#fff; border-radius:10px; padding:14px;
     box-shadow:0 1px 3px rgba(0,0,0,0.04); font-size:12px;
   }
-  .mp-info-item { display:flex; justify-content:space-between; margin-bottom:6px; }
+  .mp-info-item { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:6px; }
   .mp-info-item:last-child { margin-bottom:0; }
-  .mp-info-label { color:#64748b; }
-  .mp-info-val { color:#1e293b; font-weight:500; }
+  .mp-info-label { color:#64748b; flex-shrink:0; }
+  .mp-info-val { color:#1e293b; font-weight:500; text-align:right; word-break:break-all; }
 
   .mp-record-card {
     background:#fff; border-radius:10px; padding:14px;
     border:1px solid #e2e8f0; position:relative;
   }
   .mp-record-header {
-    display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;
-    padding-bottom:6px; border-bottom:1px solid #f8fafc;
+    display:flex; justify-content:flex-end; align-items:center; margin-bottom:8px;
   }
-  .mp-record-no { font-size:12px; color:#94a3b8; }
   .mp-record-status { font-size:12px; font-weight:600; padding:1px 6px; border-radius:3px; }
   .mp-record-status.refunding { background:#ffedd5; color:#ea580c; }
   .mp-record-status.success { background:#dcfce7; color:#16a34a; }
@@ -305,6 +315,42 @@
   .mp-action-btn.primary:hover { background:#0369a1; }
   .mp-action-btn.default { background:#fff; border:1px solid #cbd5e1; color:#475569; }
   .mp-action-btn.default:hover { background:#f8fafc; border-color:#94a3b8; }
+
+  .mp-entry-actions {
+    display:flex; gap:8px; padding:10px 12px; background:#fff; border-radius:10px;
+    border:1px solid #e2e8f0;
+  }
+  .mp-entry-actions button {
+    flex:1; height:32px; border-radius:16px; cursor:pointer; font-size:12px;
+  }
+  .mp-entry-actions .buy { border:none; background:#0284c7; color:#fff; }
+  .mp-entry-actions .orders { border:1px solid #0284c7; background:#fff; color:#0284c7; }
+  .mp-message-card {
+    background:#fff; border:1px solid #dbeafe; border-radius:10px; overflow:hidden;
+    box-shadow:0 2px 8px rgba(2,132,199,.08);
+  }
+  .mp-message-title { padding:10px 12px; font-size:14px; font-weight:600; border-bottom:1px solid #f1f5f9; }
+  .mp-message-body { padding:9px 12px; font-size:12px; display:flex; flex-direction:column; gap:5px; }
+  .mp-message-row { display:flex; gap:8px; }
+  .mp-message-row span:first-child { width:64px; flex-shrink:0; color:#94a3b8; }
+  .mp-message-detail {
+    padding:9px 12px; border-top:1px solid #f1f5f9; cursor:pointer;
+    display:flex; justify-content:space-between; font-size:12px; color:#1e293b;
+  }
+  .mp-subscribe-mask {
+    position:absolute; inset:0; z-index:100; display:none; align-items:center; justify-content:center;
+    padding:20px; background:rgba(15,23,42,.42);
+  }
+  .mp-subscribe-mask.show { display:flex; }
+  .mp-subscribe-dialog { width:100%; background:#fff; border-radius:14px; padding:18px 16px 14px; }
+  .mp-subscribe-dialog h3 { font-size:16px; text-align:center; margin-bottom:8px; }
+  .mp-subscribe-dialog p { color:#64748b; font-size:12px; line-height:1.6; margin-bottom:14px; }
+  .mp-subscribe-options { display:flex; flex-direction:column; gap:8px; }
+  .mp-subscribe-options button {
+    height:36px; border-radius:18px; font-size:12px; cursor:pointer;
+    border:1px solid #cbd5e1; background:#fff; color:#475569;
+  }
+  .mp-subscribe-options button.primary { background:#0284c7; border-color:#0284c7; color:#fff; }
 
   /* ================= 通用弹窗 Modal ================= */
   .modal-overlay {
@@ -532,13 +578,6 @@
     <!-- 状态栏与灵动岛 -->
     <div class="phone-status-bar">
       <span>12:05</span>
-      <div class="island">
-        <div class="island-rider">
-          <svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>
-          <span>送货中</span>
-        </div>
-        <span class="island-time">19分钟送达</span>
-      </div>
       <div style="display:flex; align-items:center; gap:4px;">
         <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.28 19.57 10.59 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg>
         <span>98</span>
@@ -548,7 +587,7 @@
     <!-- 微信小程序顶栏 -->
     <div class="mp-nav-header">
       <div class="mp-nav-back">&lt;</div>
-      <div class="mp-nav-title">我的订单</div>
+      <div class="mp-nav-title" onclick="requestSubscribePermission('orders')" style="cursor:pointer;">我的订单</div>
       <div class="mp-nav-capsule">
         <span>•••</span>
         <span>⊙</span>
@@ -558,6 +597,18 @@
     <!-- 我的订单卡片列表 -->
     <div class="mp-content" id="mpOrderList">
       <!-- 动态渲染小程序端订单卡片 -->
+    </div>
+
+    <div class="mp-subscribe-mask" id="mpSubscribeMask">
+      <div class="mp-subscribe-dialog">
+        <h3>订阅消息授权</h3>
+        <p>允许接收「订单退款通知」，当客服发起退款申请时，将提醒您确认退款金额。</p>
+        <div class="mp-subscribe-options">
+          <button class="primary" onclick="chooseSubscribePermission('permanent')">永久允许</button>
+          <button onclick="chooseSubscribePermission('once')">仅允许一次</button>
+          <button onclick="chooseSubscribePermission('denied')">暂不允许</button>
+        </div>
+      </div>
     </div>
 
     <!-- 小程序内页：退款记录 / 确认退款详情页 -->
@@ -736,8 +787,9 @@
           initiator: "liyingping",
           amount: 10.00,
           reason: "学员时间冲突，申请减退部分课时费",
-          status: "退款成功", // 退款中 | 退款成功 | 取消退款
-          time: "2026-10-11 11:20:00"
+          status: "退款成功",
+          time: "2026-10-11 11:20:00",
+          refundTime: "2026-10-11 11:20:00"
         }
       ]
     },
@@ -754,7 +806,8 @@
           amount: 29.90,
           reason: "设备无法调试成功，协商全额退款",
           status: "退款成功",
-          time: "2026-10-09 15:30:22"
+          time: "2026-10-09 15:30:22",
+          refundTime: "2026-10-09 15:30:22"
         }
       ]
     },
@@ -783,6 +836,10 @@
   let currentActiveOrderId = null;
   let currentEditingRecordId = null;
   let currentSelectedMpOrderId = null;
+  let subscribePermission = "none";
+  let oneTimeSubscribeQuota = 0;
+  let pendingEntryAction = null;
+  let latestRefundMessage = null;
 
   // 状态计算工具：计算订单总成功退款金额
   function getRefundedAmount(order) {
@@ -793,6 +850,11 @@
   }
 
   // 状态计算工具：获取当前退款中记录
+  function getRecordRefundTime(rec) {
+    if (rec.status === "退款成功") return rec.refundTime || rec.time;
+    return rec.time;
+  }
+
   function getRefundingRecord(order) {
     if (!order.refundRecords) return null;
     return order.refundRecords.find(r => r.status === "退款中");
@@ -860,7 +922,6 @@
         <td>${order.phone}</td>
         <td>
           <span class="status-tag ${statusBadgeClass}">${orderStatus}</span>
-          ${isRefunding ? '<span class="status-tag refunding" style="margin-left:4px;">退款审核中</span>' : ''}
         </td>
         <td>
           <div class="op-btns">
@@ -878,6 +939,30 @@
     const listContainer = document.getElementById("mpOrderList");
     if (!listContainer) return;
     listContainer.innerHTML = "";
+
+    listContainer.insertAdjacentHTML("beforeend", `
+      <div class="mp-entry-actions">
+        <button class="buy" onclick="requestSubscribePermission('buy')">立即购买</button>
+        <button class="orders" onclick="requestSubscribePermission('orders')">我的订单</button>
+      </div>
+    `);
+
+    if (latestRefundMessage) {
+      listContainer.insertAdjacentHTML("beforeend", `
+        <div class="mp-message-card">
+          <div class="mp-message-title">订单退款通知</div>
+          <div class="mp-message-body">
+            <div class="mp-message-row"><span>订单号</span><b>${latestRefundMessage.orderId}</b></div>
+            <div class="mp-message-row"><span>退款金额</span><b>¥${latestRefundMessage.amount.toFixed(2)}</b></div>
+            <div class="mp-message-row"><span>退款时间</span><b>${latestRefundMessage.time}</b></div>
+            <div class="mp-message-row"><span>备注</span><b>订单已发起退款请前往确认退款金额</b></div>
+          </div>
+          <div class="mp-message-detail" onclick="openRefundMessageDetail()">
+            <span>详情</span><span>›</span>
+          </div>
+        </div>
+      `);
+    }
 
     ordersData.forEach(order => {
       const statusText = getMpOrderStatus(order);
@@ -919,6 +1004,51 @@
     });
   }
 
+  function requestSubscribePermission(action) {
+    pendingEntryAction = action;
+    if (subscribePermission === "permanent" || (subscribePermission === "once" && oneTimeSubscribeQuota > 0)) {
+      continueEntryAction();
+      return;
+    }
+    document.getElementById("mpSubscribeMask").classList.add("show");
+  }
+
+  function chooseSubscribePermission(permission) {
+    subscribePermission = permission;
+    oneTimeSubscribeQuota = permission === "once" ? 1 : 0;
+    document.getElementById("mpSubscribeMask").classList.remove("show");
+    continueEntryAction();
+  }
+
+  function continueEntryAction() {
+    if (pendingEntryAction === "buy") {
+      showToast("继续进入购买流程");
+    } else {
+      closeMpRefundPage();
+      showToast("已进入我的订单");
+    }
+    pendingEntryAction = null;
+  }
+
+  function sendRefundSubscribeMessage(order, record) {
+    const hasPermission = subscribePermission === "permanent"
+      || (subscribePermission === "once" && oneTimeSubscribeQuota > 0);
+    if (!hasPermission) return false;
+
+    latestRefundMessage = {
+      orderId: order.id,
+      amount: Number(record.amount),
+      time: record.time
+    };
+    if (subscribePermission === "once") oneTimeSubscribeQuota = 0;
+    return true;
+  }
+
+  function openRefundMessageDetail() {
+    if (!latestRefundMessage) return;
+    openMpRefundPage(latestRefundMessage.orderId);
+  }
+
   // 打开小程序退款记录/确认退款页面
   function openMpRefundPage(orderId) {
     currentSelectedMpOrderId = orderId;
@@ -948,7 +1078,6 @@
         recordsHtml += `
           <div class="mp-record-card">
             <div class="mp-record-header">
-              <span class="mp-record-no">记录 #${rec.recordId || (idx+1)}</span>
               <span class="mp-record-status ${statusBadge}">${rec.status}</span>
             </div>
             <div class="mp-record-body">
@@ -964,18 +1093,18 @@
                 <span class="mp-record-lbl">发起时间：</span>
                 <span class="mp-record-txt" style="color:#64748b;">${rec.time}</span>
               </div>
+              ${rec.status === '退款成功' ? `
+              <div class="mp-record-row">
+                <span class="mp-record-lbl">退款时间：</span>
+                <span class="mp-record-txt" style="color:#64748b;">${getRecordRefundTime(rec)}</span>
+              </div>` : ''}
             </div>
 
             ${rec.status === '退款中' ? `
               <div class="mp-btn-row">
-                <button class="mp-action-btn default" onclick="mpCancelRefund('${order.id}', '${rec.recordId}')">取消退款</button>
                 <button class="mp-action-btn primary" onclick="mpConfirmRefund('${order.id}', '${rec.recordId}')">确认退款</button>
               </div>
-            ` : `
-              <div style="font-size:11px; color:#94a3b8; text-align:right;">
-                ${rec.status === '退款成功' ? '✓ 已调用商户号完成原路退款' : '✕ 该退款申请已取消，未扣款'}
-              </div>
-            `}
+            ` : ''}
           </div>
         `;
       });
@@ -1022,26 +1151,11 @@
       showToast("正在调用微信支付商户号退款接口...");
       setTimeout(() => {
         rec.status = "退款成功";
-        rec.time = formatNow();
+        rec.refundTime = formatNow();
         refreshAllViews();
         openMpRefundPage(orderId);
         showToast("商户号退款成功，资金已原路退回！");
       }, 700);
-    }
-  }
-
-  // 小程序端操作：取消退款
-  function mpCancelRefund(orderId, recordId) {
-    const order = ordersData.find(o => o.id === orderId);
-    if (!order) return;
-    const rec = order.refundRecords.find(r => r.recordId === recordId);
-    if (!rec) return;
-
-    if (confirm("确定要取消此笔退款申请吗？取消后将不触发商户号退款。")) {
-      rec.status = "取消退款";
-      refreshAllViews();
-      openMpRefundPage(orderId);
-      showToast("已取消该退款申请");
     }
   }
 
@@ -1132,10 +1246,13 @@
 
     if (!order.refundRecords) order.refundRecords = [];
     order.refundRecords.unshift(newRecord);
+    const messageSent = sendRefundSubscribeMessage(order, newRecord);
 
     closeApplyRefundModal();
     refreshAllViews();
-    showToast("退款申请已发起！小程序端状态已同步为【退款中】");
+    showToast(messageSent
+      ? "退款申请已发起，并已发送订单退款通知"
+      : "退款申请已发起；用户未授权订阅消息，未发送通知");
   }
 
   // 2. 打开退款记录弹窗
@@ -1164,7 +1281,7 @@
           <td style="font-weight:600; color:#ef4444;">¥${Number(rec.amount).toFixed(2)}</td>
           <td style="max-width:180px; word-break:break-all;">${rec.reason || '-'}</td>
           <td><span class="status-tag ${tagClass}">${rec.status}</span></td>
-          <td style="color:#666;">${rec.time}</td>
+          <td style="color:#666;">${getRecordRefundTime(rec)}</td>
           <td>
             ${rec.status === '退款中' ? `
               <div class="op-btns">
@@ -1297,6 +1414,10 @@
   function resetPrototypeData() {
     if (confirm("确定重置为初始原型演示数据吗？")) {
       ordersData = JSON.parse(initialOrdersJson);
+      subscribePermission = "none";
+      oneTimeSubscribeQuota = 0;
+      pendingEntryAction = null;
+      latestRefundMessage = null;
       closeMpRefundPage();
       refreshAllViews();
       showToast("演示数据已重置");
