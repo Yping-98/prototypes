@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI质培中台 - 学习与考试数据导出及批量添加人员交互原型</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",sans-serif; background:#f0f2f5; color:#303133; font-size:13px; line-height:1.5; overflow-x:hidden; }
+
+  /* 整体布局 */
+  .layout { display:flex; min-height:100vh; }
+  .sidebar { width:210px; background:#1f2d3d; color:#bfcbd9; flex-shrink:0; display:flex; flex-direction:column; }
+  .logo-bar { height:56px; display:flex; align-items:center; padding:0 16px; color:#fff; font-weight:600; font-size:15px; background:#18222c; border-bottom:1px solid #141c24; gap:8px; }
+  .logo-bar .logo-icon { width:24px; height:24px; background:linear-gradient(135deg, #1890ff, #36cfc9); border-radius:4px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:bold; }
+  .menu-group { flex:1; overflow-y:auto; padding:8px 0; }
+  .menu-title { padding:10px 18px 4px 18px; font-size:12px; color:#606266; text-transform:uppercase; }
+  .menu-item { padding:12px 18px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; color:#bfcbd9; transition:all .2s; }
+  .menu-item:hover { color:#fff; background:#263445; }
+  .menu-item.active { color:#409eff; background:#18222c; border-left:3px solid #409eff; padding-left:15px; font-weight:500; }
+  .menu-item .left { display:flex; align-items:center; gap:9px; }
+  .menu-item .badge { font-size:11px; background:#f56c6c; color:#fff; padding:1px 6px; border-radius:10px; }
+  .sub-menu { background:#141c24; }
+  .sub-item { padding:10px 18px 10px 38px; cursor:pointer; color:#909399; font-size:13px; transition:all .2s; display:flex; align-items:center; justify-content:space-between; }
+  .sub-item:hover { color:#fff; background:#1a232c; }
+  .sub-item.active { color:#409eff; background:#18222c; font-weight:500; }
+
+  /* 主区域 */
+  .main { flex:1; display:flex; flex-direction:column; min-width:0; background:#f0f2f5; position:relative; }
+  .header { height:56px; background:#fff; border-bottom:1px solid #e4e7ed; display:flex; align-items:center; justify-content:space-between; padding:0 24px; box-shadow:0 1px 4px rgba(0,21,41,.06); z-index:10; }
+  .breadcrumb { display:flex; align-items:center; gap:6px; color:#909399; font-size:13px; }
+  .breadcrumb .sep { color:#c0c4cc; }
+  .breadcrumb .curr { color:#303133; font-weight:500; }
+  .user-info { display:flex; align-items:center; gap:12px; color:#606266; }
+  .avatar { width:30px; height:30px; border-radius:50%; background:#409eff; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; }
+
+  .content-body { padding:18px 24px; flex:1; }
+
+  /* 通用卡片与表单 */
+  .card { background:#fff; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,.05); margin-bottom:16px; border:1px solid #e8e8e8; }
+  .filter-panel { padding:16px 20px; display:flex; flex-wrap:wrap; gap:12px; align-items:center; border-bottom:1px solid #f0f0f0; }
+  .filter-item { display:flex; align-items:center; gap:6px; }
+  .filter-label { color:#606266; font-size:13px; white-space:nowrap; }
+  .input-text, select { height:32px; padding:0 10px; border:1px solid #dcdfe6; border-radius:4px; outline:none; font-size:13px; color:#606266; background:#fff; transition:border-color .2s; }
+  .input-text:focus, select:focus { border-color:#409eff; }
+  .input-text { width:180px; }
+
+  /* 按钮体系 */
+  .btn { height:32px; padding:0 14px; border-radius:4px; border:1px solid #dcdfe6; background:#fff; color:#606266; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:5px; transition:all .2s; user-select:none; }
+  .btn:hover { color:#409eff; border-color:#c6e2ff; background:#ecf5ff; }
+  .btn.primary { background:#409eff; border-color:#409eff; color:#fff; }
+  .btn.primary:hover { background:#66b1ff; border-color:#66b1ff; }
+  .btn.success { background:#67c23a; border-color:#67c23a; color:#fff; }
+  .btn.success:hover { background:#85ce61; border-color:#85ce61; }
+  .btn.warning { background:#e6a23c; border-color:#e6a23c; color:#fff; }
+  .btn.danger { background:#f56c6c; border-color:#f56c6c; color:#fff; }
+  .btn.export-btn { background:#fff; color:#409eff; border-color:#409eff; font-weight:500; }
+  .btn.export-btn:hover { background:#ecf5ff; }
+  .btn.mini { height:26px; padding:0 8px; font-size:12px; }
+  .btn.link { border:none; background:none; padding:0 4px; height:auto; color:#409eff; cursor:pointer; }
+  .btn.link:hover { color:#66b1ff; text-decoration:underline; }
+  .btn.link.danger { color:#f56c6c; }
+
+  /* 表格 */
+  .table-box { overflow-x:auto; }
+  table.data-table { width:100%; border-collapse:collapse; text-align:left; font-size:13px; }
+  table.data-table th { background:#fafafa; color:#606266; font-weight:600; padding:12px 14px; border-bottom:1px solid #ebeef5; white-space:nowrap; }
+  table.data-table td { padding:12px 14px; border-bottom:1px solid #ebeef5; color:#606266; vertical-align:middle; }
+  table.data-table tbody tr:hover { background:#f9fafc; }
+  table.data-table .num { font-variant-numeric:tabular-nums; }
+
+  /* 标签 */
+  .tag { display:inline-block; padding:2px 8px; border-radius:3px; font-size:12px; line-height:18px; }
+  .tag.blue { background:#e6f7ff; color:#1890ff; border:1px solid #91d5ff; }
+  .tag.green { background:#f6ffed; color:#52c41a; border:1px solid #b7eb8f; }
+  .tag.orange { background:#fffbe6; color:#faad14; border:1px solid #ffe58f; }
+  .tag.gray { background:#f4f4f5; color:#909399; border:1px solid #e9e9eb; }
+  .tag.red { background:#fff1f0; color:#f5222d; border:1px solid #ffa39e; }
+
+  /* 进度条 */
+  .progress-bar-wrap { display:flex; align-items:center; gap:8px; width:130px; }
+  .progress-bg { flex:1; height:7px; background:#ebeef5; border-radius:4px; overflow:hidden; }
+  .progress-bar { height:100%; background:#409eff; border-radius:4px; }
+  .progress-bar.success { background:#67c23a; }
+  .progress-text { font-size:12px; color:#606266; width:36px; text-align:right; font-variant-numeric:tabular-nums; }
+
+  /* 分页条 */
+  .pagination { padding:14px 20px; display:flex; justify-content:flex-end; align-items:center; gap:12px; color:#606266; font-size:12px; }
+  .page-btn { min-width:28px; height:28px; border:1px solid #dcdfe6; background:#fff; border-radius:3px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; }
+  .page-btn.active { background:#409eff; color:#fff; border-color:#409eff; }
+
+  /* 抽屉浮层 (Drawer) */
+  .drawer-mask { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.45); z-index:1000; display:none; }
+  .drawer { position:fixed; top:0; right:0; height:100%; background:#fff; box-shadow:-2px 0 10px rgba(0,0,0,.15); z-index:1001; display:none; flex-direction:column; overflow:hidden; animation:slideIn .25s ease-out; }
+  @keyframes slideIn { from { transform:translateX(100%); } to { transform:translateX(0); } }
+  .drawer-header { height:56px; padding:0 24px; border-bottom:1px solid #e8e8e8; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; background:#fafafa; }
+  .drawer-title { font-size:16px; font-weight:600; color:#303133; display:flex; align-items:center; gap:8px; }
+  .drawer-close { font-size:20px; color:#909399; cursor:pointer; border:none; background:none; line-height:1; }
+  .drawer-close:hover { color:#303133; }
+  .drawer-body { flex:1; overflow-y:auto; padding:24px; }
+  .drawer-footer { height:60px; padding:0 24px; border-top:1px solid #e8e8e8; display:flex; align-items:center; justify-content:flex-end; gap:12px; background:#fff; flex-shrink:0; }
+
+  /* 模态弹窗 (Modal) */
+  .modal-mask { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.5); z-index:1100; display:none; align-items:center; justify-content:center; }
+  .modal { background:#fff; border-radius:6px; box-shadow:0 4px 16px rgba(0,0,0,.15); width:640px; max-width:92vw; display:flex; flex-direction:column; max-height:85vh; overflow:hidden; }
+  .modal-header { height:50px; padding:0 20px; border-bottom:1px solid #ebeef5; display:flex; align-items:center; justify-content:space-between; font-size:15px; font-weight:600; color:#303133; }
+  .modal-body { padding:20px; overflow-y:auto; flex:1; }
+  .modal-footer { height:54px; padding:0 20px; border-top:1px solid #ebeef5; display:flex; align-items:center; justify-content:flex-end; gap:10px; background:#fafafa; }
+
+  /* 详情卡片分区 */
+  .section-block { margin-bottom:24px; }
+  .section-title { font-size:14px; font-weight:600; color:#303133; margin-bottom:14px; padding-left:8px; border-left:3px solid #1890ff; display:flex; justify-content:space-between; align-items:center; }
+  .info-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:12px 24px; background:#fafafa; padding:16px 20px; border-radius:4px; border:1px solid #f0f0f0; }
+  .info-item { display:flex; font-size:13px; }
+  .info-label { color:#909399; width:90px; flex-shrink:0; }
+  .info-val { color:#303133; font-weight:450; word-break:break-all; }
+
+  /* 统计卡片 */
+  .stat-row { display:grid; grid-template-columns:repeat(5, 1fr); gap:16px; margin-bottom:16px; }
+  .stat-card { background:#fff; border:1px solid #e8e8e8; border-radius:4px; padding:16px 20px; }
+  .stat-card .title { font-size:13px; color:#909399; margin-bottom:6px; }
+  .stat-card .val { font-size:24px; font-weight:700; color:#303133; }
+  .stat-card .val small { font-size:13px; font-weight:normal; margin-left:4px; color:#909399; }
+
+  /* Toast & Notification */
+  .toast { position:fixed; top:24px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.78); color:#fff; padding:10px 22px; border-radius:4px; font-size:13px; z-index:2000; display:none; align-items:center; gap:8px; box-shadow:0 3px 10px rgba(0,0,0,.2); }
+  .toast.success { background:#f6ffed; border:1px solid #b7eb8f; color:#52c41a; }
+  .toast.info { background:#e6f7ff; border:1px solid #91d5ff; color:#1890ff; }
+
+  /* 需求改动高亮提示 */
+  .feature-pill { display:inline-flex; align-items:center; gap:4px; background:#fff7e6; border:1px solid #ffd591; color:#fa8c16; font-size:11px; font-weight:normal; padding:1px 6px; border-radius:10px; margin-left:6px; vertical-align:middle; }
+
+  /* 批量添加人选列表容器 */
+  .batch-tags-box { min-height:80px; max-height:160px; overflow-y:auto; border:1px solid #dcdfe6; border-radius:4px; padding:8px; display:flex; flex-wrap:wrap; gap:6px; background:#fafafa; }
+  .user-tag { background:#e6f7ff; border:1px solid #91d5ff; color:#1890ff; padding:2px 8px; border-radius:3px; font-size:12px; display:inline-flex; align-items:center; gap:6px; }
+  .user-tag .del-tag { cursor:pointer; color:#909399; font-weight:bold; }
+  .user-tag .del-tag:hover { color:#f56c6c; }
+
+  /* 嵌套子表格 */
+  .sub-table-row { background:#fcfcfd; }
+  .sub-table-box { padding:10px 16px 14px 40px; border-bottom:1px solid #ebeef5; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- 左侧侧边栏导航 -->
+  <div class="sidebar">
+    <div class="logo-bar">
+      <div class="logo-icon">AI</div>
+      <span>AI质培中台</span>
+    </div>
+    <div class="menu-group">
+      <div class="menu-title">工作台</div>
+      <div class="menu-item">
+        <div class="left"><span>🏠</span> 首页</div>
+      </div>
+
+      <div class="menu-title">在线学习</div>
+      <div class="menu-item active" id="menu-course" onclick="switchNav('course')">
+        <div class="left"><span>📖</span> 课程管理</div>
+      </div>
+      <div class="menu-item" id="menu-project" onclick="switchNav('project')">
+        <div class="left"><span>📁</span> 学习项目</div>
+      </div>
+      <div class="menu-item">
+        <div class="left"><span>📚</span> 课程中心</div>
+      </div>
+      <div class="menu-item">
+        <div class="left"><span>👤</span> 我的学习</div>
+      </div>
+
+      <div class="menu-title">在线考试</div>
+      <div class="menu-item" id="menu-exam" onclick="switchNav('exam')">
+        <div class="left"><span>📝</span> 考试管理</div>
+      </div>
+      <div class="menu-item" id="menu-exam-score" onclick="switchNav('exam-score')">
+        <div class="left"><span>📊</span> 考试成绩</div>
+      </div>
+
+      <div class="menu-title">系统管理</div>
+      <div class="menu-item">
+        <div class="left"><span>⚙️</span> 系统设置</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 主内容区 -->
+  <div class="main">
+    <div class="header">
+      <div class="breadcrumb" id="top-breadcrumb">
+        <span>在线学习</span>
+        <span class="sep">/</span>
+        <span class="curr">课程管理</span>
+      </div>
+      <div class="user-info">
+        <span style="font-size:12px; color:#909399;">培训管理员</span>
+        <div class="avatar">李</div>
+        <span>李营平</span>
+      </div>
+    </div>
+
+    <div class="content-body">
+      <!-- 视图1: 课程管理页面 -->
+      <div id="view-course" class="page-view">
+        <div class="card">
+          <div class="filter-panel">
+            <div class="filter-item">
+              <span class="filter-label">课程名称:</span>
+              <input type="text" class="input-text" placeholder="请输入课程名称">
+            </div>
+            <div class="filter-item">
+              <span class="filter-label">课程分类:</span>
+              <select><option>全部分类</option><option>产品知识</option><option>学科知识</option><option>企业技能</option></select>
+            </div>
+            <div class="filter-item">
+              <span class="filter-label">状态:</span>
+              <select><option>全部状态</option><option>已发布</option><option>草稿</option><option>已下架</option></select>
+            </div>
+            <div class="filter-item">
+              <span class="filter-label">公开属性:</span>
+              <select><option>全部</option><option>公开</option><option>非公开</option></select>
+            </div>
+            <button class="btn primary">查询</button>
+            <button class="btn">重置</button>
+          </div>
+
+          <div class="table-box">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>课程名称</th>
+                  <th>课程分类</th>
+                  <th>课件数</th>
+                  <th>课程时长</th>
+                  <th>公开性</th>
+                  <th>状态</th>
+                  <th>更新时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>1013质检损坏公司形象</b></td>
+                  <td>学科知识</td>
+                  <td>1</td>
+                  <td>19分38秒</td>
+                  <td><span class="tag blue">公开</span></td>
+                  <td><span class="tag green">已发布</span></td>
+                  <td>2026-09-28 14:20</td>
+                  <td>
+                    <button class="btn link" onclick="openProgressDrawer('1013质检损坏公司形象')">报名人员进度</button>
+                    <button class="btn link">编辑</button>
+                    <button class="btn link">下架</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><b>1013质检不等同等假扣罚</b></td>
+                  <td>产品知识</td>
+                  <td>1</td>
+                  <td>6分36秒</td>
+                  <td><span class="tag blue">公开</span></td>
+                  <td><span class="tag green">已发布</span></td>
+                  <td>2026-09-28 10:15</td>
+                  <td>
+                    <button class="btn link" onclick="openProgressDrawer('1013质检不等同等假扣罚')">报名人员进度</button>
+                    <button class="btn link">编辑</button>
+                    <button class="btn link">下架</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><b>洋葱学园App初体验</b></td>
+                  <td>产品知识</td>
+                  <td>1</td>
+                  <td>11分37秒</td>
+                  <td><span class="tag blue">公开</span></td>
+                  <td><span class="tag green">已发布</span></td>
+                  <td>2026-09-24 16:00</td>
+                  <td>
+                    <button class="btn link" onclick="openProgressDrawer('洋葱学园App初体验')">报名人员进度</button>
+                    <button class="btn link">编辑</button>
+                    <button class="btn link">下架</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><b>岗前训《售卖相关》20260818</b></td>
+                  <td>业务技能</td>
+                  <td>1</td>
+                  <td>30分07秒</td>
+                  <td><span class="tag gray">非公开</span></td>
+                  <td><span class="tag green">已发布</span></td>
+                  <td>2026-08-18 09:30</td>
+                  <td>
+                    <button class="btn link" onclick="openProgressDrawer('岗前训《售卖相关》20260818')">报名人员进度</button>
+                    <button class="btn link">编辑</button>
+                    <button class="btn link">下架</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span>共 15 条</span>
+            <span class="page-btn active">1</span>
+            <span class="page-btn">2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 视图2: 学习项目页面 -->
+      <div id="view-project" class="page-view" style="display:none;">
+        <div class="card">
+          <div class="filter-panel" style="justify-content:space-between;">
+            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+              <div class="filter-item">
+                <input type="text" class="input-text" placeholder="输入项目名称关键词">
+              </div>
+              <div class="filter-item">
+                <select><option>全部状态</option><option>未开始</option><option>进行中</option><option>已结束</option></select>
+              </div>
+              <div class="filter-item">
+                <input type="date" class="input-text" style="width:130px;">
+                <span>至</span>
+                <input type="date" class="input-text" style="width:130px;">
+              </div>
+              <button class="btn primary">查询</button>
+              <button class="btn">重置</button>
+            </div>
+            <div>
+              <button class="btn primary" onclick="openEditProjectDrawer('new')">+ 新建学习项目</button>
+            </div>
+          </div>
+
+          <div class="table-box">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>项目名称</th>
+                  <th>项目时间</th>
+                  <th>课程数</th>
+                  <th>应学人数</th>
+                  <th>项目状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><a class="btn link" style="font-weight:600;" onclick="openProjectDetailDrawer('郭1013岗前-售卖相关')">郭1013岗前-售卖相关</a></td>
+                  <td>2026-10-12 ~ 2027-10-26</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td><span class="tag green">运行中</span></td>
+                  <td>
+                    <button class="btn link" onclick="openProjectDetailDrawer('郭1013岗前-售卖相关')">详情</button>
+                    <button class="btn link" onclick="openEditProjectDrawer('edit')">编辑</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><a class="btn link" style="font-weight:600;" onclick="openProjectDetailDrawer('郭1013岗前-5大AI功能')">郭1013岗前-5大AI功能</a></td>
+                  <td>2026-10-12 ~ 2027-10-15</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td><span class="tag green">运行中</span></td>
+                  <td>
+                    <button class="btn link" onclick="openProjectDetailDrawer('郭1013岗前-5大AI功能')">详情</button>
+                    <button class="btn link" onclick="openEditProjectDrawer('edit')">编辑</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><a class="btn link" style="font-weight:600;" onclick="openProjectDetailDrawer('新1013岗前训练营')">新1013岗前训练营</a></td>
+                  <td>2026-10-12 ~ 2027-10-22</td>
+                  <td>9</td>
+                  <td>11</td>
+                  <td><span class="tag green">运行中</span></td>
+                  <td>
+                    <button class="btn link" onclick="openProjectDetailDrawer('新1013岗前训练营')">详情</button>
+                    <button class="btn link" onclick="openEditProjectDrawer('edit')">编辑</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span>共 9 个项目</span>
+            <span class="page-btn active">1</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 视图3: 考试管理页面 -->
+      <div id="view-exam" class="page-view" style="display:none;">
+        <div class="card">
+          <div class="filter-panel" style="justify-content:space-between;">
+            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+              <div class="filter-item">
+                <input type="text" class="input-text" id="exam-kw" placeholder="输入考试名称关键词">
+              </div>
+              <div class="filter-item">
+                <select id="exam-status-select">
+                  <option value="">全部状态</option>
+                  <option value="草稿">草稿</option>
+                  <option value="未开始">未开始</option>
+                  <option value="进行中">进行中</option>
+                  <option value="已结束">已结束</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <input type="date" class="input-text" style="width:130px;">
+                <span>至</span>
+                <input type="date" class="input-text" style="width:130px;">
+              </div>
+              <button class="btn primary">查询</button>
+              <button class="btn">重置</button>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <!-- 需求改动点3: 考试管理页面增加导出按钮 -->
+              <button class="btn export-btn" onclick="exportExamList()">
+                <span>📥</span> 导出考试列表
+                <span class="feature-pill">新功能</span>
+              </button>
+              <button class="btn primary" onclick="openExamDrawer('new')">+ 新建考试</button>
+            </div>
+          </div>
+
+          <div class="table-box">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>考试名称</th>
+                  <th>关联试卷</th>
+                  <th>考试时间</th>
+                  <th>答题时长</th>
+                  <th>总分</th>
+                  <th>合格分</th>
+                  <th>应考人数</th>
+                  <th>已考人数</th>
+                  <th>参考率</th>
+                  <th>状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>2026年10月新兵入职通关考</b></td>
+                  <td>2026新员工入职考试卷A</td>
+                  <td>2026-10-14 ~ 2026-10-20</td>
+                  <td>45分钟</td>
+                  <td>100</td>
+                  <td>80</td>
+                  <td>30</td>
+                  <td>28</td>
+                  <td>
+                    <div class="progress-bar-wrap">
+                      <div class="progress-bg"><div class="progress-bar success" style="width:93%;"></div></div>
+                      <span class="progress-text">93%</span>
+                    </div>
+                  </td>
+                  <td><span class="tag green">进行中</span></td>
+                  <td>
+                    <button class="btn link" onclick="switchNav('exam-score')">成绩</button>
+                    <button class="btn link" onclick="openExamDrawer('edit')">编辑</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><b>质检标准进阶测评（第三期）</b></td>
+                  <td>质检判定与红线违规考卷</td>
+                  <td>2026-10-10 ~ 2026-10-12</td>
+                  <td>30分钟</td>
+                  <td>100</td>
+                  <td>85</td>
+                  <td>15</td>
+                  <td>15</td>
+                  <td>
+                    <div class="progress-bar-wrap">
+                      <div class="progress-bg"><div class="progress-bar success" style="width:100%;"></div></div>
+                      <span class="progress-text">100%</span>
+                    </div>
+                  </td>
+                  <td><span class="tag gray">已结束</span></td>
+                  <td>
+                    <button class="btn link" onclick="switchNav('exam-score')">成绩</button>
+                    <button class="btn link">重新上线</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><b>产品功能与话术SOP考核</b></td>
+                  <td>2026洋葱学园App功能卷</td>
+                  <td>2026-10-25 ~ 2026-10-28</td>
+                  <td>60分钟</td>
+                  <td>100</td>
+                  <td>80</td>
+                  <td>42</td>
+                  <td>0</td>
+                  <td>
+                    <div class="progress-bar-wrap">
+                      <div class="progress-bg"><div class="progress-bar" style="width:0%;"></div></div>
+                      <span class="progress-text">0%</span>
+                    </div>
+                  </td>
+                  <td><span class="tag blue">未开始</span></td>
+                  <td>
+                    <button class="btn link" onclick="openExamDrawer('edit')">编辑</button>
+                    <button class="btn link">撤回</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span>共 3 条考试</span>
+            <span class="page-btn active">1</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 视图4: 考试管理 - 成绩页面 -->
+      <div id="view-exam-score" class="page-view" style="display:none;">
+        <div class="card" style="padding:16px 20px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span style="font-size:16px; font-weight:600; color:#303133;">考试成绩：2026年10月新兵入职通关考</span>
+            <span class="tag green" style="margin-left:8px;">进行中</span>
+          </div>
+          <button class="btn" onclick="switchNav('exam')">← 返回考试管理</button>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="title">应考人数</div>
+            <div class="val">30 <small>人</small></div>
+          </div>
+          <div class="stat-card">
+            <div class="title">已考人数</div>
+            <div class="val">28 <small>人</small></div>
+          </div>
+          <div class="stat-card">
+            <div class="title">参考率</div>
+            <div class="val">93.3 <small>%</small></div>
+          </div>
+          <div class="stat-card">
+            <div class="title">合格率</div>
+            <div class="val" style="color:#52c41a;">89.3 <small>%</small></div>
+          </div>
+          <div class="stat-card">
+            <div class="title">平均分</div>
+            <div class="val">86.5 <small>分</small></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="filter-panel" style="justify-content:space-between;">
+            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+              <div class="filter-item">
+                <span class="filter-label">考试状态:</span>
+                <select><option>全部状态</option><option>已考</option><option>未考</option></select>
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">是否合格:</span>
+                <select><option>全部</option><option>合格</option><option>不合格</option></select>
+              </div>
+              <div class="filter-item">
+                <input type="text" class="input-text" placeholder="搜索姓名">
+              </div>
+              <button class="btn primary">查询</button>
+              <button class="btn">重置</button>
+            </div>
+            <!-- 需求改动点4: 考试成绩页面增加导出按钮 -->
+            <button class="btn export-btn" onclick="exportExamScore()">
+              <span>📥</span> 导出成绩数据
+              <span class="feature-pill">新功能</span>
+            </button>
+          </div>
+
+          <div class="table-box">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>姓名</th>
+                  <th>部门</th>
+                  <th>考试状态</th>
+                  <th>得分</th>
+                  <th>是否合格</th>
+                  <th>提交时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>方淳林</b></td>
+                  <td>武汉新兵营/新兵营-催油/催油</td>
+                  <td><span class="tag green">已考</span></td>
+                  <td><b style="color:#52c41a; font-size:14px;">92</b></td>
+                  <td><span class="tag green">合格</span></td>
+                  <td>2026-10-15 11:20:34</td>
+                  <td><button class="btn link">查看答卷</button></td>
+                </tr>
+                <tr>
+                  <td><b>杨欢</b></td>
+                  <td>电销团队初中部/武汉新兵营/售后服务-杨欢</td>
+                  <td><span class="tag green">已考</span></td>
+                  <td><b style="color:#52c41a; font-size:14px;">88</b></td>
+                  <td><span class="tag green">合格</span></td>
+                  <td>2026-10-15 10:45:12</td>
+                  <td><button class="btn link">查看答卷</button></td>
+                </tr>
+                <tr>
+                  <td><b>奚洋</b></td>
+                  <td>武汉电销</td>
+                  <td><span class="tag green">已考</span></td>
+                  <td><b style="color:#f5222d; font-size:14px;">74</b></td>
+                  <td><span class="tag red">不合格</span></td>
+                  <td>2026-10-15 09:30:18</td>
+                  <td><button class="btn link">查看答卷</button></td>
+                </tr>
+                <tr>
+                  <td><b>赵晓芳</b></td>
+                  <td>电销团队初中部/武汉新兵营/职能&跨项目人员</td>
+                  <td><span class="tag gray">未考</span></td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td><span style="color:#c0c4cc;">不可查看</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span>共 4 条数据</span>
+            <span class="page-btn active">1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 抽屉1: 报名人员进度 (对应截图1) ================= -->
+<div class="drawer-mask" id="progress-drawer-mask" onclick="closeProgressDrawer()"></div>
+<div class="drawer" id="progress-drawer" style="width:750px;">
+  <div class="drawer-header">
+    <div class="drawer-title">
+      <span>报名人员进度 - 《<span id="progress-course-name">1013质检损坏公司形象</span>》</span>
+    </div>
+    <button class="drawer-close" onclick="closeProgressDrawer()">✕</button>
+  </div>
+  <div class="drawer-body">
+    <!-- 筛选工具栏 (含新增导出按钮) -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <select style="width:110px;"><option>全部状态</option><option>学习中</option><option>已完成</option><option>未开始</option></select>
+        <input type="text" class="input-text" style="width:130px;" placeholder="搜索姓名">
+        <button class="btn primary mini" style="height:30px; padding:0 12px;">查询</button>
+        <button class="btn mini" style="height:30px; padding:0 10px;">重置</button>
+        <!-- 需求改动点1: 增加导出按钮 -->
+        <button class="btn export-btn mini" style="height:30px; padding:0 12px;" onclick="exportCourseProgress()">
+          <span>📥</span> 导出
+          <span class="feature-pill">新功能</span>
+        </button>
+      </div>
+      <div style="color:#909399; font-size:12px;">
+        已完成 <b style="color:#52c41a;">1</b> 人 / 报名 <b style="color:#303133;">12</b> 人
+      </div>
+    </div>
+
+    <!-- 列表数据 (同截图1) -->
+    <div class="table-box">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>姓名</th>
+            <th>部门</th>
+            <th>学习进度</th>
+            <th>状态</th>
+            <th>报名时间</th>
+            <th>完成时间</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>赵晓芳</td>
+            <td style="font-size:12px; color:#606266;">电销团队初中部/武汉新兵营/职能&跨项目人员</td>
+            <td>
+              <div class="progress-bar-wrap">
+                <div class="progress-bg"><div class="progress-bar" style="width:0%;"></div></div>
+                <span class="progress-text">0%</span>
+              </div>
+            </td>
+            <td><span class="tag blue">学习中</span></td>
+            <td>2026-09-28</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>奚洋</td>
+            <td style="font-size:12px; color:#606266;">武汉电销</td>
+            <td>
+              <div class="progress-bar-wrap">
+                <div class="progress-bg"><div class="progress-bar" style="width:70%;"></div></div>
+                <span class="progress-text">70%</span>
+              </div>
+            </td>
+            <td><span class="tag blue">学习中</span></td>
+            <td>2026-09-28</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>杨欢</td>
+            <td style="font-size:12px; color:#606266;">电销团队初中部/武汉新兵营/售后服务-杨欢</td>
+            <td>
+              <div class="progress-bar-wrap">
+                <div class="progress-bg"><div class="progress-bar" style="width:53%;"></div></div>
+                <span class="progress-text">53%</span>
+              </div>
+            </td>
+            <td><span class="tag blue">学习中</span></td>
+            <td>2026-09-24</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>郑嘉晟</td>
+            <td style="font-size:12px; color:#606266;">武汉新兵营/新兵营-催油/催油</td>
+            <td>
+              <div class="progress-bar-wrap">
+                <div class="progress-bg"><div class="progress-bar" style="width:0%;"></div></div>
+                <span class="progress-text">0%</span>
+              </div>
+            </td>
+            <td><span class="tag gray">未开始</span></td>
+            <td>-</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>方淳林</td>
+            <td style="font-size:12px; color:#606266;">武汉新兵营/新兵营-催油/催油</td>
+            <td>
+              <div class="progress-bar-wrap">
+                <div class="progress-bg"><div class="progress-bar success" style="width:100%;"></div></div>
+                <span class="progress-text">100%</span>
+              </div>
+            </td>
+            <td><span class="tag green">已完成</span></td>
+            <td>-</td>
+            <td>2026-10-14</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <span>共 12 条</span>
+      <span class="page-btn active">1</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 抽屉2: 项目详情 (对应截图2) ================= -->
+<div class="drawer-mask" id="project-detail-mask" onclick="closeProjectDetailDrawer()"></div>
+<div class="drawer" id="project-detail-drawer" style="width:780px;">
+  <div class="drawer-header">
+    <div class="drawer-title">
+      <span>项目详情 - 郭1013岗前-售卖相关</span>
+      <span class="tag green">运行中</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span style="font-size:12px; color:#909399;">仅供查看，如需修改请使用列表操作列的「编辑」</span>
+      <button class="drawer-close" onclick="closeProjectDetailDrawer()">✕</button>
+    </div>
+  </div>
+  <div class="drawer-body">
+    <!-- 基础信息 -->
+    <div class="section-block">
+      <div class="section-title">基础信息</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">项目名称</span><span class="info-val">郭1013岗前-售卖相关</span></div>
+        <div class="info-item"><span class="info-label">项目时间</span><span class="info-val">2026-10-12 00:00:00 ~ 2027-10-26 23:59:59</span></div>
+        <div class="info-item"><span class="info-label">项目状态</span><span class="info-val"><span class="tag green">运行中</span></span></div>
+        <div class="info-item"><span class="info-label">项目说明</span><span class="info-val">盒盒开线专用</span></div>
+      </div>
+    </div>
+
+    <!-- 项目课程 -->
+    <div class="section-block">
+      <div class="section-title">项目课程 (1)</div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:60px;">顺序</th>
+            <th>课程名称</th>
+            <th>课程状态</th>
+            <th>完成人数</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>岗前训《售卖相关》20260818</td>
+            <td><span class="tag green">已发布</span></td>
+            <td>0/1</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 参训人员 (对应截图2红框) -->
+    <div class="section-block">
+      <div class="section-title">
+        <span>参训人员 (1)</span>
+        <!-- 需求改动点2: 参训人员这里增加导出按钮 (两个Sheet) -->
+        <button class="btn export-btn mini" onclick="exportProjectStaff()">
+          <span>📥</span> 导出参训人员数据
+          <span class="feature-pill">新功能 (双Sheet)</span>
+        </button>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+        <select style="width:110px;"><option>全部状态</option><option>未开始</option><option>学习中</option><option>已完成</option></select>
+        <input type="text" class="input-text" style="width:130px;" placeholder="搜索姓名">
+        <button class="btn primary mini" style="height:30px; padding:0 12px;">查询</button>
+        <button class="btn mini" style="height:30px; padding:0 10px;">重置</button>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>姓名</th>
+            <th>部门</th>
+            <th>项目进度</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>郭金宝</b></td>
+            <td style="font-size:12px; color:#606266;">武汉电销/电销团队初中部/武汉新兵营</td>
+            <td>
+              <div class="progress-bar-wrap">
+                <div class="progress-bg"><div class="progress-bar" style="width:0%;"></div></div>
+                <span class="progress-text">0/1</span>
+              </div>
+            </td>
+            <td><span class="tag gray">未开始</span></td>
+            <td>
+              <button class="btn link" id="btn-toggle-sub" onclick="toggleProjectStaffDetail()">收起</button>
+            </td>
+          </tr>
+          <!-- 展开项：项目内课程学习进度 -->
+          <tr id="sub-row-staff" class="sub-table-row">
+            <td colspan="5" class="sub-table-box">
+              <div style="font-weight:600; margin-bottom:8px; color:#303133;">郭金宝 - 项目内课程学习进度：</div>
+              <table class="data-table" style="background:#fff; border:1px solid #ebeef5;">
+                <thead>
+                  <tr>
+                    <th>顺序</th>
+                    <th>课程名称</th>
+                    <th>学习进度</th>
+                    <th>状态</th>
+                    <th>完成时间</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>1</td>
+                    <td>岗前训《售卖相关》20260818</td>
+                    <td>
+                      <div class="progress-bar-wrap">
+                        <div class="progress-bg"><div class="progress-bar" style="width:0%;"></div></div>
+                        <span class="progress-text">0%</span>
+                      </div>
+                    </td>
+                    <td><span class="tag gray">未开始</span></td>
+                    <td>-</td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <span>共 1 条</span>
+        <span class="page-btn active">1</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 抽屉3: 学习项目 新建/编辑 (支持批量添加人员) ================= -->
+<div class="drawer-mask" id="project-edit-mask" onclick="closeEditProjectDrawer()"></div>
+<div class="drawer" id="project-edit-drawer" style="width:780px;">
+  <div class="drawer-header">
+    <div class="drawer-title" id="project-edit-title">新建学习项目</div>
+    <button class="drawer-close" onclick="closeEditProjectDrawer()">✕</button>
+  </div>
+  <div class="drawer-body">
+    <div class="section-block">
+      <div class="section-title">基础信息</div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="filter-item">
+          <span class="filter-label" style="width:90px;"><b style="color:red;">*</b> 项目名称:</span>
+          <input type="text" class="input-text" style="width:360px;" value="2026秋季新员工培训项目">
+        </div>
+        <div class="filter-item">
+          <span class="filter-label" style="width:90px;"><b style="color:red;">*</b> 项目时间:</span>
+          <input type="date" class="input-text" value="2026-10-16" style="width:160px;">
+          <span>至</span>
+          <input type="date" class="input-text" value="2026-11-30" style="width:160px;">
+        </div>
+        <div class="filter-item" style="align-items:flex-start;">
+          <span class="filter-label" style="width:90px;">项目说明:</span>
+          <textarea style="width:480px; height:60px; padding:6px 10px; border:1px solid #dcdfe6; border-radius:4px;">全员岗前业务考核必修</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 参训人员管理 -->
+    <div class="section-block">
+      <div class="section-title">
+        <span>参训人员管理</span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn mini" onclick="showToast('请在组织架构树中勾选')">从组织架构选择</button>
+          <!-- 需求改动点5: 学习项目支持批量添加人员 -->
+          <button class="btn primary mini" onclick="openBatchAddModal('project')">
+            <span>📋</span> 批量添加人员
+            <span class="feature-pill" style="background:#e6f7ff; border-color:#91d5ff; color:#1890ff;">新功能</span>
+          </button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:8px; font-size:12px; color:#909399;">
+        已添加参训人员：<span id="project-staff-count" style="font-weight:bold; color:#409eff;">2</span> 人
+      </div>
+
+      <div class="batch-tags-box" id="project-staff-tags">
+        <span class="user-tag" data-name="郭金宝">郭金宝 (武汉新兵营) <span class="del-tag" onclick="removeUserTag(this, 'project')">✕</span></span>
+        <span class="user-tag" data-name="杨欢">杨欢 (售后服务) <span class="del-tag" onclick="removeUserTag(this, 'project')">✕</span></span>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-footer">
+    <button class="btn" onclick="closeEditProjectDrawer()">取消</button>
+    <button class="btn primary" onclick="saveProjectEdit()">保存全部修改</button>
+  </div>
+</div>
+
+<!-- ================= 抽屉4: 考试管理 新建/编辑 (支持批量添加人员) ================= -->
+<div class="drawer-mask" id="exam-edit-mask" onclick="closeExamDrawer()"></div>
+<div class="drawer" id="exam-edit-drawer" style="width:780px;">
+  <div class="drawer-header">
+    <div class="drawer-title" id="exam-edit-title">新建考试</div>
+    <button class="drawer-close" onclick="closeExamDrawer()">✕</button>
+  </div>
+  <div class="drawer-body">
+    <div class="section-block">
+      <div class="section-title">考试基本信息</div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="filter-item">
+          <span class="filter-label" style="width:90px;"><b style="color:red;">*</b> 考试名称:</span>
+          <input type="text" class="input-text" style="width:360px;" value="质检技能达标考核（第4期）">
+        </div>
+        <div class="filter-item">
+          <span class="filter-label" style="width:90px;"><b style="color:red;">*</b> 关联试卷:</span>
+          <select style="width:260px;"><option>质检判定与红线违规考卷 (总分100)</option><option>2026新员工入职考试卷A (总分100)</option></select>
+        </div>
+        <div class="filter-item">
+          <span class="filter-label" style="width:90px;"><b style="color:red;">*</b> 合格分数:</span>
+          <input type="text" class="input-text" style="width:120px;" value="80">
+          <span style="font-size:12px; color:#909399;">满分 100 分</span>
+        </div>
+        <div class="filter-item">
+          <span class="filter-label" style="width:90px;"><b style="color:red;">*</b> 考试时间:</span>
+          <input type="date" class="input-text" value="2026-10-18" style="width:140px;">
+          <span>至</span>
+          <input type="date" class="input-text" value="2026-10-25" style="width:140px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- 考试参考人员 -->
+    <div class="section-block">
+      <div class="section-title">
+        <span>参考人员设置</span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn mini" onclick="showToast('请在组织架构树中勾选')">从组织架构选择</button>
+          <!-- 需求改动点6: 考试管理支持批量添加人员 -->
+          <button class="btn primary mini" onclick="openBatchAddModal('exam')">
+            <span>📋</span> 批量添加参考人员
+            <span class="feature-pill" style="background:#e6f7ff; border-color:#91d5ff; color:#1890ff;">新功能</span>
+          </button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:8px; font-size:12px; color:#909399;">
+        已选参考人员：<span id="exam-staff-count" style="font-weight:bold; color:#409eff;">3</span> 人（支持多批次添加与自动去重）
+      </div>
+
+      <div class="batch-tags-box" id="exam-staff-tags">
+        <span class="user-tag" data-name="方淳林">方淳林 (催油组) <span class="del-tag" onclick="removeUserTag(this, 'exam')">✕</span></span>
+        <span class="user-tag" data-name="赵晓芳">赵晓芳 (职能组) <span class="del-tag" onclick="removeUserTag(this, 'exam')">✕</span></span>
+        <span class="user-tag" data-name="奚洋">奚洋 (武汉电销) <span class="del-tag" onclick="removeUserTag(this, 'exam')">✕</span></span>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-footer">
+    <button class="btn" onclick="closeExamDrawer()">取消</button>
+    <button class="btn primary" onclick="saveExamEdit()">保存发布</button>
+  </div>
+</div>
+
+<!-- ================= 模态弹窗: 批量添加人员 (通用组件) ================= -->
+<div class="modal-mask" id="batch-add-mask">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="batch-add-modal-title">批量添加人员</span>
+      <button class="drawer-close" onclick="closeBatchAddModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:13px; color:#606266; margin-bottom:8px;">
+        请输入或粘贴人员姓名、工号或手机号，每行一人（也支持中英文逗号、分号分隔）：
+      </div>
+      <textarea id="batch-input-area" style="width:100%; height:110px; border:1px solid #dcdfe6; border-radius:4px; padding:8px 10px; font-size:13px; font-family:inherit; resize:vertical;" placeholder="例如：
+周悦平
+陈佳讯 
+韩鹏成
+900128
+13800138000"></textarea>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+        <span style="font-size:12px; color:#909399;">系统将自动在企业员工库中进行智能匹配与去重</span>
+        <button class="btn mini link" onclick="fillExampleBatchUsers()">填入测试名单</button>
+      </div>
+
+      <!-- 解析结果展示区 -->
+      <div id="batch-parse-result" style="display:none; margin-top:14px; border-top:1px dashed #e8e8e8; padding-top:12px;">
+        <div style="font-weight:600; font-size:13px; margin-bottom:8px; display:flex; justify-content:space-between;">
+          <span>解析匹配结果</span>
+          <span style="font-size:12px; font-weight:normal;" id="parse-stat-summary"></span>
+        </div>
+        <div style="max-height:140px; overflow-y:auto; border:1px solid #f0f0f0; border-radius:4px; padding:6px 10px; background:#fafafa;" id="parse-match-list">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeBatchAddModal()">取消</button>
+      <button class="btn" id="btn-parse-check" onclick="parseBatchUsers()">识别校验</button>
+      <button class="btn primary" id="btn-confirm-add" style="display:none;" onclick="confirmBatchAdd()">确认添加至名单</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 导出反馈弹窗 (预览导出结构) ================= -->
+<div class="modal-mask" id="export-preview-mask">
+  <div class="modal" style="width:680px;">
+    <div class="modal-header">
+      <span id="export-preview-title">导出数据确认</span>
+      <button class="drawer-close" onclick="closeExportPreview()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+        <div style="width:36px; height:36px; background:#e6f7ff; color:#1890ff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px;">
+          📥
+        </div>
+        <div>
+          <div style="font-weight:600; font-size:14px; color:#303133;" id="export-file-name">文件名.xlsx</div>
+          <div style="font-size:12px; color:#909399;" id="export-file-desc">导出范围与字段说明</div>
+        </div>
+      </div>
+
+      <div id="export-detail-content"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeExportPreview()">关闭</button>
+      <button class="btn primary" onclick="triggerActualDownload()">
+        <span>⬇️</span> 立即生成并下载文件
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast 提示条 -->
+<div class="toast" id="toast-msg"></div>
+
+<script>
+  let currentTargetModule = 'project'; // 'project' 或 'exam'
+  let parsedUsers = [];
+
+  function showToast(msg, type = 'info') {
+    const t = document.getElementById('toast-msg');
+    t.innerText = msg;
+    t.className = `toast ${type}`;
+    t.style.display = 'inline-flex';
+    setTimeout(() => {
+      t.style.display = 'none';
+    }, 2400);
+  }
+
+  // 导航切换
+  function switchNav(key) {
+    document.querySelectorAll('.page-view').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.sidebar .menu-item').forEach(el => el.classList.remove('active'));
+
+    const b = document.getElementById('top-breadcrumb');
+
+    if (key === 'course') {
+      document.getElementById('view-course').style.display = 'block';
+      document.getElementById('menu-course').classList.add('active');
+      b.innerHTML = `<span>在线学习</span><span class="sep">/</span><span class="curr">课程管理</span>`;
+    } else if (key === 'project') {
+      document.getElementById('view-project').style.display = 'block';
+      document.getElementById('menu-project').classList.add('active');
+      b.innerHTML = `<span>在线学习</span><span class="sep">/</span><span class="curr">学习项目</span>`;
+    } else if (key === 'exam') {
+      document.getElementById('view-exam').style.display = 'block';
+      document.getElementById('menu-exam').classList.add('active');
+      b.innerHTML = `<span>在线考试</span><span class="sep">/</span><span class="curr">考试管理</span>`;
+    } else if (key === 'exam-score') {
+      document.getElementById('view-exam-score').style.display = 'block';
+      document.getElementById('menu-exam-score').classList.add('active');
+      b.innerHTML = `<span>在线考试</span><span class="sep">/</span><span>考试管理</span><span class="sep">/</span><span class="curr">考试成绩</span>`;
+    }
+  }
+
+  // 1. 课程管理 - 报名人员进度抽屉
+  function openProgressDrawer(courseName) {
+    document.getElementById('progress-course-name').innerText = courseName;
+    document.getElementById('progress-drawer-mask').style.display = 'block';
+    document.getElementById('progress-drawer').style.display = 'flex';
+  }
+  function closeProgressDrawer() {
+    document.getElementById('progress-drawer-mask').style.display = 'none';
+    document.getElementById('progress-drawer').style.display = 'none';
+  }
+
+  // 导出改动1：报名人员进度导出
+  function exportCourseProgress() {
+    const course = document.getElementById('progress-course-name').innerText;
+    const fileName = `报名人员进度_${course}_${new Date().toISOString().slice(0,10)}.xlsx`;
+    
+    document.getElementById('export-preview-title').innerText = '导出报名人员学习进度';
+    document.getElementById('export-file-name').innerText = fileName;
+    document.getElementById('export-file-desc').innerText = '导出所有报名人员的学习数据，字段与弹窗列表一致';
+    
+    document.getElementById('export-detail-content').innerHTML = `
+      <div style="background:#fafafa; border:1px solid #ebeef5; border-radius:4px; padding:12px;">
+        <div style="font-weight:600; margin-bottom:8px; color:#303133;">📄 单 Sheet 导出结构：</div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+          <span class="tag blue">姓名</span>
+          <span class="tag blue">部门</span>
+          <span class="tag blue">学习进度</span>
+          <span class="tag blue">状态</span>
+          <span class="tag blue">报名时间</span>
+          <span class="tag blue">完成时间</span>
+        </div>
+        <div style="margin-top:10px; font-size:12px; color:#909399;">
+          * 包含当前课程全部已报名学员数据（共 12 条）。
+        </div>
+      </div>
+    `;
+    openExportPreview();
+  }
+
+  // 2. 学习项目详情抽屉
+  function openProjectDetailDrawer(projectName) {
+    document.getElementById('project-detail-mask').style.display = 'block';
+    document.getElementById('project-detail-drawer').style.display = 'flex';
+  }
+  function closeProjectDetailDrawer() {
+    document.getElementById('project-detail-mask').style.display = 'none';
+    document.getElementById('project-detail-drawer').style.display = 'none';
+  }
+  function toggleProjectStaffDetail() {
+    const sub = document.getElementById('sub-row-staff');
+    const btn = document.getElementById('btn-toggle-sub');
+    if (sub.style.display === 'none') {
+      sub.style.display = 'table-row';
+      btn.innerText = '收起';
+    } else {
+      sub.style.display = 'none';
+      btn.innerText = '展开详情';
+    }
+  }
+
+  // 导出改动2：参训人员双 Sheet 导出
+  function exportProjectStaff() {
+    const fileName = `学习项目_郭1013岗前-售卖相关_参训人员学习数据_${new Date().toISOString().slice(0,10)}.xlsx`;
+    document.getElementById('export-preview-title').innerText = '导出参训人员数据';
+    document.getElementById('export-file-name').innerText = fileName;
+    document.getElementById('export-file-desc').innerText = '根据项目学员生成包含整体完成情况与课程学习明细的综合报表';
+
+    document.getElementById('export-detail-content').innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="background:#f6ffed; border:1px solid #b7eb8f; border-radius:4px; padding:12px;">
+          <div style="font-weight:600; color:#52c41a; margin-bottom:6px;">📊 Sheet 1: 人员整体完成情况</div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <span class="tag green">姓名</span>
+            <span class="tag green">部门</span>
+            <span class="tag green">项目进度</span>
+            <span class="tag green">状态</span>
+          </div>
+          <div style="margin-top:6px; font-size:12px; color:#606266;">说明：汇总统计每位学员在本项目中的整体完成进度与当前学习状态。</div>
+        </div>
+
+        <div style="background:#e6f7ff; border:1px solid #91d5ff; border-radius:4px; padding:12px;">
+          <div style="font-weight:600; color:#1890ff; margin-bottom:6px;">📋 Sheet 2: 人员明细情况</div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <span class="tag blue">姓名</span>
+            <span class="tag blue">课程名称</span>
+            <span class="tag blue">学习进度</span>
+            <span class="tag blue">状态</span>
+            <span class="tag blue">完成时间</span>
+          </div>
+          <div style="margin-top:6px; font-size:12px; color:#606266;">说明：展开记录每位学员在该项目所包含的每一门课程上的学习明细及完成时间。</div>
+        </div>
+      </div>
+    `;
+    openExportPreview();
+  }
+
+  // 导出改动3：考试列表导出
+  function exportExamList() {
+    const kw = document.getElementById('exam-kw').value;
+    const st = document.getElementById('exam-status-select').value;
+    const fileName = `考试管理_列表数据_${new Date().toISOString().slice(0,10)}.xlsx`;
+    
+    document.getElementById('export-preview-title').innerText = '导出考试管理列表';
+    document.getElementById('export-file-name').innerText = fileName;
+    document.getElementById('export-file-desc').innerText = `根据当前筛选条件（状态：${st || '全部'}，关键词：${kw || '无'}）导出记录`;
+
+    document.getElementById('export-detail-content').innerHTML = `
+      <div style="background:#fafafa; border:1px solid #ebeef5; border-radius:4px; padding:12px;">
+        <div style="font-weight:600; margin-bottom:8px; color:#303133;">📄 导出字段列表（除操作列）：</div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+          <span class="tag blue">考试名称</span>
+          <span class="tag blue">关联试卷</span>
+          <span class="tag blue">考试时间</span>
+          <span class="tag blue">答题时长</span>
+          <span class="tag blue">总分</span>
+          <span class="tag blue">合格分</span>
+          <span class="tag blue">应考人数</span>
+          <span class="tag blue">已考人数</span>
+          <span class="tag blue">参考率</span>
+          <span class="tag blue">状态</span>
+        </div>
+      </div>
+    `;
+    openExportPreview();
+  }
+
+  // 导出改动4：考试成绩导出
+  function exportExamScore() {
+    const fileName = `考试成绩_2026年10月新兵入职通关考_${new Date().toISOString().slice(0,10)}.xlsx`;
+    document.getElementById('export-preview-title').innerText = '导出考试成绩';
+    document.getElementById('export-file-name').innerText = fileName;
+    document.getElementById('export-file-desc').innerText = '导出当前考试学员成绩明细数据';
+
+    document.getElementById('export-detail-content').innerHTML = `
+      <div style="background:#fafafa; border:1px solid #ebeef5; border-radius:4px; padding:12px;">
+        <div style="font-weight:600; margin-bottom:8px; color:#303133;">📄 导出字段列表（除操作列）：</div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+          <span class="tag green">姓名</span>
+          <span class="tag green">部门</span>
+          <span class="tag green">考试状态</span>
+          <span class="tag green">得分</span>
+          <span class="tag green">是否合格</span>
+          <span class="tag green">提交时间</span>
+        </div>
+        <div style="margin-top:8px; font-size:12px; color:#909399;">
+          * 支持导出已考（带得分与合格状态）及未考学员。
+        </div>
+      </div>
+    `;
+    openExportPreview();
+  }
+
+  // 导出预览弹窗控制
+  function openExportPreview() {
+    document.getElementById('export-preview-mask').style.display = 'flex';
+  }
+  function closeExportPreview() {
+    document.getElementById('export-preview-mask').style.display = 'none';
+  }
+  function triggerActualDownload() {
+    closeExportPreview();
+    showToast('正在导出文件并下载，请稍候...', 'success');
+  }
+
+  // 3. 项目新增/编辑抽屉
+  function openEditProjectDrawer(mode) {
+    document.getElementById('project-edit-title').innerText = mode === 'new' ? '新建学习项目' : '编辑学习项目 - 郭1013岗前-售卖相关';
+    document.getElementById('project-edit-mask').style.display = 'block';
+    document.getElementById('project-edit-drawer').style.display = 'flex';
+  }
+  function closeEditProjectDrawer() {
+    document.getElementById('project-edit-mask').style.display = 'none';
+    document.getElementById('project-edit-drawer').style.display = 'none';
+  }
+  function saveProjectEdit() {
+    closeEditProjectDrawer();
+    showToast('项目保存成功！', 'success');
+  }
+
+  // 4. 考试新增/编辑抽屉
+  function openExamDrawer(mode) {
+    document.getElementById('exam-edit-title').innerText = mode === 'new' ? '新建考试' : '编辑考试 - 2026年10月新兵入职通关考';
+    document.getElementById('exam-edit-mask').style.display = 'block';
+    document.getElementById('exam-edit-drawer').style.display = 'flex';
+  }
+  function closeExamDrawer() {
+    document.getElementById('exam-edit-mask').style.display = 'none';
+    document.getElementById('exam-edit-drawer').style.display = 'none';
+  }
+  function saveExamEdit() {
+    closeExamDrawer();
+    showToast('考试已保存发布！', 'success');
+  }
+
+  // 5. 批量添加人员模态框交互 (项目与考试通用)
+  function openBatchAddModal(target) {
+    currentTargetModule = target;
+    document.getElementById('batch-add-modal-title').innerText = target === 'project' ? '学习项目 - 批量添加参训人员' : '考试管理 - 批量添加参考人员';
+    document.getElementById('batch-input-area').value = '';
+    document.getElementById('batch-parse-result').style.display = 'none';
+    document.getElementById('btn-confirm-add').style.display = 'none';
+    document.getElementById('btn-parse-check').style.display = 'inline-flex';
+    document.getElementById('batch-add-mask').style.display = 'flex';
+  }
+  function closeBatchAddModal() {
+    document.getElementById('batch-add-mask').style.display = 'none';
+  }
+  function fillExampleBatchUsers() {
+    document.getElementById('batch-input-area').value = '周悦平\n陈佳讯\n韩鹏成\n崔迪\n900128\n未知人员999';
+    showToast('已填入测试数据，请点击「识别校验」');
+  }
+
+  function parseBatchUsers() {
+    const raw = document.getElementById('batch-input-area').value.trim();
+    if (!raw) {
+      showToast('请输入需要添加的人员姓名或工号', 'info');
+      return;
+    }
+
+    const lines = raw.split(/[\n,;，；\s]+/).filter(Boolean);
+    const mockDb = {
+      '周悦平': { dept: '武汉新兵营/新兵营-催油', matched: true },
+      '陈佳讯': { dept: '武汉新兵营/新兵营-催油', matched: true },
+      '韩鹏成': { dept: '电销团队初中部/武汉新兵营', matched: true },
+      '崔迪': { dept: '电销团队初中部/武汉新兵营', matched: true },
+      '900128': { name: '李萌 (900128)', dept: '武汉电销/职能&跨项目人员', matched: true },
+      '方淳林': { dept: '武汉新兵营', matched: true },
+      '郭金宝': { dept: '武汉新兵营', matched: true }
+    };
+
+    let matchedList = [];
+    let unmatchedList = [];
+
+    lines.forEach(item => {
+      if (mockDb[item]) {
+        matchedList.push({
+          name: mockDb[item].name || item,
+          dept: mockDb[item].dept
+        });
+      } else {
+        unmatchedList.push(item);
+      }
+    });
+
+    parsedUsers = matchedList;
+
+    // 显示解析结果
+    const container = document.getElementById('parse-match-list');
+    container.innerHTML = '';
+
+    matchedList.forEach(u => {
+      container.innerHTML += `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid #f0f0f0; font-size:12px;">
+          <span><b>${u.name}</b> <span style="color:#909399; margin-left:6px;">${u.dept}</span></span>
+          <span class="tag green" style="transform:scale(0.9);">匹配成功</span>
+        </div>
+      `;
+    });
+
+    unmatchedList.forEach(u => {
+      container.innerHTML += `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid #f0f0f0; font-size:12px;">
+          <span><b style="color:#f5222d;">${u}</b> <span style="color:#f5222d; margin-left:6px;">未在企业架构中找到该人员</span></span>
+          <span class="tag red" style="transform:scale(0.9);">匹配失败</span>
+        </div>
+      `;
+    });
+
+    document.getElementById('parse-stat-summary').innerHTML = `
+      成功识别 <b style="color:#52c41a;">${matchedList.length}</b> 人，
+      异常 <b style="color:#f5222d;">${unmatchedList.length}</b> 人
+    `;
+
+    document.getElementById('batch-parse-result').style.display = 'block';
+    if (matchedList.length > 0) {
+      document.getElementById('btn-confirm-add').style.display = 'inline-flex';
+    }
+  }
+
+  function confirmBatchAdd() {
+    if (parsedUsers.length === 0) return;
+
+    const targetContainerId = currentTargetModule === 'project' ? 'project-staff-tags' : 'exam-staff-tags';
+    const targetCountId = currentTargetModule === 'project' ? 'project-staff-count' : 'exam-staff-count';
+    const container = document.getElementById(targetContainerId);
+
+    let addedCount = 0;
+    parsedUsers.forEach(u => {
+      // 避免重复
+      if (!container.querySelector(`[data-name="${u.name}"]`)) {
+        const tag = document.createElement('span');
+        tag.className = 'user-tag';
+        tag.setAttribute('data-name', u.name);
+        tag.innerHTML = `${u.name} (${u.dept.split('/').pop()}) <span class="del-tag" onclick="removeUserTag(this, '${currentTargetModule}')">✕</span>`;
+        container.appendChild(tag);
+        addedCount++;
+      }
+    });
+
+    const total = container.querySelectorAll('.user-tag').length;
+    document.getElementById(targetCountId).innerText = total;
+
+    closeBatchAddModal();
+    showToast(`成功批量添加 ${addedCount} 位人员（已自动过滤重复人员）！`, 'success');
+  }
+
+  function removeUserTag(btn, module) {
+    const tag = btn.parentElement;
+    tag.remove();
+    const targetCountId = module === 'project' ? 'project-staff-count' : 'exam-staff-count';
+    const container = document.getElementById(module === 'project' ? 'project-staff-tags' : 'exam-staff-tags');
+    document.getElementById(targetCountId).innerText = container.querySelectorAll('.user-tag').length;
+  }
+</script>
+</body>
+</html>
