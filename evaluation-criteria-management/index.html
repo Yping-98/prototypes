@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI质培中台 - 评价标准管理</title>
+<style>
+  :root {
+    --primary: #409eff;
+    --primary-light: #ecf5ff;
+    --primary-border: #b3d8ff;
+    --success: #67c23a;
+    --success-light: #f0f9eb;
+    --warning: #e6a23c;
+    --warning-light: #fdf6ec;
+    --danger: #f56c6c;
+    --danger-light: #fef0f0;
+    --info: #909399;
+    --info-light: #f4f4f5;
+    --text-primary: #303133;
+    --text-regular: #606266;
+    --text-secondary: #909399;
+    --text-placeholder: #a8abb2;
+    --border: #dcdfe6;
+    --border-light: #e4e7ed;
+    --border-lighter: #ebeef5;
+    --bg-page: #f2f3f5;
+    --sidebar-bg: #001529;
+    --table-header-bg: #f6f7fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 14px; color: var(--text-primary); background: var(--bg-page); overflow: hidden;
+  }
+  .app-layout { display: flex; height: 100vh; }
+  .sidebar { width: 220px; background: var(--sidebar-bg); display: flex; flex-direction: column; flex-shrink: 0; }
+  .logo { height: 56px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .logo-icon { width: 30px; height: 30px; border-radius: 6px; background: linear-gradient(135deg,#409eff,#36cfc9); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:14px; }
+  .logo-title { font-size: 18px; font-weight: 600; color: #fff; }
+  .menu { flex: 1; overflow-y: auto; padding: 6px 8px; }
+  .menu-group-title, .menu-item { display:flex; align-items:center; gap:8px; height:44px; padding:0 12px; color: rgba(255,255,255,.65); cursor:pointer; border-radius:4px; user-select:none; font-size:14px; white-space:nowrap; }
+  .menu-group-title:hover, .menu-item:hover { background: rgba(255,255,255,.08); color:#fff; }
+  .menu-item.active { background: var(--primary); color:#fff; }
+  .menu-sub { max-height: 520px; }
+  .menu-sub .menu-item { padding-left: 40px; height:40px; }
+  .menu-arrow { margin-left:auto; font-size:12px; transform: rotate(180deg); }
+  .body-wrap { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .navbar { height:56px; background:#fff; border-bottom:1px solid var(--border-light); display:flex; align-items:center; justify-content:space-between; padding:0 16px; flex-shrink:0; }
+  .breadcrumb { display:flex; align-items:center; gap:8px; color: var(--text-secondary); font-size:14px; }
+  .breadcrumb .cur { color: var(--text-primary); }
+  .nav-user { display:flex; align-items:center; gap:8px; }
+  .avatar { width:30px; height:30px; border-radius:50%; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; }
+  .main { flex:1; padding:10px; overflow:auto; }
+  .card { background:#fff; border-radius:4px; border:1px solid var(--border-lighter); padding:20px; }
+  .form-inline { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-bottom:16px; }
+  .toolbar-right { margin-left:auto; display:flex; gap:10px; }
+  .input, .select { height:32px; border:1px solid var(--border); border-radius:4px; padding:0 11px; font-size:14px; color:var(--text-regular); outline:none; background:#fff; }
+  .input:focus, .select:focus, textarea.input:focus { border-color: var(--primary); }
+  .input::placeholder, textarea.input::placeholder { color: var(--text-placeholder); }
+  textarea.input { height:auto; padding:8px 11px; resize:vertical; line-height:1.6; font-family:inherit; width:100%; }
+  .input:disabled, .select:disabled, textarea.input:disabled { background:#f5f7fa; color:var(--text-secondary); cursor:not-allowed; }
+  .btn { height:32px; padding:0 15px; border-radius:4px; border:1px solid var(--border); background:#fff; color:var(--text-regular); font-size:14px; cursor:pointer; white-space:nowrap; }
+  .btn:hover { color:var(--primary); border-color:var(--primary-border); background:var(--primary-light); }
+  .btn-primary { background:var(--primary); border-color:var(--primary); color:#fff; }
+  .btn-primary:hover { background:#66b1ff; border-color:#66b1ff; color:#fff; }
+  .btn-primary:disabled { background:#a0cfff; border-color:#a0cfff; cursor:not-allowed; }
+  .btn-sm { height:26px; padding:0 10px; font-size:12px; }
+  .btn-link { border:none; background:none; color:var(--primary); padding:0 4px; height:auto; font-size:14px; cursor:pointer; }
+  .btn-link:hover { color:#66b1ff; }
+  .btn-link.danger { color: var(--danger); }
+  .btn-link.danger:hover { color:#f89898; }
+  .btn-link:disabled { color: var(--text-placeholder); cursor:not-allowed; }
+  .table-wrap { overflow-x:auto; }
+  table.el-table { width:100%; border-collapse:collapse; font-size:14px; }
+  table.el-table th { background:var(--table-header-bg); font-weight:600; color:var(--text-primary); text-align:left; padding:10px 12px; border-bottom:1px solid var(--border-lighter); white-space:nowrap; }
+  table.el-table td { padding:10px 12px; border-bottom:1px solid var(--border-lighter); color:var(--text-regular); vertical-align:middle; }
+  table.el-table tbody tr:hover { background:#f5f7fa; }
+  .tag { display:inline-flex; align-items:center; height:24px; padding:0 9px; border-radius:4px; font-size:12px; border:1px solid; white-space:nowrap; }
+  .tag-primary { background:var(--primary-light); border-color:var(--primary-border); color:var(--primary); }
+  .tag-success { background:var(--success-light); border-color:#c2e7b0; color:var(--success); }
+  .tag-warning { background:var(--warning-light); border-color:#f5dab1; color:var(--warning); }
+  .tag-danger  { background:var(--danger-light); border-color:#fbc4c4; color:var(--danger); }
+  .tag-info    { background:var(--info-light); border-color:#d3d4d6; color:var(--info); }
+  .link-num { color:var(--primary); cursor:pointer; }
+  .link-num:hover { text-decoration:underline; }
+  .name-link { color:var(--primary); cursor:pointer; }
+  .name-link:hover { text-decoration:underline; }
+  .tip-bar { background:var(--primary-light); border:1px solid var(--primary-border); border-radius:4px; padding:8px 12px; font-size:13px; color:var(--text-regular); margin-bottom:14px; line-height:1.6; }
+  .pagination { display:flex; align-items:center; justify-content:flex-end; gap:6px; margin-top:16px; color:var(--text-regular); font-size:13px; }
+  .page-btn { min-width:28px; height:28px; border:none; background:var(--info-light); border-radius:3px; color:var(--text-regular); font-size:13px; }
+  .page-btn.active { background:var(--primary); color:#fff; }
+  .empty { padding:48px 0; text-align:center; color:var(--text-secondary); }
+  .page-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .page-head h2 { font-size:16px; font-weight:600; }
+  .section-title { font-size:15px; font-weight:600; margin-bottom:16px; border-left:3px solid var(--primary); padding-left:10px; }
+  .form-item { display:flex; margin-bottom:16px; }
+  .form-label { width:120px; flex-shrink:0; text-align:right; padding-right:12px; line-height:32px; color:var(--text-regular); }
+  .form-label.req::before { content:"*"; color:var(--danger); margin-right:4px; }
+  .form-content { flex:1; min-width:0; }
+  .form-tip { margin-top:6px; font-size:12px; color:var(--text-secondary); line-height:1.6; }
+  .count { float:right; font-size:12px; color:var(--text-placeholder); }
+  .editor-grid { display:grid; grid-template-columns: minmax(0,1.2fr) minmax(320px,.8fr); gap:12px; align-items:start; }
+  .dim-card { border:1px solid var(--border-lighter); border-radius:4px; padding:12px 14px; margin-bottom:10px; background:#fff; }
+  .dim-card-head { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .dim-index { width:22px; height:22px; border-radius:50%; background:var(--primary-light); color:var(--primary); font-size:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:600; }
+  .dim-card-head .input { flex:1; }
+  .score-input { width:88px; }
+  .dim-actions { display:flex; gap:2px; flex-shrink:0; }
+  .sum-bar { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:4px; background:#f5f7fa; font-size:13px; }
+  .sum-bar.ok { background:var(--success-light); color:#529b2e; }
+  .sum-bar.bad { background:var(--danger-light); color:var(--danger); }
+  .switch { display:inline-flex; align-items:center; gap:8px; height:32px; cursor:pointer; }
+  .switch input { accent-color: var(--primary); }
+  .preview-card { position:sticky; top:0; }
+  .preview-cap { font-size:12px; color:var(--text-secondary); margin-bottom:10px; }
+  .score-hero { text-align:center; padding:8px 0 14px; }
+  .score-hero .num { font-size:40px; font-weight:700; color:var(--danger); line-height:1; }
+  .score-hero .label { margin-top:6px; color:var(--text-secondary); font-size:13px; }
+  .formula { background:#f5f7fa; border-radius:4px; padding:8px 10px; font-size:12px; color:var(--text-regular); line-height:1.6; margin-bottom:12px; }
+  .dim-line { margin-bottom:12px; }
+  .dim-line-head { display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px; }
+  .bar { height:8px; background:#ebeef5; border-radius:4px; overflow:hidden; }
+  .bar > div { height:100%; background:var(--primary); border-radius:4px; }
+  .evidence { margin-top:4px; font-size:12px; color:var(--text-secondary); line-height:1.5; }
+  .block-title { font-size:13px; font-weight:600; margin:12px 0 6px; }
+  .block-list { padding-left:18px; color:var(--text-regular); font-size:13px; line-height:1.7; }
+  .summary { font-size:13px; color:var(--text-regular); line-height:1.7; background:#f5f7fa; border-radius:4px; padding:8px 10px; }
+  .dialog-mask { position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:flex-start; justify-content:center; z-index:100; overflow:auto; padding:8vh 20px 40px; }
+  .dialog-mask.show { display:flex; }
+  .dialog { background:#fff; border-radius:6px; width:520px; max-width:96vw; box-shadow:0 12px 32px rgba(0,0,0,.15); }
+  .dialog.wide { width:1040px; }
+  .dialog-mask.drawer { justify-content:flex-end; padding:0; overflow:hidden; align-items:stretch; }
+  .dialog-mask.drawer .dialog { height:100vh; border-radius:0; width:720px; max-width:92vw; display:flex; flex-direction:column; }
+  .dialog-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border-lighter); font-weight:600; }
+  .dialog-close { border:none; background:none; font-size:20px; cursor:pointer; color:var(--text-secondary); line-height:1; }
+  .dialog-body { padding:16px 20px; overflow:auto; }
+  .dialog-mask.drawer .dialog-body { flex:1; }
+  .dialog-mask.drawer .dialog-footer { border-top:1px solid var(--border-lighter); }
+  .dialog-mask.drawer .split { flex:1; height:auto; min-height:0; }
+  .report-sec { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; margin:16px 0 10px; }
+  .report-sec::before { content:""; width:3px; height:14px; background:var(--primary); border-radius:1px; }
+  .point-list { margin:0; padding:0; list-style:none; }
+  .point-list li { margin-bottom:12px; font-size:13px; line-height:1.75; color:var(--text-regular); }
+  .point-list b { color:var(--text-primary); }
+  .dialog-footer { padding:12px 20px 16px; text-align:right; display:flex; justify-content:flex-end; gap:10px; }
+  .detail-row { display:flex; margin-bottom:12px; font-size:14px; }
+  .detail-label { width:108px; flex-shrink:0; color:var(--text-secondary); text-align:right; padding-right:14px; }
+  .detail-value { flex:1; line-height:1.7; }
+  .split { display:flex; height: 68vh; min-height: 480px; }
+  .split-left, .split-right { overflow:auto; }
+  .split-left { width:46%; background:#f7f8fa; border-right:1px solid var(--border-lighter); padding:16px; }
+  .split-right { width:54%; padding:16px 18px; }
+  .audio { background:#fff; border:1px solid var(--border-lighter); border-radius:4px; padding:10px 12px; margin-bottom:14px; }
+  .audio-top { display:flex; justify-content:space-between; font-size:12px; color:var(--text-secondary); margin-bottom:6px; }
+  .audio-bar { height:6px; background:#e4e7ed; border-radius:3px; }
+  .audio-bar > div { width:35%; height:100%; background:var(--primary); border-radius:3px; }
+  .bubble { max-width:86%; padding:8px 10px; border-radius:6px; font-size:13px; line-height:1.6; margin-bottom:10px; }
+  .bubble.sale { background:#fff; border:1px solid var(--border-lighter); }
+  .bubble.ai { background:var(--primary-light); margin-left:auto; }
+  .who { font-size:12px; color:var(--text-secondary); margin-bottom:2px; }
+  .q-table td, .q-table th { font-size:12px; }
+  .exam-tag { margin-left:8px; }
+  .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#303133; color:#fff; padding:10px 16px; border-radius:4px; font-size:14px; z-index:200; display:none; max-width:520px; }
+  .toast.show { display:block; }
+  .bands { margin-top:8px; background:#f5f7fa; border-radius:4px; padding:8px 10px; }
+  .band-row { display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+  .band-row:last-child { margin-bottom:0; }
+  .band-row .input { height:28px; font-size:12px; }
+  .snapshot { margin-top:14px; font-size:12px; color:var(--text-secondary); }
+  .checkbox-line { display:flex; gap:18px; align-items:center; min-height:32px; flex-wrap:wrap; }
+  .checkbox-line label { display:flex; gap:5px; align-items:center; cursor:pointer; color:var(--text-regular); }
+  .page-title-line { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .page-title-line h2 { font-size:17px; font-weight:600; }
+  .type-option { flex:1; padding:20px; border:2px solid var(--border-light); border-radius:8px; text-align:center; cursor:pointer; }
+  .type-option:hover { border-color:var(--primary); background:#f0f9ff; }
+  .type-option.selected { border-color:var(--primary); background:var(--primary-light); }
+  .type-icon { width:60px; height:60px; border-radius:50%; margin:0 auto 12px; display:flex; align-items:center; justify-content:center; font-size:26px; }
+  .type-title { font-size:16px; font-weight:600; margin-bottom:8px; }
+  .type-desc { font-size:13px; color:var(--text-regular); line-height:1.5; }
+  .detail-block { background:#f5f7fa; border-radius:6px; padding:12px 14px; white-space:pre-wrap; line-height:1.8; color:var(--text-regular); font-size:13.5px; }
+  .drag-handle { cursor:move; color:var(--primary); margin-right:6px; }
+  .qa-panel { margin-top:10px; padding:12px; background:#f5f7fa; border:1px solid var(--border-lighter); border-radius:8px; }
+  .test-pane { width:340px; flex-shrink:0; border-left:1px solid var(--border-lighter); padding-left:20px; display:flex; flex-direction:column; }
+  .test-box { flex:1; min-height:300px; background:#f5f7fa; border-radius:6px; padding:12px; overflow-y:auto; font-size:13px; line-height:1.7; }
+  .picked-tags { margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; }
+  .member-head { display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .member-head h2 { font-size:18px; font-weight:600; }
+  .member-sub { color:var(--text-secondary); font-size:13px; margin-bottom:16px; }
+  .metric-row { display:flex; gap:12px; margin-bottom:8px; }
+  .metric { flex:1; background:#f5f7fa; border-radius:6px; padding:12px 14px; text-align:center; }
+  .metric b { display:block; font-size:26px; line-height:1.2; color:var(--danger); }
+  .metric span { font-size:12px; color:var(--text-secondary); }
+  .metric.ok b { color:var(--success); }
+  .score-formula { font-size:12px; color:var(--text-secondary); margin:0 0 8px; }
+  .sec-title { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; margin:16px 0 10px; }
+  .sec-title::before { content:""; width:3px; height:14px; background:var(--primary); border-radius:1px; }
+  .scene-block { border:1px solid var(--border-lighter); border-radius:6px; padding:12px 14px 4px; margin-bottom:10px; }
+  .scene-block.muted { padding-bottom:12px; background:#fafafa; color:var(--text-secondary); }
+  .scene-block-head { display:flex; justify-content:space-between; gap:12px; margin-bottom:10px; }
+  .scene-block-name { font-weight:600; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .scene-block-std { margin-top:4px; font-size:12px; color:var(--text-secondary); }
+  .scene-block-score { text-align:right; font-size:22px; font-weight:700; color:var(--danger); line-height:1; }
+  .scene-block-score span { display:block; margin-top:4px; font-size:12px; font-weight:400; color:var(--text-secondary); }
+  .m-bar-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .m-bar-name { width:72px; flex-shrink:0; font-size:14px; color:var(--text-primary); }
+  .m-bar-track { flex:1; height:8px; background:#ebeef5; border-radius:4px; overflow:hidden; }
+  .m-bar-track i { display:block; height:100%; background:#409eff; border-radius:4px; }
+  .m-bar-pct { width:52px; text-align:right; font-size:13px; color:var(--text-regular); }
+  .m-bar-frac { width:58px; text-align:right; font-size:13px; color:var(--text-secondary); }
+  .same-std { background:#f5f7fa; border-radius:6px; padding:12px 14px 4px; margin-bottom:10px; }
+  .bullet { margin:0 0 8px 18px; color:var(--text-regular); line-height:1.6; }
+  .comment-box { background:var(--primary-light); border-radius:4px; padding:12px 14px; color:var(--text-regular); line-height:1.7; font-size:13px; }
+  .tag .close { cursor:pointer; margin-left:4px; font-style:normal; }
+</style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-icon">质</span><span class="logo-title">AI质培中台</span></div>
+    <nav class="menu">
+      <div class="menu-group-title"><span>AI陪练</span><span class="menu-arrow">&#9662;</span></div>
+      <div class="menu-sub">
+        <div class="menu-item" data-page="locked">优秀话术库</div>
+        <div class="menu-item" id="nav-scene" data-page="scene">场景配置</div>
+        <div class="menu-item active" id="nav-list" data-page="list">评价标准管理</div>
+        <div class="menu-item" data-page="locked">行为画像库</div>
+        <div class="menu-item" data-page="locked">对练台配置管理</div>
+        <div class="menu-item" data-page="locked">角色音色管理</div>
+        <div class="menu-item" id="nav-task" data-page="task">任务管理</div>
+        <div class="menu-item" data-page="locked">我的任务</div>
+        <div class="menu-item" data-page="locked">客户池</div>
+      </div>
+    </nav>
+  </aside>
+  <div class="body-wrap">
+    <header class="navbar">
+      <div class="breadcrumb">AI陪练 <span>/</span> <span class="cur" id="crumb">评价标准管理</span></div>
+      <div class="nav-user"><span class="avatar">管</span><span>管理员</span></div>
+    </header>
+    <main class="main" id="main"></main>
+  </div>
+</div>
+
+<div class="dialog-mask drawer" id="detailMask">
+  <div class="dialog">
+    <div class="dialog-header"><span id="detailTitle">评价标准详情</span><button class="dialog-close" data-close="detailMask">×</button></div>
+    <div class="dialog-body" id="detailBody"></div>
+  </div>
+</div>
+
+<div class="dialog-mask drawer" id="refMask">
+  <div class="dialog">
+    <div class="dialog-header"><span>引用场景</span><button class="dialog-close" data-close="refMask">×</button></div>
+    <div class="dialog-body" id="refBody"></div>
+  </div>
+</div>
+
+<div class="dialog-mask drawer" id="confirmMask">
+  <div class="dialog" style="width:480px;">
+    <div class="dialog-header"><span id="confirmTitle">确认</span><button class="dialog-close" data-close="confirmMask">×</button></div>
+    <div class="dialog-body" id="confirmBody"></div>
+    <div class="dialog-footer">
+      <button class="btn" data-close="confirmMask">取消</button>
+      <button class="btn btn-primary" id="confirmOk">确定</button>
+    </div>
+  </div>
+</div>
+
+<div class="dialog-mask drawer" id="reportMask">
+  <div class="dialog" style="width:640px;">
+    <div class="dialog-header">
+      <span>评分结果</span>
+      <button class="dialog-close" data-close="reportMask">×</button>
+    </div>
+    <div class="dialog-body" id="reportBody"></div>
+  </div>
+</div>
+
+<div class="dialog-mask drawer" id="typeMask">
+  <div class="dialog" style="width:640px;">
+    <div class="dialog-header"><span>选择场景类型</span><button class="dialog-close" data-close="typeMask">×</button></div>
+    <div class="dialog-body">
+      <div style="color:var(--text-regular);margin-bottom:14px;">请选择要创建的场景类型：</div>
+      <div style="display:flex;gap:16px;">
+        <div class="type-option" id="typeOptAI">
+          <div class="type-icon" style="background:#e1f3ff;color:var(--primary);">&#128100;</div>
+          <div class="type-title">AI客户</div>
+          <div class="type-desc">与AI客户进行对话练习，提升销售沟通技巧</div>
+        </div>
+        <div class="type-option" id="typeOptQA">
+          <div class="type-icon" style="background:var(--warning-light);color:var(--warning);">&#128172;</div>
+          <div class="type-title">问答对练</div>
+          <div class="type-desc">通过问答练习提升异议处理能力</div>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn" data-close="typeMask">取消</button>
+      <button class="btn btn-primary" id="btnTypeConfirm" disabled>确认</button>
+    </div>
+  </div>
+</div>
+
+<div class="dialog-mask drawer" id="tagMask">
+  <div class="dialog" style="width:800px;">
+    <div class="dialog-header">
+      <div><div>标签管理</div><div style="font-size:12px;color:var(--text-secondary);font-weight:400;margin-top:4px;">按添加时间倒序展示；标签被场景引用时不可删除，需先在场景中移除该标签</div></div>
+      <button class="dialog-close" data-close="tagMask">×</button>
+    </div>
+    <div class="dialog-body" id="tagBody"></div>
+  </div>
+</div>
+
+<div class="dialog-mask drawer" id="memberMask">
+  <div class="dialog" style="width:560px;">
+    <div class="dialog-header"><span id="memberTitle">整体评价与分析</span><button class="dialog-close" data-close="memberMask">×</button></div>
+    <div class="dialog-body" id="memberBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const TYPE_LABEL = { ai: "AI客户", qa: "问答对练" };
+const STATUS_LABEL = { published: "已发布", draft: "草稿", disabled: "已停用" };
+const STATUS_TAG = { published: "tag-success", draft: "tag-info", disabled: "tag-danger" };
+
+let standards = [
+  {
+    id: 1, name: "外呼综合五维", type: "ai", status: "published", perQuestion: false,
+    desc: "适用于完整外呼对练，从开场到关单。",
+    updatedBy: "管理员", updatedAt: "2026-10-15 18:20", lockedByTask: true,
+    refs: [
+      { name: "高中数学续费邀约", status: "已发布", task: true },
+      { name: "初中英语体验课转化", status: "已发布", task: true },
+      { name: "小学语文期中回访", status: "已发布", task: false }
+    ],
+    dimensions: [
+      dim("开场破冰", 20, "30秒内完成自我介绍、确认对方身份，并说明来电原因。"),
+      dim("需求挖掘", 20, "通过追问定位客户的具体问题，不在未了解情况时直接推销。"),
+      dim("产品介绍", 20, "结合客户学段和当前问题给出针对性方案，而不是通读产品介绍。"),
+      dim("异议处理", 20, "先接住情绪再拆解异议，不直接让步或争辩。"),
+      dim("促单关单", 20, "约定明确的下一步动作和时间，而不是停在「你再考虑一下」。")
+    ]
+  },
+  {
+    id: 2, name: "异议处理专项", type: "ai", status: "published", perQuestion: false,
+    desc: "适用于以价格、效果、时间异议为主的外呼场景。",
+    updatedBy: "管理员", updatedAt: "2026-10-12 11:06", lockedByTask: false,
+    refs: [{ name: "价格异议回访", status: "已发布", task: false }],
+    dimensions: [
+      dim("情绪接住", 25, "客户表达不满或拒绝时，先复述并共情，再进入解释。"),
+      dim("异议拆解", 30, "区分价格、效果、时间等具体异议，不把所有拒绝都当成「不需要」。"),
+      dim("方案重述", 25, "针对异议重述方案价值，不重复开场话术。"),
+      dim("推进下一步", 20, "异议处理后给出可执行的下一步，而不是结束对话。")
+    ]
+  },
+  {
+    id: 3, name: "问答三段论", type: "qa", status: "published", perQuestion: true,
+    desc: "适用于问答对练，按标准答案要点和三段论结构评分。",
+    updatedBy: "管理员", updatedAt: "2026-10-10 09:40", lockedByTask: false,
+    refs: [
+      { name: "价格异议问答", status: "已发布", task: false },
+      { name: "效果质疑问答", status: "已发布", task: false }
+    ],
+    dimensions: [
+      dim("要点覆盖", 40, "回答是否命中标准答案的核心要点，遗漏关键点需要扣分。"),
+      dim("表达结构", 30, "是否符合先共情、再拆解、后推动的顺序。"),
+      dim("表达自然度", 30, "是否口语化，没有明显背稿感。")
+    ]
+  },
+  {
+    id: 4, name: "新员工开场专项", type: "ai", status: "draft", perQuestion: false,
+    desc: "",
+    updatedBy: "管理员", updatedAt: "2026-10-16 09:12", lockedByTask: false,
+    refs: [],
+    dimensions: [
+      dim("自我介绍", 40, "报出姓名和机构，语速清楚。"),
+      dim("身份确认", 30, "确认对方是家长或学生本人。"),
+      dim("来电理由", 30, "用一句话说明本次来电原因。")
+    ]
+  },
+  {
+    id: 5, name: "续费挽留标准", type: "ai", status: "disabled", perQuestion: false,
+    desc: "已停用，历史练习仍按快照展示。",
+    updatedBy: "管理员", updatedAt: "2026-09-28 16:02", lockedByTask: false,
+    refs: [],
+    dimensions: [
+      dim("原因探询", 30, "先问清不续费的具体原因。"),
+      dim("价值回顾", 30, "回顾已使用的课程内容和结果。"),
+      dim("方案调整", 20, "给出可调整的续费方案。"),
+      dim("约定跟进", 20, "约定下一次沟通时间。")
+    ]
+  }
+];
+
+const DEFAULT_PROMPT = "【电话背景】销售外呼跟进已领取体验课的客户，孩子近期完成学情诊断。\n【训练流程】学情反馈 → 需求挖掘 → 方案推荐 → 处理异议 → 约定下一步。\n【禁止行为】不得保证提分结果、不得连续推销超过两轮、不得虚构优惠。\n【信息披露】客户信息逐步披露，销售追问具体时才补充细节。";
+const DEFAULT_GOAL_AI = "完成学情反馈→需求挖掘→方案推荐→处理异议→约定下一步动作，全程保持真实客户状态。";
+const DEFAULT_GOAL_QA = "针对客户常见异议问题，训练学员按标准答案框架（共情→拆解→推动）作答，提升异议处理能力。";
+const qaBank = [
+  { q: "你们的课和学校老师讲的有什么区别？为什么要额外报？", a: "学校面向全班统一节奏，咱们的课根据孩子薄弱点定制…", cat: "需求挖掘" },
+  { q: "价格有点贵，我再考虑考虑吧。", a: "先共情再拆解课时单价，结合限时优惠推动决策…", cat: "异议处理" },
+  { q: "孩子平时没时间上课，作业都写不完。", a: "录播+直播结合，单节25分钟，碎片时间就能学…", cat: "异议处理" },
+  { q: "我先跟孩子爸爸商量一下再说。", a: "把学情报告和方案发微信，约定明天上午同步反馈…", cat: "促单关单" },
+  { q: "网上免费资源那么多，为什么要花钱？", a: "免费资源不成体系，缺少针对性诊断与督学服务…", cat: "异议处理" },
+  { q: "孩子自己不愿意学怎么办？", a: "先了解孩子抵触原因，用兴趣化内容与激励机制引导…", cat: "需求挖掘" }
+];
+let sceneTags = [
+  { name: "学情沟通", creator: "王倩", time: "2026-09-01 10:20" },
+  { name: "产品介绍", creator: "王倩", time: "2026-09-01 10:20" },
+  { name: "优惠关单", creator: "周立成", time: "2026-09-01 10:18" },
+  { name: "全流程", creator: "王倩", time: "2026-08-30 16:02" },
+  { name: "高难度", creator: "李映萍", time: "2026-08-30 15:44" },
+  { name: "理性考虑", creator: "王倩", time: "2026-08-28 11:09" },
+  { name: "小学", creator: "王倩", time: "2026-08-25 09:30" },
+  { name: "初中", creator: "王倩", time: "2026-08-25 09:30" },
+  { name: "高中", creator: "王倩", time: "2026-08-25 09:30" },
+  { name: "新客", creator: "李映萍", time: "2026-09-08 14:12" }
+];
+let sceneNextId = 10;
+let sceneDraft = null;
+let pendingType = null;
+let sceneQuery = { kw: "", status: "", stage: "", tag: "" };
+let qaPanelOpen = false;
+let qaChecked = new Set();
+let tagEditing = -1;
+let tagAddOpen = false;
+function blankScene(type) {
+  const published = publishedOf(type);
+  return {
+    id: null, name: "", type, stages: ["小学"], scope: "通用", tags: [], status: "草稿",
+    updater: "管理员", time: "", refRunning: false, standardId: published[0] ? published[0].id : "",
+    maxMin: 5, interval: 30,
+    prompt: type === "ai" ? DEFAULT_PROMPT : "",
+    goal: type === "ai" ? DEFAULT_GOAL_AI : DEFAULT_GOAL_QA,
+    questions: type === "qa" ? [qaBank[0], qaBank[1]] : []
+  };
+}
+let scenes = [
+  { id: 1, name: "小学｜学情沟通", type: "ai", stages: ["小学"], scope: "家长", tags: ["小学", "学情沟通"], status: "已发布", updater: "王倩", time: "09/07 11:19", refRunning: true, standardId: 1, maxMin: 5, interval: 30, prompt: DEFAULT_PROMPT, goal: DEFAULT_GOAL_AI, questions: [] },
+  { id: 2, name: "小学｜产品介绍", type: "ai", stages: ["小学"], scope: "家长", tags: ["小学", "产品介绍"], status: "已发布", updater: "王倩", time: "09/04 10:31", refRunning: false, standardId: 1, maxMin: 5, interval: 30, prompt: DEFAULT_PROMPT, goal: DEFAULT_GOAL_AI, questions: [] },
+  { id: 3, name: "小学｜优惠关单", type: "ai", stages: ["小学"], scope: "家长", tags: ["小学", "优惠关单"], status: "已发布", updater: "周立成", time: "09/04 10:31", refRunning: false, standardId: 1, maxMin: 5, interval: 30, prompt: DEFAULT_PROMPT, goal: DEFAULT_GOAL_AI, questions: [] },
+  { id: 4, name: "初中｜冷淡异议全流程", type: "ai", stages: ["初中"], scope: "家长", tags: ["初中", "全流程", "高难度"], status: "已停用", updater: "王倩", time: "09/04 10:31", refRunning: false, standardId: 2, maxMin: 5, interval: 30, prompt: DEFAULT_PROMPT, goal: DEFAULT_GOAL_AI, questions: [] },
+  { id: 5, name: "初中｜理性考虑全流程", type: "ai", stages: ["初中"], scope: "家长", tags: ["初中", "全流程", "理性考虑"], status: "已发布", updater: "李映萍", time: "09/04 10:31", refRunning: true, standardId: 1, maxMin: 5, interval: 30, prompt: DEFAULT_PROMPT, goal: DEFAULT_GOAL_AI, questions: [] },
+  { id: 6, name: "初中｜通用学情沟通", type: "ai", stages: ["初中"], scope: "通用", tags: ["初中", "学情沟通"], status: "已发布", updater: "王倩", time: "09/04 10:31", refRunning: false, standardId: 1, maxMin: 5, interval: 30, prompt: DEFAULT_PROMPT, goal: DEFAULT_GOAL_AI, questions: [] },
+  { id: 7, name: "高中｜产品介绍", type: "ai", stages: ["高中"], scope: "家长", tags: ["高中", "产品介绍"], status: "已发布", updater: "周立成", time: "09/04 10:31", refRunning: false, standardId: 2, maxMin: 5, interval: 30, prompt: DEFAULT_PROMPT, goal: DEFAULT_GOAL_AI, questions: [] },
+  { id: 8, name: "高中｜价格异议问答对练", type: "qa", stages: ["高中"], scope: "—", tags: ["高中", "优惠关单"], status: "已发布", updater: "李映萍", time: "09/04 10:31", refRunning: false, standardId: 3, maxMin: 5, interval: 30, prompt: "", goal: DEFAULT_GOAL_QA, questions: [qaBank[0], qaBank[1]] },
+  { id: 9, name: "高中｜优惠关单", type: "ai", stages: ["高中"], scope: "家长", tags: ["高中", "优惠关单"], status: "草稿", updater: "王倩", time: "09/04 10:31", refRunning: false, standardId: 1, maxMin: 5, interval: 30, prompt: DEFAULT_PROMPT, goal: DEFAULT_GOAL_AI, questions: [] }
+];
+
+let nextId = 6;
+let view = "list";
+let editor = null;
+let confirmAction = null;
+let filters = { kw: "", type: "", status: "" };
+
+function dim(name, max, rubric) {
+  return { name, max, rubric, bandsOpen: false, bands: [
+    { range: "", text: "" },
+    { range: "", text: "" }
+  ]};
+}
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
+}
+
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove("show"), 2200);
+}
+
+function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+function sumMax(list) { return list.reduce((n, d) => n + (Number(d.max) || 0), 0); }
+
+function publishedOf(type) {
+  return standards.filter(s => s.status === "published" && s.type === type);
+}
+
+function findStandard(id) { return standards.find(s => s.id === id); }
+
+function setCrumb(text) { document.getElementById("crumb").textContent = text; }
+
+function setNav(page) {
+  document.querySelectorAll(".menu-item").forEach(el => el.classList.remove("active"));
+  const id = page === "scene" || page === "sceneEdit" ? "nav-scene" : (page === "task" || page === "taskMember" ? "nav-task" : "nav-list");
+  document.getElementById(id).classList.add("active");
+}
+
+function render() {
+  if (view === "list") renderList();
+  else if (view === "editor") renderEditor();
+  else if (view === "sceneEdit") renderSceneEdit();
+  else if (view === "task") renderTask();
+  else if (view === "taskMember") renderTaskMember();
+  else renderScene();
+}
+
+function refsOf(standard) {
+  return scenes.filter(sc => Number(sc.standardId) === standard.id).map(sc => ({
+    name: sc.name, status: sc.status, task: !!sc.refRunning
+  }));
+}
+function lockedByTask(standard) { return refsOf(standard).some(r => r.task); }
+
+function renderList() {
+  setCrumb("评价标准管理");
+  setNav("list");
+  const kw = filters.kw.trim();
+  const type = filters.type;
+  const status = filters.status;
+  const rows = standards.filter(s => {
+    if (kw && !s.name.includes(kw)) return false;
+    if (type && s.type !== type) return false;
+    if (status && s.status !== status) return false;
+    return true;
+  });
+  document.getElementById("main").innerHTML = `
+    <div class="card">
+      <div class="tip-bar">评价标准按量表维护。场景发布时从已发布标准中选择一条。查询评分结果时固定展示总分、维度得分、判断依据、优势、待改进和综合评语，维度内容随所选标准变化。</div>
+      <div class="form-inline">
+        <input class="input" id="f-kw" placeholder="标准名称" style="width:180px" value="${esc(kw)}">
+        <select class="select" id="f-type" style="width:140px">
+          <option value="">适用类型</option>
+          <option value="ai" ${type==="ai"?"selected":""}>AI客户</option>
+          <option value="qa" ${type==="qa"?"selected":""}>问答对练</option>
+        </select>
+        <select class="select" id="f-status" style="width:140px">
+          <option value="">状态</option>
+          <option value="published" ${status==="published"?"selected":""}>已发布</option>
+          <option value="draft" ${status==="draft"?"selected":""}>草稿</option>
+          <option value="disabled" ${status==="disabled"?"selected":""}>已停用</option>
+        </select>
+        <button class="btn" id="btn-reset">重置</button>
+        <div class="toolbar-right"><button class="btn btn-primary" id="btn-create">＋ 新建标准</button></div>
+      </div>
+      <table class="el-table">
+        <thead><tr>
+          <th>标准名称</th><th>适用类型</th><th>维度数</th><th>引用场景数</th><th>状态</th><th>更新人</th><th>更新时间</th><th>操作</th>
+        </tr></thead>
+        <tbody>
+          ${rows.length ? rows.map(rowHtml).join("") : `<tr><td colspan="8"><div class="empty">没有符合条件的评价标准</div></td></tr>`}
+        </tbody>
+      </table>
+      <div class="pagination"><span>共 ${rows.length} 条</span><button class="page-btn active">1</button><span>10条/页</span></div>
+    </div>`;
+  document.getElementById("f-kw").addEventListener("input", e => { filters.kw = e.target.value; renderList(); });
+  document.getElementById("f-type").addEventListener("change", e => { filters.type = e.target.value; renderList(); });
+  document.getElementById("f-status").addEventListener("change", e => { filters.status = e.target.value; renderList(); });
+  document.getElementById("btn-reset").onclick = () => { filters = { kw: "", type: "", status: "" }; renderList(); };
+  document.getElementById("btn-create").onclick = () => openEditor(null);
+  bindListActions();
+  const kwEl = document.getElementById("f-kw");
+  if (kw) { kwEl.focus(); kwEl.setSelectionRange(kw.length, kw.length); }
+}
+
+function rowHtml(s) {
+  const ops = [];
+  if (s.status !== "disabled") ops.push(`<button class="btn-link" data-act="edit" data-id="${s.id}">编辑</button>`);
+  if (s.status === "published") ops.push(`<button class="btn-link danger" data-act="disable" data-id="${s.id}">停用</button>`);
+  if (s.status === "draft") ops.push(`<button class="btn-link danger" data-act="del" data-id="${s.id}">删除</button>`);
+  if (s.status === "disabled") ops.push(`<button class="btn-link" data-act="enable" data-id="${s.id}">启用</button>`);
+  if (s.status !== "draft") ops.push(`<button class="btn-link" data-act="report" data-id="${s.id}">结果示例</button>`);
+  return `<tr>
+    <td><span class="name-link" data-act="detail" data-id="${s.id}">${esc(s.name)}</span></td>
+    <td><span class="tag tag-primary">${TYPE_LABEL[s.type]}</span></td>
+    <td>${s.dimensions.length} 个维度</td>
+    <td>${refsOf(s).length ? `<span class="link-num" data-act="refs" data-id="${s.id}">${refsOf(s).length}</span>` : "0"}</td>
+    <td><span class="tag ${STATUS_TAG[s.status]}">${STATUS_LABEL[s.status]}</span></td>
+    <td>${esc(s.updatedBy)}</td>
+    <td>${esc(s.updatedAt)}</td>
+    <td>${ops.join("")}</td>
+  </tr>`;
+}
+
+function bindListActions() {
+  document.querySelectorAll("[data-act]").forEach(el => {
+    el.onclick = () => {
+      const s = findStandard(Number(el.dataset.id));
+      const act = el.dataset.act;
+      if (act === "detail") openDetail(s);
+      if (act === "refs") openRefs(s);
+      if (act === "edit") openEditor(s);
+      if (act === "report") openReport(s, s.name);
+      if (act === "enable") { s.status = "published"; s.updatedAt = now(); toast("已启用，可被场景选择"); renderList(); }
+      if (act === "del") confirm("删除评价标准", `确认删除「${s.name}」？删除后不可恢复。`, () => {
+        standards = standards.filter(x => x.id !== s.id); toast("已删除"); renderList();
+      });
+      if (act === "disable") {
+        const refs = refsOf(s);
+        if (lockedByTask(s)) { toast("该标准正在被进行中的任务引用，不允许停用"); return; }
+        const msg = refs.length
+          ? `「${s.name}」已被 ${refs.length} 个场景引用。停用后这些场景保持原绑定，新场景不能再选择它。`
+          : `确认停用「${s.name}」？停用后不再出现在场景的可选列表中。`;
+        confirm("停用评价标准", msg, () => { s.status = "disabled"; s.updatedAt = now(); toast("已停用"); renderList(); });
+      }
+    };
+  });
+}
+
+function now() {
+  const d = new Date();
+  const p = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+function openEditor(source) {
+  if (source) editor = { mode: "edit", originStatus: source.status, data: clone(source) };
+  else editor = { mode: "create", originStatus: "draft", data: {
+    id: null, name: "", type: "ai", status: "draft", perQuestion: false, desc: "",
+    dimensions: [dim("", 50, ""), dim("", 50, "")]
+  }};
+  view = "editor";
+  render();
+}
+
+function renderEditor() {
+  const d = editor.data;
+  const editing = editor.mode === "edit";
+  setCrumb(editing ? "编辑评价标准" : "新建评价标准");
+  setNav("list");
+  document.getElementById("main").innerHTML = `
+    <div class="page-head">
+      <h2>${editing ? "编辑评价标准" : "新建评价标准"}</h2>
+      <div>
+        <button class="btn" id="back">返回</button>
+        <button class="btn" id="save-draft">保存草稿</button>
+        <button class="btn btn-primary" id="publish">发布</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <div class="section-title">基础信息</div>
+      <div class="form-item"><div class="form-label req">标准名称</div><div class="form-content">
+        <input class="input" id="e-name" maxlength="20" style="width:320px" value="${esc(d.name)}">
+        <div class="form-tip"><span id="name-count">${d.name.length}</span>/20，同类型下不可重名</div>
+      </div></div>
+      <div class="form-item"><div class="form-label req">适用类型</div><div class="form-content">
+        <select class="select" id="e-type" style="width:320px" ${editing ? "disabled" : ""}>
+          <option value="ai" ${d.type==="ai"?"selected":""}>AI客户</option>
+          <option value="qa" ${d.type==="qa"?"selected":""}>问答对练</option>
+        </select>
+        <div class="form-tip">创建后不可修改。类型决定评分时送给模型的材料：整通对话，或对照标准答案的逐题回答。</div>
+      </div></div>
+      <div class="form-item" id="qa-row" style="${d.type==="qa"?"":"display:none"}"><div class="form-label">按题评分</div><div class="form-content">
+        <label class="switch"><input type="checkbox" id="e-q" ${d.perQuestion?"checked":""}>开启后，报告在维度得分下方增加逐题结果</label>
+        <div class="form-tip">维度仍然对整场表现打分，报告外壳与 AI客户场景一致。</div>
+      </div></div>
+      <div class="form-item"><div class="form-label">说明</div><div class="form-content">
+        <input class="input" id="e-desc" maxlength="50" style="width:480px" placeholder="给管理员看，不进入模型" value="${esc(d.desc)}">
+      </div></div>
+    </div>
+    <div class="editor-grid">
+      <div class="card">
+        <div class="section-title">评分维度</div>
+        <div id="dim-list"></div>
+        <div id="sum-bar"></div>
+        <button class="btn" id="add-dim" style="margin-top:10px;">＋ 添加维度</button>
+        <div class="form-tip">至少 1 个、最多 8 个维度。满分合计必须等于 100 才能发布。分数档只给模型判断用，报告里不展示等级。</div>
+      </div>
+      <div class="card preview-card">
+        <div class="section-title">评分结果将按此结构展示</div>
+        <div class="preview-cap">结果固定为五段：各环节得分概览、得分点详细说明、优势表现、待改进项、综合评语。示意分数按满分的 80% 生成。</div>
+        <div id="live-preview"></div>
+      </div>
+    </div>`;
+  document.getElementById("back").onclick = () => { view = "list"; editor = null; render(); };
+  document.getElementById("e-name").oninput = e => { d.name = e.target.value; document.getElementById("name-count").textContent = d.name.length; paintPreview(); };
+  document.getElementById("e-type").onchange = e => {
+    d.type = e.target.value;
+    if (d.type === "qa") d.perQuestion = true;
+    document.getElementById("qa-row").style.display = d.type === "qa" ? "" : "none";
+    const q = document.getElementById("e-q");
+    if (q) q.checked = d.perQuestion;
+    paintPreview();
+  };
+  const qEl = document.getElementById("e-q");
+  if (qEl) qEl.onchange = e => { d.perQuestion = e.target.checked; paintPreview(); };
+  document.getElementById("e-desc").oninput = e => { d.desc = e.target.value; };
+  document.getElementById("add-dim").onclick = () => {
+    if (d.dimensions.length >= 8) { toast("最多 8 个维度"); return; }
+    const remain = Math.max(0, 100 - sumMax(d.dimensions));
+    d.dimensions.push(dim("", remain, ""));
+    paintDims();
+  };
+  document.getElementById("save-draft").onclick = () => saveEditor("draft");
+  document.getElementById("publish").onclick = () => saveEditor("published");
+  paintDims();
+}
+
+function paintDims() {
+  const d = editor.data;
+  document.getElementById("dim-list").innerHTML = d.dimensions.map((item, i) => `
+    <div class="dim-card">
+      <div class="dim-card-head">
+        <span class="dim-index">${i + 1}</span>
+        <input class="input" data-field="name" data-i="${i}" maxlength="10" placeholder="维度名称，如开场破冰" value="${esc(item.name)}">
+        <span style="font-size:13px;color:var(--text-secondary)">满分</span>
+        <input class="input score-input" data-field="max" data-i="${i}" type="number" min="1" max="100" value="${item.max}">
+        <div class="dim-actions">
+          <button class="btn btn-sm" data-move="-1" data-i="${i}" ${i===0?"disabled":""}>上移</button>
+          <button class="btn btn-sm" data-move="1" data-i="${i}" ${i===d.dimensions.length-1?"disabled":""}>下移</button>
+          <button class="btn btn-sm" data-remove="${i}" ${d.dimensions.length===1?"disabled":""}>删除</button>
+        </div>
+      </div>
+      <textarea class="input" rows="2" data-field="rubric" data-i="${i}" maxlength="500" placeholder="评分说明：什么表现得高分，什么表现扣分">${esc(item.rubric)}</textarea>
+      <div style="margin-top:6px;"><button class="btn-link" data-bands="${i}">${item.bandsOpen ? "收起分数档" : "分数档（选填）"}</button></div>
+      ${item.bandsOpen ? `<div class="bands">${item.bands.map((b, bi) => `
+        <div class="band-row">
+          <input class="input" style="width:90px" data-band="range" data-i="${i}" data-bi="${bi}" placeholder="如 16-20" value="${esc(b.range)}">
+          <input class="input" style="flex:1" data-band="text" data-i="${i}" data-bi="${bi}" placeholder="这一档的判定标准" value="${esc(b.text)}">
+        </div>`).join("")}</div>` : ""}
+    </div>`).join("");
+  document.querySelectorAll("#dim-list [data-field]").forEach(el => {
+    el.oninput = () => {
+      const item = d.dimensions[Number(el.dataset.i)];
+      item[el.dataset.field] = el.dataset.field === "max" ? Number(el.value) : el.value;
+      paintSum();
+      paintPreview();
+    };
+  });
+  document.querySelectorAll("#dim-list [data-move]").forEach(el => {
+    el.onclick = () => {
+      const i = Number(el.dataset.i);
+      const j = i + Number(el.dataset.move);
+      const arr = d.dimensions;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      paintDims();
+    };
+  });
+  document.querySelectorAll("#dim-list [data-remove]").forEach(el => {
+    el.onclick = () => { d.dimensions.splice(Number(el.dataset.remove), 1); paintDims(); };
+  });
+  document.querySelectorAll("#dim-list [data-bands]").forEach(el => {
+    el.onclick = () => {
+      const item = d.dimensions[Number(el.dataset.bands)];
+      item.bandsOpen = !item.bandsOpen;
+      paintDims();
+    };
+  });
+  document.querySelectorAll("#dim-list [data-band]").forEach(el => {
+    el.oninput = () => {
+      d.dimensions[Number(el.dataset.i)].bands[Number(el.dataset.bi)][el.dataset.band] = el.target ? el.target.value : el.value;
+    };
+  });
+  paintSum();
+  paintPreview();
+}
+
+function paintSum() {
+  const total = sumMax(editor.data.dimensions);
+  const ok = total === 100;
+  const bar = document.getElementById("sum-bar");
+  bar.className = "sum-bar " + (ok ? "ok" : "bad");
+  bar.textContent = ok ? `满分合计 ${total} / 100，可以发布` : `满分合计 ${total} / 100，发布前需要等于 100`;
+}
+
+function paintPreview() {
+  document.getElementById("live-preview").innerHTML = reportInner(editor.data, true);
+}
+
+function demoScore(max) { return Math.round((Number(max) || 0) * 0.8); }
+
+const SCORE_POINTS = {
+  "开场破冰": "逐字稿中销售开场明确自我介绍身份为洋葱学园的老师，并确认“请问是孩子家长吗”，说明来意是对一下最近的学习情况，满足本环节核心要求。",
+  "需求挖掘": "逐字稿中客户说孩子数学成绩一般后，销售没有直接推销，而是追问“大题步骤不完整，还是计算老出错”，客户回应“步骤吧”。已定位到具体问题，但没有继续追问这个情况持续多久、对孩子的影响，挖需只完成了一层。",
+  "产品介绍": "逐字稿中销售说“我先不讲课程”，随后没有结合客户刚确认的“大题步骤不完整”给出针对性方案，本环节核心动作未完成。",
+  "异议处理": "逐字稿中客户提出“这个课太贵了，我们再考虑考虑”后，销售没有先复述价格顾虑，也没有拆解具体异议，对话停在客户拒绝处，异议处理未完成。",
+  "促单关单": "逐字稿中销售没有约定下一步动作和时间，通话停在客户表示再考虑，关单动作未完成。",
+  "情绪接住": "逐字稿中客户质疑“你们是不是又要推销课程”时，销售没有先接住情绪，直接转入提问，共情动作缺失。",
+  "异议拆解": "逐字稿中客户说出“这个课太贵了”后，销售没有区分是总价、课时单价还是对效果不放心，异议没有被拆开。",
+  "方案重述": "逐字稿中没有针对价格异议重述方案价值，销售只追问了错题类型，方案重述未出现。",
+  "推进下一步": "逐字稿中客户说“再考虑考虑”后，销售没有约定具体的下一步和时间，推进动作未完成。",
+  "要点覆盖": "以价格异议为例，逐字稿中销售没有先共情价格压力，也没有拆课时单价或对照标准答案中的核心要点，要点覆盖不足。",
+  "表达结构": "逐字稿中销售没有按先共情、再拆解、后推动的顺序展开。客户提出价格后，对话没有进入推动，结构不完整。",
+  "表达自然度": "开场自我介绍比较口语化，但“我先不讲课程”略生硬，后半段没有形成自然应答，表达自然度一般。",
+  "自我介绍": "逐字稿中销售报出“我是洋葱学园的老师”，身份清楚，满足自我介绍的核心要求。",
+  "身份确认": "逐字稿中销售询问“请问是孩子家长吗”，客户回答“是我”，身份确认已完成。",
+  "来电理由": "逐字稿中销售说明“今天来是想跟您对一下最近的学习情况”，来电理由明确。",
+  "原因探询": "逐字稿中客户表示再考虑、并提到课程太贵，销售没有追问不继续的具体原因，原因探询未完成。",
+  "价值回顾": "逐字稿中销售没有回顾孩子已有的学习情况和已使用的课程内容，价值回顾未出现。",
+  "方案调整": "逐字稿中没有针对“太贵”给出可调整的方案，方案调整未完成。",
+  "约定跟进": "逐字稿中没有约定下一次沟通时间，约定跟进未完成。"
+};
+function scorePointText(name, rubric, isPreview) {
+  if (SCORE_POINTS[name]) return SCORE_POINTS[name];
+  if (isPreview) return "将根据逐字稿撰写：写明销售在本环节做了什么、没做什么，以及是否满足环节核心要求。";
+  const rule = rubric ? "评分要求是「" + rubric + "」。" : "";
+  return "逐字稿中销售完成了自我介绍，并追问了错题类型，但没有围绕「" + (name || "该环节") + "」展开对应动作。" + rule + "本环节核心要求仅部分满足。";
+}
+function reportInner(standard, isPreview) {
+  const dims = standard.dimensions.length ? standard.dimensions : [{ name: "未命名维度", max: 0, rubric: "" }];
+  const scores = dims.map(d => demoScore(d.max));
+  const total = scores.reduce((n, s) => n + s, 0);
+  const formula = dims.map((d, i) => `${d.name || "未命名维度"} ${scores[i]}`).join(" + ");
+  return `
+    <div class="score-hero">
+      <div class="num">${total}</div>
+      <div class="label">任务得分</div>
+    </div>
+    <div class="formula">总分 = ${esc(formula)}</div>
+    <div class="report-sec">各环节得分概览</div>
+    ${dims.map((d, i) => {
+      const max = Number(d.max) || 0;
+      const pct = max ? Math.round(scores[i] / max * 100) : 0;
+      return `<div class="dim-line">
+        <div class="dim-line-head"><span>${esc(d.name || "未命名维度")}</span><b>${scores[i]}/${max}</b></div>
+        <div class="bar"><div style="width:${pct}%"></div></div>
+      </div>`;
+    }).join("")}
+    <div class="report-sec">得分点详细说明</div>
+    <ul class="point-list">
+      ${dims.map(d => `<li><b>${esc(d.name || "未命名维度")}：</b>${esc(scorePointText(d.name, d.rubric, isPreview))}</li>`).join("")}
+    </ul>
+    <div class="report-sec">优势表现</div>
+    <ul class="block-list"><li>${isPreview ? "按逐字稿归纳已经做到的动作，结构固定。" : "开场时明确自我介绍为洋葱学园老师，并确认了对方是家长。"}</li><li>${isPreview ? "可有多条。" : "客户提到成绩一般后，先追问是步骤问题还是计算问题，没有立刻推销。"}</li></ul>
+    <div class="report-sec">待改进项</div>
+    <ul class="block-list"><li>${isPreview ? "按逐字稿归纳未完成的环节动作，结构固定。" : "客户提出“这个课太贵了”后，没有先复述顾虑再拆解。"}</li><li>${isPreview ? "可有多条。" : "对话结束前没有约定下一步动作和时间。"}</li></ul>
+    <div class="report-sec">综合评语</div>
+    <div class="summary">${isPreview ? "综合评语为一段文字，依据各环节得分点和待改进项给出下一步练习建议。" : "开场和初步挖需完成了，产品介绍、异议处理和关单都没有展开。建议先补「价格异议先共情再拆解」的应答，并在结尾约定一个具体的回访时间。"}</div>
+    ${isPreview ? "" : `<div class="snapshot">本次评分使用「${esc(standard.name)}」的快照。之后修改标准，不影响这条结果。</div>`}`;
+}
+
+function saveEditor(status) {
+  const d = editor.data;
+  if (!d.name.trim()) { toast("请填写标准名称"); return; }
+  if (standards.some(s => s.id !== d.id && s.type === d.type && s.name === d.name.trim())) {
+    toast("同类型下标准名称不能重复"); return;
+  }
+  if (status === "published") {
+    if (!d.dimensions.length) { toast("请至少添加 1 个维度"); return; }
+    if (d.dimensions.some(item => !item.name.trim() || !item.rubric.trim() || !(Number(item.max) > 0))) {
+      toast("请补全每个维度的名称、满分和评分说明"); return;
+    }
+    if (sumMax(d.dimensions) !== 100) { toast("满分合计需要等于 100"); return; }
+  }
+  d.name = d.name.trim();
+  d.status = status;
+  d.updatedBy = "管理员";
+  d.updatedAt = now();
+  if (editor.mode === "create") {
+    d.id = nextId++;
+    d.refs = [];
+    d.lockedByTask = false;
+    standards.unshift(d);
+  } else {
+    const idx = standards.findIndex(s => s.id === d.id);
+    const prev = standards[idx];
+    d.refs = prev.refs;
+    d.lockedByTask = prev.lockedByTask;
+    standards[idx] = d;
+  }
+  const extra = editor.mode === "edit" && editor.originStatus === "published" ? "修改后仅对新发起的练习生效。" : "";
+  toast(status === "published" ? `已发布。${extra}` : "已保存草稿");
+  view = "list";
+  editor = null;
+  render();
+}
+
+function openDetail(s) {
+  document.getElementById("detailTitle").textContent = s.name;
+  document.getElementById("detailBody").innerHTML = `
+    <div class="detail-row"><div class="detail-label">适用类型</div><div class="detail-value">${TYPE_LABEL[s.type]}</div></div>
+    <div class="detail-row"><div class="detail-label">状态</div><div class="detail-value">${STATUS_LABEL[s.status]}</div></div>
+    <div class="detail-row"><div class="detail-label">说明</div><div class="detail-value">${esc(s.desc || "—")}</div></div>
+    <div class="detail-row"><div class="detail-label">按题评分</div><div class="detail-value">${s.type==="qa" ? (s.perQuestion ? "开启" : "关闭") : "—"}</div></div>
+    <div class="section-title">评分维度</div>
+    <table class="el-table"><thead><tr><th>维度</th><th>满分</th><th>评分说明</th></tr></thead>
+    <tbody>${s.dimensions.map(d => `<tr><td>${esc(d.name)}</td><td>${d.max}</td><td>${esc(d.rubric)}</td></tr>`).join("")}</tbody></table>
+    <div class="form-tip" style="margin-top:8px;">引用场景 ${refsOf(s).length} 个。历史评分按练习开始时的快照展示。</div>`;
+  document.getElementById("detailMask").classList.add("show");
+}
+
+function openRefs(s) {
+  document.getElementById("refBody").innerHTML = `
+    <table class="el-table"><thead><tr><th>场景名称</th><th>状态</th><th>进行中任务</th></tr></thead>
+    <tbody>${refsOf(s).map(r => `<tr><td>${esc(r.name)}</td><td>${esc(r.status)}</td><td>${r.task ? "是" : "否"}</td></tr>`).join("") || `<tr><td colspan="3"><div class="empty">暂无引用场景</div></td></tr>`}</tbody></table>`;
+  document.getElementById("refMask").classList.add("show");
+}
+
+function confirm(title, msg, action) {
+  document.getElementById("confirmTitle").textContent = title;
+  document.getElementById("confirmBody").textContent = msg;
+  confirmAction = action;
+  document.getElementById("confirmMask").classList.add("show");
+}
+
+function openReport(standard, sceneName) {
+  document.getElementById("reportBody").innerHTML = `
+    <div style="font-weight:600;margin-bottom:8px;">对话评估报告 · ${esc(sceneName)}</div>
+    ${reportInner(standard, false)}`;
+  document.getElementById("reportMask").classList.add("show");
+}
+
+const SC_TAG = { "已发布": "tag-success", "草稿": "tag-info", "已停用": "tag-danger" };
+function sceneTypeBadge(type) {
+  return type === "ai"
+    ? `<span class="tag tag-primary">AI客户</span>`
+    : `<span class="tag tag-warning">问答对练</span>`;
+}
+function tagRefCount(name) { return scenes.filter(s => (s.tags || []).includes(name)).length; }
+function standardOptions(type, currentId) {
+  const options = publishedOf(type);
+  const current = findStandard(Number(currentId));
+  const missing = current && !options.some(s => s.id === current.id);
+  const head = missing ? `<option value="${current.id}">${esc(current.name)}（${STATUS_LABEL[current.status]}，请改选）</option>` : `<option value="">请选择评价标准</option>`;
+  return head + options.map(s => `<option value="${s.id}" ${Number(currentId)===s.id?"selected":""}>${esc(s.name)}（${s.dimensions.length} 个维度）</option>`).join("");
+}
+function filteredScenes() {
+  return scenes.filter(s => {
+    if (sceneQuery.kw && !s.name.includes(sceneQuery.kw)) return false;
+    if (sceneQuery.status && s.status !== sceneQuery.status) return false;
+    if (sceneQuery.stage && !(s.stages || []).includes(sceneQuery.stage)) return false;
+    if (sceneQuery.tag && !(s.tags || []).includes(sceneQuery.tag)) return false;
+    return true;
+  });
+}
+function renderScene() {
+  setCrumb("场景配置");
+  setNav("scene");
+  qaPanelOpen = false;
+  const rows = filteredScenes();
+  document.getElementById("main").innerHTML = `
+    <div class="card">
+      <div class="form-inline">
+        <input class="input" id="sc-kw" placeholder="搜索场景名称" style="width:200px" value="${esc(sceneQuery.kw)}">
+        <select class="select" id="sc-status" style="width:130px">
+          <option value="">全部状态</option>
+          ${["已发布","草稿","已停用"].map(s => `<option ${sceneQuery.status===s?"selected":""}>${s}</option>`).join("")}
+        </select>
+        <select class="select" id="sc-stage" style="width:130px">
+          <option value="">全部学段</option>
+          ${["小学","初中","高中"].map(s => `<option ${sceneQuery.stage===s?"selected":""}>${s}</option>`).join("")}
+        </select>
+        <select class="select" id="sc-tag" style="width:130px">
+          <option value="">全部标签</option>
+          ${sceneTags.map(t => `<option ${sceneQuery.tag===t.name?"selected":""}>${esc(t.name)}</option>`).join("")}
+        </select>
+        <button class="btn btn-primary" id="sc-query">查询</button>
+        <button class="btn" id="sc-reset">重置</button>
+        <div class="toolbar-right">
+          <button class="btn btn-primary" id="sc-create">＋ 新建场景</button>
+          <button class="btn" id="sc-tags">标签管理</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="el-table">
+          <thead><tr><th>场景名称</th><th>类型</th><th>适用学段</th><th>客户身份范围</th><th>标签</th><th>发布状态</th><th>更新人</th><th>更新时间</th><th>操作</th></tr></thead>
+          <tbody>
+            ${rows.length ? rows.map(sceneRow).join("") : `<tr><td colspan="9"><div class="empty">没有符合条件的场景</div></td></tr>`}
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination"><span>共 ${rows.length} 个场景</span><button class="page-btn">‹</button><button class="page-btn active">1</button><button class="page-btn">›</button></div>
+    </div>`;
+  document.getElementById("sc-query").onclick = () => {
+    sceneQuery = {
+      kw: document.getElementById("sc-kw").value.trim(),
+      status: document.getElementById("sc-status").value,
+      stage: document.getElementById("sc-stage").value,
+      tag: document.getElementById("sc-tag").value
+    };
+    renderScene();
+  };
+  document.getElementById("sc-reset").onclick = () => { sceneQuery = { kw:"", status:"", stage:"", tag:"" }; renderScene(); };
+  document.getElementById("sc-create").onclick = openSceneType;
+  document.getElementById("sc-tags").onclick = openTagManage;
+  document.querySelectorAll("[data-sc]").forEach(el => {
+    el.onclick = () => onSceneAction(el.dataset.sc, Number(el.dataset.id));
+  });
+}
+function sceneRow(s) {
+  const ops = s.status === "已发布"
+    ? `<button class="btn-link" data-sc="edit" data-id="${s.id}">编辑</button><button class="btn-link danger" data-sc="stop" data-id="${s.id}">停用</button>`
+    : s.status === "草稿"
+      ? `<button class="btn-link" data-sc="edit" data-id="${s.id}">编辑</button><button class="btn-link danger" data-sc="del" data-id="${s.id}">删除</button>`
+      : `<button class="btn-link" data-sc="enable" data-id="${s.id}">启用</button>`;
+  return `<tr>
+    <td><button class="btn-link" style="font-weight:600;" data-sc="detail" data-id="${s.id}">${esc(s.name)}</button></td>
+    <td>${sceneTypeBadge(s.type)}</td>
+    <td>${esc((s.stages||[]).join("、"))}</td>
+    <td>${s.type==="qa" ? "—" : esc(s.scope)}</td>
+    <td>${(s.tags||[]).map(t => `<span class="tag tag-primary" style="height:20px;margin-right:6px;">${esc(t)}</span>`).join("")}</td>
+    <td><span class="tag ${SC_TAG[s.status]}">${s.status}</span></td>
+    <td>${esc(s.updater)}</td><td>${esc(s.time)}</td>
+    <td>${ops}</td>
+  </tr>`;
+}
+function onSceneAction(act, id) {
+  const s = scenes.find(x => x.id === id);
+  if (act === "detail") return openSceneDetail(s);
+  if (act === "edit") return openSceneEdit(s);
+  if (act === "enable") { s.status = "已发布"; s.time = shortNow(); toast("场景「" + s.name + "」已启用"); return renderScene(); }
+  if (act === "del") return confirm("删除场景", "确认删除「" + s.name + "」？删除后不可恢复。", () => {
+    scenes = scenes.filter(x => x.id !== id); toast("已删除"); renderScene();
+  });
+  if (act === "stop") {
+    if (s.refRunning) { toast("该场景正在被进行中的任务引用，不允许停用"); return; }
+    s.status = "已停用"; s.time = shortNow(); toast("场景「" + s.name + "」已停用"); renderScene();
+  }
+}
+function shortNow() {
+  const d = new Date();
+  const p = n => String(n).padStart(2, "0");
+  return `${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function openSceneType() {
+  pendingType = null;
+  document.getElementById("typeOptAI").classList.remove("selected");
+  document.getElementById("typeOptQA").classList.remove("selected");
+  const btn = document.getElementById("btnTypeConfirm");
+  btn.disabled = true;
+  document.getElementById("typeMask").classList.add("show");
+}
+function openSceneEdit(scene) {
+  sceneDraft = scene ? clone(scene) : blankScene(pendingType || "ai");
+  qaPanelOpen = false;
+  qaChecked = new Set();
+  view = "sceneEdit";
+  render();
+}
+function renderSceneEdit() {
+  const d = sceneDraft;
+  const isAI = d.type === "ai";
+  const editing = !!d.id;
+  setCrumb("场景配置 / " + (editing ? "编辑场景" : "新建场景"));
+  setNav("sceneEdit");
+  const std = findStandard(Number(d.standardId));
+  document.getElementById("main").innerHTML = `
+    <div class="card">
+      <div class="page-title-line">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="btn" id="sc-back">← 返回</button>
+          <h2>${editing ? "编辑场景" : "新建场景"}</h2>
+          <span class="badge" style="margin-left:0;background:${isAI?"#e1f3ff":"var(--warning-light)"};color:${isAI?"var(--primary)":"var(--warning)"};">${isAI?"AI客户":"问答对练"}</span>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn" id="sc-draft">保存草稿</button>
+          <button class="btn btn-primary" id="sc-pub">发布场景</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:20px;">
+        <div style="flex:1;min-width:0;">
+          <div class="form-item"><div class="form-label req">场景名称</div><div class="form-content"><input class="input" id="se-name" style="width:100%;" maxlength="20" placeholder="请输入场景名称（不超过20个字符）" value="${esc(d.name)}"></div></div>
+          <div class="form-item"><div class="form-label req">适用学段</div><div class="form-content"><div class="checkbox-line" id="se-stages">
+            ${["小学","初中","高中"].map(st => `<label><input type="checkbox" value="${st}" ${(d.stages||[]).includes(st)?"checked":""}>${st}</label>`).join("")}
+          </div></div></div>
+          <div class="form-item"><div class="form-label">场景标签</div><div class="form-content">
+            <select class="select" id="se-tag" style="width:100%;"><option value="">选择标签（可在「标签管理」中维护）</option>${sceneTags.map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join("")}</select>
+            <div class="picked-tags" id="se-tag-picked">${(d.tags||[]).map(t => `<span class="tag tag-primary">${esc(t)}<i class="close" data-rm-tag="${esc(t)}">×</i></span>`).join("")}</div>
+          </div></div>
+          ${isAI ? `
+          <div class="form-item"><div class="form-label req">客户身份范围</div><div class="form-content">
+            <select class="select" id="se-scope" style="width:100%;">
+              ${["家长","学生","通用"].map(v => `<option ${d.scope===v?"selected":""}>${v}</option>`).join("")}
+            </select>
+            <div class="form-tip">家长可生成父亲、母亲、爷爷或奶奶；学生可生成男学生或女学生；通用可生成家长或学生。与行为画像「适用身份范围」、角色音色「角色身份」取值保持一致</div>
+          </div></div>
+          <div class="form-item"><div class="form-label req">对话时间上限</div><div class="form-content"><input class="input" id="se-max" type="number" min="1" max="9999" value="${d.maxMin}" style="width:160px;"> <span style="margin-left:6px;">分钟</span></div></div>
+          <div class="form-item"><div class="form-label req">对话间隔时长</div><div class="form-content"><input class="input" id="se-gap" type="number" min="1" max="999" value="${d.interval}" style="width:160px;"> <span style="margin-left:6px;">秒</span><div class="form-tip">配置后对练时给销售侧回复倒计时引导，避免等待回复时长过久而降低及时回复能力</div></div></div>
+          <div style="border-bottom:1px solid var(--border-lighter);margin:18px 0 14px;"></div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:14px;">场景配置</div>
+          <div class="form-item"><div class="form-label req">场景提示词</div><div class="form-content"><textarea class="input" id="se-prompt" rows="6">${esc(d.prompt)}</textarea><div class="form-tip">客户角色与音色由行为画像和角色音色管理动态匹配，不在场景中绑定</div></div></div>
+          <div class="form-item"><div class="form-label req">对话目标</div><div class="form-content"><textarea class="input" id="se-goal" rows="4">${esc(d.goal)}</textarea></div></div>
+          ` : `
+          <div class="form-item"><div class="form-label req">对话时间间隔</div><div class="form-content"><input class="input" id="se-gap" type="number" min="1" max="9999" value="${d.interval}" style="width:160px;"> <span style="margin-left:6px;">秒</span></div></div>
+          <div class="form-item"><div class="form-label req">选择问题</div><div class="form-content">
+            <button class="btn btn-primary btn-sm" id="qa-toggle">＋ 选择问题</button>
+            <div class="qa-panel" id="qa-panel" style="display:none;">
+              <div class="form-inline" style="margin-bottom:10px;">
+                <input class="input" id="qa-kw" style="width:200px;" placeholder="搜索问题关键词">
+                <select class="select" id="qa-cat" style="width:150px;"><option>全部分类</option><option>需求挖掘</option><option>异议处理</option><option>促单关单</option></select>
+                <span style="font-size:12px;color:var(--text-secondary);">仅可选择优秀话术库中已生效的问题</span>
+              </div>
+              <div style="max-height:240px;overflow-y:auto;background:#fff;border:1px solid var(--border-lighter);border-radius:6px;">
+                <table class="el-table"><thead><tr><th style="width:40px;"></th><th>问题</th><th>标准答案</th><th style="width:110px;">分类</th></tr></thead><tbody id="qa-pick-body"></tbody></table>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+                <span id="qa-count" style="font-size:13px;color:var(--text-secondary);">已勾选 0 个问题</span>
+                <div style="display:flex;gap:8px;"><button class="btn btn-sm" id="qa-cancel">取消</button><button class="btn btn-primary btn-sm" id="qa-ok">确定添加</button></div>
+              </div>
+            </div>
+            <div style="margin-top:10px;"><table class="el-table"><thead><tr><th style="width:70px;">排序</th><th>问题</th><th>答案</th><th style="width:60px;">操作</th></tr></thead><tbody id="qa-picked-body"></tbody></table></div>
+            <div class="form-tip">学员依次回答问题，系统按标准答案匹配度评分；可拖拽调整问题顺序</div>
+          </div></div>
+          <div class="form-item"><div class="form-label req">对话目标</div><div class="form-content"><textarea class="input" id="se-goal" rows="4">${esc(d.goal)}</textarea></div></div>
+          `}
+          <div class="form-item"><div class="form-label req">评价标准</div><div class="form-content">
+            <select class="select" id="se-std" style="width:100%;">${standardOptions(d.type, d.standardId)}</select>
+            <div class="form-tip">只列出与本场景类型一致、且已发布的评价标准。${std ? "当前维度：" + std.dimensions.map(x => esc(x.name) + " " + x.max + "分").join("、") + "。" : ""}更换后只影响新发起的练习。</div>
+            <button class="btn btn-sm" id="se-preview" style="margin-top:8px;">预览评分结果</button>
+          </div></div>
+        </div>
+        ${isAI ? `<div class="test-pane" id="se-test">
+          <div style="font-size:15px;font-weight:600;margin-bottom:10px;">效果测试</div>
+          <div class="test-box" id="se-test-msgs"><div style="color:var(--text-secondary);text-align:center;padding-top:100px;">保存配置后可与AI客户试聊<br>测试角色语气与信息披露是否自然</div></div>
+          <div style="display:flex;gap:8px;margin-top:10px;"><input class="input" id="se-test-input" style="flex:1;" placeholder="输入一轮销售话术…"><button class="btn btn-primary" id="se-test-send">发送</button></div>
+          <button class="btn btn-sm" id="se-test-reset" style="margin-top:8px;">重置对话</button>
+        </div>` : ""}
+      </div>
+    </div>`;
+  bindSceneEdit();
+}
+function readSceneForm() {
+  const d = sceneDraft;
+  d.name = document.getElementById("se-name").value;
+  d.stages = [...document.querySelectorAll("#se-stages input:checked")].map(el => el.value);
+  d.goal = document.getElementById("se-goal").value;
+  d.interval = Number(document.getElementById("se-gap").value) || d.interval;
+  d.standardId = document.getElementById("se-std").value;
+  if (d.type === "ai") {
+    d.scope = document.getElementById("se-scope").value;
+    d.maxMin = Number(document.getElementById("se-max").value) || d.maxMin;
+    d.prompt = document.getElementById("se-prompt").value;
+  }
+}
+function bindSceneEdit() {
+  const d = sceneDraft;
+  document.getElementById("sc-back").onclick = () => { view = "scene"; sceneDraft = null; render(); };
+  document.getElementById("sc-draft").onclick = () => saveScene("草稿");
+  document.getElementById("sc-pub").onclick = () => saveScene("已发布");
+  document.getElementById("se-tag").onchange = e => {
+    const name = e.target.value;
+    if (name && !d.tags.includes(name)) d.tags.push(name);
+    e.target.value = "";
+    readSceneForm();
+    renderSceneEdit();
+  };
+  document.querySelectorAll("[data-rm-tag]").forEach(el => {
+    el.onclick = () => { readSceneForm(); d.tags = d.tags.filter(t => t !== el.dataset.rmTag); renderSceneEdit(); };
+  });
+  document.getElementById("se-preview").onclick = () => {
+    readSceneForm();
+    const std = findStandard(Number(d.standardId));
+    if (!std) { toast("请先选择评价标准"); return; }
+    openReport(std, d.name || "未命名场景");
+  };
+  if (d.type === "ai") {
+    document.getElementById("se-test-send").onclick = () => {
+      const inp = document.getElementById("se-test-input");
+      const v = inp.value.trim();
+      if (!v) return;
+      const box = document.getElementById("se-test-msgs");
+      if (box.querySelector("div[style*='padding-top']")) box.innerHTML = "";
+      box.innerHTML += `<div style="text-align:right;margin-bottom:8px;"><span style="display:inline-block;background:var(--primary);color:#fff;border-radius:8px 8px 2px 8px;padding:6px 10px;max-width:85%;text-align:left;">${esc(v)}</span></div>`;
+      box.innerHTML += `<div style="margin-bottom:8px;"><span style="display:inline-block;background:#fff;border:1px solid var(--border-lighter);border-radius:8px 8px 8px 2px;padding:6px 10px;max-width:85%;">嗯…你是哪个机构的老师？我最近挺忙的，有什么事你先说。</span></div>`;
+      box.scrollTop = box.scrollHeight;
+      inp.value = "";
+    };
+    document.getElementById("se-test-reset").onclick = () => {
+      document.getElementById("se-test-msgs").innerHTML = `<div style="color:var(--text-secondary);text-align:center;padding-top:100px;">对话已重置</div>`;
+    };
+  } else {
+    document.getElementById("qa-toggle").onclick = () => { qaPanelOpen = !qaPanelOpen; qaChecked = new Set(); paintQa(); };
+    paintQa();
+  }
+}
+function paintQa() {
+  const panel = document.getElementById("qa-panel");
+  if (!panel) return;
+  panel.style.display = qaPanelOpen ? "" : "none";
+  if (qaPanelOpen) {
+    const kw = (document.getElementById("qa-kw")?.value || "").trim();
+    const cat = document.getElementById("qa-cat")?.value || "全部分类";
+    const list = qaBank.filter(x => !sceneDraft.questions.some(p => p.q === x.q)).filter(x => (!kw || x.q.includes(kw)) && (cat === "全部分类" || x.cat === cat));
+    document.getElementById("qa-pick-body").innerHTML = list.length ? list.map(x => `
+      <tr><td><input type="checkbox" data-q="${esc(x.q)}" ${qaChecked.has(x.q)?"checked":""}></td><td>${esc(x.q)}</td><td style="color:var(--text-secondary);">${esc(x.a)}</td><td>${esc(x.cat)}</td></tr>`).join("")
+      : `<tr><td colspan="4" style="text-align:center;color:var(--text-placeholder);padding:20px;">无匹配问题</td></tr>`;
+    document.querySelectorAll("#qa-pick-body input").forEach(el => {
+      el.onchange = () => { el.checked ? qaChecked.add(el.dataset.q) : qaChecked.delete(el.dataset.q); document.getElementById("qa-count").textContent = "已勾选 " + qaChecked.size + " 个问题"; };
+    });
+    document.getElementById("qa-count").textContent = "已勾选 " + qaChecked.size + " 个问题";
+    document.getElementById("qa-kw").oninput = paintQa;
+    document.getElementById("qa-cat").onchange = paintQa;
+    document.getElementById("qa-cancel").onclick = () => { qaPanelOpen = false; paintQa(); };
+    document.getElementById("qa-ok").onclick = () => {
+      qaBank.forEach(x => { if (qaChecked.has(x.q) && !sceneDraft.questions.some(p => p.q === x.q)) sceneDraft.questions.push(x); });
+      qaPanelOpen = false;
+      qaChecked = new Set();
+      paintQa();
+      toast("已添加所选问题");
+    };
+  }
+  const body = document.getElementById("qa-picked-body");
+  body.innerHTML = sceneDraft.questions.length ? sceneDraft.questions.map((x, i) => `
+    <tr draggable="true" data-i="${i}">
+      <td><i class="drag-handle">⠿</i></td>
+      <td>${esc(x.q)}</td><td style="color:var(--text-secondary);">${esc(x.a)}</td>
+      <td><button class="btn-link danger" data-qi="${i}">删除</button></td>
+    </tr>`).join("") : `<tr><td colspan="4" style="text-align:center;color:var(--text-placeholder);padding:16px;">暂未选择问题</td></tr>`;
+  body.querySelectorAll("[data-qi]").forEach(el => {
+    el.onclick = () => { sceneDraft.questions.splice(Number(el.dataset.qi), 1); paintQa(); };
+  });
+  body.querySelectorAll("tr[data-i]").forEach(row => {
+    row.ondragstart = e => e.dataTransfer.setData("text/plain", row.dataset.i);
+    row.ondragover = e => e.preventDefault();
+    row.ondrop = e => {
+      e.preventDefault();
+      const from = Number(e.dataTransfer.getData("text/plain"));
+      const to = Number(row.dataset.i);
+      if (Number.isNaN(from) || from === to) return;
+      const [item] = sceneDraft.questions.splice(from, 1);
+      sceneDraft.questions.splice(to, 0, item);
+      paintQa();
+    };
+  });
+}
+function saveScene(status) {
+  readSceneForm();
+  const d = sceneDraft;
+  if (!d.name.trim()) { toast("请填写场景名称"); return; }
+  if (d.name.trim().length > 20) { toast("场景名称不超过 20 个字符"); return; }
+  if (status === "已发布") {
+    if (!d.stages.length) { toast("请至少选择一个适用学段"); return; }
+    const std = findStandard(Number(d.standardId));
+    if (!std || std.status !== "published" || std.type !== d.type) { toast("请选择已发布且类型一致的评价标准"); return; }
+    if (d.type === "ai" && (!String(d.prompt).trim() || !String(d.goal).trim())) { toast("请填写场景提示词和对话目标"); return; }
+    if (d.type === "qa" && !d.questions.length) { toast("请至少选择 1 个问题"); return; }
+    if (d.type === "qa" && !String(d.goal).trim()) { toast("请填写对话目标"); return; }
+  }
+  d.name = d.name.trim();
+  d.status = status;
+  d.updater = "管理员";
+  d.time = shortNow();
+  const wasPublished = d.id && scenes.find(s => s.id === d.id)?.status === "已发布";
+  if (!d.id) { d.id = sceneNextId++; scenes.unshift(d); }
+  else {
+    const idx = scenes.findIndex(s => s.id === d.id);
+    d.refRunning = scenes[idx].refRunning;
+    scenes[idx] = d;
+  }
+  toast(status === "已发布" ? (wasPublished ? "场景已发布，修改后仅对新发起的练习生效" : "场景已发布") : "已保存为草稿");
+  view = "scene";
+  sceneDraft = null;
+  render();
+}
+function openSceneDetail(s) {
+  const std = findStandard(Number(s.standardId));
+  const common = `
+    <div class="detail-row"><div class="detail-label">场景类型</div><div class="detail-value">${sceneTypeBadge(s.type)}</div></div>
+    <div class="detail-row"><div class="detail-label">场景名称</div><div class="detail-value" style="font-weight:600;">${esc(s.name)}</div></div>
+    <div class="detail-row"><div class="detail-label">适用学段</div><div class="detail-value">${esc((s.stages||[]).join("、"))}</div></div>
+    <div class="detail-row"><div class="detail-label">场景标签</div><div class="detail-value">${(s.tags||[]).map(t => `<span class="tag tag-primary" style="height:20px;margin-right:6px;">${esc(t)}</span>`).join("") || "—"}</div></div>
+    <div class="detail-row"><div class="detail-label">发布状态</div><div class="detail-value"><span class="tag ${SC_TAG[s.status]}">${s.status}</span></div></div>
+    <div class="detail-row"><div class="detail-label">更新人 / 时间</div><div class="detail-value">${esc(s.updater)} / ${esc(s.time)}</div></div>`;
+  const ai = `
+    <div class="detail-row"><div class="detail-label">客户身份范围</div><div class="detail-value">${esc(s.scope)}</div></div>
+    <div class="detail-row"><div class="detail-label">对话时间上限</div><div class="detail-value">${s.maxMin} 分钟</div></div>
+    <div class="detail-row"><div class="detail-label">对话间隔时长</div><div class="detail-value">${s.interval} 秒</div></div>
+    <div class="detail-row"><div class="detail-label">场景提示词</div><div class="detail-value"><div class="detail-block">${esc(s.prompt)}</div></div></div>
+    <div class="detail-row"><div class="detail-label">对话目标</div><div class="detail-value">${esc(s.goal)}</div></div>`;
+  const qa = `
+    <div class="detail-row"><div class="detail-label">对话时间间隔</div><div class="detail-value">${s.interval} 秒</div></div>
+    <div class="detail-row"><div class="detail-label">已选问题</div><div class="detail-value"><div class="detail-block">${(s.questions||[]).map((q,i) => "问题 " + (i+1) + "：" + q.q + "\n标准答案：" + q.a).join("\n\n") || "暂未选择问题"}</div></div></div>
+    <div class="detail-row"><div class="detail-label">对话目标</div><div class="detail-value">${esc(s.goal)}</div></div>`;
+  const stdBlock = `
+    <div class="detail-row"><div class="detail-label">评价标准</div><div class="detail-value">${std ? esc(std.name) + "（" + std.dimensions.map(x => x.name + " " + x.max + "分").join("、") + "）" : "—"}
+      ${std ? `<div style="margin-top:8px;"><button class="btn btn-sm" id="detail-preview">预览评分结果</button></div>` : ""}
+    </div></div>`;
+  document.getElementById("detailTitle").textContent = "场景详情 · " + s.name;
+  document.getElementById("detailBody").innerHTML = common + (s.type === "ai" ? ai : qa) + stdBlock;
+  document.getElementById("detailMask").classList.add("show");
+  const btn = document.getElementById("detail-preview");
+  if (btn) btn.onclick = () => openReport(std, s.name);
+}
+function openTagManage() {
+  tagEditing = -1;
+  tagAddOpen = false;
+  renderTagManage();
+  document.getElementById("tagMask").classList.add("show");
+}
+function renderTagManage() {
+  document.getElementById("tagBody").innerHTML = `
+    <div style="display:flex;align-items:center;margin-bottom:14px;">
+      <button class="btn btn-primary" id="tag-add-btn">＋ 添加标签</button>
+      <span style="margin-left:auto;font-size:13px;color:var(--text-secondary);">共 ${sceneTags.length} 个标签</span>
+    </div>
+    ${tagAddOpen ? `<div style="padding:14px;margin-bottom:14px;background:#f5f7fa;border-radius:8px;">
+      <div class="form-item" style="margin-bottom:10px;"><div class="form-label req" style="width:88px;">标签名称</div><div class="form-content">
+        <input class="input" id="tag-add-input" style="width:100%;" maxlength="20" placeholder="请输入标签名称，不超过 20 个字">
+        <div class="form-tip">标签名称不可与现有标签重复</div>
+      </div></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;"><button class="btn" id="tag-add-cancel">取消</button><button class="btn btn-primary" id="tag-add-ok">确定添加</button></div>
+    </div>` : ""}
+    <table class="el-table"><thead><tr><th>标签名称</th><th>引用场景数</th><th>添加人</th><th>添加时间</th><th>操作</th></tr></thead>
+    <tbody>${sceneTags.map((t, i) => {
+      const ref = tagRefCount(t.name);
+      const nameCell = tagEditing === i
+        ? `<input class="input" id="tag-edit-input" value="${esc(t.name)}" maxlength="20" style="width:160px;">`
+        : esc(t.name);
+      const ops = tagEditing === i
+        ? `<button class="btn-link" data-tag-save="${i}">保存</button><button class="btn-link" id="tag-edit-cancel">取消</button>`
+        : `<button class="btn-link" data-tag-edit="${i}">编辑</button>${ref === 0 ? `<button class="btn-link danger" data-tag-del="${i}">删除</button>` : ""}`;
+      return `<tr><td>${nameCell}</td><td>${ref}</td><td>${esc(t.creator)}</td><td>${esc(t.time)}</td><td>${ops}</td></tr>`;
+    }).join("")}</tbody></table>`;
+  document.getElementById("tag-add-btn").onclick = () => { tagAddOpen = !tagAddOpen; renderTagManage(); };
+  const cancel = document.getElementById("tag-add-cancel");
+  if (cancel) cancel.onclick = () => { tagAddOpen = false; renderTagManage(); };
+  const ok = document.getElementById("tag-add-ok");
+  if (ok) ok.onclick = () => {
+    const name = document.getElementById("tag-add-input").value.trim();
+    if (!name) { toast("请输入标签名称"); return; }
+    if (sceneTags.some(t => t.name === name)) { toast("标签名称不可与现有标签重复"); return; }
+    sceneTags.unshift({ name, creator: "管理员", time: now() });
+    tagAddOpen = false;
+    toast("已添加标签");
+    renderTagManage();
+  };
+  document.querySelectorAll("[data-tag-edit]").forEach(el => el.onclick = () => { tagEditing = Number(el.dataset.tagEdit); renderTagManage(); });
+  document.querySelectorAll("[data-tag-save]").forEach(el => el.onclick = () => {
+    const name = document.getElementById("tag-edit-input").value.trim();
+    const i = Number(el.dataset.tagSave);
+    if (!name) { toast("请输入标签名称"); return; }
+    if (sceneTags.some((t, idx) => t.name === name && idx !== i)) { toast("标签名称不可与现有标签重复"); return; }
+    const old = sceneTags[i].name;
+    sceneTags[i].name = name;
+    scenes.forEach(s => { s.tags = (s.tags || []).map(t => t === old ? name : t); });
+    tagEditing = -1;
+    renderTagManage();
+  });
+  const editCancel = document.getElementById("tag-edit-cancel");
+  if (editCancel) editCancel.onclick = () => { tagEditing = -1; renderTagManage(); };
+  document.querySelectorAll("[data-tag-del]").forEach(el => el.onclick = () => {
+    const i = Number(el.dataset.tagDel);
+    confirm("删除标签", "确认删除标签「" + sceneTags[i].name + "」？", () => {
+      sceneTags.splice(i, 1);
+      renderTagManage();
+      toast("已删除");
+    });
+  });
+}
+
+const taskMembers = [
+  {
+    id: "li", name: "李莹萍", org: "电销团队高中部/天下第一团/天财队-申童庆", last: "2026-10-09 16:20",
+    scenes: [
+      { name: "高中｜续费邀约", type: "AI客户", standard: "续费邀约五环节", standardId: "renew", status: "已交卷",
+        dims: [
+          { name: "产品介绍", score: 5, max: 15 },
+          { name: "活动报价", score: 9, max: 15 },
+          { name: "加微闭环", score: 6, max: 6 },
+          { name: "异议处理", score: 10.5, max: 15 },
+          { name: "压单", score: 0, max: 15 }
+        ] },
+      { name: "高中｜价格异议问答", type: "问答对练", standard: "问答三段论", standardId: "qa", status: "已交卷",
+        dims: [
+          { name: "要点覆盖", score: 28, max: 40 },
+          { name: "表达结构", score: 21, max: 30 },
+          { name: "表达自然度", score: 18, max: 30 }
+        ] },
+      { name: "高中｜优惠关单", type: "AI客户", standard: "外呼综合五维", standardId: "five", status: "未开考", dims: null }
+    ],
+    strengths: ["【续费邀约】活动报价、加微闭环完成度高", "【价格异议问答】要点覆盖和表达结构稳定"],
+    weaknesses: ["【续费邀约】产品介绍偏弱，压单得分为 0", "【价格异议问答】表达偏背稿，自然度低于其他维度"],
+    comment: "该学员本次考试完成 2 个场景。续费邀约得分 46，活动报价和加微闭环较好，压单没有推进。价格异议问答得分 67，三段论结构完整，但表达不够自然。两个场景的评价标准不同，维度分开展示、不互相平均。综合得分 56.5，按任务通过线 60 分未通过。建议补练压单，并单独复盘价格异议的口语表达。"
+  },
+  {
+    id: "zhang", name: "张嘉城", org: "电销团队高中部/天下第一团/天财队", last: "2026-10-09 11:05",
+    scenes: [
+      { name: "小学｜学情沟通", type: "AI客户", standard: "外呼综合五维", standardId: "five", status: "已交卷",
+        dims: [
+          { name: "开场破冰", score: 18, max: 20 },
+          { name: "需求挖掘", score: 16, max: 20 },
+          { name: "产品介绍", score: 17, max: 20 },
+          { name: "异议处理", score: 15, max: 20 },
+          { name: "促单关单", score: 16, max: 20 }
+        ] },
+      { name: "初中｜通用学情沟通", type: "AI客户", standard: "外呼综合五维", standardId: "five", status: "已交卷",
+        dims: [
+          { name: "开场破冰", score: 16, max: 20 },
+          { name: "需求挖掘", score: 14, max: 20 },
+          { name: "产品介绍", score: 15, max: 20 },
+          { name: "异议处理", score: 14, max: 20 },
+          { name: "促单关单", score: 15, max: 20 }
+        ] }
+    ],
+    strengths: ["【小学｜学情沟通】开场破冰和产品介绍稳定", "【初中｜通用学情沟通】能把对话推进到促单"],
+    weaknesses: ["两个场景的需求挖掘都低于开场和产品介绍", "异议处理在初中场景只有 14/20"],
+    comment: "两个已评分场景使用同一条评价标准「外呼综合五维」，因此可以在标准内比较维度。综合得分 78，高于通过线。建议下一轮专门加练需求挖掘，两个场景的追问深度都偏浅。"
+  }
+];
+function scenePoint(scene) {
+  if (!scene.dims) return null;
+  const got = scene.dims.reduce((n, d) => n + Number(d.score), 0);
+  const max = scene.dims.reduce((n, d) => n + Number(d.max), 0);
+  return max ? Math.round(got / max * 100) : 0;
+}
+function personScore(member) {
+  const scores = member.scenes.map(scenePoint).filter(n => n !== null);
+  if (!scores.length) return null;
+  const avg = scores.reduce((n, s) => n + s, 0) / scores.length;
+  return Math.round(avg * 10) / 10;
+}
+function pctLabel(score, max) {
+  const p = max ? score / max * 100 : 0;
+  return (Math.round(p * 10) / 10).toString().replace(/\.0$/, "") + "%";
+}
+function dimBars(dims) {
+  return dims.map(d => `<div class="m-bar-row">
+    <span class="m-bar-name">${esc(d.name)}</span>
+    <span class="m-bar-track"><i style="width:${d.max ? d.score / d.max * 100 : 0}%"></i></span>
+    <span class="m-bar-pct">${pctLabel(d.score, d.max)}</span>
+    <span class="m-bar-frac">${d.score}/${d.max}</span>
+  </div>`).join("");
+}
+function sameStandardBlocks(member) {
+  const groups = {};
+  member.scenes.forEach(s => {
+    if (!s.dims) return;
+    (groups[s.standardId] = groups[s.standardId] || { name: s.standard, scenes: [] }).scenes.push(s);
+  });
+  return Object.values(groups).filter(g => g.scenes.length > 1).map(g => {
+    const dims = g.scenes[0].dims.map((d, i) => {
+      const avg = g.scenes.reduce((n, s) => n + s.dims[i].score, 0) / g.scenes.length;
+      return { name: d.name, score: Math.round(avg * 10) / 10, max: d.max };
+    });
+    return `<div class="same-std"><div class="scene-block-name">同标准平均 · ${esc(g.name)}</div><div class="scene-block-std" style="margin-bottom:10px;">${g.scenes.map(s => esc(s.name)).join("、")} 使用同一条标准，维度可以平均</div>${dimBars(dims)}</div>`;
+  }).join("");
+}
+function renderTask() {
+  setCrumb("任务管理");
+  setNav("task");
+  document.getElementById("memberMask").classList.remove("show");
+  document.getElementById("main").innerHTML = `
+    <div class="card">
+      <table class="el-table">
+        <thead><tr><th>任务名称</th><th>任务模式</th><th>任务状态</th><th>学员人数</th><th>起止时间</th><th>操作</th></tr></thead>
+        <tbody><tr>
+          <td>YPing-考试</td>
+          <td>考试模式</td>
+          <td><span class="tag tag-info">已结束</span></td>
+          <td><button class="btn-link" id="open-members">2</button></td>
+          <td>2026-10-08 00:00:00 ~ 2026-10-09 23:59:59</td>
+          <td><button class="btn-link" id="open-members-2">学员明细</button></td>
+        </tr></tbody>
+      </table>
+    </div>`;
+  const go = () => { view = "taskMember"; render(); openMemberReport("li"); };
+  document.getElementById("open-members").onclick = go;
+  document.getElementById("open-members-2").onclick = go;
+}
+function renderTaskMember() {
+  setCrumb("学员明细");
+  setNav("taskMember");
+  document.getElementById("main").innerHTML = `
+    <div class="card">
+      <div class="member-head">
+        <button class="btn" id="back-task">← 返回任务管理</button>
+        <h2>YPing-考试</h2>
+        <span class="tag tag-info">已结束</span>
+      </div>
+      <div class="member-sub">考试模式：2026-10-08 00:00:00 ~ 2026-10-09 23:59:59 · 通过线 60 分</div>
+      <table class="el-table">
+        <thead><tr><th>学员</th><th>所属组织</th><th>完成进度</th><th>最近练习时间</th><th>综合得分</th><th>操作</th></tr></thead>
+        <tbody>${taskMembers.map(m => {
+          const scored = m.scenes.filter(s => s.dims).length;
+          const score = personScore(m);
+          const pass = score !== null && score >= 60;
+          return `<tr>
+            <td>${esc(m.name)}</td>
+            <td>${esc(m.org)}</td>
+            <td>${scored}/${m.scenes.length}</td>
+            <td>${esc(m.last)}</td>
+            <td>${score === null ? "—" : score + " " + (pass ? "通过" : "未通过")}</td>
+            <td><button class="btn-link" data-member="${m.id}">查看报告</button></td>
+          </tr>`;
+        }).join("")}</tbody>
+      </table>
+    </div>`;
+  document.getElementById("back-task").onclick = () => { view = "task"; render(); };
+  document.querySelectorAll("[data-member]").forEach(el => el.onclick = () => openMemberReport(el.dataset.member));
+}
+function openMemberReport(id) {
+  const m = taskMembers.find(x => x.id === id);
+  const scored = m.scenes.filter(s => s.dims);
+  const scores = scored.map(s => ({ name: s.name, score: scenePoint(s) }));
+  const total = personScore(m);
+  const pass = total >= 60;
+  document.getElementById("memberTitle").textContent = m.name + " · 整体评价与分析";
+  document.getElementById("memberBody").innerHTML = `
+    <div class="metric-row">
+      <div class="metric ${pass ? "ok" : ""}"><b>${total}</b><span>综合得分 · ${pass ? "通过" : "未通过"}</span></div>
+      <div class="metric"><b style="color:var(--text-primary)">${scored.length}/${m.scenes.length}</b><span>已评分场景</span></div>
+    </div>
+    <div class="score-formula">综合得分 =（${scores.map(s => esc(s.name) + " " + s.score).join(" + ")}）/ ${scores.length} = ${total}。未评分场景不计入。</div>
+    <div class="sec-title">分场景表现</div>
+    ${m.scenes.map(s => {
+      const point = scenePoint(s);
+      if (!s.dims) return `<div class="scene-block muted"><div class="scene-block-name">${esc(s.name)} <span class="tag tag-info">${esc(s.status)}</span></div><div class="scene-block-std">评价标准：${esc(s.standard)}。未评分，不计入综合得分，也不展示维度。</div></div>`;
+      const scenePass = point >= 60;
+      return `<div class="scene-block">
+        <div class="scene-block-head">
+          <div>
+            <div class="scene-block-name">${esc(s.name)} <span class="tag ${s.type === "AI客户" ? "tag-primary" : "tag-warning"}">${esc(s.type)}</span> <span class="tag ${scenePass ? "tag-success" : "tag-danger"}">${scenePass ? "通过" : "未通过"}</span></div>
+            <div class="scene-block-std">评价标准：${esc(s.standard)}</div>
+          </div>
+          <div class="scene-block-score">${point}<span>场景得分</span></div>
+        </div>
+        ${dimBars(s.dims)}
+      </div>`;
+    }).join("")}
+    ${sameStandardBlocks(m)}
+    <div class="sec-title">优势表现</div>
+    <ul>${m.strengths.map(t => `<li class="bullet">${esc(t)}</li>`).join("")}</ul>
+    <div class="sec-title">待改进项</div>
+    <ul>${m.weaknesses.map(t => `<li class="bullet">${esc(t)}</li>`).join("")}</ul>
+    <div class="sec-title">AI 综合评语与建议</div>
+    <div class="comment-box">${esc(m.comment)}</div>`;
+  document.getElementById("memberMask").classList.add("show");
+}
+
+document.querySelectorAll(".menu-item").forEach(el => {
+  el.onclick = () => {
+    if (el.dataset.page === "locked") { toast("本原型演示评价标准、场景配置和学员整体评价"); return; }
+    editor = null;
+    if (el.dataset.page === "task") {
+      view = "taskMember";
+      render();
+      openMemberReport("li");
+      return;
+    }
+    view = el.dataset.page;
+    render();
+  };
+});
+
+document.querySelectorAll("[data-close]").forEach(el => {
+  el.onclick = () => document.getElementById(el.dataset.close).classList.remove("show");
+});
+document.getElementById("confirmOk").onclick = () => {
+  document.getElementById("confirmMask").classList.remove("show");
+  if (confirmAction) confirmAction();
+  confirmAction = null;
+};
+document.getElementById("typeOptAI").onclick = () => pickSceneType("ai");
+document.getElementById("typeOptQA").onclick = () => pickSceneType("qa");
+document.getElementById("btnTypeConfirm").onclick = () => {
+  if (!pendingType) return;
+  document.getElementById("typeMask").classList.remove("show");
+  openSceneEdit(null);
+};
+function pickSceneType(type) {
+  pendingType = type;
+  document.getElementById("typeOptAI").classList.toggle("selected", type === "ai");
+  document.getElementById("typeOptQA").classList.toggle("selected", type === "qa");
+  document.getElementById("btnTypeConfirm").disabled = false;
+}
+
+render();
+</script>
+</body>
+</html>
