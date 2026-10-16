@@ -2599,7 +2599,7 @@ function openPointManage(presetId) {
     });
     if (panelOpen) paintPeople();
     const viewTpl = document.getElementById("view-tpl");
-    if (viewTpl) viewTpl.onclick = () => { showTpl = !showTpl; paintTpl(); };
+    if (viewTpl) viewTpl.onclick = () => window.open("https://guanghe.feishu.cn/sheets/StqXsccI8hZbErtIBhJcVpOJnIb?from=from_copylink", "_blank");
     if (showTpl) paintTpl();
     const pick = document.getElementById("pick-file");
     if (pick) pick.onclick = () => document.getElementById("point-file").click();
