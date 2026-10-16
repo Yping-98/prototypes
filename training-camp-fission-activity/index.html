@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>体验营裂变活动 - 可交互原型</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* 顶部全局导航 */
+    .top-header {
+      background: #0f172a;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 52px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .project-badge {
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .project-badge span {
+      background: #3b82f6;
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .sys-nav {
+      display: flex;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 3px;
+      border-radius: var(--radius-md);
+    }
+    .sys-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sys-btn:hover {
+      color: #fff;
+    }
+    .sys-btn.active {
+      background: #3b82f6;
+      color: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #94a3b8;
+      font-size: 12px;
+    }
+    .tag-prototype {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+    }
+
+    /* 主视图容器 */
+    .view-container {
+      display: none;
+      min-height: calc(100vh - 52px);
+    }
+    .view-container.active {
+      display: flex;
+    }
+
+    /* 电销CRM & 体验营CRM 左右布局 */
+    .crm-sidebar {
+      width: 210px;
+      background: #ffffff;
+      border-right: 1px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .crm-sidebar-header {
+      padding: 16px;
+      font-weight: 600;
+      font-size: 13px;
+      color: #475569;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .crm-menu {
+      list-style: none;
+      padding: 12px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .crm-menu-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      color: #475569;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .crm-menu-item:hover {
+      background: #f1f5f9;
+      color: var(--text-main);
+    }
+    .crm-menu-item.active {
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .crm-main {
+      flex: 1;
+      padding: 20px 24px;
+      overflow-y: auto;
+      max-width: calc(100vw - 210px);
+    }
+
+    /* 面包屑 & 标题区 */
+    .page-header {
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .page-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .breadcrumb {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    /* 业务线 TAB */
+    .biz-tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .biz-tab-btn {
+      background: none;
+      border: none;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      position: relative;
+      transition: color 0.15s;
+    }
+    .biz-tab-btn:hover {
+      color: var(--primary);
+    }
+    .biz-tab-btn.active {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .biz-tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--primary);
+      border-radius: 2px 2px 0 0;
+    }
+    .badge-count {
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: #f1f5f9;
+      color: #64748b;
+      margin-left: 4px;
+    }
+    .biz-tab-btn.active .badge-count {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    /* 卡片与容器 */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      margin-bottom: 16px;
+    }
+    .card-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .card-body {
+      padding: 16px;
+    }
+
+    /* 筛选操作栏 */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+    }
+    .filter-left {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .filter-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .input-sm, .select-sm {
+      height: 32px;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      outline: none;
+      background: #fff;
+      color: var(--text-main);
+    }
+    .input-sm:focus, .select-sm:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+    }
+
+    /* 按钮规范 */
+    .btn {
+      height: 32px;
+      padding: 0 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s;
+      border: 1px solid transparent;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-outline {
+      border-color: var(--border);
+      background: #fff;
+      color: #475569;
+    }
+    .btn-outline:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+    }
+
+    /* 表格规范 */
+    .table-wrapper {
+      overflow-x: auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    th {
+      background: #f8fafc;
+      padding: 10px 12px;
+      font-weight: 600;
+      color: #475569;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      font-size: 12px;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 12px;
+      color: #334155;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    tr:hover td {
+      background: #f8fafc;
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .tag-blue { background: #dbeafe; color: #1e40af; }
+    .tag-green { background: #d1fae5; color: #065f46; }
+    .tag-orange { background: #ffedd5; color: #9a3412; }
+    .tag-gray { background: #f1f5f9; color: #475569; }
+
+    /* 业务重点标示与提示横幅 */
+    .banner-tip {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .banner-tip strong {
+      color: #1d4ed8;
+    }
+
+    /* 表单控件 */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #334155;
+    }
+    .form-label.required::before {
+      content: '* ';
+      color: var(--danger);
+    }
+    .form-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .form-control {
+      width: 100%;
+      height: 34px;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      background: #fff;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(37,99,235,0.1);
+    }
+    .textarea-control {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-family: inherit;
+      min-height: 70px;
+    }
+
+    /* 弹窗遮罩与弹窗 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-box {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      width: 580px;
+      max-width: 90vw;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      animation: modalFade 0.2s ease-out;
+    }
+    @keyframes modalFade {
+      from { transform: scale(0.96); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: #94a3b8;
+      cursor: pointer;
+    }
+    .modal-body {
+      padding: 20px;
+    }
+    .modal-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      background: #f8fafc;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    }
+
+    /* 小程序手机模型 */
+    .mobile-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      background: #f1f5f9;
+    }
+    .phone-frame {
+      width: 375px;
+      height: 740px;
+      background: #fff;
+      border-radius: 40px;
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 10px #1e293b, 0 0 0 12px #334155;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    .phone-notch {
+      height: 28px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #0f172a;
+      flex-shrink: 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .phone-nav {
+      height: 44px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid #f1f5f9;
+      flex-shrink: 0;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .phone-content {
+      flex: 1;
+      overflow-y: auto;
+      background: #faf5ff;
+    }
+    .app-step-bar {
+      display: flex;
+      background: #f8fafc;
+      padding: 6px;
+      border-bottom: 1px solid var(--border);
+      gap: 4px;
+    }
+    .app-step-btn {
+      flex: 1;
+      padding: 6px;
+      font-size: 11px;
+      border: none;
+      background: #fff;
+      border-radius: 4px;
+      color: #64748b;
+      cursor: pointer;
+    }
+    .app-step-btn.active {
+      background: #3b82f6;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* 小程序页面元素 */
+    .fission-hero {
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      color: #fff;
+      padding: 24px 16px 20px;
+      text-align: center;
+      border-radius: 0 0 24px 24px;
+    }
+    .hero-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .hero-sub {
+      font-size: 12px;
+      opacity: 0.9;
+      background: rgba(255,255,255,0.2);
+      display: inline-block;
+      padding: 3px 12px;
+      border-radius: 12px;
+    }
+    .fission-card {
+      background: #fff;
+      margin: 14px 12px;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .task-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #f8fafc;
+    }
+    .task-item:last-child {
+      border-bottom: none;
+    }
+    .task-info {
+      flex: 1;
+    }
+    .task-title {
+      font-weight: 600;
+      font-size: 13px;
+      color: #1e293b;
+    }
+    .task-desc {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+    .btn-wechat {
+      background: #07c160;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .poster-preview {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      border: 1px dashed #cbd5e1;
+      margin-bottom: 16px;
+    }
+    .poster-box {
+      width: 200px;
+      height: 280px;
+      background: linear-gradient(180deg, #fef3c7, #fed7aa);
+      margin: 0 auto 12px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .qr-mock {
+      width: 80px;
+      height: 80px;
+      background: #fff;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #64748b;
+      margin-top: 10px;
+    }
+
+    /* 规划营企微老师弹窗 */
+    .qw-status-box {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      margin-top: 10px;
+    }
+    .qw-status-title {
+      font-weight: 600;
+      font-size: 12px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 顶部全局导航栏 -->
+  <header class="top-header">
+    <div class="header-left">
+      <div class="project-badge">
+        体验营裂变活动 <span>v1.0 原型演示</span>
+      </div>
+      <div class="sys-nav">
+        <button class="sys-btn active" onclick="switchSystem('telesale-crm')">电销CRM - 活动管理</button>
+        <button class="sys-btn" onclick="switchSystem('training-crm')">体验营CRM - 配置与客户</button>
+        <button class="sys-btn" onclick="switchSystem('miniapp')">裂变小程序端 (H5/移动端)</button>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="tag-prototype">已覆盖全部核心变更点</span>
+      <span>状态：可交互评审</span>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- 系统 1：电销CRM - 活动管理 -->
+  <!-- ========================================== -->
+  <div id="telesale-crm" class="view-container active">
+    <!-- 左侧菜单 -->
+    <aside class="crm-sidebar">
+      <div class="crm-sidebar-header">
+        <span>⚡ 电销CRM管理后台</span>
+      </div>
+      <ul class="crm-menu">
+        <li class="crm-menu-item active" onclick="switchTelesalePage('fission-config', this)">裂变活动配置</li>
+        <li class="crm-menu-item" onclick="switchTelesalePage('user-detail', this)">用户参与明细</li>
+        <li class="crm-menu-item" onclick="switchTelesalePage('prize-detail', this)">活动中奖明细</li>
+      </ul>
+    </aside>
+
+    <!-- 右侧内容主区 -->
+    <main class="crm-main">
+
+      <!-- 页面 1.1：裂变活动配置 -->
+      <div id="page-fission-config" class="subpage active">
+        <div class="page-header">
+          <div>
+            <div class="breadcrumb">电销CRM / 活动管理 / 裂变活动配置</div>
+            <h1 class="page-title">裂变活动配置</h1>
+          </div>
+          <button class="btn btn-primary" onclick="openCreateModal()">+ 新建活动</button>
+        </div>
+
+        <div class="banner-tip">
+          💡 <strong>本次核心变更：</strong> 1. 新增【电销】与【体验营】TAB分类与权限隔离（历史数据归属电销）；2. 新建活动时，视频时长支持输入 0（即无需观看视频）；3. 体验营模式下剔除【缩略图】配置。
+        </div>
+
+        <!-- 业务线 TAB -->
+        <div class="biz-tabs">
+          <button class="biz-tab-btn active" onclick="switchConfigBizTab('telesale', this)">
+            电销活动 <span class="badge-count" id="count-ts-cfg">2</span>
+          </button>
+          <button class="biz-tab-btn" onclick="switchConfigBizTab('training', this)">
+            体验营活动 <span class="badge-count" id="count-tr-cfg">1</span>
+          </button>
+        </div>
+
+        <!-- 搜索筛选 -->
+        <div class="filter-bar">
+          <div class="filter-left">
+            <div class="filter-item">
+              <span class="filter-label">活动名称:</span>
+              <input type="text" class="input-sm" placeholder="输入活动名称搜索" style="width: 150px;">
+            </div>
+            <div class="filter-item">
+              <span class="filter-label">活动状态:</span>
+              <select class="select-sm">
+                <option value="">全部状态</option>
+                <option value="1">进行中</option>
+                <option value="2">未开始</option>
+                <option value="3">已结束</option>
+              </select>
+            </div>
+          </div>
+          <div class="filter-right">
+            <button class="btn btn-outline">重置</button>
+            <button class="btn btn-primary">查询</button>
+          </div>
+        </div>
+
+        <!-- 表格 -->
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>活动编号</th>
+                <th>活动名称</th>
+                <th>所属业务线</th>
+                <th>活动时间</th>
+                <th>视频门槛配置</th>
+                <th>图片配置</th>
+                <th>状态</th>
+                <th>创建人</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="table-fission-config-body">
+              <!-- JS 动态渲染 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 页面 1.2：用户参与明细 -->
+      <div id="page-user-detail" class="subpage" style="display: none;">
+        <div class="page-header">
+          <div>
+            <div class="breadcrumb">电销CRM / 活动管理 / 用户参与明细</div>
+            <h1 class="page-title">用户参与明细</h1>
+          </div>
+          <button class="btn btn-outline" onclick="alert('数据导出任务已提交')">📥 导出明细</button>
+        </div>
+
+        <div class="banner-tip">
+          💡 <strong>本次核心变更：</strong> 1. 新增【电销】与【体验营】TAB；2. 【体验营】TAB 下去除【历史付费总金额】列；3. 【是否购课】判定逻辑变更：体验营下指“添加企微后是否在体验营购买大于100元的订单”。
+        </div>
+
+        <div class="biz-tabs">
+          <button class="biz-tab-btn active" onclick="switchUserDetailBizTab('telesale', this)">电销明细</button>
+          <button class="biz-tab-btn" onclick="switchUserDetailBizTab('training', this)">体验营明细</button>
+        </div>
+
+        <div class="filter-bar">
+          <div class="filter-left">
+            <div class="filter-item">
+              <span class="filter-label">邀请人线索ID:</span>
+              <input type="text" class="input-sm" placeholder="输入ID" style="width: 120px;">
+            </div>
+            <div class="filter-item">
+              <span class="filter-label">被邀请人手机号:</span>
+              <input type="text" class="input-sm" placeholder="手机号" style="width: 130px;">
+            </div>
+            <div class="filter-item">
+              <span class="filter-label">是否购课:</span>
+              <select class="select-sm">
+                <option value="">全部</option>
+                <option value="1">是</option>
+                <option value="0">否</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary">筛选</button>
+        </div>
+
+        <div class="table-wrapper">
+          <table id="table-user-detail">
+            <!-- 动态更新表头与内容 -->
+          </table>
+        </div>
+      </div>
+
+      <!-- 页面 1.3：活动中奖明细 -->
+      <div id="page-prize-detail" class="subpage" style="display: none;">
+        <div class="page-header">
+          <div>
+            <div class="breadcrumb">电销CRM / 活动管理 / 活动中奖明细</div>
+            <h1 class="page-title">活动中奖明细</h1>
+          </div>
+          <button class="btn btn-outline" onclick="alert('导出任务已触发')">📥 导出中奖数据</button>
+        </div>
+
+        <div class="banner-tip">
+          💡 <strong>本次核心变更：</strong> 同样增加【电销】与【体验营】TAB进行业务隔离与独立权限控制（历史数据划入电销）。
+        </div>
+
+        <div class="biz-tabs">
+          <button class="biz-tab-btn active" onclick="switchPrizeBizTab('telesale', this)">电销中奖</button>
+          <button class="biz-tab-btn" onclick="switchPrizeBizTab('training', this)">体验营中奖</button>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>序号</th>
+                <th>洋葱ID</th>
+                <th>手机号</th>
+                <th>所属活动</th>
+                <th>奖品类型</th>
+                <th>奖品名称</th>
+                <th>中奖时间</th>
+                <th>发放状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="table-prize-body">
+              <!-- JS 渲染 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- 系统 2：体验营CRM - 配置与客户 -->
+  <!-- ========================================== -->
+  <div id="training-crm" class="view-container">
+    <aside class="crm-sidebar">
+      <div class="crm-sidebar-header">
+        <span>🌱 体验营CRM管理后台</span>
+      </div>
+      <ul class="crm-menu">
+        <li class="crm-menu-item active" onclick="switchTrainingPage('channel-config', this)">渠道获客配置</li>
+        <li class="crm-menu-item" onclick="switchTrainingPage('current-customers', this)">客户管理 (当期客户)</li>
+      </ul>
+    </aside>
+
+    <main class="crm-main">
+
+      <!-- 页面 2.1：渠道获客链接/二维码 -->
+      <div id="page-channel-config" class="subpage active">
+        <div class="page-header">
+          <div>
+            <div class="breadcrumb">体验营CRM / 配置管理 / 渠道获客链接与二维码</div>
+            <h1 class="page-title">渠道获客配置</h1>
+          </div>
+          <button class="btn btn-primary" onclick="saveChannelConfig()">保存当前配置</button>
+        </div>
+
+        <div class="banner-tip">
+          💡 <strong>本次核心变更：</strong> 新增【裂变活动获客配置】TAB（与研学渠道获客配置相同能力），进线线索将根据配置的成员按顺序轮询分配，并支持自动打标、自动备注与分时段欢迎语。
+        </div>
+
+        <!-- 渠道类型 TAB -->
+        <div class="biz-tabs">
+          <button class="biz-tab-btn" onclick="switchChannelTab('other', this)">非信息流渠道获客配置</button>
+          <button class="biz-tab-btn" onclick="switchChannelTab('feed', this)">信息流渠道获客配置</button>
+          <button class="biz-tab-btn" onclick="switchChannelTab('study', this)">研学渠道获客配置</button>
+          <button class="biz-tab-btn active" onclick="switchChannelTab('fission', this)">★ 裂变活动获客配置 (本次新增)</button>
+        </div>
+
+        <!-- 裂变活动获客配置表单 -->
+        <div class="card" id="fission-config-form">
+          <div class="card-header">
+            <span class="card-title">裂变活动线索承接规则配置</span>
+            <span class="tag tag-blue">通道代码: 裂变活动 (liebianhuodong)</span>
+          </div>
+          <div class="card-body">
+            
+            <div class="form-group">
+              <label class="form-label required">销售人员分配 (按顺序轮询):</label>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+                <span class="tag tag-blue" style="padding: 6px 12px; font-size: 12px;">张销售 (A001) ✕</span>
+                <span class="tag tag-blue" style="padding: 6px 12px; font-size: 12px;">李销售 (A002) ✕</span>
+                <span class="tag tag-blue" style="padding: 6px 12px; font-size: 12px;">王销售 (A003) ✕</span>
+                <button class="btn btn-outline" style="height: 28px; font-size: 11px;">+ 添加销售成员</button>
+              </div>
+              <p class="form-hint">线索进线后，系统将按照上方选择的人员顺序依次轮询分配到当期客户列表中。</p>
+            </div>
+
+            <div class="form-group" style="border-top: 1px solid #f1f5f9; padding-top: 14px;">
+              <label class="form-label">自动打标签:</label>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <span class="tag tag-green" style="padding: 4px 10px;">体验营裂变进线</span>
+                <span class="tag tag-green" style="padding: 4px 10px;">待激活营期</span>
+                <button class="btn btn-outline" style="height: 28px; font-size: 11px;">+ 选择标签</button>
+              </div>
+            </div>
+
+            <div class="form-group" style="border-top: 1px solid #f1f5f9; padding-top: 14px;">
+              <label class="form-label">自动备注:</label>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <input type="checkbox" id="chk-auto-remark" checked>
+                <label for="chk-auto-remark" style="font-size: 12px; cursor: pointer;">开启自动添加线索备注</label>
+              </div>
+              <input type="text" class="form-control" value="来自体验营裂变活动邀请，已绑定30天服务期" style="width: 480px;">
+            </div>
+
+            <div class="form-group" style="border-top: 1px solid #f1f5f9; padding-top: 14px;">
+              <label class="form-label">加微信后欢迎语:</label>
+              <textarea class="textarea-control" style="width: 480px;">同学你好！我是洋葱学园规划营的辅导老师，很高兴认识你~ 你的专属营期资料已备好，随时沟通！</textarea>
+            </div>
+
+            <div class="form-group" style="border-top: 1px solid #f1f5f9; padding-top: 14px;">
+              <label class="form-label">分时段欢迎语:</label>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <input type="checkbox" id="chk-time-welcome" checked>
+                <label for="chk-time-welcome" style="font-size: 12px; cursor: pointer;">开启分时段欢迎语 (夜间 22:00 ~ 次日 08:00)</label>
+              </div>
+              <textarea class="textarea-control" style="width: 480px;">夜深了，老师已休息，明天一早会第一时间为你答疑解惑哦！晚安~</textarea>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- 页面 2.2：当期客户与公海流转 -->
+      <div id="page-current-customers" class="subpage" style="display: none;">
+        <div class="page-header">
+          <div>
+            <div class="breadcrumb">体验营CRM / 客户管理 / 当期客户</div>
+            <h1 class="page-title">客户管理</h1>
+          </div>
+          <button class="btn btn-outline" onclick="alert('客户列表已刷新')">🔄 刷新数据</button>
+        </div>
+
+        <div class="banner-tip">
+          💡 <strong>本次核心变更：</strong> 1. 高级筛选支持【裂变活动】渠道筛选；2. 裂变活动进线线索与销售绑定 30 天保护期；30天内未转化留存在【当期客户】，30天内转化进入【已转化】，30天后未转化自动释放至【公海池】。
+        </div>
+
+        <!-- 客户状态 TAB -->
+        <div class="biz-tabs">
+          <button class="biz-tab-btn active" onclick="switchCustomerTab('current', this)">
+            当期客户 (30天内未转化) <span class="badge-count" id="count-curr-cust">3</span>
+          </button>
+          <button class="biz-tab-btn" onclick="switchCustomerTab('converted', this)">
+            已转化客户 <span class="badge-count" id="count-conv-cust">1</span>
+          </button>
+          <button class="biz-tab-btn" onclick="switchCustomerTab('open-sea', this)">
+            公海池 (30天超期自动掉保) <span class="badge-count" id="count-sea-cust">2</span>
+          </button>
+        </div>
+
+        <!-- 高级筛选栏 -->
+        <div class="filter-bar">
+          <div class="filter-left">
+            <div class="filter-item">
+              <span class="filter-label">客户渠道:</span>
+              <select class="select-sm" id="select-cust-channel" onchange="filterCustomerTable()">
+                <option value="">全部渠道</option>
+                <option value="fission" selected>★ 裂变活动 (liebianhuodong)</option>
+                <option value="feed">信息流获客</option>
+                <option value="study">研学渠道</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <span class="filter-label">分配销售:</span>
+              <select class="select-sm">
+                <option value="">全部销售</option>
+                <option value="A001">张销售</option>
+                <option value="A002">李销售</option>
+                <option value="A003">王销售</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <span class="filter-label">手机号:</span>
+              <input type="text" class="input-sm" placeholder="输入手机号" style="width: 120px;">
+            </div>
+          </div>
+          <div class="filter-right">
+            <button class="btn btn-outline" onclick="resetCustomerFilter()">重置</button>
+            <button class="btn btn-primary" onclick="filterCustomerTable()">高级筛选</button>
+          </div>
+        </div>
+
+        <!-- 客户列表 -->
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>线索ID</th>
+                <th>客户昵称/手机</th>
+                <th>获客渠道</th>
+                <th>分配销售 (轮询)</th>
+                <th>添加企微时间</th>
+                <th>绑定保护期</th>
+                <th>转化状态</th>
+                <th>流转操作</th>
+              </tr>
+            </thead>
+            <tbody id="table-customer-body">
+              <!-- JS 渲染 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- 系统 3：裂变小程序端 (移动端模拟) -->
+  <!-- ========================================== -->
+  <div id="miniapp" class="view-container">
+    <div class="mobile-wrapper">
+      
+      <div class="phone-frame">
+        <!-- 状态栏 -->
+        <div class="phone-notch">
+          <span>9:41</span>
+          <span>5G 📶 100%</span>
+        </div>
+
+        <!-- 小程序导航条 -->
+        <div class="phone-nav">
+          <span style="font-size: 16px; cursor: pointer;" onclick="appGoStep(1)">‹</span>
+          <span id="app-nav-title">洋葱规划营 · 裂变有礼</span>
+          <span style="font-size: 13px;">•••</span>
+        </div>
+
+        <!-- 页面切换快捷条 -->
+        <div class="app-step-bar">
+          <button class="app-step-btn active" id="btn-app-s1" onclick="appGoStep(1)">1. 直达首页 (免选活动)</button>
+          <button class="app-step-btn" id="btn-app-s2" onclick="appGoStep(2)">2. 海报页 (删全科VIP)</button>
+          <button class="app-step-btn" id="btn-app-s3" onclick="appGoStep(3)">3. 任务达成 (核身规划营)</button>
+        </div>
+
+        <!-- 手机内容展示区 -->
+        <div class="phone-content" id="phone-content-body">
+          <!-- 动态切换内容 -->
+        </div>
+
+      </div>
+
+      <!-- 右侧说明面板 -->
+      <div style="margin-left: 40px; max-width: 360px;">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📱 裂变小程序变更点说明</span>
+          </div>
+          <div class="card-body">
+            <ol style="padding-left: 18px; display: flex; flex-direction: column; gap: 12px; color: #475569; font-size: 12px;">
+              <li>
+                <strong>去除选择活动入口：</strong><br>
+                用户扫码或点击小程序直接进入具体的体验营裂变活动首页，不再弹出“选择活动”中间页。
+              </li>
+              <li>
+                <strong>海报保存页删除全科VIP权益：</strong><br>
+                删除了原本“立即送好友一天全科VIP”文案，底层同步删除发放全科VIP的逻辑与取值，回归纯净裂变拉新。
+              </li>
+              <li>
+                <strong>服务期与配置承接：</strong><br>
+                小程序活动数据完全读取【体验营-裂变活动配置】，新产生线索进入体验营30天服务期。
+              </li>
+              <li>
+                <strong>规划营企微核身判断：</strong><br>
+                校验用户是否添加过企业微信时，系统核身判断其是否添加过【洋葱学园规划营】任何一个企业微信成员。
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- 弹窗：新建裂变活动 -->
+  <!-- ========================================== -->
+  <div id="modal-create-activity" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">新建裂变活动</span>
+        <button class="modal-close" onclick="closeCreateModal()">×</button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="form-group">
+          <label class="form-label required">所属业务线分类 (TAB):</label>
+          <div style="display: flex; gap: 16px;">
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="radio" name="modal-biz" value="telesale" onchange="toggleModalBiz(this.value)">
+              <span>电销业务</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="radio" name="modal-biz" value="training" checked onchange="toggleModalBiz(this.value)">
+              <span style="color: var(--primary); font-weight: 600;">体验营业务 (本次新增)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label required">活动名称:</label>
+          <input type="text" id="modal-act-name" class="form-control" value="2026秋季体验营裂变拉新专场">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label required">活动时间:</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" class="form-control" value="2026-10-16 00:00:00">
+            <span>至</span>
+            <input type="text" class="form-control" value="2026-11-15 23:59:59">
+          </div>
+        </div>
+
+        <!-- 视频时长变更点 -->
+        <div class="form-group" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px;">
+          <label class="form-label required" style="display: flex; align-items: center; justify-content: space-between;">
+            <span>观看视频时长要求 (分钟):</span>
+            <span class="tag tag-orange">变更：支持输入 0</span>
+          </label>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 12px; color: #64748b;">大于等于</span>
+            <input type="number" id="modal-video-duration" min="0" value="0" class="form-control" style="width: 100px;">
+            <span style="font-size: 12px;">分钟</span>
+          </div>
+          <p class="form-hint" style="color: #b45309;">
+            💡 <strong>规则说明：</strong> 输入 0 表示用户添加企微后，无需观看视频也算符合要求直接达成任务！
+          </p>
+        </div>
+
+        <!-- 图片配置变更点 -->
+        <div class="form-group" style="margin-top: 14px;">
+          <label class="form-label required">图片配置:</label>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="border: 1px dashed var(--border); padding: 10px; border-radius: 6px;">
+              <span style="font-size: 12px; font-weight: 600;">活动主页面海报:</span>
+              <span style="font-size: 11px; color: #64748b; margin-left: 8px;">已上传: banner_camp_main.png</span>
+            </div>
+            
+            <!-- 缩略图配置：体验营剔除 -->
+            <div id="modal-thumbnail-area" style="border: 1px dashed var(--border); padding: 10px; border-radius: 6px; background: #fff;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-size: 12px; font-weight: 600;">缩略图配置:</span>
+                <span class="tag tag-gray">电销专用项</span>
+              </div>
+              <p style="font-size: 11px; color: #64748b; margin-top: 4px;">尺寸 200x200px，用于活动列表/选择卡片展示。</p>
+            </div>
+
+            <div id="modal-training-no-thumbnail-tip" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 8px 12px; border-radius: 6px; font-size: 11px; display: none;">
+              ✨ <strong>体验营业务特性：</strong> 已剔除【缩略图】配置项，点击后直接跳转进入活动首页，无需维护缩略图。
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeCreateModal()">取消</button>
+        <button class="btn btn-primary" onclick="submitCreateActivity()">确认提交</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript 交互驱动代码 -->
+  <script>
+    // 模拟数据源
+    const state = {
+      currentSystem: 'telesale-crm',
+      telesaleTab: 'telesale', // telesale | training
+      userTab: 'telesale',
+      prizeTab: 'telesale',
+      fissionConfigData: [
+        { id: 'ACT-TS-01', name: '双十一电销好礼裂变', biz: 'telesale', time: '2026-10-01 ~ 2026-11-12', video: '≥ 5 分钟', thumb: '已配置', status: '进行中', creator: '李运营' },
+        { id: 'ACT-TS-02', name: '秋季电销开学狂欢', biz: 'telesale', time: '2026-09-01 ~ 2026-09-30', video: '≥ 3 分钟', thumb: '已配置', status: '已结束', creator: '张运营' },
+        { id: 'ACT-TR-01', name: '体验营规划营迎新裂变专场', biz: 'training', time: '2026-10-15 ~ 2026-11-15', video: '0 分钟 (无需看视频)', thumb: '无缩略图 (直达)', status: '进行中', creator: '王体验营' }
+      ],
+      currentCustomers: [
+        { id: 'CUST-001', name: '陈*华 (138****9281)', channel: 'fission', channelText: '裂变活动', sales: '张销售 (轮询分配)', qwTime: '2026-10-16 10:20', daysLeft: '剩余 30 天', status: '当期跟进中' },
+        { id: 'CUST-002', name: '赵*敏 (139****1102)', channel: 'fission', channelText: '裂变活动', sales: '李销售 (轮询分配)', qwTime: '2026-10-15 14:10', daysLeft: '剩余 29 天', status: '当期跟进中' },
+        { id: 'CUST-003', name: '周* (137****4491)', channel: 'fission', channelText: '裂变活动', sales: '王销售 (轮询分配)', qwTime: '2026-10-14 09:30', daysLeft: '剩余 28 天', status: '当期跟进中' }
+      ],
+      convertedCustomers: [
+        { id: 'CUST-004', name: '孙*婷 (186****5520)', channel: 'fission', channelText: '裂变活动', sales: '张销售', qwTime: '2026-10-12 11:00', daysLeft: '在保', status: '已购买体验营 >100元' }
+      ],
+      openSeaCustomers: [
+        { id: 'CUST-000', name: '吴*强 (135****3311)', channel: 'fission', channelText: '裂变活动', sales: '无 (原销售已解绑)', qwTime: '2026-09-10 16:00', daysLeft: '已超 30 天', status: '超期未转化自动入公海' },
+        { id: 'CUST-009', name: '钱* (159****8823)', channel: 'fission', channelText: '裂变活动', sales: '无 (原销售已解绑)', qwTime: '2026-09-08 11:20', daysLeft: '已超 30 天', status: '超期未转化自动入公海' }
+      ]
+    };
+
+    // 系统切换
+    function switchSystem(sysId) {
+      state.currentSystem = sysId;
+      document.querySelectorAll('.sys-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.querySelectorAll('.view-container').forEach(view => view.classList.remove('active'));
+      document.getElementById(sysId).classList.add('active');
+
+      if (sysId === 'miniapp') {
+        appGoStep(1);
+      }
+    }
+
+    // 电销CRM子页面切换
+    function switchTelesalePage(pageId, el) {
+      document.querySelectorAll('.crm-menu-item').forEach(item => item.classList.remove('active'));
+      el.classList.add('active');
+
+      document.querySelectorAll('#telesale-crm .subpage').forEach(page => page.style.display = 'none');
+      document.getElementById('page-' + pageId).style.display = 'block';
+
+      if (pageId === 'fission-config') renderFissionConfigTable();
+      if (pageId === 'user-detail') renderUserDetailTable();
+      if (pageId === 'prize-detail') renderPrizeTable();
+    }
+
+    // 裂变活动配置 TAB 切换
+    function switchConfigBizTab(biz, el) {
+      state.telesaleTab = biz;
+      document.querySelectorAll('#page-fission-config .biz-tab-btn').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+      renderFissionConfigTable();
+    }
+
+    // 渲染裂变配置列表
+    function renderFissionConfigTable() {
+      const tbody = document.getElementById('table-fission-config-body');
+      const filtered = state.fissionConfigData.filter(d => d.biz === state.telesaleTab);
+      
+      tbody.innerHTML = filtered.map(d => `
+        <tr>
+          <td><strong>${d.id}</strong></td>
+          <td>${d.name}</td>
+          <td>
+            <span class="tag ${d.biz === 'telesale' ? 'tag-blue' : 'tag-green'}">
+              ${d.biz === 'telesale' ? '电销业务' : '体验营业务 (新)'}
+            </span>
+          </td>
+          <td>${d.time}</td>
+          <td>
+            <span style="${d.video.includes('0') ? 'color: #b45309; font-weight: 600;' : ''}">
+              ${d.video}
+            </span>
+          </td>
+          <td>
+            <span style="${d.thumb.includes('无') ? 'color: #059669; font-weight: 600;' : ''}">
+              ${d.thumb}
+            </span>
+          </td>
+          <td><span class="tag ${d.status === '进行中' ? 'tag-green' : 'tag-gray'}">${d.status}</span></td>
+          <td>${d.creator}</td>
+          <td>
+            <a href="javascript:void(0)" style="color: var(--primary); text-decoration: none; margin-right: 8px;">编辑</a>
+            <a href="javascript:void(0)" style="color: #64748b; text-decoration: none;">详情</a>
+          </td>
+        </tr>
+      `).join('');
+
+      document.getElementById('count-ts-cfg').textContent = state.fissionConfigData.filter(d => d.biz === 'telesale').length;
+      document.getElementById('count-tr-cfg').textContent = state.fissionConfigData.filter(d => d.biz === 'training').length;
+    }
+
+    // 用户参与明细 TAB 切换
+    function switchUserDetailBizTab(biz, el) {
+      state.userTab = biz;
+      document.querySelectorAll('#page-user-detail .biz-tab-btn').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+      renderUserDetailTable();
+    }
+
+    // 渲染用户参与明细
+    function renderUserDetailTable() {
+      const table = document.getElementById('table-user-detail');
+      if (state.userTab === 'telesale') {
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>邀请人线索ID</th>
+              <th>被邀请人线索ID</th>
+              <th>被邀请人手机号</th>
+              <th>添加微信时间</th>
+              <th>是否购课 (电销正价课)</th>
+              <th style="background: #fef2f2; color: #991b1b;">历史付费总金额 (电销专属列)</th>
+              <th>所属活动</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>3041766308</td>
+              <td>5092817291</td>
+              <td>150****2391</td>
+              <td>2026-10-15 14:22:01</td>
+              <td><span class="tag tag-green">是</span></td>
+              <td style="font-weight: 600; color: #991b1b;">¥ 1,999.00</td>
+              <td>双十一电销好礼裂变</td>
+            </tr>
+            <tr>
+              <td>3041766308</td>
+              <td>5092818933</td>
+              <td>138****8812</td>
+              <td>2026-10-15 16:40:10</td>
+              <td><span class="tag tag-gray">否</span></td>
+              <td style="color: #64748b;">¥ 0.00</td>
+              <td>双十一电销好礼裂变</td>
+            </tr>
+          </tbody>
+        `;
+      } else {
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>邀请人线索ID</th>
+              <th>被邀请人线索ID</th>
+              <th>被邀请人手机号</th>
+              <th>添加企微时间</th>
+              <th style="background: #f0fdf4; color: #166534;">
+                是否购课 (体验营购买>100元订单)
+              </th>
+              <th>所属活动</th>
+              <th>数据说明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>4091827110</td>
+              <td>6019283711</td>
+              <td>136****9921</td>
+              <td>2026-10-16 09:12:00</td>
+              <td><span class="tag tag-green">是 (实付¥199)</span></td>
+              <td>体验营规划营迎新裂变专场</td>
+              <td><span class="tag tag-orange">已剔除历史付费金额列</span></td>
+            </tr>
+            <tr>
+              <td>4091827110</td>
+              <td>6019283994</td>
+              <td>177****2301</td>
+              <td>2026-10-16 11:30:20</td>
+              <td><span class="tag tag-gray">否 (未满100元)</span></td>
+              <td>体验营规划营迎新裂变专场</td>
+              <td><span class="tag tag-orange">已剔除历史付费金额列</span></td>
+            </tr>
+          </tbody>
+        `;
+      }
+    }
+
+    // 活动中奖明细
+    function switchPrizeBizTab(biz, el) {
+      state.prizeTab = biz;
+      document.querySelectorAll('#page-prize-detail .biz-tab-btn').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+      renderPrizeTable();
+    }
+
+    function renderPrizeTable() {
+      const tbody = document.getElementById('table-prize-body');
+      if (state.prizeTab === 'telesale') {
+        tbody.innerHTML = `
+          <tr>
+            <td>1</td>
+            <td>100323217</td>
+            <td>15007223480</td>
+            <td>双十一电销好礼裂变</td>
+            <td>虚拟实物</td>
+            <td>京东卡 50 元</td>
+            <td>2026-10-15 18:52:42</td>
+            <td><span class="tag tag-green">已发放</span></td>
+            <td><a href="#" style="color: var(--primary);">查看详情</a></td>
+          </tr>
+        `;
+      } else {
+        tbody.innerHTML = `
+          <tr>
+            <td>1</td>
+            <td>200889102</td>
+            <td>13811223344</td>
+            <td>体验营规划营迎新裂变专场</td>
+            <td>学习周边</td>
+            <td>洋葱错题打印机</td>
+            <td>2026-10-16 10:15:33</td>
+            <td><span class="tag tag-orange">待审核发放</span></td>
+            <td><a href="#" style="color: var(--primary);">审核</a></td>
+          </tr>
+        `;
+      }
+    }
+
+    // 体验营CRM
+    function switchTrainingPage(pageId, el) {
+      document.querySelectorAll('#training-crm .crm-menu-item').forEach(item => item.classList.remove('active'));
+      el.classList.add('active');
+
+      document.querySelectorAll('#training-crm .subpage').forEach(page => page.style.display = 'none');
+      document.getElementById('page-' + pageId).style.display = 'block';
+
+      if (pageId === 'current-customers') {
+        renderCustomerTable('current');
+      }
+    }
+
+    function switchChannelTab(tab, el) {
+      document.querySelectorAll('#page-channel-config .biz-tab-btn').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+      const form = document.getElementById('fission-config-form');
+      if (tab === 'fission') {
+        form.style.display = 'block';
+      } else {
+        form.style.display = 'none';
+        alert('当前切换为【' + el.textContent + '】原有渠道配置。本次原型重点展示【裂变活动获客配置】。');
+      }
+    }
+
+    function saveChannelConfig() {
+      alert('✅ 裂变活动获客配置已成功保存！\n- 渠道：裂变活动 (liebianhuodong)\n- 销售分配：已配置 3 人顺序轮询\n- 欢迎语与标签已生效');
+    }
+
+    // 客户管理
+    let currentCustTab = 'current';
+    function switchCustomerTab(tab, el) {
+      currentCustTab = tab;
+      document.querySelectorAll('#page-current-customers .biz-tab-btn').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+      renderCustomerTable(tab);
+    }
+
+    function renderCustomerTable(tab) {
+      const tbody = document.getElementById('table-customer-body');
+      let data = [];
+      if (tab === 'current') data = state.currentCustomers;
+      else if (tab === 'converted') data = state.convertedCustomers;
+      else if (tab === 'open-sea') data = state.openSeaCustomers;
+
+      const channelFilter = document.getElementById('select-cust-channel').value;
+      if (channelFilter === 'fission') {
+        data = data.filter(d => d.channel === 'fission');
+      }
+
+      tbody.innerHTML = data.map(d => `
+        <tr>
+          <td><strong>${d.id}</strong></td>
+          <td>${d.name}</td>
+          <td><span class="tag tag-blue">${d.channelText}</span></td>
+          <td>${d.sales}</td>
+          <td>${d.qwTime}</td>
+          <td>
+            <span style="${d.daysLeft.includes('超') ? 'color: #ef4444;' : 'color: #2563eb; font-weight: 500;'}">
+              ${d.daysLeft}
+            </span>
+          </td>
+          <td><span class="tag ${d.status.includes('已购') ? 'tag-green' : (d.status.includes('公海') ? 'tag-orange' : 'tag-gray')}">${d.status}</span></td>
+          <td>
+            ${tab === 'current' ? '<button class="btn btn-outline" style="height:24px; font-size:11px;" onclick="simulateConvert(\''+d.id+'\')">标记购课</button>' : '<span style="color:#94a3b8;">-</span>'}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function simulateConvert(id) {
+      alert('已模拟线索 ' + id + ' 完成体验营 >100元购课！\n该客户已流转进入【已转化客户】TAB。');
+      const idx = state.currentCustomers.findIndex(c => c.id === id);
+      if (idx > -1) {
+        const item = state.currentCustomers.splice(idx, 1)[0];
+        item.status = '已购买体验营 >100元';
+        state.convertedCustomers.push(item);
+        document.getElementById('count-curr-cust').textContent = state.currentCustomers.length;
+        document.getElementById('count-conv-cust').textContent = state.convertedCustomers.length;
+        renderCustomerTable('current');
+      }
+    }
+
+    function filterCustomerTable() {
+      renderCustomerTable(currentCustTab);
+    }
+
+    function resetCustomerFilter() {
+      document.getElementById('select-cust-channel').value = '';
+      renderCustomerTable(currentCustTab);
+    }
+
+    // 弹窗控制
+    function openCreateModal() {
+      document.getElementById('modal-create-activity').classList.add('active');
+      toggleModalBiz('training');
+    }
+    function closeCreateModal() {
+      document.getElementById('modal-create-activity').classList.remove('active');
+    }
+    function toggleModalBiz(val) {
+      const thumbArea = document.getElementById('modal-thumbnail-area');
+      const noThumbTip = document.getElementById('modal-training-no-thumbnail-tip');
+      if (val === 'training') {
+        thumbArea.style.display = 'none';
+        noThumbTip.style.display = 'block';
+      } else {
+        thumbArea.style.display = 'block';
+        noThumbTip.style.display = 'none';
+      }
+    }
+    function submitCreateActivity() {
+      const name = document.getElementById('modal-act-name').value;
+      const isTraining = document.querySelector('input[name="modal-biz"]:checked').value === 'training';
+      const duration = document.getElementById('modal-video-duration').value;
+
+      state.fissionConfigData.unshift({
+        id: 'ACT-' + (isTraining ? 'TR' : 'TS') + '-0' + (state.fissionConfigData.length + 1),
+        name: name,
+        biz: isTraining ? 'training' : 'telesale',
+        time: '2026-10-16 ~ 2026-11-15',
+        video: duration == 0 ? '0 分钟 (无需看视频)' : '≥ ' + duration + ' 分钟',
+        thumb: isTraining ? '无缩略图 (直达)' : '已配置',
+        status: '进行中',
+        creator: '当前登录人'
+      });
+
+      closeCreateModal();
+      alert('🎉 裂变活动创建成功！已新增至列表中。');
+      renderFissionConfigTable();
+    }
+
+    // 裂变小程序模拟
+    let appStep = 1;
+    function appGoStep(step) {
+      appStep = step;
+      document.querySelectorAll('.app-step-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('btn-app-s' + step).classList.add('active');
+
+      const body = document.getElementById('phone-content-body');
+      const title = document.getElementById('app-nav-title');
+
+      if (step === 1) {
+        title.textContent = '洋葱规划营 · 裂变有礼';
+        body.innerHTML = `
+          <div class="fission-hero">
+            <div class="hero-title">🎁 邀好友·领打印机</div>
+            <div class="hero-sub">体验营迎新专场活动 (直达首页)</div>
+            <p style="font-size: 11px; margin-top: 8px; opacity: 0.85;">免除中间选活动页，直接进入活动主体</p>
+          </div>
+
+          <div class="fission-card">
+            <div style="font-weight: 700; font-size: 14px; margin-bottom: 10px;">🌟 我的任务进度</div>
+            <div class="task-item">
+              <div class="task-info">
+                <div class="task-title">1. 添加规划营企微老师</div>
+                <div class="task-desc">要求：添加【洋葱学园规划营】任何一位老师</div>
+              </div>
+              <button class="btn-wechat" onclick="simulateCheckQw()">校验状态</button>
+            </div>
+            <div class="task-item">
+              <div class="task-info">
+                <div class="task-title">2. 观看入门视频</div>
+                <div class="task-desc">门槛配置为 0 分钟：添加企微即视为符合！</div>
+              </div>
+              <span class="tag tag-green">已达标</span>
+            </div>
+            <div class="task-item">
+              <div class="task-info">
+                <div class="task-title">3. 邀请3位好友入营</div>
+                <div class="task-desc">当前进度：2/3 人 (满100元体验课有效)</div>
+              </div>
+              <button class="btn btn-primary" style="height:26px; font-size:11px;" onclick="appGoStep(2)">去邀请</button>
+            </div>
+          </div>
+
+          <div class="fission-card" style="text-align: center;">
+            <button class="btn btn-primary" style="width: 100%; height: 38px; border-radius: 20px; font-weight: 600;" onclick="appGoStep(2)">
+              生成我的专属邀请海报 ➔
+            </button>
+          </div>
+        `;
+      } else if (step === 2) {
+        title.textContent = '保存我的专属海报';
+        body.innerHTML = `
+          <div style="padding: 16px;">
+            <div class="banner-tip" style="background:#fff; border-color:#cbd5e1; font-size:11px; margin-bottom:12px;">
+              🔍 <strong>变更核对：</strong> 海报页已彻底删除【立即送好友一天全科VIP】文案与底层VIP发券逻辑！
+            </div>
+
+            <div class="poster-preview">
+              <div class="poster-box">
+                <div style="font-size: 14px; font-weight: 800; color: #9a3412;">洋葱学园 · 规划营</div>
+                <div style="font-size: 11px; color: #c2410c; margin-top: 4px;">邀请你加入新学期规划营</div>
+                
+                <div class="qr-mock">
+                  专属二维码<br>(带参活码)
+                </div>
+
+                <div style="font-size: 10px; color: #78350f; margin-top: 10px;">
+                  长按扫码添加规划营老师
+                </div>
+              </div>
+              <p style="font-size: 11px; color: #64748b;">海报已生成，可直接保存至手机相册</p>
+            </div>
+
+            <button class="btn btn-success" style="width: 100%; height: 40px; border-radius: 20px; font-size: 13px;" onclick="alert('海报已保存至相册，快去微信分享给好友吧！')">
+              📥 保存海报并分享好友
+            </button>
+          </div>
+        `;
+      } else if (step === 3) {
+        title.textContent = '核身校验与权益承接';
+        body.innerHTML = `
+          <div style="padding: 16px;">
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">规划营企微核身结果</span>
+              </div>
+              <div class="card-body">
+                <div class="qw-status-box">
+                  <div class="qw-status-title">
+                    <span>是否添加过规划营老师:</span>
+                    <span class="tag tag-green">已通过 (已添加)</span>
+                  </div>
+                  <p style="font-size: 11px; color: #64748b;">
+                    <strong>校验逻辑：</strong> 遍历判断该洋葱账号是否添加过【洋葱学园规划营】成员（不限特定个人，规划营全员均可）。
+                  </p>
+                </div>
+
+                <div class="qw-status-box" style="margin-top: 12px;">
+                  <div class="qw-status-title">
+                    <span>服务期承接状态:</span>
+                    <span class="tag tag-blue">体验营 30 天服务期</span>
+                  </div>
+                  <p style="font-size: 11px; color: #64748b;">
+                    通过体验营裂变活动裂变的线索，自动归入体验营CRM当期客户，由轮询分配的销售跟进。
+                  </p>
+                </div>
+
+                <button class="btn btn-outline" style="width:100%; margin-top:16px;" onclick="appGoStep(1)">
+                  返回活动首页
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function simulateCheckQw() {
+      alert('核身校验通过：检测到您已添加【洋葱学园规划营】指导老师，企微任务已完成！');
+      appGoStep(3);
+    }
+
+    // 初始化渲染
+    window.onload = function() {
+      renderFissionConfigTable();
+    };
+  </script>
+</body>
+</html>
