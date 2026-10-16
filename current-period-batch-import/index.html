@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客户管理</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+    font-size: 14px;
+    color: #606266;
+    background: #fff;
+  }
+  button, input, select { font-family: inherit; font-size: 14px; }
+  .layout { display: flex; height: 100vh; overflow: hidden; }
+  .sidebar {
+    width: 230px;
+    flex-shrink: 0;
+    height: 100vh;
+    background: #001529;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .side-title {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 500;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .fold {
+    position: absolute;
+    right: 12px;
+    font-size: 16px;
+    color: #fff;
+    opacity: .85;
+  }
+  .menu { flex: 1; overflow-y: auto; padding-bottom: 12px; }
+  .menu::-webkit-scrollbar { width: 0; }
+  .menu-item, .menu-sub {
+    height: 50px;
+    line-height: 50px;
+    padding: 0 20px 0 24px;
+    color: #a5adb3;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: default;
+  }
+  .menu-item.active { color: #fff; background: #000c17; }
+  .menu-sub { display: flex; justify-content: space-between; align-items: center; }
+  .caret { font-size: 12px; opacity: .7; }
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; background: rgb(241, 241, 241); }
+  .navbar { background: #f1f1f1; box-shadow: 0 1px 4px rgba(0, 21, 41, .08); flex-shrink: 0; }
+  .nav-top {
+    height: 50px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-right: 8px;
+  }
+  .crumb { margin-left: 8px; color: #97a8be; font-size: 14px; line-height: 50px; }
+  .right-menu { display: flex; align-items: center; height: 48px; }
+  .bell { width: 18px; height: 18px; margin-right: 16px; color: #606266; }
+  .user-name { margin-right: 20px; color: #606266; font-size: 13px; }
+  .avatar-wrap { position: relative; margin-right: 30px; }
+  .avatar {
+    width: 30px; height: 30px; border-radius: 15px;
+    background: #409eff; color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .caret-user { position: absolute; right: -16px; top: 10px; font-size: 12px; color: #606266; }
+  .router-tabs {
+    background: #fff;
+    box-shadow: 0 0 2px #888;
+    padding: 5px 0;
+  }
+  .router-tab {
+    display: inline-block;
+    margin-left: 40px;
+    height: 28px;
+    line-height: 26px;
+    padding: 0 16px;
+    border: 1px solid #e4e7ed;
+    background: #fff;
+    color: #409eff;
+    font-size: 14px;
+  }
+  .app-main { flex: 1; overflow: auto; background: rgb(241, 241, 241); position: relative; }
+  .content-view {
+    margin: 20px;
+    padding: 15px;
+    background: #fff;
+    border-radius: 6px;
+  }
+  .page-tabs { display: flex; border-bottom: 2px solid #e4e7ed; margin-bottom: 15px; }
+  .page-tab {
+    height: 40px;
+    line-height: 40px;
+    padding: 0 20px;
+    color: #303133;
+    cursor: default;
+    position: relative;
+    margin-bottom: -2px;
+  }
+  .page-tab.active { color: #409eff; }
+  .page-tab.active::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 2px;
+    background: #409eff;
+  }
+  .filters { display: flex; flex-wrap: wrap; align-items: center; }
+  .fi { display: flex; align-items: center; margin: 0 18px 18px 0; }
+  .fi > label { color: #606266; white-space: nowrap; line-height: 32px; padding-right: 12px; }
+  .el-input, .el-select, .el-date {
+    height: 32px;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    background: #fff;
+    color: #606266;
+    padding: 0 11px;
+    outline: none;
+  }
+  .el-input::placeholder, .el-date { color: #a8abb2; }
+  .el-input:focus, .el-select:focus { border-color: #409eff; }
+  .w120 { width: 120px; }
+  .w130 { width: 130px; }
+  .w100 { width: 100px; }
+  .w180 { width: 180px; }
+  .w140 { width: 140px; }
+  .el-select, .el-date { appearance: none; background-image: linear-gradient(45deg, transparent 50%, #c0c4cc 50%), linear-gradient(135deg, #c0c4cc 50%, transparent 50%); background-position: calc(100% - 14px) 13px, calc(100% - 9px) 13px; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 24px; }
+  .el-date { width: 340px; color: #a8abb2; display: inline-flex; align-items: center; background-image: none; }
+  .radios { display: flex; align-items: center; gap: 16px; height: 32px; }
+  .radio { display: flex; align-items: center; gap: 6px; color: #606266; cursor: default; }
+  .dot {
+    width: 14px; height: 14px; border-radius: 50%; border: 1px solid #dcdfe6; background: #fff; position: relative;
+  }
+  .toolbar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 12px; }
+  .toolbar .left, .toolbar .right { display: flex; gap: 12px; flex-wrap: wrap; }
+  .el-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 32px; padding: 0 15px;
+    border: 1px solid #dcdfe6; border-radius: 4px;
+    background: #fff; color: #606266; cursor: pointer; line-height: 1; white-space: nowrap;
+  }
+  .el-btn:hover { color: #409eff; border-color: #c6e2ff; background: #ecf5ff; }
+  .el-btn.primary { background: #409eff; border-color: #409eff; color: #fff; }
+  .el-btn.primary:hover { background: #66b1ff; border-color: #66b1ff; color: #fff; }
+  .el-btn.plain {
+    height: 24px; padding: 0 8px; margin: 0 8px 6px 0;
+    color: #409eff; background: #ecf5ff; border-color: #b3d8ff; font-size: 12px;
+  }
+  .el-btn.plain:hover { background: #409eff; border-color: #409eff; color: #fff; }
+  .el-btn:disabled { opacity: .55; cursor: not-allowed; }
+  .table-scroll { overflow: auto; border: 1px solid #ebeef5; }
+  table.data { border-collapse: separate; border-spacing: 0; min-width: 100%; font-size: 14px; }
+  table.data th, table.data td {
+    border-right: 1px solid #ebeef5;
+    border-bottom: 1px solid #ebeef5;
+    padding: 8px 12px;
+    text-align: left;
+    white-space: nowrap;
+    background: #fff;
+    color: #606266;
+    font-weight: 400;
+  }
+  table.data th {
+    background: #f5f7fa;
+    color: #909399;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  table.data tr:hover td { background: #f5f7fa; }
+  table.data .sticky-l { position: sticky; z-index: 1; }
+  table.data th.sticky-l { z-index: 3; }
+  table.data .c0 { left: 0; }
+  table.data .c1 { left: 48px; }
+  table.data .c2 { left: 148px; }
+  table.data .c3 { left: 258px; }
+  table.data .ops { position: sticky; right: 0; z-index: 1; min-width: 280px; box-shadow: -4px 0 6px rgba(0,0,0,.04); }
+  table.data th.ops { z-index: 3; }
+  .chk { width: 14px; height: 14px; border: 1px solid #dcdfe6; border-radius: 2px; display: inline-block; background: #fff; }
+  .danger { color: #f56c6c; }
+  .pager { margin-top: 32px; display: flex; justify-content: flex-end; align-items: center; gap: 8px; color: #606266; font-size: 13px; }
+  .pager .pg {
+    min-width: 30px; height: 28px; line-height: 26px; text-align: center;
+    border: 1px solid #dcdfe6; border-radius: 2px; background: #fff; padding: 0 6px;
+  }
+  .pager .pg.on { background: #409eff; border-color: #409eff; color: #fff; }
+  .mask {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 2000;
+    display: none; align-items: center; justify-content: center;
+  }
+  .mask.show { display: flex; }
+  .dialog {
+    width: 800px; max-width: calc(100vw - 32px); background: #fff; border-radius: 5px;
+    box-shadow: 0 12px 32px rgba(0,0,0,.12); overflow: hidden;
+  }
+  .dialog-hd {
+    height: 44px; line-height: 44px; text-align: center;
+    background: #f0f0f0; border-bottom: 1px solid #e0e0e0;
+    font-size: 16px; font-weight: 500; color: #303133; position: relative;
+  }
+  .dialog-x {
+    position: absolute; right: 16px; top: 0; color: #909399; font-size: 18px; cursor: pointer; font-weight: 400;
+  }
+  .dialog-bd { padding: 20px; position: relative; font-size: 14px; max-height: 80vh; overflow: auto; }
+  .form-row { display: flex; margin-bottom: 18px; }
+  .form-row > .lab { width: 100px; flex-shrink: 0; text-align: right; padding-right: 12px; line-height: 32px; color: #606266; }
+  .form-row > .ctl { flex: 1; min-width: 0; line-height: 32px; }
+  .tpl-link { display: inline-block; margin-top: 8px; color: #409eff; cursor: pointer; line-height: 1.4; }
+  .tpl-link:hover { color: #66b1ff; }
+  .note div { line-height: 22px; color: #606266; }
+  .file-item {
+    margin-top: 8px; height: 28px; display: flex; align-items: center; gap: 6px;
+    color: #606266; font-size: 14px;
+  }
+  .file-item .name { color: #606266; }
+  .file-item .tick { color: #67c23a; font-weight: 700; }
+  .import-summary { text-align: center; padding: 28px 0 16px; color: #303133; font-size: 14px; }
+  .dialog-ft { text-align: center; padding: 0 20px 20px; }
+  .dialog-ft .el-btn { margin: 0 6px; }
+  .result-table { width: 100%; border-collapse: collapse; }
+  .result-table th, .result-table td {
+    border: 1px solid #ebeef5; padding: 8px 10px; font-size: 13px; white-space: nowrap;
+  }
+  .result-table th { background: #f5f7fa; color: #909399; font-weight: 600; }
+  .loading-mask {
+    display: none; position: absolute; inset: 0; background: rgba(255,255,255,.9);
+    align-items: center; justify-content: center; z-index: 5;
+  }
+  .loading-mask.show { display: flex; }
+  .spinner {
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 3px solid #d9ecff; border-top-color: #409eff;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .message {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    min-width: 380px; max-width: 90vw;
+    border-radius: 4px; padding: 15px 19px;
+    display: none; align-items: center; gap: 8px;
+    z-index: 3000; box-shadow: 0 2px 12px rgba(0,0,0,.08);
+    font-size: 14px;
+  }
+  .message.show { display: flex; }
+  .message.err { background: #fef0f0; border: 1px solid #fde2e2; color: #f56c6c; }
+  .message.ok { background: #f0f9eb; border: 1px solid #e1f3d8; color: #67c23a; }
+  .tools { color: #409eff; margin-left: 8px; font-size: 16px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="side-title">体验营 <span class="fold">☰</span></div>
+    <nav class="menu">
+      <div class="menu-item active">客户管理</div>
+      <div class="menu-item">AB号审核</div>
+      <div class="menu-item">线索查询</div>
+      <div class="menu-item">线索追溯</div>
+      <div class="menu-item">专属售卖链接</div>
+      <div class="menu-sub">转介绍 <span class="caret">▸</span></div>
+      <div class="menu-item">非服务期客户</div>
+      <div class="menu-item">抖音小店</div>
+      <div class="menu-item">仅加微客户线索</div>
+      <div class="menu-sub">运营工具 <span class="caret">▸</span></div>
+      <div class="menu-sub">订单管理 <span class="caret">▸</span></div>
+      <div class="menu-sub">数据统计 <span class="caret">▸</span></div>
+      <div class="menu-sub">坐席管理 <span class="caret">▸</span></div>
+      <div class="menu-item">小程序</div>
+      <div class="menu-item">企业微信直播</div>
+      <div class="menu-sub">配置 <span class="caret">▸</span></div>
+    </nav>
+  </aside>
+  <section class="main">
+    <header class="navbar">
+      <div class="nav-top">
+        <div class="crumb">客户管理</div>
+        <div class="right-menu">
+          <svg class="bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9a6 6 0 1 1 12 0c0 7 3 7 3 7H3s3 0 3-7"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+          <span class="user-name">王敏</span>
+          <div class="avatar-wrap">
+            <div class="avatar">王</div>
+            <span class="caret-user">▼</span>
+          </div>
+        </div>
+      </div>
+      <div class="router-tabs"><span class="router-tab">客户管理</span></div>
+    </header>
+    <div class="app-main">
+      <div class="content-view">
+        <div class="page-tabs">
+          <div class="page-tab active">当期客户</div>
+          <div class="page-tab">数据库</div>
+          <div class="page-tab">已转化客户</div>
+          <div class="page-tab">往期非转化</div>
+        </div>
+        <div class="filters">
+          <div class="fi"><label>手机号：</label><input class="el-input w120" placeholder="请输入手机号"></div>
+          <div class="fi"><label>洋葱ID：</label><input class="el-input w120" placeholder="请输入洋葱ID"></div>
+          <div class="fi"><label>微信昵称：</label><input class="el-input w130" placeholder="请输入微信昵称"></div>
+          <div class="fi"><label>期数:</label>
+            <select class="el-select w100"><option>202610</option><option>202609</option></select>
+          </div>
+          <div class="fi"><label>组织架构:</label>
+            <select class="el-select w180"><option>请选择</option><option>武汉电销 / 一组</option></select>
+          </div>
+          <div class="fi"><label>坐席归属：</label>
+            <select class="el-select w100"><option>请选择</option><option>王敏</option><option>李强</option></select>
+          </div>
+          <div class="fi"><label>锁定：</label>
+            <select class="el-select w140"><option>请选择是否锁定</option><option>已锁定</option><option>未锁定</option></select>
+          </div>
+          <div class="fi"><label>加微：</label><div class="radios"><span class="radio"><i class="dot"></i>是</span><span class="radio"><i class="dot"></i>否</span></div></div>
+          <div class="fi"><label>学习：</label><div class="radios"><span class="radio"><i class="dot"></i>是</span><span class="radio"><i class="dot"></i>否</span></div></div>
+          <div class="fi"><label>当前是否注册：</label><div class="radios"><span class="radio"><i class="dot"></i>是</span><span class="radio"><i class="dot"></i>否</span></div></div>
+          <div class="fi"><label>是否有转介绍：</label><div class="radios"><span class="radio"><i class="dot"></i>是</span><span class="radio"><i class="dot"></i>否</span></div></div>
+          <div class="fi"><label>任务状态:</label>
+            <select class="el-select w100"><option>请选择</option><option>进行中</option><option>已完成</option><option>已逾期</option></select>
+          </div>
+          <div class="fi"><label>任务名称：</label>
+            <select class="el-select w130"><option>请选择</option><option>新线索建联</option><option>催课或回访</option></select>
+          </div>
+          <div class="fi"><label>家庭标签：</label>
+            <select class="el-select w130"><option>请选择</option></select>
+          </div>
+          <div class="fi"><label>分配时间:</label><div class="el-date">开始时间　至　结束时间</div></div>
+          <div class="fi"><label>跟进时间:</label><div class="el-date">开始时间　至　结束时间</div></div>
+        </div>
+        <div class="toolbar">
+          <div class="left">
+            <button class="el-btn primary" type="button">查询</button>
+            <button class="el-btn" type="button">重置</button>
+            <button class="el-btn" type="button">高级筛选</button>
+            <button class="el-btn" type="button">一键导出</button>
+          </div>
+          <div class="right">
+            <button class="el-btn primary" id="openImport" type="button">批量导入</button>
+            <button class="el-btn primary" type="button">单个录入客户</button>
+            <button class="el-btn primary" type="button">批量转线索</button>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table class="data">
+            <thead>
+              <tr>
+                <th class="sticky-l c0" style="width:48px"><i class="chk"></i></th>
+                <th class="sticky-l c1">期数</th>
+                <th class="sticky-l c2">洋葱ID</th>
+                <th class="sticky-l c3">手机号</th>
+                <th>家庭标签</th>
+                <th>跟进状态</th>
+                <th>微信昵称</th>
+                <th>剩余在库时长</th>
+                <th>分配后累计学习时长</th>
+                <th>当天累计学习时长</th>
+                <th>客户类型</th>
+                <th>跟进备注</th>
+                <th>跟进时间</th>
+                <th>意向度</th>
+                <th>当前所在业务线</th>
+                <th>服务期到期时间</th>
+                <th>身份</th>
+                <th>年级</th>
+                <th>最近一次登录时间</th>
+                <th>是否加V</th>
+                <th>激活时间</th>
+                <th>到期时间</th>
+                <th>坐席归属</th>
+                <th>线索分配时间</th>
+                <th>任务名称</th>
+                <th>任务状态</th>
+                <th>任务剩余时间</th>
+                <th class="ops">操作 <span class="tools">⚙</span></th>
+              </tr>
+            </thead>
+            <tbody id="customerBody"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <span class="pg">‹</span>
+          <span class="pg on">1</span>
+          <span class="pg">›</span>
+          <span>共 <b id="totalCount">2</b> 条</span>
+          <span>前往</span>
+          <span class="pg" style="min-width:46px">1</span>
+          <span>页</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="mask" id="importMask">
+  <div class="dialog">
+    <div class="dialog-hd">导入客户</div>
+    <div class="dialog-bd">
+      <div class="loading-mask" id="importLoading"><div class="spinner"></div></div>
+      <div class="form-row">
+        <div class="lab">导入客户：</div>
+        <div class="ctl">
+          <button class="el-btn primary" id="pickFile" type="button">点击上传</button>
+          <div><span class="tpl-link" id="downloadTpl">下载导入模版</span></div>
+          <div class="file-item" id="fileItem" style="display:none">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#909399" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+            <span class="name">当期客户导入.xlsx</span>
+            <span class="tick">✓</span>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="lab">导入说明：</div>
+        <div class="ctl note">
+          <div>以下情况无法导入成功：</div>
+          <div>1、当导入的手机号已经存在客户管理中</div>
+          <div>2、填写的渠道、订单号、第三订单号不在洋葱系统中</div>
+          <div>3、手机号未注册洋葱账号，且本次注册失败</div>
+          <div>4、销售已分配，但为该用户申请手机号失败</div>
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:0">
+        <div class="lab"></div>
+        <div class="ctl">
+          <button class="el-btn" id="cancelImport" type="button">取消</button>
+          <button class="el-btn primary" id="submitImport" type="button" style="margin-left:12px">提交</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mask" id="resultMask">
+  <div class="dialog">
+    <div class="dialog-hd">导入结果 <span class="dialog-x" id="closeResult">×</span></div>
+    <div class="dialog-bd" style="padding-top:8px">
+      <div class="import-summary">2条导入成功，2条导入失败</div>
+      <div style="overflow:auto">
+        <table class="result-table">
+          <thead>
+            <tr><th>手机号</th><th>渠道</th><th>洋葱账号</th><th>分配销售</th><th>申请手机号</th><th>结果</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>13900001111</td><td>小红书</td><td>已有 10088011</td><td>王敏</td><td>已申请</td><td>导入成功</td></tr>
+            <tr><td>13900002222</td><td>抖音</td><td>新注册 10088022</td><td>李强</td><td>已申请</td><td>导入成功</td></tr>
+            <tr><td>13900003333</td><td>百度</td><td>—</td><td>—</td><td>未申请</td><td class="danger">洋葱账号注册失败</td></tr>
+            <tr><td>13900004444</td><td>小红书</td><td>已有 10088044</td><td>王敏</td><td class="danger">申请失败</td><td>已入库，手机号申请失败</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="dialog-ft">
+      <button class="el-btn" id="downloadFail" type="button">下载导入失败信息</button>
+      <button class="el-btn" id="know" type="button">我知道了</button>
+    </div>
+  </div>
+</div>
+
+<div class="message" id="toast"></div>
+
+<script>
+  var fileReady = false;
+  var importing = false;
+  var imported = false;
+  var rows = [
+    { period: "202610", onion: "10086001", phone: "13800001001", family: "—", follow: "已联系未开课", nick: "小葱", remain: "12天", learn: "00:36:12", today: "00:08:20", type: "新线索", remark: "今晚回访", followAt: "2026-10-15 19:20", intent: "中意向度", team: "体验营", end: "2026-10-28 23:59:59", role: "学生", grade: "七年级", login: "2026-10-15 21:03", wx: "否", act: "—", exp: "—", seat: "王敏", assign: "2026-10-14 10:12", task: "新线索建联", status: "进行中", left: "1天" },
+    { period: "202610", onion: "10086002", phone: "13800001002", family: "—", follow: "未联系上", nick: "洋葱妈妈", remain: "11天", learn: "00:00:00", today: "00:00:00", type: "新线索", remark: "—", followAt: "—", intent: "无意向度", team: "体验营", end: "2026-10-28 23:59:59", role: "家长", grade: "八年级", login: "—", wx: "否", act: "—", exp: "—", seat: "李强", assign: "2026-10-14 11:06", task: "新线索建联", status: "进行中", left: "1天" }
+  ];
+
+  function ops() {
+    return '<button class="el-btn plain" type="button">复制激活链接</button>'
+      + '<button class="el-btn plain" type="button">一键外呼</button>'
+      + '<button class="el-btn plain" type="button">用户详情</button>'
+      + '<button class="el-btn plain" type="button">锁定</button>'
+      + '<button class="el-btn plain" type="button">修改</button>'
+      + '<button class="el-btn plain" type="button">发送短信</button>';
+  }
+  function cell(text, danger) {
+    return '<td' + (danger ? ' class="danger"' : '') + '>' + text + '</td>';
+  }
+  function render() {
+    var html = rows.map(function (r) {
+      return '<tr>'
+        + '<td class="sticky-l c0"><i class="chk"></i></td>'
+        + '<td class="sticky-l c1">' + r.period + '</td>'
+        + '<td class="sticky-l c2">' + (r.onion ? r.onion : '<span class="danger">未注册</span>') + '</td>'
+        + '<td class="sticky-l c3">' + r.phone + '</td>'
+        + cell(r.family) + cell(r.follow) + cell(r.nick)
+        + cell(r.remain, true)
+        + cell(r.learn) + cell(r.today) + cell(r.type) + cell(r.remark) + cell(r.followAt) + cell(r.intent)
+        + cell(r.team, true)
+        + cell(r.end) + cell(r.role) + cell(r.grade) + cell(r.login) + cell(r.wx) + cell(r.act) + cell(r.exp)
+        + cell(r.seat) + cell(r.assign) + cell(r.task) + cell(r.status) + cell(r.left)
+        + '<td class="ops">' + ops() + '</td></tr>';
+    }).join("");
+    document.getElementById("customerBody").innerHTML = html;
+    document.getElementById("totalCount").textContent = String(rows.length);
+  }
+  render();
+
+  function show(id) { document.getElementById(id).classList.add("show"); }
+  function hide(id) { document.getElementById(id).classList.remove("show"); }
+  function toast(msg, isErr) {
+    var el = document.getElementById("toast");
+    el.textContent = msg;
+    el.className = "message show " + (isErr ? "err" : "ok");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { el.className = "message"; }, 2200);
+  }
+
+  document.getElementById("openImport").onclick = function () {
+    fileReady = false;
+    importing = false;
+    document.getElementById("fileItem").style.display = "none";
+    document.getElementById("importLoading").classList.remove("show");
+    document.getElementById("submitImport").disabled = false;
+    document.getElementById("pickFile").disabled = false;
+    show("importMask");
+  };
+  document.getElementById("cancelImport").onclick = function () { if (!importing) hide("importMask"); };
+  document.getElementById("importMask").onclick = function (e) {
+    if (e.target.id === "importMask" && !importing) hide("importMask");
+  };
+  document.getElementById("downloadTpl").onclick = function () { toast("已打开导入模版"); };
+  document.getElementById("pickFile").onclick = function () {
+    fileReady = true;
+    document.getElementById("fileItem").style.display = "flex";
+  };
+  document.getElementById("submitImport").onclick = function () {
+    if (!fileReady) {
+      toast("请上传文件", true);
+      return;
+    }
+    importing = true;
+    document.getElementById("submitImport").disabled = true;
+    document.getElementById("pickFile").disabled = true;
+    document.getElementById("importLoading").classList.add("show");
+    setTimeout(function () {
+      importing = false;
+      hide("importMask");
+      show("resultMask");
+      if (!imported) {
+        imported = true;
+        rows.unshift(
+          { period: "202610", onion: "10088044", phone: "13900004444", family: "—", follow: "—", nick: "—", remain: "14天", learn: "00:00:00", today: "00:00:00", type: "新线索", remark: "—", followAt: "—", intent: "—", team: "体验营", end: "2026-10-30 23:59:59", role: "—", grade: "七年级", login: "—", wx: "否", act: "—", exp: "—", seat: "王敏", assign: "2026-10-16 12:20", task: "—", status: "—", left: "—" },
+          { period: "202610", onion: "10088011", phone: "13900001111", family: "—", follow: "—", nick: "—", remain: "14天", learn: "00:00:00", today: "00:00:00", type: "新线索", remark: "—", followAt: "—", intent: "—", team: "体验营", end: "2026-10-30 23:59:59", role: "—", grade: "七年级", login: "—", wx: "否", act: "—", exp: "—", seat: "王敏", assign: "2026-10-16 12:20", task: "—", status: "—", left: "—" },
+          { period: "202610", onion: "10088022", phone: "13900002222", family: "—", follow: "—", nick: "—", remain: "14天", learn: "00:00:00", today: "00:00:00", type: "新线索", remark: "—", followAt: "—", intent: "—", team: "体验营", end: "2026-10-30 23:59:59", role: "—", grade: "八年级", login: "—", wx: "否", act: "—", exp: "—", seat: "李强", assign: "2026-10-16 12:20", task: "—", status: "—", left: "—" }
+        );
+        render();
+      }
+    }, 900);
+  };
+
+  function closeResult() { hide("resultMask"); }
+  document.getElementById("closeResult").onclick = closeResult;
+  document.getElementById("know").onclick = closeResult;
+  document.getElementById("downloadFail").onclick = function () { toast("已下载导入失败信息"); };
+  document.getElementById("resultMask").onclick = function (e) {
+    if (e.target.id === "resultMask") hide("resultMask");
+  };
+</script>
+</body>
+</html>
