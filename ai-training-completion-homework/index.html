@@ -172,6 +172,7 @@
   .hint { color:#909399; font-size:12px; white-space:nowrap; }
   .q-item { border:1px solid #ebeef5; border-radius:6px; padding:12px; margin-bottom:10px; background:#fafafa; }
   .q-hd { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .q-title { font-weight:600; line-height:1.6; margin-bottom:8px; }
   .count { text-align:right; color:#909399; font-size:12px; }
   .answer { background:#f5f7fa; border-radius:4px; padding:10px 12px; margin:8px 0 14px; white-space:pre-wrap; }
   .grade-list { display:flex; flex-wrap:wrap; gap:12px; }
@@ -197,6 +198,16 @@
   .side-item.active { background:#ecf5ff; }
   .doc-page { background:#fff; color:#303133; width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
   .empty { text-align:center; color:#909399; padding:28px 0; }
+  .exam-hold { min-height:220px; display:flex; align-items:center; justify-content:center; color:#909399; font-size:16px; text-align:center; padding:24px; }
+  .exam-score { font-size:22px; font-weight:600; margin:4px 0 12px; }
+  .exam-score.pass { color:#67c23a; }
+  .exam-score.fail { color:#f56c6c; }
+  .opt-line { display:flex; align-items:flex-start; gap:8px; margin:6px 0; color:#303133; }
+  .ans-row { margin-top:8px; font-size:13px; }
+  .ans-ok { color:#67c23a; }
+  .ans-no { color:#f56c6c; }
+  .ans-key { color:#409eff; }
+  .ans-ana { margin-top:4px; color:#606266; }
   .back-row { margin-bottom:12px; }
   @media (max-width: 900px) {
     .sidebar { display:none; }
@@ -230,6 +241,7 @@
       <div class="menu-group" id="menu-exam">
         <div class="menu-sub" id="toggle-exam"><svg class="menu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z"/></svg><span>在线考试</span><i class="menu-arrow"></i></div>
         <div class="menu-children">
+          <div class="menu-item" data-nav="my-exam">我的考试</div>
           <div class="menu-item" data-nav="exam">考试管理</div>
         </div>
       </div>
@@ -371,11 +383,12 @@ const project = {
   order: "按课程顺序",
   items: [
     { uid: 1, kind: "course", name: "开场话术演示", points: "10", done: true, granted: false },
+    { uid: 11, kind: "exam", name: "产品通关考试", examId: 2, done: false },
     { uid: 2, kind: "homework", name: "新人首周作业", hwId: 1, done: false, answers: [] },
     { uid: 3, kind: "course", name: "成交案例复盘", points: "20", done: false, granted: false }
   ]
 };
-let itemSeq = 10;
+let itemSeq = 11;
 let editProject = null;
 let editProjectIndex = -1;
 let projTab = "info";
@@ -384,7 +397,51 @@ const exams = [{
   id: 1, name: "新人结业考试", points: "", status: "未开始", description: "完成全部课程后参加",
   paperName: "新人结业试卷", paperScore: 100, passScore: 60,
   startAt: "2026-10-20 09:00:00", endAt: "2026-10-31 18:00:00",
-  durationMinutes: 60, memberCount: 46, attendedCount: 0
+  durationMinutes: 60, memberCount: 2, attendedCount: 0,
+  members: ["李营平", "张伟"],
+  questions: [
+    { type: "单选", content: "新人结业前必须完成哪一项？", options: ["只看视频", "完成项目课程", "只交作业", "不限"], answer: "B", score: 100, analysis: "结业以项目课程完成为准。" }
+  ],
+  attempts: {}
+}, {
+  id: 2, name: "产品通关考试", points: "20", status: "进行中", description: "产品知识随堂测验",
+  paperName: "产品通关试卷", paperScore: 100, passScore: 60,
+  startAt: "2026-10-01 09:00:00", endAt: "2026-10-31 18:00:00",
+  durationMinutes: 30, memberCount: 2, attendedCount: 0,
+  members: ["李营平", "张伟"],
+  questions: [
+    { type: "单选", content: "开场白应控制在多久以内？", options: ["10秒", "20秒", "1分钟", "不限"], answer: "B", score: 50, analysis: "开场要短，二十秒内说清来意。" },
+    { type: "判断", content: "客户说考虑一下时，应立刻结束通话。", options: ["正确", "错误"], answer: "错误", score: 50, analysis: "" }
+  ],
+  attempts: {}
+}, {
+  id: 3, name: "销售规范抽测", points: "", status: "进行中", description: "仅指定人员参加",
+  paperName: "销售规范试卷", paperScore: 100, passScore: 60,
+  startAt: "2026-10-01 09:00:00", endAt: "2026-10-31 18:00:00",
+  durationMinutes: 20, memberCount: 2, attendedCount: 0,
+  members: ["张伟", "陈静"],
+  questions: [
+    { type: "单选", content: "通话中能否承诺未上线的优惠？", options: ["可以", "不可以"], answer: "B", score: 100, analysis: "未上线优惠不能对客户承诺。" }
+  ],
+  attempts: {}
+}, {
+  id: 4, name: "十月月考", points: "", status: "已结束", description: "已过考试时间",
+  paperName: "十月月考试卷", paperScore: 100, passScore: 60,
+  startAt: "2026-09-01 09:00:00", endAt: "2026-09-30 18:00:00",
+  durationMinutes: 60, memberCount: 1, attendedCount: 0,
+  members: ["李营平"],
+  questions: [
+    { type: "判断", content: "月考可以补考。", options: ["正确", "错误"], answer: "错误", score: 100, analysis: "" }
+  ],
+  attempts: {}
+}, {
+  id: 5, name: "话术草稿考", points: "", status: "草稿", description: "",
+  paperName: "话术试卷", paperScore: 100, passScore: 60,
+  startAt: "", endAt: "",
+  durationMinutes: 30, memberCount: 0, attendedCount: 0,
+  members: [],
+  questions: [],
+  attempts: {}
 }];
 const pointUsers = [
   { id: 1, name: "张伟", dept: "华东一部", points: 128 },
@@ -406,6 +463,8 @@ let pointTab = "overview";
 let pointName = "";
 let logFilter = { name: "", type: "", from: "", to: "" };
 let learnTab = "course";
+let myExamTab = "pending";
+let takingExamId = 0;
 let learnCourseTab = "";
 let learnProjectTab = "";
 let expandedItemUid = 2;
@@ -509,7 +568,8 @@ function setCrumb(parts) {
 }
 
 function render() {
-  const nav = view === "player" || view === "proj-learn" ? "learn" : view === "hw-detail" ? "homework" : view;
+  const nav = view === "player" || view === "proj-learn" ? "learn" : view === "hw-detail" ? "homework" : view === "exam-take" ? "my-exam" : view;
+  if (nav === "my-exam" || nav === "exam") document.getElementById("menu-exam").classList.add("open");
   document.querySelectorAll(".menu-item[data-nav]").forEach(el => {
     el.classList.toggle("active", el.dataset.nav === nav);
   });
@@ -521,6 +581,8 @@ function render() {
   else if (view === "project") renderProject();
   else if (view === "proj-learn") renderProjLearn();
   else if (view === "exam") renderExam();
+  else if (view === "my-exam") renderMyExam();
+  else if (view === "exam-take") renderExamTake();
   else if (view === "points") renderPoints();
 }
 
@@ -1501,10 +1563,38 @@ function sanitizePositive(value) {
 function isPositive(value) {
   return /^\d+(\.\d+)?$/.test(String(value)) && Number(value) > 0;
 }
+function examById(id) { return exams.find(e => e.id === id); }
+function examGate(ex) {
+  if (!ex) return "missing";
+  if (ex.attempts && ex.attempts[CURRENT_USER]) return "done";
+  if (!(ex.members || []).includes(CURRENT_USER)) return "out";
+  const start = Date.parse(String(ex.startAt || "").replace(/-/g, "/"));
+  const end = Date.parse(String(ex.endAt || "").replace(/-/g, "/"));
+  const now = Date.now();
+  if (start && now < start) return "early";
+  if (end && now > end) return "late";
+  return "open";
+}
+function predecessorDone(item) {
+  if (item.done) return true;
+  if (item.kind !== "exam") return false;
+  const gate = examGate(examById(item.examId));
+  return gate === "done" || gate === "out" || gate === "late";
+}
 function isItemLocked(item) {
   if (project.order !== "按课程顺序") return false;
   const idx = project.items.findIndex(x => x.uid === item.uid);
-  return idx > 0 && !project.items[idx - 1].done;
+  return idx > 0 && !predecessorDone(project.items[idx - 1]);
+}
+function itemKindTag(it) {
+  if (it.kind === "homework") return ` <span class="tag orange">作业</span>`;
+  if (it.kind === "exam") return ` <span class="tag blue">考试</span>`;
+  return "";
+}
+function itemStatusTag(it) {
+  if (it.kind === "homework") return tagOf("已上架");
+  if (it.kind === "exam") return examTag((examById(it.examId) || {}).status || "未开始");
+  return tagOf("已发布");
 }
 function renderProject() {
   setCrumb([{ text: "在线学习" }, { text: "学习项目" }]);
@@ -1584,8 +1674,8 @@ function openProjectDetail(index) {
       <thead><tr><th style="width:60px;text-align:center">顺序</th><th>课程名称</th><th style="width:100px">课程状态</th><th style="width:100px;text-align:center">完成人数</th></tr></thead>
       <tbody>${p.items.map((it, i) => `<tr>
         <td style="text-align:center">${i + 1}</td>
-        <td>${esc(it.name)}</td>
-        <td>${it.kind === "homework" ? tagOf("已上架") : tagOf("已发布")}</td>
+        <td>${esc(it.name)}${itemKindTag(it)}</td>
+        <td>${itemStatusTag(it)}</td>
         <td style="text-align:center">${it.kind === "course" ? (it.done ? "1" : "0") + "/" + (p.learnerCount || 0) : "—"}</td>
       </tr>`).join("")}</tbody>
     </table>
@@ -1617,7 +1707,7 @@ function drawProjectEditor(isEdit) {
   const pointsField = p.pointRule === "项目制"
     ? `<div class="form-row"><div class="form-label"><span class="req">*</span>项目总积分</div><div class="form-ctrl"><input class="input" id="proj-points" value="${esc(p.projectPoints)}" placeholder="请输入大于 0 的数字" style="width:220px"><div class="help">完成项目内全部课程后发放一次</div></div></div>`
     : p.pointRule === "课程制" && infoVisible
-    ? `<div class="form-row"><div class="form-label"><span class="req">*</span>课程积分</div><div class="form-ctrl"><input class="input" id="course-points" value="${esc(p.coursePoints || "")}" placeholder="请输入大于 0 的数字" style="width:220px"><div class="help">只填一个积分。每完成一门课程或提交一次作业，都发放该积分。</div></div></div>`
+    ? `<div class="form-row"><div class="form-label"><span class="req">*</span>课程积分</div><div class="form-ctrl"><input class="input" id="course-points" value="${esc(p.coursePoints || "")}" placeholder="请输入大于 0 的数字" style="width:220px"><div class="help">只填一个积分。每完成一门课程、提交一次作业或完成项目中的一次考试，都发放该积分。考试本身另有积分时，再发放一次考试积分。</div></div></div>`
     : "";
   openDrawer(isEdit ? "编辑项目 — " + (p.name || "未命名") : "新建学习项目", `
     ${isEdit ? `<div class="tabs">
@@ -1633,13 +1723,13 @@ function drawProjectEditor(isEdit) {
         <label><input type="radio" name="point-rule" value="" ${p.pointRule===""?"checked":""}> 不设置</label>
         <label><input type="radio" name="point-rule" value="项目制" ${p.pointRule==="项目制"?"checked":""}> 项目制</label>
         <label><input type="radio" name="point-rule" value="课程制" ${p.pointRule==="课程制"?"checked":""}> 课程制</label>
-        <div class="help">非必填。不选择表示该项目没有积分。项目制需完成全部课程才发放；课程制每完成一门课程或提交一次作业，都发放课程积分。</div>
+        <div class="help">非必填。不选择表示该项目没有积分。项目制需完成全部课程才发放；课程制每完成一门课程、提交一次作业或完成项目中的一次考试，都发放课程积分。</div>
       </div></div>
       ${pointsField}
       <div class="form-row"><div class="form-label"><span class="req">*</span>学习顺序</div><div class="form-ctrl radios">
         <label><input type="radio" name="learn-order" value="按课程顺序" ${p.order==="按课程顺序"?"checked":""}> 按课程顺序</label>
         <label><input type="radio" name="learn-order" value="自由选择" ${p.order==="自由选择"?"checked":""}> 自由选择</label>
-        <div class="help">按课程顺序时，完成上一项后才可学习下一项。自由选择时，课程和作业都可直接学习。</div>
+        <div class="help">按课程顺序时，完成上一项后才可学习下一项。自由选择时，课程、作业和考试都可直接学习。</div>
       </div></div>
     ` : ""}
     ${projTab==="course" || !isEdit ? `
@@ -1647,9 +1737,11 @@ function drawProjectEditor(isEdit) {
       <div class="cw-bar">
         <button class="btn primary" id="pick-course">+ 从课程池添加课程</button>
         <button class="btn primary" id="pick-hw">从作业库中添加作业</button>
+        <button class="btn primary" id="pick-exam">从考试库中添加考试</button>
         <span class="hint" style="margin-left:auto">学员端按此顺序展示，已选 ${p.items.length} / 20</span>
       </div>
       <div id="hw-pick"></div>
+      <div id="exam-pick"></div>
       <div class="table-scroll"><table>
         <thead><tr>
           <th style="width:60px;text-align:center">顺序</th>
@@ -1663,9 +1755,9 @@ function drawProjectEditor(isEdit) {
         <tbody>
           ${p.items.map((it, i) => `<tr>
             <td style="text-align:center">${i + 1}</td>
-            <td>${esc(it.name)}${it.kind==="homework" ? ` <span class="tag orange">作业</span>` : ""}</td>
-            <td>${it.kind==="homework" ? tagOf("已上架") : tagOf("已发布")}</td>
-            ${isEdit ? `<td style="text-align:center">${it.kind==="homework" ? "—" : "3"}</td>` : ""}
+            <td>${esc(it.name)}${itemKindTag(it)}</td>
+            <td>${itemStatusTag(it)}</td>
+            ${isEdit ? `<td style="text-align:center">${it.kind==="course" ? "3" : "—"}</td>` : ""}
             <td style="text-align:center">${it.kind==="course" ? "0" : "—"}</td>
             <td>
               <button class="icon-btn" data-move="${i}" data-dir="-1" ${i===0?"disabled":""} title="上移">↑</button>
@@ -1725,6 +1817,8 @@ function bindProjectEditor(isEdit) {
   if (coursePts) coursePts.oninput = () => { coursePts.value = sanitizePositive(coursePts.value); editProject.coursePoints = coursePts.value; };
   const pickHw = document.getElementById("pick-hw");
   if (pickHw) pickHw.onclick = () => toggleHomeworkPick(isEdit);
+  const pickExam = document.getElementById("pick-exam");
+  if (pickExam) pickExam.onclick = () => toggleExamPick(isEdit);
   const pickCourse = document.getElementById("pick-course");
   if (pickCourse) pickCourse.onclick = () => {
     readProjectBasics();
@@ -1760,6 +1854,8 @@ function toggleHomeworkPick(isEdit) {
   const box = document.getElementById("hw-pick");
   if (!box) return;
   if (box.dataset.open === "1") { box.innerHTML = ""; box.dataset.open = ""; return; }
+  const examBox = document.getElementById("exam-pick");
+  if (examBox) { examBox.innerHTML = ""; examBox.dataset.open = ""; }
   box.dataset.open = "1";
   const picked = new Set();
   box.innerHTML = `<div class="inline-panel">
@@ -1780,7 +1876,15 @@ function toggleHomeworkPick(isEdit) {
     });
     const keyword = document.getElementById("hw-kw").value.trim();
     const list = homeworks.filter(h => h.status === "上架" && (!keyword || h.name.includes(keyword)));
-    document.getElementById("hw-pick-list").innerHTML = list.map(h => `<label style="display:block;margin-bottom:8px"><input type="checkbox" class="hw-check" value="${h.id}" ${picked.has(h.id) ? "checked" : ""}> ${esc(h.name)}（${h.questions.length} 题）</label>`).join("") || `<div class="empty">暂无匹配的上架作业</div>`;
+    document.getElementById("hw-pick-list").innerHTML = list.length ? `<table>
+      <thead><tr><th style="width:42px"></th><th>作业名称</th><th style="width:100px">作业题数</th><th style="width:100px">状态</th></tr></thead>
+      <tbody>${list.map(h => `<tr>
+        <td><input type="checkbox" class="hw-check" value="${h.id}" ${picked.has(h.id) ? "checked" : ""}></td>
+        <td>${esc(h.name)}</td>
+        <td>${h.questions.length}</td>
+        <td>${tagOf("已上架")}</td>
+      </tr>`).join("")}</tbody>
+    </table>` : `<div class="empty">暂无匹配的上架作业</div>`;
   };
   paint();
   document.getElementById("hw-kw").oninput = paint;
@@ -1796,6 +1900,61 @@ function toggleHomeworkPick(isEdit) {
       }
       if (editProject.items.length >= 20) { toast("项目课程不超过 20 门", "warn"); break; }
       editProject.items.push({ uid: ++itemSeq, kind: "homework", name: hw.name, hwId: id, done: false, answers: [] });
+    }
+    drawProjectEditor(isEdit);
+  };
+}
+function toggleExamPick(isEdit) {
+  const box = document.getElementById("exam-pick");
+  if (!box) return;
+  if (box.dataset.open === "1") { box.innerHTML = ""; box.dataset.open = ""; return; }
+  const hwBox = document.getElementById("hw-pick");
+  if (hwBox) { hwBox.innerHTML = ""; hwBox.dataset.open = ""; }
+  box.dataset.open = "1";
+  const picked = new Set();
+  box.innerHTML = `<div class="inline-panel">
+    <div class="section-title">选择考试</div>
+    <div class="filter-form">
+      <div class="fi"><input class="input" id="exam-kw" placeholder="搜索考试名称" style="width:180px"></div>
+      <div class="fi"><span class="hint">仅可选择「未开始」「进行中」的考试</span></div>
+    </div>
+    <div id="exam-pick-list"></div>
+    <button class="btn primary" id="exam-pick-ok">确定</button>
+    <button class="btn" id="exam-pick-cancel">取消</button>
+  </div>`;
+  const paint = () => {
+    document.querySelectorAll(".exam-check").forEach(el => {
+      const id = Number(el.value);
+      if (el.checked) picked.add(id);
+      else picked.delete(id);
+    });
+    const keyword = document.getElementById("exam-kw").value.trim();
+    const list = exams.filter(ex => (ex.status === "未开始" || ex.status === "进行中") && (!keyword || ex.name.includes(keyword)));
+    const timeOf = ex => ex.startAt && ex.endAt ? esc(ex.startAt) + " ~ " + esc(ex.endAt) : "—";
+    document.getElementById("exam-pick-list").innerHTML = list.length ? `<table>
+      <thead><tr><th style="width:42px"></th><th>考试名称</th><th style="min-width:280px">考试时间</th><th style="width:100px">状态</th></tr></thead>
+      <tbody>${list.map(ex => `<tr>
+        <td><input type="checkbox" class="exam-check" value="${ex.id}" ${picked.has(ex.id) ? "checked" : ""}></td>
+        <td>${esc(ex.name)}</td>
+        <td>${timeOf(ex)}</td>
+        <td>${examTag(ex.status)}</td>
+      </tr>`).join("")}</tbody>
+    </table>` : `<div class="empty">暂无匹配的考试</div>`;
+  };
+  paint();
+  document.getElementById("exam-kw").oninput = paint;
+  document.getElementById("exam-pick-cancel").onclick = () => { box.innerHTML = ""; box.dataset.open = ""; };
+  document.getElementById("exam-pick-ok").onclick = () => {
+    readProjectBasics();
+    const ids = [...document.querySelectorAll(".exam-check:checked")].map(el => Number(el.value));
+    for (const id of ids) {
+      const ex = examById(id);
+      if (editProject.items.some(it => it.kind === "exam" && it.examId === id)) {
+        toast("该考试已添加", "warn");
+        continue;
+      }
+      if (editProject.items.length >= 20) { toast("项目课程不超过 20 门", "warn"); break; }
+      editProject.items.push({ uid: ++itemSeq, kind: "exam", name: ex.name, examId: id, done: false });
     }
     drawProjectEditor(isEdit);
   };
@@ -1855,13 +2014,13 @@ function renderProjLearn() {
                   <span>${open ? "⌄" : "›"}</span>
                 </div>
                 ${open ? `<div class="course-cws"><div class="cw ${it.uid === item.uid ? "active" : ""} ${locked ? "locked" : ""}" data-item="${it.uid}">
-                  <span>${it.kind === "homework" ? "写" : "播"}</span>
-                  <div><div>${it.kind === "homework" ? "作业题目" : esc(it.name)}</div><div class="cw-sub">${it.kind === "homework" ? "作业" : "课件"} · ${sub}</div></div>
+                  <span>${it.kind === "homework" ? "写" : it.kind === "exam" ? "考" : "播"}</span>
+                  <div><div>${it.kind === "homework" ? "作业题目" : it.kind === "exam" ? "考试内容" : esc(it.name)}</div><div class="cw-sub">${it.kind === "homework" ? "作业" : it.kind === "exam" ? "考试" : "课件"} · ${sub}</div></div>
                 </div></div>` : ""}
               </div>`;
             }).join("")}
           </div>
-          <div class="stage-tip">${project.order === "按课程顺序" ? "需按顺序学习，完成上一项后解锁下一项" : "可自由选择课程和作业"}</div>
+          <div class="stage-tip">${project.order === "按课程顺序" ? "需按顺序学习，完成上一项后解锁下一项" : "可自由选择课程、作业和考试"}</div>
         </div>
       </div>
     </div>`;
@@ -1881,6 +2040,7 @@ function renderProjLearn() {
   });
   const main = document.getElementById("learn-main");
   if (item.kind === "homework" && !isItemLocked(item)) renderHomeworkAnswer(main, item);
+  else if (item.kind === "exam" && !isItemLocked(item)) renderExamStage(main, examById(item.examId), () => renderProjLearn());
   else main.innerHTML = `<div class="stage-now">${esc(item.name)}</div><div class="empty">${item.done ? "该课程已完成，不因之后新增或修改积分而补发。" : "当前为课程，学习过程沿用现有课程学习。完成该课程后，按当时的积分规则发放。"}</div>`;
 }
 function renderHomeworkAnswer(main, item) {
@@ -1951,6 +2111,169 @@ function renderHomeworkAnswer(main, item) {
     renderProjLearn();
   };
 }
+function optionLetter(index) { return "ABCDEFGH"[index] || String(index + 1); }
+function examResultHtml(ex, attempt) {
+  const passed = attempt.score >= Number(ex.passScore || 0);
+  return `
+    <div class="section-title">${esc(ex.name)}</div>
+    <div class="exam-score ${passed ? "pass" : "fail"}">${attempt.score} 分 · ${passed ? "合格" : "不合格"}</div>
+    <p class="help">总分 ${ex.paperScore || 100} 分，合格分 ${ex.passScore || 0} 分。提交时间 ${esc(attempt.submittedAt)}</p>
+    ${attempt.details.map((q, i) => `<div class="q-box">
+      <div class="q-title">${i + 1}.（${esc(q.type)}，${q.score} 分）${esc(q.content)}</div>
+      ${(q.options || []).map((opt, oi) => `<div class="opt-line">${q.type === "判断" ? "" : optionLetter(oi) + ". "}${esc(opt)}</div>`).join("")}
+      <div class="ans-row ${q.correct ? "ans-ok" : "ans-no"}">考生答案：【${esc(q.studentAnswer || "未作答")}】 ${q.correct ? "✓" : "×"}</div>
+      <div class="ans-row ans-key">正确答案：【${esc(q.answer)}】</div>
+      ${q.analysis ? `<div class="ans-ana">题目解析：【${esc(q.analysis)}】</div>` : ""}
+    </div>`).join("")}`;
+}
+function renderExamStage(main, ex, afterSubmit) {
+  if (!ex) { main.innerHTML = `<div class="exam-hold">未找到考试</div>`; return; }
+  const gate = examGate(ex);
+  const attempt = ex.attempts && ex.attempts[CURRENT_USER];
+  if (attempt) { main.innerHTML = examResultHtml(ex, attempt); return; }
+  if (gate === "out") { main.innerHTML = `<div class="exam-hold">你不在本场考试的参考人员范围内，暂时不可考试</div>`; return; }
+  if (gate === "early") { main.innerHTML = `<div class="exam-hold">考试还未开始，暂时不可考试</div>`; return; }
+  if (gate === "late") { main.innerHTML = `<div class="exam-hold">考试已结束，暂时不可考试</div>`; return; }
+  main.innerHTML = `
+    <div class="section-title">${esc(ex.name)}</div>
+    <p class="help">${esc(ex.startAt)} 至 ${esc(ex.endAt)} · ${ex.durationMinutes ? "答题时长 " + ex.durationMinutes + " 分钟" : "不限时"} · 总分 ${ex.paperScore || 100} · 合格分 ${ex.passScore || 0}</p>
+    ${(ex.questions || []).map((q, i) => `<div class="q-box">
+      <div class="q-title">${i + 1}.（${esc(q.type)}，${q.score} 分）${esc(q.content)}</div>
+      ${(q.options || []).map((opt, oi) => `<label class="opt-line"><input type="${q.type === "多选" ? "checkbox" : "radio"}" name="eq-${i}" value="${q.type === "判断" ? esc(opt) : optionLetter(oi)}"> <span>${q.type === "判断" ? "" : optionLetter(oi) + ". "}${esc(opt)}</span></label>`).join("")}
+    </div>`).join("")}
+    <button class="btn primary" id="submit-exam">提交答卷</button>`;
+  const submit = document.getElementById("submit-exam");
+  if (submit) submit.onclick = async () => {
+    const picks = (ex.questions || []).map((q, i) => {
+      const chosen = [...main.querySelectorAll(`input[name="eq-${i}"]:checked`)].map(el => el.value);
+      return q.type === "多选" ? chosen.sort().join("") : (chosen[0] || "");
+    });
+    const unanswered = picks.filter(v => !v).length;
+    const ok = await ask(unanswered ? "还有 " + unanswered + " 题未作答，确认提交？提交后不可修改。" : "确认提交答卷？提交后不可修改。");
+    if (!ok) return;
+    const details = ex.questions.map((q, i) => {
+      const studentAnswer = picks[i];
+      const correct = studentAnswer === q.answer;
+      return { type: q.type, content: q.content, options: q.options, score: q.score, answer: q.answer, analysis: q.analysis || "", studentAnswer, correct, gotScore: correct ? q.score : 0 };
+    });
+    const score = details.reduce((sum, q) => sum + q.gotScore, 0);
+    ex.attempts[CURRENT_USER] = { score, submittedAt: nowStamp().text, details };
+    ex.attendedCount = Object.keys(ex.attempts).length;
+    const grants = [];
+    const grantPoint = (amount, reason) => {
+      let user = pointUsers.find(u => u.name === CURRENT_USER);
+      if (!user) {
+        user = { id: Date.now(), name: CURRENT_USER, dept: "培训部", points: 0 };
+        pointUsers.push(user);
+      }
+      user.points += Number(amount);
+      pointLogs.push({ id: ++pointLogSeq, userId: user.id, type: "增加", points: Number(amount), reason, time: nowStamp().text, operator: CURRENT_USER });
+    };
+    projects.forEach(p => (p.items || []).forEach(it => {
+      if (it.kind !== "exam" || it.examId !== ex.id) return;
+      it.done = true;
+      if (p.pointRule === "课程制" && isPositive(p.coursePoints) && !it.coursePointGranted) {
+        it.coursePointGranted = true;
+        grantPoint(p.coursePoints, "完成" + (p.name || "学习项目") + "中的" + ex.name);
+        grants.push("课程积分 " + p.coursePoints);
+      }
+    }));
+    let tip = "考试已完成，得分 " + score;
+    if (isPositive(ex.points) && !(ex.pointsGranted && ex.pointsGranted[CURRENT_USER])) {
+      ex.pointsGranted = ex.pointsGranted || {};
+      ex.pointsGranted[CURRENT_USER] = true;
+      grantPoint(ex.points, "完成" + ex.name);
+      grants.push("考试积分 " + ex.points);
+    }
+    if (grants.length) tip += "，获得" + grants.join("，获得");
+    toast(tip, "ok");
+    if (afterSubmit) afterSubmit();
+  };
+}
+function renderMyExam() {
+  setCrumb([{ text: "在线考试" }, { text: "我的考试" }]);
+  const mine = exams.filter(ex => (ex.members || []).includes(CURRENT_USER) && ex.status !== "草稿");
+  const rows = mine.filter(ex => {
+    const gate = examGate(ex);
+    if (myExamTab === "done") return gate === "done";
+    if (myExamTab === "expired") return gate === "late";
+    return gate === "early" || gate === "open";
+  });
+  const tabs = [["pending", "待考"], ["done", "已考"], ["expired", "已过期"]];
+  document.getElementById("app").innerHTML = `
+    <div class="card">
+      <div class="tabs">
+        ${tabs.map(([k, label]) => `<button class="${myExamTab === k ? "active" : ""}" data-mtab="${k}">${label}</button>`).join("")}
+      </div>
+      ${myExamTab === "done" ? `
+        <table>
+          <thead><tr><th>考试名称</th><th style="width:170px">提交时间</th><th style="width:80px">得分</th><th style="width:70px">总分</th><th style="width:100px">是否合格</th><th style="width:110px">操作</th></tr></thead>
+          <tbody>${rows.map(ex => {
+            const attempt = ex.attempts[CURRENT_USER];
+            const passed = attempt.score >= Number(ex.passScore || 0);
+            return `<tr>
+              <td>${esc(ex.name)}</td>
+              <td>${esc(attempt.submittedAt)}</td>
+              <td style="color:${passed ? "#67c23a" : "#f56c6c"};font-weight:600">${attempt.score}</td>
+              <td>${ex.paperScore || 100}</td>
+              <td>${passed ? `<span class="tag green">合格</span>` : `<span class="tag red">不合格</span>`}</td>
+              <td><button class="btn link" data-view-result="${ex.id}">查看结果</button></td>
+            </tr>`;
+          }).join("") || `<tr><td colspan="6" class="empty">暂无数据</td></tr>`}</tbody>
+        </table>
+      ` : `
+        <table>
+          <thead><tr><th>考试名称</th><th>考试说明</th><th style="width:280px">有效期</th><th style="width:100px">答题时长</th><th style="width:70px">总分</th><th style="width:80px">合格分</th><th style="width:90px">状态</th>${myExamTab === "pending" ? `<th style="width:120px">操作</th>` : ""}</tr></thead>
+          <tbody>${rows.map(ex => `<tr>
+            <td>${esc(ex.name)}</td>
+            <td>${esc(ex.description || "—")}</td>
+            <td>${esc(ex.startAt)} ~ ${esc(ex.endAt)}</td>
+            <td>${ex.durationMinutes ? ex.durationMinutes + " 分钟" : "不限时"}</td>
+            <td>${ex.paperScore || 100}</td>
+            <td>${ex.passScore || 0}</td>
+            <td>${examTag(ex.status)}</td>
+            ${myExamTab === "pending" ? `<td>${examGate(ex) === "open" ? `<button class="btn primary" data-start-exam="${ex.id}">开始考试</button>` : ""}</td>` : ""}
+          </tr>`).join("") || `<tr><td colspan="8" class="empty">暂无数据</td></tr>`}</tbody>
+        </table>
+      `}
+      ${pagerBar(rows.length)}
+    </div>`;
+  document.querySelectorAll("[data-mtab]").forEach(btn => {
+    btn.onclick = () => { myExamTab = btn.dataset.mtab; render(); };
+  });
+  document.querySelectorAll("[data-start-exam]").forEach(btn => {
+    btn.onclick = async () => {
+      const ex = examById(Number(btn.dataset.startExam));
+      const ok = await ask(`本场考试${ex.durationMinutes ? "限时 " + ex.durationMinutes + " 分钟，" : ""}仅可提交一次，确认开始？`);
+      if (!ok) return;
+      takingExamId = ex.id;
+      view = "exam-take";
+      render();
+    };
+  });
+  document.querySelectorAll("[data-view-result]").forEach(btn => {
+    btn.onclick = () => {
+      takingExamId = Number(btn.dataset.viewResult);
+      view = "exam-take";
+      render();
+    };
+  });
+}
+function renderExamTake() {
+  const ex = examById(takingExamId);
+  setCrumb([{ text: "在线考试" }, { text: "我的考试" }, { text: ex ? ex.name : "考试" }]);
+  document.getElementById("app").innerHTML = `<div class="card"><div class="back-row"><button class="btn" id="back-my-exam">‹ 返回</button></div><div id="take-box"></div></div>`;
+  document.getElementById("back-my-exam").onclick = () => {
+    myExamTab = ex && ex.attempts[CURRENT_USER] ? "done" : "pending";
+    view = "my-exam";
+    render();
+  };
+  renderExamStage(document.getElementById("take-box"), ex, () => {
+    myExamTab = "done";
+    view = "my-exam";
+    render();
+  });
+}
 function examOps(ex) {
   const editLabel = ex.status === "已结束" ? "重新上线" : "编辑";
   const score = ex.status !== "草稿" && ex.status !== "未开始" ? `<button class="btn link">成绩</button>` : "";
@@ -2019,7 +2342,7 @@ function openExamEditor(id) {
     <div class="form-row"><div class="form-label" style="width:90px"><span class="req">*</span>考试时间</div><div class="form-ctrl"><div class="time-line"><input class="input" id="exam-start" value="${esc(src.startAt || "")}" placeholder="开始时间" style="width:220px"><span>至</span><input class="input" id="exam-end" value="${esc(src.endAt || "")}" placeholder="结束时间" style="width:220px"></div><div class="help">学员只能在考试时间范围内开始作答</div></div></div>
     <div class="form-row"><div class="form-label" style="width:90px">答题时长</div><div class="form-ctrl"><input class="input" id="exam-duration" value="${esc(src.durationMinutes || 60)}" style="width:180px"> 分钟<div class="help">可选，不填则不限时，上限 120 分钟</div></div></div>
     <div class="form-row"><div class="form-label" style="width:90px">积分</div><div class="form-ctrl"><input class="input" id="exam-points" value="${esc(src.points || "")}" placeholder="选填，大于 0 的数字" style="width:220px"><div class="help">非必填。填写后，学员完成考试时发放相应积分；不填写则完成考试没有积分。已完成的考试不补发、不改写。</div></div></div>
-    <div class="form-row"><div class="form-label" style="width:90px">参考人员</div><div class="form-ctrl"><input class="input" placeholder="搜索姓名或按组织添加" style="width:260px"><div class="help">沿用现有人员选择</div></div></div>
+    <div class="form-row"><div class="form-label" style="width:90px">参考人员</div><div class="form-ctrl">${["李营平", "张伟", "陈静", "刘洋", "周婷"].map(name => `<label style="display:inline-flex;align-items:center;gap:4px;margin:0 16px 8px 0"><input type="checkbox" class="exam-member" value="${esc(name)}" ${(src.members || []).includes(name) ? "checked" : ""}> ${esc(name)}</label>`).join("")}<div class="help">只有勾选的人员可以参加。学习项目中遇到该考试时，也会按这里的人员范围判断。</div></div></div>
   `, `<button class="btn" id="exam-cancel">取消</button>${src.status==="草稿"||!id?`<button class="btn" id="exam-draft">存草稿</button>`:""}<button class="btn primary" id="exam-save">${id && src.status!=="草稿" ? "保存全部修改" : "保存并发布"}</button>`, "score");
   const points = document.getElementById("exam-points");
   points.oninput = () => { points.value = sanitizePositive(points.value); };
@@ -2036,10 +2359,12 @@ function openExamEditor(id) {
       startAt: document.getElementById("exam-start").value,
       endAt: document.getElementById("exam-end").value,
       durationMinutes: Number(document.getElementById("exam-duration").value) || 0,
-      passScore: document.getElementById("exam-pass").value
+      passScore: document.getElementById("exam-pass").value,
+      members: [...document.querySelectorAll(".exam-member:checked")].map(el => el.value)
     };
+    extra.memberCount = extra.members.length;
     if (id) Object.assign(src, extra);
-    else exams.unshift(Object.assign({ id: Date.now(), status: "草稿", paperName: "新人结业试卷", paperScore: 100, memberCount: 0, attendedCount: 0 }, extra));
+    else exams.unshift(Object.assign({ id: Date.now(), status: "草稿", paperName: "新人结业试卷", paperScore: 100, attendedCount: 0, questions: [], attempts: {} }, extra));
     closeDrawer();
     toast("已保存", "ok");
     render();
