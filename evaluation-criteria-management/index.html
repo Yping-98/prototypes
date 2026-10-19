@@ -679,7 +679,7 @@ function renderEditor() {
         <div id="dim-list"></div>
         <div id="sum-bar"></div>
         <button class="btn" id="add-dim" style="margin-top:10px;">＋ 添加维度</button>
-        <div class="form-tip">至少 1 个、最多 8 个维度。满分合计必须等于 100 才能发布。分数档只给模型判断用，报告里不展示等级。</div>
+        <div class="form-tip">至少 1 个、最多 10 个维度。满分合计必须等于 100 才能发布。分数档只给模型判断用，报告里不展示等级。</div>
       </div>
       <div class="card preview-card">
         <div class="section-title">评分结果将按此结构展示</div>
@@ -701,7 +701,7 @@ function renderEditor() {
   if (qEl) qEl.onchange = e => { d.perQuestion = e.target.checked; paintPreview(); };
   document.getElementById("e-desc").oninput = e => { d.desc = e.target.value; };
   document.getElementById("add-dim").onclick = () => {
-    if (d.dimensions.length >= 8) { toast("最多 8 个维度"); return; }
+    if (d.dimensions.length >= 10) { toast("最多 10 个维度"); return; }
     const remain = Math.max(0, 100 - sumMax(d.dimensions));
     d.dimensions.push(dim("", remain, ""));
     paintDims();
