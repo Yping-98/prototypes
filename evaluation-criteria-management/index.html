@@ -215,6 +215,18 @@
   .m-bar-pct { width:52px; text-align:right; font-size:13px; color:var(--text-regular); }
   .m-bar-frac { width:58px; text-align:right; font-size:13px; color:var(--text-secondary); }
   .same-std { background:#f5f7fa; border-radius:6px; padding:12px 14px 4px; margin-bottom:10px; }
+  .snap-block { background:#f5f7fa; border-radius:6px; padding:10px 12px 2px; margin-bottom:10px; }
+  .snap-head { display:flex; justify-content:space-between; gap:12px; margin-bottom:8px; }
+  .snap-score { text-align:right; font-size:16px; font-weight:700; color:var(--text-primary); line-height:1; }
+  .snap-score span { display:block; margin-top:4px; font-size:12px; font-weight:400; color:var(--text-secondary); }
+  .call-split { display:flex; gap:16px; min-height:0; }
+  .call-side { width:300px; flex-shrink:0; border-right:1px solid var(--border-lighter); padding-right:12px; }
+  .call-main { flex:1; min-width:0; }
+  .audio-bar { background:#f5f7fa; border-radius:4px; padding:8px 10px; font-size:12px; color:var(--text-secondary); margin-bottom:10px; }
+  .bubble { margin-bottom:10px; }
+  .bubble .who { font-size:12px; color:var(--text-secondary); margin-bottom:2px; }
+  .bubble .txt { background:#f5f7fa; border-radius:4px; padding:8px 10px; font-size:13px; line-height:1.6; }
+  .bubble.sale .txt { background:#ecf5ff; }
   .bullet { margin:0 0 8px 18px; color:var(--text-regular); line-height:1.6; }
   .comment-box { background:var(--primary-light); border-radius:4px; padding:12px 14px; color:var(--text-regular); line-height:1.7; font-size:13px; }
   .tag .close { cursor:pointer; margin-left:4px; font-style:normal; }
@@ -234,7 +246,7 @@
         <div class="menu-item" data-page="locked">对练台配置管理</div>
         <div class="menu-item" data-page="locked">角色音色管理</div>
         <div class="menu-item" id="nav-task" data-page="task">任务管理</div>
-        <div class="menu-item" data-page="locked">我的任务</div>
+        <div class="menu-item" id="nav-mytask" data-page="mytask">我的任务</div>
         <div class="menu-item" data-page="locked">客户池</div>
       </div>
     </nav>
@@ -274,7 +286,7 @@
 </div>
 
 <div class="dialog-mask drawer" id="reportMask">
-  <div class="dialog" style="width:640px;">
+  <div class="dialog" id="reportDialog" style="width:640px;">
     <div class="dialog-header">
       <span>评分结果</span>
       <button class="dialog-close" data-close="reportMask">×</button>
@@ -319,7 +331,7 @@
 </div>
 
 <div class="dialog-mask drawer" id="memberMask">
-  <div class="dialog" style="width:560px;">
+  <div class="dialog" id="memberDialog" style="width:960px;">
     <div class="dialog-header"><span id="memberTitle">整体评价与分析</span><button class="dialog-close" data-close="memberMask">×</button></div>
     <div class="dialog-body" id="memberBody"></div>
   </div>
@@ -494,7 +506,7 @@ function setCrumb(text) { document.getElementById("crumb").textContent = text; }
 
 function setNav(page) {
   document.querySelectorAll(".menu-item").forEach(el => el.classList.remove("active"));
-  const id = page === "scene" || page === "sceneEdit" ? "nav-scene" : (page === "task" || page === "taskMember" ? "nav-task" : "nav-list");
+  const id = page === "scene" || page === "sceneEdit" ? "nav-scene" : (page === "task" || page === "taskMember" ? "nav-task" : (page === "mytask" ? "nav-mytask" : "nav-list"));
   document.getElementById(id).classList.add("active");
 }
 
@@ -504,6 +516,7 @@ function render() {
   else if (view === "sceneEdit") renderSceneEdit();
   else if (view === "task") renderTask();
   else if (view === "taskMember") renderTaskMember();
+  else if (view === "mytask") renderMyTask();
   else renderScene();
 }
 
@@ -922,10 +935,24 @@ function confirm(title, msg, action) {
   document.getElementById("confirmMask").classList.add("show");
 }
 
-function openReport(standard, sceneName) {
-  document.getElementById("reportBody").innerHTML = `
-    <div style="font-weight:600;margin-bottom:8px;">对话评估报告 · ${esc(sceneName)}</div>
-    ${reportInner(standard, false)}`;
+function callPane() {
+  return `<div class="call-side">
+    <div style="font-weight:600;margin-bottom:8px;">通话记录</div>
+    <div class="audio-bar">通话录音 00:00 / 06:42</div>
+    <div class="bubble sale"><div class="who">销售 00:03</div><div class="txt">您好，我是洋葱学园的老师，请问是孩子家长吗？今天来是想跟您对一下最近的学习情况。</div></div>
+    <div class="bubble"><div class="who">客户 00:18</div><div class="txt">是我。孩子数学成绩一般。</div></div>
+    <div class="bubble sale"><div class="who">销售 00:26</div><div class="txt">大题步骤不完整，还是计算老出错？</div></div>
+    <div class="bubble"><div class="who">客户 00:34</div><div class="txt">步骤吧。</div></div>
+    <div class="bubble sale"><div class="who">销售 01:02</div><div class="txt">我先不讲课程。</div></div>
+    <div class="bubble"><div class="who">客户 02:10</div><div class="txt">这个课太贵了，我们再考虑考虑。</div></div>
+  </div>`;
+}
+function openReport(standard, sceneName, withCall) {
+  document.getElementById("reportDialog").style.width = withCall ? "960px" : "640px";
+  const report = `<div style="font-weight:600;margin-bottom:8px;">对话评估报告 · ${esc(sceneName)}</div>${reportInner(standard, false)}`;
+  document.getElementById("reportBody").innerHTML = withCall
+    ? `<div class="call-split">${callPane()}<div class="call-main">${report}</div></div>`
+    : report;
   document.getElementById("reportMask").classList.add("show");
 }
 
@@ -1170,7 +1197,7 @@ function bindSceneEdit() {
     readSceneForm();
     const std = findStandard(Number(d.standardId));
     if (!std) { toast("请先选择评价标准"); return; }
-    openReport(std, d.name || "未命名场景");
+    openReport(std, d.name || "未命名场景", true);
   };
   if (d.type === "ai") {
     document.getElementById("se-test-send").onclick = () => {
@@ -1298,7 +1325,7 @@ function openSceneDetail(s) {
   document.getElementById("detailBody").innerHTML = common + (s.type === "ai" ? ai : qa) + stdBlock;
   document.getElementById("detailMask").classList.add("show");
   const btn = document.getElementById("detail-preview");
-  if (btn) btn.onclick = () => openReport(std, s.name);
+  if (btn) btn.onclick = () => openReport(std, s.name, true);
 }
 function openTagManage() {
   tagEditing = -1;
@@ -1414,13 +1441,67 @@ const taskMembers = [
     strengths: ["【小学｜学情沟通】开场破冰和产品介绍稳定", "【初中｜通用学情沟通】能把对话推进到促单"],
     weaknesses: ["两个场景的需求挖掘都低于开场和产品介绍", "异议处理在初中场景只有 14/20"],
     comment: "两个已评分场景使用同一条评价标准「外呼综合五维」，因此可以在标准内比较维度。综合得分 78。建议下一轮专门加练需求挖掘，两个场景的追问深度都偏浅。"
+  },
+  {
+    id: "zhou", name: "周宁", org: "电销团队小学部/第一团", last: "2026-10-14 15:40",
+    scenes: [
+      {
+        name: "小学｜学情沟通", type: "AI客户", standard: "外呼综合五维", status: "已评分",
+        copies: [
+          {
+            label: "10月8日副本",
+            note: "修改前，2 通已评分通话",
+            calls: 2,
+            dims: [
+              { name: "开场破冰", score: 18, max: 20 },
+              { name: "需求挖掘", score: 16, max: 20 },
+              { name: "产品介绍", score: 17, max: 20 },
+              { name: "异议处理", score: 15, max: 20 },
+              { name: "促单关单", score: 16, max: 20 }
+            ]
+          },
+          {
+            label: "10月12日副本",
+            note: "标准改过环节后，1 通已评分通话",
+            calls: 1,
+            dims: [
+              { name: "开场确认", score: 22, max: 30 },
+              { name: "需求挖掘", score: 18, max: 25 },
+              { name: "方案讲解", score: 20, max: 25 },
+              { name: "下一步", score: 12, max: 20 }
+            ]
+          }
+        ]
+      }
+    ],
+    strengths: ["【小学｜学情沟通】10月8日副本的开场破冰和产品介绍稳定"],
+    weaknesses: ["【小学｜学情沟通】10月12日副本的「下一步」只有 12/20，关单动作没有接上"],
+    comment: "这个场景在练习期间更换过评价标准。两份副本的环节对不上，所以只把各通话总分平均成场景得分 78.7，环节按副本分开看，不合成一张图。"
   }
 ];
+const practiceTasks = [
+  { id: "free", name: "学情自由练习", mode: "自由练习", status: "进行中", statusTag: "tag-success", time: "2026-10-01 00:00:00 ~ 2026-10-31 23:59:59", memberIds: ["zhou"], openReport: "zhou" },
+  { id: "exam", name: "YPing-考试", mode: "考试模式", status: "已结束", statusTag: "tag-info", time: "2026-10-08 00:00:00 ~ 2026-10-09 23:59:59", memberIds: ["li", "zhang"], openReport: "" }
+];
+let currentTaskId = "free";
+function copyTotal(copy) {
+  const got = copy.dims.reduce((n, d) => n + Number(d.score), 0);
+  const max = copy.dims.reduce((n, d) => n + Number(d.max), 0);
+  return max ? Math.round(got / max * 1000) / 10 : 0;
+}
 function scenePoint(scene) {
+  if (scene.copies && scene.copies.length) {
+    const calls = scene.copies.reduce((n, c) => n + c.calls, 0);
+    const sum = scene.copies.reduce((n, c) => n + copyTotal(c) * c.calls, 0);
+    return calls ? Math.round(sum / calls * 10) / 10 : null;
+  }
   if (!scene.dims) return null;
   const got = scene.dims.reduce((n, d) => n + Number(d.score), 0);
   const max = scene.dims.reduce((n, d) => n + Number(d.max), 0);
   return max ? Math.round(got / max * 100) : 0;
+}
+function sceneScored(scene) {
+  return !!(scene.dims || (scene.copies && scene.copies.length));
 }
 function personScore(member) {
   const scores = member.scenes.map(scenePoint).filter(n => n !== null);
@@ -1440,10 +1521,27 @@ function dimBars(dims) {
     <span class="m-bar-frac">${d.score}/${d.max}</span>
   </div>`).join("");
 }
+function snapshotBlocks(scene) {
+  const calls = scene.copies.reduce((n, c) => n + c.calls, 0);
+  const parts = scene.copies.map(c => `${copyTotal(c)} × ${c.calls}`).join(" + ");
+  return `
+    <div class="score-formula">场景得分 =（${parts}）/ ${calls} = ${scenePoint(scene)}。副本不同只平均总分。</div>
+    ${scene.copies.map(c => `<div class="snap-block">
+      <div class="snap-head">
+        <div>
+          <div class="scene-block-name">${esc(c.label)}</div>
+          <div class="scene-block-std">${esc(c.note)}，环节分是这 ${c.calls} 通的平均</div>
+        </div>
+        <div class="snap-score">${copyTotal(c)}<span>副本总分</span></div>
+      </div>
+      ${dimBars(c.dims)}
+    </div>`).join("")}
+    <div class="form-tip" style="margin:0 0 10px;">两份副本的环节对不上，不合成一张图，也不做同标准平均。</div>`;
+}
 function sameStandardBlocks(member) {
   const groups = {};
   member.scenes.forEach(s => {
-    if (!s.dims) return;
+    if (!s.dims || s.copies) return;
     (groups[s.standardId] = groups[s.standardId] || { name: s.standard, scenes: [] }).scenes.push(s);
   });
   return Object.values(groups).filter(g => g.scenes.length > 1).map(g => {
@@ -1462,35 +1560,44 @@ function renderTask() {
     <div class="card">
       <table class="el-table">
         <thead><tr><th>任务名称</th><th>任务模式</th><th>任务状态</th><th>学员人数</th><th>起止时间</th><th>操作</th></tr></thead>
-        <tbody><tr>
-          <td>YPing-考试</td>
-          <td>考试模式</td>
-          <td><span class="tag tag-info">已结束</span></td>
-          <td><button class="btn-link" id="open-members">2</button></td>
-          <td>2026-10-08 00:00:00 ~ 2026-10-09 23:59:59</td>
-          <td><button class="btn-link" id="open-members-2">学员明细</button></td>
-        </tr></tbody>
+        <tbody>${practiceTasks.map(t => `<tr>
+          <td>${esc(t.name)}</td>
+          <td>${esc(t.mode)}</td>
+          <td><span class="tag ${t.statusTag}">${esc(t.status)}</span></td>
+          <td><button class="btn-link" data-task="${t.id}">${t.memberIds.length}</button></td>
+          <td>${esc(t.time)}</td>
+          <td><button class="btn-link" data-task="${t.id}">学员明细</button></td>
+        </tr>`).join("")}</tbody>
       </table>
     </div>`;
-  const go = () => { view = "taskMember"; render(); openMemberReport("li"); };
-  document.getElementById("open-members").onclick = go;
-  document.getElementById("open-members-2").onclick = go;
+  document.querySelectorAll("[data-task]").forEach(el => {
+    el.onclick = () => openTask(el.dataset.task);
+  });
+}
+function openTask(id) {
+  currentTaskId = id;
+  const task = practiceTasks.find(t => t.id === id);
+  view = "taskMember";
+  render();
+  if (task.openReport) openMemberReport(task.openReport);
 }
 function renderTaskMember() {
   setCrumb("学员明细");
   setNav("taskMember");
+  const task = practiceTasks.find(t => t.id === currentTaskId);
+  const members = task.memberIds.map(id => taskMembers.find(m => m.id === id));
   document.getElementById("main").innerHTML = `
     <div class="card">
       <div class="member-head">
         <button class="btn" id="back-task">← 返回任务管理</button>
-        <h2>YPing-考试</h2>
-        <span class="tag tag-info">已结束</span>
+        <h2>${esc(task.name)}</h2>
+        <span class="tag ${task.statusTag}">${esc(task.status)}</span>
       </div>
-      <div class="member-sub">考试模式：2026-10-08 00:00:00 ~ 2026-10-09 23:59:59</div>
+      <div class="member-sub">${esc(task.mode)}：${esc(task.time)}</div>
       <table class="el-table">
         <thead><tr><th>学员</th><th>所属组织</th><th>完成进度</th><th>最近练习时间</th><th>综合得分</th><th>操作</th></tr></thead>
-        <tbody>${taskMembers.map(m => {
-          const scored = m.scenes.filter(s => s.dims).length;
+        <tbody>${members.map(m => {
+          const scored = m.scenes.filter(sceneScored).length;
           const score = personScore(m);
           return `<tr>
             <td>${esc(m.name)}</td>
@@ -1508,11 +1615,12 @@ function renderTaskMember() {
 }
 function openMemberReport(id) {
   const m = taskMembers.find(x => x.id === id);
-  const scored = m.scenes.filter(s => s.dims);
+  const scored = m.scenes.filter(sceneScored);
   const scores = scored.map(s => ({ name: s.name, score: scenePoint(s) }));
   const total = personScore(m);
   document.getElementById("memberTitle").textContent = m.name + " · 整体评价与分析";
   document.getElementById("memberBody").innerHTML = `
+    <div class="call-split">${callPane()}<div class="call-main">
     <div class="metric-row">
       <div class="metric"><b>${total}</b><span>综合得分</span></div>
       <div class="metric"><b style="color:var(--text-primary)">${scored.length}/${m.scenes.length}</b><span>已评分场景</span></div>
@@ -1521,16 +1629,16 @@ function openMemberReport(id) {
     <div class="sec-title">分场景表现</div>
     ${m.scenes.map(s => {
       const point = scenePoint(s);
-      if (!s.dims) return `<div class="scene-block muted"><div class="scene-block-name">${esc(s.name)} <span class="tag tag-info">${esc(s.status)}</span></div><div class="scene-block-std">评价标准：${esc(s.standard)}。未评分，不计入综合得分，也不展示维度。</div></div>`;
+      if (!sceneScored(s)) return `<div class="scene-block muted"><div class="scene-block-name">${esc(s.name)} <span class="tag tag-info">${esc(s.status)}</span></div><div class="scene-block-std">评价标准：${esc(s.standard)}。未评分，不计入综合得分，也不展示维度。</div></div>`;
       return `<div class="scene-block">
         <div class="scene-block-head">
           <div>
-            <div class="scene-block-name">${esc(s.name)} <span class="tag ${s.type === "AI客户" ? "tag-primary" : "tag-warning"}">${esc(s.type)}</span></div>
+            <div class="scene-block-name">${esc(s.name)} <span class="tag ${s.type === "AI客户" ? "tag-primary" : "tag-warning"}">${esc(s.type)}</span>${s.copies ? `<span class="tag tag-warning">${s.copies.length} 份标准副本</span>` : ""}</div>
             <div class="scene-block-std">评价标准：${esc(s.standard)}</div>
           </div>
           <div class="scene-block-score">${point}<span>场景得分</span></div>
         </div>
-        ${dimBars(s.dims)}
+        ${s.copies ? snapshotBlocks(s) : dimBars(s.dims)}
         ${s.perQuestion ? questionSection() : ""}
       </div>`;
     }).join("")}
@@ -1540,8 +1648,28 @@ function openMemberReport(id) {
     <div class="sec-title">待改进项</div>
     <ul>${m.weaknesses.map(t => `<li class="bullet">${esc(t)}</li>`).join("")}</ul>
     <div class="sec-title">AI 综合评语与建议</div>
-    <div class="comment-box">${esc(m.comment)}</div>`;
+    <div class="comment-box">${esc(m.comment)}</div>
+    </div></div>`;
   document.getElementById("memberMask").classList.add("show");
+}
+function renderMyTask() {
+  setCrumb("我的任务");
+  setNav("mytask");
+  document.getElementById("main").innerHTML = `
+    <div class="card">
+      <table class="el-table">
+        <thead><tr><th>任务名称</th><th>场景</th><th>得分</th><th>操作</th></tr></thead>
+        <tbody><tr>
+          <td>YPing-考试</td>
+          <td>高中｜续费邀约</td>
+          <td>46</td>
+          <td><button class="btn-link" id="open-my-report">查看评分</button></td>
+        </tr></tbody>
+      </table>
+    </div>`;
+  document.getElementById("open-my-report").onclick = () => {
+    openReport(standards.find(s => s.name === "外呼综合五维"), "高中｜续费邀约", true);
+  };
 }
 
 document.querySelectorAll(".menu-item").forEach(el => {
@@ -1549,9 +1677,13 @@ document.querySelectorAll(".menu-item").forEach(el => {
     if (el.dataset.page === "locked") { toast("本原型演示评价标准、场景配置和学员整体评价"); return; }
     editor = null;
     if (el.dataset.page === "task") {
-      view = "taskMember";
+      view = "task";
       render();
-      openMemberReport("li");
+      return;
+    }
+    if (el.dataset.page === "mytask") {
+      view = "mytask";
+      render();
       return;
     }
     view = el.dataset.page;
