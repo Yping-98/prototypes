@@ -394,7 +394,7 @@ let editProjectIndex = -1;
 let projTab = "info";
 let activeItemUid = 2;
 const exams = [{
-  id: 1, name: "新人结业考试", points: "", status: "未开始", description: "完成全部课程后参加",
+  id: 1, name: "新人结业考试", points: "", status: "未开始", place: "我的考试", description: "完成全部课程后参加",
   paperName: "新人结业试卷", paperScore: 100, passScore: 60,
   startAt: "2026-10-20 09:00:00", endAt: "2026-10-31 18:00:00",
   durationMinutes: 60, memberCount: 2, attendedCount: 0,
@@ -404,7 +404,7 @@ const exams = [{
   ],
   attempts: {}
 }, {
-  id: 2, name: "产品通关考试", points: "20", status: "进行中", description: "产品知识随堂测验",
+  id: 2, name: "产品通关考试", points: "20", status: "进行中", place: "学习项目", description: "产品知识随堂测验",
   paperName: "产品通关试卷", paperScore: 100, passScore: 60,
   startAt: "2026-10-01 09:00:00", endAt: "2026-10-31 18:00:00",
   durationMinutes: 30, memberCount: 2, attendedCount: 0,
@@ -415,7 +415,7 @@ const exams = [{
   ],
   attempts: {}
 }, {
-  id: 3, name: "销售规范抽测", points: "", status: "进行中", description: "仅指定人员参加",
+  id: 3, name: "销售规范抽测", points: "", status: "进行中", place: "学习项目", description: "仅指定人员参加",
   paperName: "销售规范试卷", paperScore: 100, passScore: 60,
   startAt: "2026-10-01 09:00:00", endAt: "2026-10-31 18:00:00",
   durationMinutes: 20, memberCount: 2, attendedCount: 0,
@@ -425,7 +425,7 @@ const exams = [{
   ],
   attempts: {}
 }, {
-  id: 4, name: "十月月考", points: "", status: "已结束", description: "已过考试时间",
+  id: 4, name: "十月月考", points: "", status: "已结束", place: "我的考试", description: "已过考试时间",
   paperName: "十月月考试卷", paperScore: 100, passScore: 60,
   startAt: "2026-09-01 09:00:00", endAt: "2026-09-30 18:00:00",
   durationMinutes: 60, memberCount: 1, attendedCount: 0,
@@ -435,7 +435,7 @@ const exams = [{
   ],
   attempts: {}
 }, {
-  id: 5, name: "话术草稿考", points: "", status: "草稿", description: "",
+  id: 5, name: "话术草稿考", points: "", status: "草稿", place: "学习项目", description: "",
   paperName: "话术试卷", paperScore: 100, passScore: 60,
   startAt: "", endAt: "",
   durationMinutes: 30, memberCount: 0, attendedCount: 0,
@@ -1916,7 +1916,7 @@ function toggleExamPick(isEdit) {
     <div class="section-title">选择考试</div>
     <div class="filter-form">
       <div class="fi"><input class="input" id="exam-kw" placeholder="搜索考试名称" style="width:180px"></div>
-      <div class="fi"><span class="hint">仅可选择「未开始」「进行中」的考试</span></div>
+      <div class="fi"><span class="hint">仅可选择发布位置为「学习项目」，且状态为「未开始」「进行中」的考试</span></div>
     </div>
     <div id="exam-pick-list"></div>
     <button class="btn primary" id="exam-pick-ok">确定</button>
@@ -1929,7 +1929,7 @@ function toggleExamPick(isEdit) {
       else picked.delete(id);
     });
     const keyword = document.getElementById("exam-kw").value.trim();
-    const list = exams.filter(ex => (ex.status === "未开始" || ex.status === "进行中") && (!keyword || ex.name.includes(keyword)));
+    const list = exams.filter(ex => ex.place === "学习项目" && (ex.status === "未开始" || ex.status === "进行中") && (!keyword || ex.name.includes(keyword)));
     const timeOf = ex => ex.startAt && ex.endAt ? esc(ex.startAt) + " ~ " + esc(ex.endAt) : "—";
     document.getElementById("exam-pick-list").innerHTML = list.length ? `<table>
       <thead><tr><th style="width:42px"></th><th>考试名称</th><th style="min-width:280px">考试时间</th><th style="width:100px">状态</th></tr></thead>
@@ -2197,7 +2197,7 @@ function renderMyExam() {
     const gate = examGate(ex);
     if (myExamTab === "done") return gate === "done";
     if (myExamTab === "expired") return gate === "late";
-    return gate === "early" || gate === "open";
+    return (gate === "early" || gate === "open") && ex.place === "我的考试";
   });
   const tabs = [["pending", "待考"], ["done", "已考"], ["expired", "已过期"]];
   document.getElementById("app").innerHTML = `
@@ -2305,6 +2305,7 @@ function renderExam() {
           <th style="width:70px;text-align:center">已考</th>
           <th style="width:140px">参考率</th>
           <th style="width:90px">积分</th>
+          <th style="width:100px">发布位置</th>
           <th style="width:90px">状态</th>
           <th class="sticky-right" style="width:160px">操作</th>
         </tr></thead>
@@ -2319,6 +2320,7 @@ function renderExam() {
           <td style="text-align:center">${ex.attendedCount || 0}</td>
           <td>${progressHtml(ex.memberCount ? Math.round((ex.attendedCount || 0) / ex.memberCount * 100) : 0)}</td>
           <td>${ex.points ? esc(ex.points) : "—"}</td>
+          <td>${esc(ex.place || "—")}</td>
           <td>${examTag(ex.status)}</td>
           <td class="sticky-right ops">${examOps(ex)}</td>
         </tr>`).join("")}</tbody>
@@ -2342,6 +2344,11 @@ function openExamEditor(id) {
     <div class="form-row"><div class="form-label" style="width:90px"><span class="req">*</span>考试时间</div><div class="form-ctrl"><div class="time-line"><input class="input" id="exam-start" value="${esc(src.startAt || "")}" placeholder="开始时间" style="width:220px"><span>至</span><input class="input" id="exam-end" value="${esc(src.endAt || "")}" placeholder="结束时间" style="width:220px"></div><div class="help">学员只能在考试时间范围内开始作答</div></div></div>
     <div class="form-row"><div class="form-label" style="width:90px">答题时长</div><div class="form-ctrl"><input class="input" id="exam-duration" value="${esc(src.durationMinutes || 60)}" style="width:180px"> 分钟<div class="help">可选，不填则不限时，上限 120 分钟</div></div></div>
     <div class="form-row"><div class="form-label" style="width:90px">积分</div><div class="form-ctrl"><input class="input" id="exam-points" value="${esc(src.points || "")}" placeholder="选填，大于 0 的数字" style="width:220px"><div class="help">非必填。填写后，学员完成考试时发放相应积分；不填写则完成考试没有积分。已完成的考试不补发、不改写。</div></div></div>
+    <div class="form-row"><div class="form-label" style="width:90px"><span class="req">*</span>发布位置</div><div class="form-ctrl radios">
+      <label><input type="radio" name="exam-place" value="学习项目" ${src.place==="学习项目"?"checked":""}> 学习项目</label>
+      <label><input type="radio" name="exam-place" value="我的考试" ${src.place==="我的考试"?"checked":""}> 我的考试</label>
+      <div class="help">选择学习项目时，仅在学习项目中展示，不出现在我的考试的待考。选择我的考试时，仅出现在我的考试的待考，学习项目不可引用。</div>
+    </div></div>
     <div class="form-row"><div class="form-label" style="width:90px">参考人员</div><div class="form-ctrl">${["李营平", "张伟", "陈静", "刘洋", "周婷"].map(name => `<label style="display:inline-flex;align-items:center;gap:4px;margin:0 16px 8px 0"><input type="checkbox" class="exam-member" value="${esc(name)}" ${(src.members || []).includes(name) ? "checked" : ""}> ${esc(name)}</label>`).join("")}<div class="help">只有勾选的人员可以参加。学习项目中遇到该考试时，也会按这里的人员范围判断。</div></div></div>
   `, `<button class="btn" id="exam-cancel">取消</button>${src.status==="草稿"||!id?`<button class="btn" id="exam-draft">存草稿</button>`:""}<button class="btn primary" id="exam-save">${id && src.status!=="草稿" ? "保存全部修改" : "保存并发布"}</button>`, "score");
   const points = document.getElementById("exam-points");
@@ -2350,6 +2357,8 @@ function openExamEditor(id) {
   const persist = () => {
     const name = document.getElementById("exam-name").value.trim();
     if (!name) return toast("请输入考试名称", "warn");
+    const place = (document.querySelector('input[name="exam-place"]:checked') || {}).value || "";
+    if (!place) return toast("请选择发布位置", "warn");
     const value = points.value;
     if (value && !isPositive(value)) return toast("请输入大于 0 的数字", "warn");
     const extra = {
@@ -2360,6 +2369,7 @@ function openExamEditor(id) {
       endAt: document.getElementById("exam-end").value,
       durationMinutes: Number(document.getElementById("exam-duration").value) || 0,
       passScore: document.getElementById("exam-pass").value,
+      place,
       members: [...document.querySelectorAll(".exam-member:checked")].map(el => el.value)
     };
     extra.memberCount = extra.members.length;
