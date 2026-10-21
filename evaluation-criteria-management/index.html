@@ -71,6 +71,8 @@
   .btn-link:hover { color:#66b1ff; }
   .btn-link.danger { color: var(--danger); }
   .btn-link.danger:hover { color:#f89898; }
+  .btn-link.warn { color: var(--warning); }
+  .btn-link.warn:hover { color:#eebe77; }
   .btn-link:disabled { color: var(--text-placeholder); cursor:not-allowed; }
   .table-wrap { overflow-x:auto; }
   table.el-table { width:100%; border-collapse:collapse; font-size:14px; }
@@ -190,8 +192,15 @@
   .test-pane { width:340px; flex-shrink:0; border-left:1px solid var(--border-lighter); padding-left:20px; display:flex; flex-direction:column; }
   .test-box { flex:1; min-height:300px; background:#f5f7fa; border-radius:6px; padding:12px; overflow-y:auto; font-size:13px; line-height:1.7; }
   .picked-tags { margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; }
-  .member-head { display:flex; align-items:center; gap:12px; margin-bottom:6px; }
-  .member-head h2 { font-size:18px; font-weight:600; }
+  .member-toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .member-title { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .member-title h2 { font-size:16px; font-weight:600; }
+  .progress-cell { display:flex; align-items:center; gap:8px; color:var(--text-regular); }
+  .progress-track { width:72px; height:6px; background:#ebeef5; border-radius:100px; overflow:hidden; }
+  .progress-track i { display:block; height:100%; background:var(--primary); border-radius:100px; }
+  .scene-nest { background:#fafafa; }
+  .scene-nest td { padding:8px 16px 14px 40px !important; }
+  .scene-nest table { background:#fff; }
   .member-sub { color:var(--text-secondary); font-size:13px; margin-bottom:16px; }
   .metric-row { display:flex; gap:12px; margin-bottom:8px; }
   .metric { flex:1; background:#f5f7fa; border-radius:6px; padding:12px 14px; text-align:center; }
@@ -254,7 +263,7 @@
   <div class="body-wrap">
     <header class="navbar">
       <div class="breadcrumb">AI陪练 <span>/</span> <span class="cur" id="crumb">评价标准管理</span></div>
-      <div class="nav-user"><span class="avatar">管</span><span>管理员</span></div>
+      <div class="nav-user"><span class="avatar">李</span><span>李莹萍</span></div>
     </header>
     <main class="main" id="main"></main>
   </div>
@@ -288,7 +297,7 @@
 <div class="dialog-mask drawer" id="reportMask">
   <div class="dialog" id="reportDialog" style="width:640px;">
     <div class="dialog-header">
-      <span>评分结果</span>
+      <span id="reportTitle">评分结果</span>
       <button class="dialog-close" data-close="reportMask">×</button>
     </div>
     <div class="dialog-body" id="reportBody"></div>
@@ -521,9 +530,13 @@ function render() {
 }
 
 function refsOf(standard) {
-  return scenes.filter(sc => Number(sc.standardId) === standard.id).map(sc => ({
+  return scenes.filter(sc => Number(sc.standardId) === Number(standard.id)).map(sc => ({
     name: sc.name, status: sc.status, task: !!sc.refRunning
   }));
+}
+function citedByPublishedScene(standard) {
+  if (!standard) return false;
+  return refsOf(standard).some(r => r.status === "已发布");
 }
 function lockedByTask(standard) { return refsOf(standard).some(r => r.task); }
 
@@ -581,7 +594,8 @@ function renderList() {
 function rowHtml(s) {
   const ops = [];
   if (s.status !== "disabled") ops.push(`<button class="btn-link" data-act="edit" data-id="${s.id}">编辑</button>`);
-  if (s.status === "published") ops.push(`<button class="btn-link danger" data-act="disable" data-id="${s.id}">停用</button>`);
+  if (s.status === "published" && citedByPublishedScene(s)) ops.push(`<button type="button" class="btn-link" disabled title="该标准正在被已发布的场景引用，不允许停用">停用</button>`);
+  else if (s.status === "published") ops.push(`<button type="button" class="btn-link danger" data-act="disable" data-id="${s.id}">停用</button>`);
   if (s.status === "draft") ops.push(`<button class="btn-link danger" data-act="del" data-id="${s.id}">删除</button>`);
   if (s.status === "disabled") ops.push(`<button class="btn-link" data-act="enable" data-id="${s.id}">启用</button>`);
   if (s.status !== "draft") ops.push(`<button class="btn-link" data-act="report" data-id="${s.id}">结果示例</button>`);
@@ -611,12 +625,15 @@ function bindListActions() {
         standards = standards.filter(x => x.id !== s.id); toast("已删除"); renderList();
       });
       if (act === "disable") {
+        if (citedByPublishedScene(s)) { toast("该标准正在被已发布的场景引用，不允许停用"); return; }
         const refs = refsOf(s);
-        if (lockedByTask(s)) { toast("该标准正在被进行中的任务引用，不允许停用"); return; }
         const msg = refs.length
           ? `「${s.name}」已被 ${refs.length} 个场景引用。停用后这些场景保持原绑定，新场景不能再选择它。`
           : `确认停用「${s.name}」？停用后不再出现在场景的可选列表中。`;
-        confirm("停用评价标准", msg, () => { s.status = "disabled"; s.updatedAt = now(); toast("已停用"); renderList(); });
+        confirm("停用评价标准", msg, () => {
+          if (citedByPublishedScene(s)) { toast("该标准正在被已发布的场景引用，不允许停用"); return; }
+          s.status = "disabled"; s.updatedAt = now(); toast("已停用"); renderList();
+        });
       }
     };
   });
@@ -948,11 +965,124 @@ function callPane() {
   </div>`;
 }
 function openReport(standard, sceneName, withCall) {
+  document.getElementById("reportTitle").textContent = "评分结果";
   document.getElementById("reportDialog").style.width = withCall ? "960px" : "640px";
   const report = `<div style="font-weight:600;margin-bottom:8px;">对话评估报告 · ${esc(sceneName)}</div>${reportInner(standard, false)}`;
   document.getElementById("reportBody").innerHTML = withCall
     ? `<div class="call-split">${callPane()}<div class="call-main">${report}</div></div>`
     : report;
+  document.getElementById("reportMask").classList.add("show");
+}
+function attemptRawTotal(attempt) {
+  return Math.round(attempt.dims.reduce((n, d) => n + Number(d.score), 0) * 10) / 10;
+}
+function attemptReportHtml(attempt, scene) {
+  const dims = attempt.dims || [];
+  const total = attemptRawTotal(attempt);
+  const formula = dims.map(d => `${d.name} ${d.score}`).join(" + ");
+  const standardName = attempt.standardName || scene.standard || "评价标准";
+  const strengths = attempt.strengths || ["开场时明确自我介绍为洋葱学园老师，并确认了对方是家长。", "客户提到成绩一般后，先追问是步骤问题还是计算问题，没有立刻推销。"];
+  const weaknesses = attempt.weaknesses || ["客户提出“这个课太贵了”后，没有先复述顾虑再拆解。", "对话结束前没有约定下一步动作和时间。"];
+  const comment = attempt.comment || "开场和初步挖需完成了，产品介绍、异议处理和关单都没有展开。建议先补「价格异议先共情再拆解」的应答，并在结尾约定一个具体的回访时间。";
+  return `
+    <div class="score-hero">
+      <div class="num">${total}</div>
+      <div class="label">任务得分</div>
+    </div>
+    <div class="formula">总分 = ${esc(formula)}</div>
+    <div class="report-sec">各环节得分概览</div>
+    ${dims.map(d => {
+      const max = Number(d.max) || 0;
+      const pct = max ? Math.round(Number(d.score) / max * 100) : 0;
+      return `<div class="dim-line">
+        <div class="dim-line-head"><span>${esc(d.name)}</span><b>${d.score}/${max}</b></div>
+        <div class="bar"><div style="width:${pct}%"></div></div>
+      </div>`;
+    }).join("")}
+    ${(attempt.perQuestion || scene.perQuestion) ? questionSection() : ""}
+    <div class="report-sec">得分点详细说明</div>
+    <ul class="point-list">
+      ${dims.map(d => `<li><b>${esc(d.name)}：</b>${esc(scorePointText(d.name, d.rubric, false))}</li>`).join("")}
+    </ul>
+    <div class="report-sec">优势表现</div>
+    <ul class="block-list">${strengths.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
+    <div class="report-sec">待改进项</div>
+    <ul class="block-list">${weaknesses.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
+    <div class="report-sec">AI 综合评语与建议</div>
+    <div class="comment-box">${esc(comment)}</div>
+    <div class="snapshot">本次评分使用「${esc(standardName)}」的快照。之后修改标准，不影响这条结果。</div>`;
+}
+function sceneAttempts(scene) {
+  if (scene.attempts && scene.attempts.length) return scene.attempts;
+  if (scene.copies && scene.copies.length) {
+    const list = [];
+    scene.copies.forEach(copy => {
+      for (let i = 0; i < copy.calls; i++) {
+        list.push({
+          duration: "06:42",
+          standardName: (scene.standard || "评价标准") + (copy.label ? "（" + copy.label + "）" : ""),
+          dims: copy.dims,
+          lines: [
+          { role: "sale", time: "00:03", text: "您好，我是洋葱学园的老师，想跟您对一下最近的学习情况。" },
+          { role: "ai", time: "00:12", text: "孩子数学成绩一般。" },
+          { role: "sale", time: "00:20", text: "我先确认是步骤问题还是计算问题，再讲下一步安排。" }
+        ] });
+      }
+    });
+    return list;
+  }
+  if (!scene.dims) return [];
+  return [{ duration: "03:42", standardName: scene.standard || "评价标准", perQuestion: scene.perQuestion, dims: scene.dims, lines: [
+    { role: "sale", time: "00:03", text: "您好，我是洋葱学园的老师，请问是孩子家长吗？" },
+    { role: "ai", time: "00:10", text: "是我。你说吧。" },
+    { role: "sale", time: "00:18", text: "我按这个场景的要求，把该确认的信息跟您对一下。" }
+  ] }];
+}
+let sceneReportCtx = null;
+function openSceneAttemptReport(member, scene) {
+  const attempts = sceneAttempts(scene);
+  if (!attempts.length) { toast("该场景暂无练习记录"); return; }
+  const task = practiceTasks.find(t => String(t.id) === String(currentTaskId));
+  sceneReportCtx = { member, scene, attempts, index: attempts.length - 1, taskName: task ? task.name : scene.name };
+  paintSceneAttemptReport();
+}
+function paintSceneAttemptReport() {
+  const ctx = sceneReportCtx;
+  const attempt = ctx.attempts[ctx.index];
+  document.getElementById("reportTitle").textContent = ctx.member.name + " · " + ctx.taskName;
+  document.getElementById("reportDialog").style.width = "1080px";
+  const lines = (attempt.lines || []).map(line => {
+    const who = line.role === "ai" ? "AI客户" : "学员";
+    const side = line.role === "ai" ? "sale" : "ai";
+    return `<div class="who" style="${line.role === "sale" ? "text-align:right" : ""}">${who} ${esc(line.time)}</div><div class="bubble ${side}">${esc(line.text)}</div>`;
+  }).join("");
+  document.getElementById("reportBody").innerHTML = `
+    <div class="split" style="height:72vh;">
+      <div class="split-left">
+        <div class="report-sec">通话记录</div>
+        <div class="audio">
+          <div class="audio-top"><span>▶ ${attempt.duration ? "0:00 / " + attempt.duration.replace(/^0/, "") : "0:00 / 3:42"}</span><span>🔊</span></div>
+          <div class="audio-bar"><div></div></div>
+          <div class="audio-top" style="margin:8px 0 0;"><span>1x</span><button class="btn-link" id="download-audio">下载录音</button></div>
+        </div>
+        ${lines}
+      </div>
+      <div class="split-right">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+          <select class="select" id="attempt-pick" style="width:190px;">
+            ${ctx.attempts.map((item, i) => `<option value="${i}" ${i === ctx.index ? "selected" : ""}>第${i + 1}次练习（${attemptRawTotal(item)}）</option>`).join("")}
+          </select>
+        </div>
+        ${attemptReportHtml(attempt, ctx.scene)}
+        <div style="text-align:right;margin-top:16px;"><button class="btn" id="close-scene-report">关闭</button></div>
+      </div>
+    </div>`;
+  document.getElementById("attempt-pick").onchange = e => {
+    sceneReportCtx.index = Number(e.target.value);
+    paintSceneAttemptReport();
+  };
+  document.getElementById("download-audio").onclick = () => toast("下载录音");
+  document.getElementById("close-scene-report").onclick = () => document.getElementById("reportMask").classList.remove("show");
   document.getElementById("reportMask").classList.add("show");
 }
 
@@ -1197,7 +1327,7 @@ function bindSceneEdit() {
     readSceneForm();
     const std = findStandard(Number(d.standardId));
     if (!std) { toast("请先选择评价标准"); return; }
-    openReport(std, d.name || "未命名场景", true);
+    openReport(std, d.name || "未命名场景");
   };
   if (d.type === "ai") {
     document.getElementById("se-test-send").onclick = () => {
@@ -1325,7 +1455,7 @@ function openSceneDetail(s) {
   document.getElementById("detailBody").innerHTML = common + (s.type === "ai" ? ai : qa) + stdBlock;
   document.getElementById("detailMask").classList.add("show");
   const btn = document.getElementById("detail-preview");
-  if (btn) btn.onclick = () => openReport(std, s.name, true);
+  if (btn) btn.onclick = () => openReport(std, s.name);
 }
 function openTagManage() {
   tagEditing = -1;
@@ -1398,19 +1528,89 @@ const taskMembers = [
   {
     id: "li", name: "李莹萍", org: "电销团队高中部/天下第一团/天财队-申童庆", last: "2026-10-09 16:20",
     scenes: [
-      { name: "高中｜续费邀约", type: "AI客户", standard: "续费邀约五环节", standardId: "renew", status: "已交卷",
+      { name: "高中｜续费邀约", type: "AI客户", standard: "续费邀约五环节", standardId: "renew", status: "已交卷", times: 2,
         dims: [
           { name: "产品介绍", score: 5, max: 15 },
           { name: "活动报价", score: 9, max: 15 },
           { name: "加微闭环", score: 6, max: 6 },
           { name: "异议处理", score: 10.5, max: 15 },
           { name: "压单", score: 0, max: 15 }
+        ],
+        attempts: [
+          {
+            duration: "02:48",
+            standardName: "外呼综合五维",
+            dims: [
+              { name: "开场破冰", score: 14, max: 20 },
+              { name: "需求挖掘", score: 12, max: 20 },
+              { name: "产品介绍", score: 13, max: 20 },
+              { name: "异议处理", score: 11, max: 20 },
+              { name: "促单关单", score: 10, max: 20 }
+            ],
+            lines: [
+              { role: "ai", time: "00:00", text: "你好，哪位？" },
+              { role: "sale", time: "00:04", text: "家长您好，我是洋葱学园的老师，想跟您约一下续费。" },
+              { role: "ai", time: "00:12", text: "现在不方便，你先说重点。" },
+              { role: "sale", time: "00:20", text: "那我晚点再打给您。" }
+            ]
+          },
+          {
+            duration: "03:42",
+            standardName: "外呼综合五维",
+            dims: [
+              { name: "开场破冰", score: 16, max: 20 },
+              { name: "需求挖掘", score: 16, max: 20 },
+              { name: "产品介绍", score: 16, max: 20 },
+              { name: "异议处理", score: 16, max: 20 },
+              { name: "促单关单", score: 16, max: 20 }
+            ],
+            lines: [
+              { role: "ai", time: "00:00", text: "喂，你好。" },
+              { role: "sale", time: "00:03", text: "您好，我是洋葱学园的老师，今天来是想跟您对一下最近的学习情况，并确认续费安排。" },
+              { role: "ai", time: "00:16", text: "孩子最近数学一般，我们还在考虑要不要续。" },
+              { role: "sale", time: "00:28", text: "这次活动价我跟您说清楚，加微信后我把方案发您。压单这一步我先不推了。" }
+            ]
+          }
         ] },
-      { name: "高中｜价格异议问答", type: "问答对练", standard: "问答三段论", standardId: "qa", perQuestion: true, status: "已交卷",
+      { name: "高中｜价格异议问答", type: "问答对练", standard: "问答三段论", standardId: "qa", perQuestion: true, status: "已交卷", times: 2,
         dims: [
           { name: "要点覆盖", score: 28, max: 40 },
           { name: "表达结构", score: 21, max: 30 },
           { name: "表达自然度", score: 18, max: 30 }
+        ],
+        attempts: [
+          {
+            duration: "03:05",
+            standardName: "问答三段论",
+            perQuestion: true,
+            dims: [
+              { name: "要点覆盖", score: 22, max: 40 },
+              { name: "表达结构", score: 16, max: 30 },
+              { name: "表达自然度", score: 14.5, max: 30 }
+            ],
+            lines: [
+              { role: "ai", time: "00:00", text: "这个课太贵了，我们再考虑考虑。" },
+              { role: "sale", time: "00:08", text: "价格我理解。您主要是觉得总价高，还是担心效果不稳定？" },
+              { role: "ai", time: "00:18", text: "都有一点吧。" },
+              { role: "sale", time: "00:24", text: "那我把优惠和每天的练习安排拆开跟您说。" }
+            ]
+          },
+          {
+            duration: "03:42",
+            standardName: "问答三段论",
+            perQuestion: true,
+            dims: [
+              { name: "要点覆盖", score: 28, max: 40 },
+              { name: "表达结构", score: 21, max: 30 },
+              { name: "表达自然度", score: 18, max: 30 }
+            ],
+            lines: [
+              { role: "ai", time: "00:00", text: "这个课太贵了，我们再考虑考虑。" },
+              { role: "sale", time: "00:06", text: "您说贵，我先确认下是总价，还是觉得和孩子现在的成绩不匹配？" },
+              { role: "ai", time: "00:15", text: "主要是总价。效果倒还可以。" },
+              { role: "sale", time: "00:27", text: "那我按总价、优惠和练习安排这三步说，您看哪一步还可以再调整。" }
+            ]
+          }
         ] },
       { name: "高中｜优惠关单", type: "AI客户", standard: "外呼综合五维", standardId: "five", status: "未开考", dims: null }
     ],
@@ -1477,12 +1677,57 @@ const taskMembers = [
     strengths: ["【小学｜学情沟通】10月8日副本的开场破冰和产品介绍稳定"],
     weaknesses: ["【小学｜学情沟通】10月12日副本的「下一步」只有 12/20，关单动作没有接上"],
     comment: "这个场景在练习期间更换过评价标准。两份副本的环节对不上，所以只把各通话总分平均成场景得分 78.7，环节按副本分开看，不合成一张图。"
+  },
+  {
+    id: "zhang-scene", name: "张嘉城", org: "", last: "2026-10-10 17:05:24", score: 74.5, progress: "2/2",
+    scenes: [
+      { name: "测试初中学生挂断", status: "已完成", times: 2, high: 74.5, last: "2026-10-09 11:36:48", reportType: "ai",
+        attempts: [
+          { duration: "04:02", standardName: "外呼综合五维", dims: [{ name: "开场破冰", score: 16, max: 20 }, { name: "需求挖掘", score: 14, max: 20 }, { name: "产品介绍", score: 15, max: 20 }, { name: "异议处理", score: 12, max: 20 }, { name: "促单关单", score: 10, max: 20 }],
+            lines: [{ role: "ai", time: "00:00", text: "喂？" }, { role: "sale", time: "00:03", text: "家长您好，我是洋葱学园老师，想了解下孩子最近的学习。" }, { role: "ai", time: "00:20", text: "现在不方便，先挂了。" }] },
+          { duration: "05:18", standardName: "外呼综合五维", dims: [{ name: "开场破冰", score: 18, max: 20 }, { name: "需求挖掘", score: 16, max: 20 }, { name: "产品介绍", score: 15, max: 20 }, { name: "异议处理", score: 14, max: 20 }, { name: "促单关单", score: 11.5, max: 20 }],
+            lines: [{ role: "ai", time: "00:00", text: "你好。" }, { role: "sale", time: "00:04", text: "家长您好，我是洋葱学园老师。孩子最近哪一科最吃力？" }, { role: "ai", time: "00:14", text: "数学应用题。" }, { role: "sale", time: "00:22", text: "我先按应用题的错因跟您对一下，再讲对应的练习安排。" }] }
+        ] },
+      { name: "ai问答对练", status: "已完成", times: 2, high: 10.5, last: "2026-10-10 17:05:24", reportType: "qa",
+        attempts: [
+          { duration: "02:16", standardName: "问答三段论", perQuestion: true, dims: [{ name: "要点覆盖", score: 3, max: 40 }, { name: "表达结构", score: 2, max: 30 }, { name: "表达自然度", score: 2, max: 30 }],
+            lines: [{ role: "ai", time: "00:00", text: "我们再考虑考虑。" }, { role: "sale", time: "00:06", text: "好的，那您考虑好了再联系我。" }] },
+          { duration: "03:01", standardName: "问答三段论", perQuestion: true, dims: [{ name: "要点覆盖", score: 4, max: 40 }, { name: "表达结构", score: 3, max: 30 }, { name: "表达自然度", score: 3.5, max: 30 }],
+            lines: [{ role: "ai", time: "00:00", text: "太贵了，先不报。" }, { role: "sale", time: "00:07", text: "您是觉得总价高。我先听您的顾虑，再决定要不要讲优惠。" }] }
+        ] }
+    ]
   }
 ];
+let taskQuery = { name: "", status: "", operator: "", mode: "" };
+
 const practiceTasks = [
-  { id: "free", name: "学情自由练习", mode: "自由练习", status: "进行中", statusTag: "tag-success", time: "2026-10-01 00:00:00 ~ 2026-10-31 23:59:59", memberIds: ["zhou"], openReport: "zhou" },
-  { id: "exam", name: "YPing-考试", mode: "考试模式", status: "已结束", statusTag: "tag-info", time: "2026-10-08 00:00:00 ~ 2026-10-09 23:59:59", memberIds: ["li", "zhang"], openReport: "" }
+  { id: "t1", name: "验收标准93543", mode: "场景练习", status: "END", operator: "验收", createdAt: "2026-10-19 15:05:43", beginAt: "2026-10-19 15:04:43", endAt: "2026-10-19 17:00:00", count: 1, memberIds: [] },
+  { id: "free", name: "zjc自由练习", mode: "自由练习", status: "PROCESS", operator: "张嘉城", createdAt: "2026-10-09 16:44:51", beginAt: "2026-10-09 00:00:00", endAt: "2026-10-31 23:59:59", count: 1, memberIds: ["zhou"] },
+  { id: "t3", name: "zjc测试场景", mode: "场景练习", status: "PROCESS", operator: "张嘉城", createdAt: "2026-10-09 11:29:23", beginAt: "2026-10-09 00:00:00", endAt: "2026-10-31 23:59:59", count: 1, memberIds: ["zhang-scene"] },
+  { id: "t4", name: "zjc测试考试", mode: "考试模式", status: "END", operator: "张嘉城", createdAt: "2026-10-09 11:25:33", beginAt: "2026-10-09 00:00:00", endAt: "2026-10-10 23:59:59", count: 1, memberIds: [] },
+  { id: "exam", name: "YPing-考试", mode: "考试模式", status: "END", operator: "张嘉城", createdAt: "2026-10-08 17:13:44", beginAt: "2026-10-08 00:00:00", endAt: "2026-10-09 23:59:59", count: 2, memberIds: ["li", "zhang"] },
+  { id: "t6", name: "YPing-问答", mode: "场景练习", status: "PROCESS", operator: "张嘉城", createdAt: "2026-10-08 16:36:23", beginAt: "2026-10-08 00:00:00", endAt: "2026-10-18 23:59:59", count: 2, memberIds: [] },
+  { id: "t7", name: "YPing-自由练习", mode: "自由练习", status: "PROCESS", operator: "张嘉城", createdAt: "2026-10-08 15:37:07", beginAt: "2026-10-08 00:00:00", endAt: "2026-10-29 23:59:59", count: 2, memberIds: [] },
+  { id: "t8", name: "YPing测试", mode: "自由练习", status: "PROCESS", operator: "李莹萍", createdAt: "2026-10-08 14:49:52", beginAt: "2026-10-08 00:00:00", endAt: "2026-10-30 23:59:59", count: 11, memberIds: [] },
+  { id: "t9", name: "挂断开场白", mode: "自由练习", status: "PROCESS", operator: "李莹萍", createdAt: "2026-10-08 14:11:10", beginAt: "2026-10-08 00:00:00", endAt: "2026-10-15 23:59:59", count: 2, memberIds: [] },
+  { id: "t10", name: "ai问答场景练习", mode: "场景练习", status: "END", operator: "张嘉城", createdAt: "2026-09-28 20:31:41", beginAt: "2026-09-28 00:00:00", endAt: "2026-09-30 23:59:59", count: 1, memberIds: [] },
+  { id: "t11", name: "多场景自由练习", mode: "自由练习", status: "END", operator: "张嘉城", createdAt: "2026-09-24 16:49:07", beginAt: "2026-09-24 00:00:00", endAt: "2026-09-30 23:59:59", count: 1, memberIds: [] },
+  { id: "t12", name: "测试挂断自由练习", mode: "自由练习", status: "END", operator: "张嘉城", createdAt: "2026-09-24 14:24:10", beginAt: "2026-09-24 00:00:00", endAt: "2026-09-30 23:59:59", count: 1, memberIds: [] },
+  { id: "t13", name: "ai问答场景练习", mode: "场景练习", status: "END", operator: "张嘉城", createdAt: "2026-09-24 13:36:49", beginAt: "2026-09-24 00:00:00", endAt: "2026-09-30 23:59:59", count: 1, memberIds: [] },
+  { id: "t14", name: "已结束任务", mode: "场景练习", status: "END", operator: "张嘉城", createdAt: "2026-09-24 10:31:26", beginAt: "2026-09-24 00:00:00", endAt: "2026-09-25 23:59:59", count: 1, memberIds: [] },
+  { id: "t15", name: "测试场景数", mode: "场景练习", status: "END", operator: "邱卓然", createdAt: "2026-09-23 18:54:18", beginAt: "2026-09-23 00:00:00", endAt: "2026-09-30 23:59:59", count: 2, memberIds: [] }
 ];
+
+function getTaskStatusText(status) {
+  if (status === "CREATE") return "未开始";
+  if (status === "PROCESS") return "进行中";
+  if (status === "END") return "已结束";
+  return status || "";
+}
+function getTaskStatusTag(status) {
+  if (status === "PROCESS") return "tag-primary";
+  return "tag-info";
+}
 let currentTaskId = "free";
 function copyTotal(copy) {
   const got = copy.dims.reduce((n, d) => n + Number(d.score), 0);
@@ -1552,75 +1797,277 @@ function sameStandardBlocks(member) {
     return `<div class="same-std"><div class="scene-block-name">同标准平均 · ${esc(g.name)}</div><div class="scene-block-std" style="margin-bottom:10px;">${g.scenes.map(s => esc(s.name)).join("、")} 使用同一条标准，维度可以平均</div>${dimBars(dims)}</div>`;
   }).join("");
 }
+function filteredTasks() {
+  return practiceTasks.filter(t => {
+    if (taskQuery.name && !t.name.includes(taskQuery.name)) return false;
+    if (taskQuery.status && t.status !== taskQuery.status) return false;
+    if (taskQuery.operator && !t.operator.includes(taskQuery.operator)) return false;
+    if (taskQuery.mode && t.mode !== taskQuery.mode) return false;
+    return true;
+  });
+}
 function renderTask() {
   setCrumb("任务管理");
   setNav("task");
   document.getElementById("memberMask").classList.remove("show");
+  const rows = filteredTasks();
   document.getElementById("main").innerHTML = `
-    <div class="card">
-      <table class="el-table">
-        <thead><tr><th>任务名称</th><th>任务模式</th><th>任务状态</th><th>学员人数</th><th>起止时间</th><th>操作</th></tr></thead>
-        <tbody>${practiceTasks.map(t => `<tr>
-          <td>${esc(t.name)}</td>
-          <td>${esc(t.mode)}</td>
-          <td><span class="tag ${t.statusTag}">${esc(t.status)}</span></td>
-          <td><button class="btn-link" data-task="${t.id}">${t.memberIds.length}</button></td>
-          <td>${esc(t.time)}</td>
-          <td><button class="btn-link" data-task="${t.id}">学员明细</button></td>
-        </tr>`).join("")}</tbody>
-      </table>
+    <div class="card task-management-container">
+      <div class="search-form">
+        <div class="form-inline" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:12px;">
+            <input class="input" id="t-kw" placeholder="请输入任务名称" style="width:180px" value="${esc(taskQuery.name)}">
+            <select class="select" id="t-status" style="width:180px">
+              <option value="">请选择任务执行状态</option>
+              <option value="CREATE" ${taskQuery.status === "CREATE" ? "selected" : ""}>未开始</option>
+              <option value="PROCESS" ${taskQuery.status === "PROCESS" ? "selected" : ""}>进行中</option>
+              <option value="END" ${taskQuery.status === "END" ? "selected" : ""}>已结束</option>
+            </select>
+            <input class="input" id="t-operator" placeholder="请输入创建人" style="width:160px" value="${esc(taskQuery.operator)}">
+            <select class="select" id="t-mode" style="width:160px">
+              <option value="">请选择任务模式</option>
+              ${["场景练习", "自由练习", "考试模式"].map(m => `<option value="${m}" ${taskQuery.mode === m ? "selected" : ""}>${m}</option>`).join("")}
+            </select>
+            <button class="btn btn-primary" id="t-search">搜索</button>
+            <button class="btn" id="t-reset">重置</button>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-primary" id="t-add">新增任务</button>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrap table-container" style="margin-top:8px;">
+        <table class="el-table">
+          <thead>
+            <tr>
+              <th>任务名称</th>
+              <th style="width:90px;">学员人数</th>
+              <th style="width:110px;">任务状态</th>
+              <th style="width:110px;">任务模式</th>
+              <th style="width:100px;">创建人</th>
+              <th style="width:180px;">创建时间</th>
+              <th style="width:180px;">开始时间</th>
+              <th style="width:180px;">截止时间</th>
+              <th style="width:120px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.length ? rows.map(t => {
+              const isEnd = t.status === "END";
+              return `<tr>
+                <td>${esc(t.name)}</td>
+                <td><button class="btn-link" data-view-members="${t.id}">${t.count}</button></td>
+                <td><span class="tag ${getTaskStatusTag(t.status)}">${esc(getTaskStatusText(t.status))}</span></td>
+                <td>${esc(t.mode)}</td>
+                <td>${esc(t.operator)}</td>
+                <td>${esc(t.createdAt)}</td>
+                <td>${esc(t.beginAt)}</td>
+                <td>${esc(t.endAt)}</td>
+                <td>${isEnd ? "—" : `<button class="btn-link" data-task-edit="${t.id}">编辑</button><button class="btn-link warn" data-task-finish="${t.id}">结束</button>`}</td>
+              </tr>`;
+            }).join("") : `<tr><td colspan="9"><div class="empty">没有符合条件的任务</div></td></tr>`}
+          </tbody>
+        </table>
+      </div>
     </div>`;
-  document.querySelectorAll("[data-task]").forEach(el => {
-    el.onclick = () => openTask(el.dataset.task);
+
+  document.getElementById("t-search").onclick = () => {
+    taskQuery = {
+      name: document.getElementById("t-kw").value.trim(),
+      status: document.getElementById("t-status").value,
+      operator: document.getElementById("t-operator").value.trim(),
+      mode: document.getElementById("t-mode").value
+    };
+    renderTask();
+  };
+  document.getElementById("t-reset").onclick = () => {
+    taskQuery = { name: "", status: "", operator: "", mode: "" };
+    renderTask();
+  };
+  document.getElementById("t-add").onclick = () => toast("新增任务");
+  document.querySelectorAll("[data-view-members]").forEach(el => {
+    el.onclick = () => openTask(el.dataset.viewMembers);
+  });
+  document.querySelectorAll("[data-task-edit]").forEach(el => {
+    el.onclick = () => {
+      const t = practiceTasks.find(x => String(x.id) === el.dataset.taskEdit);
+      toast("编辑任务：" + (t ? t.name : ""));
+    };
+  });
+  document.querySelectorAll("[data-task-finish]").forEach(el => {
+    el.onclick = () => {
+      const t = practiceTasks.find(x => String(x.id) === el.dataset.taskFinish);
+      if (!t) return;
+      confirm("结束确认", `确定要结束任务 "${t.name}" 吗？`, () => {
+        t.status = "END";
+        toast(`任务 "${t.name}" 已成功结束`);
+        renderTask();
+      });
+    };
   });
 }
 function openTask(id) {
   currentTaskId = id;
-  const task = practiceTasks.find(t => t.id === id);
+  const task = practiceTasks.find(t => String(t.id) === String(id));
+  memberExpanded = new Set((task && task.memberIds) || []);
   view = "taskMember";
   render();
-  if (task.openReport) openMemberReport(task.openReport);
+  if (task && task.openReport) openMemberReport(task.openReport);
+}
+let memberExpanded = new Set();
+function memberProgress(m) {
+  if (m.progress) return m.progress;
+  const done = m.scenes.filter(s => sceneStatusText(s) === "已完成").length;
+  return done + "/" + m.scenes.length;
+}
+function memberScoreText(m) {
+  if (m.score != null) return m.score;
+  const score = personScore(m);
+  return score === null ? "—" : score;
+}
+function sceneStatusText(s) {
+  if (s.status === "已完成" || s.status === "已交卷" || s.status === "已评分") return "已完成";
+  return sceneScored(s) ? "已完成" : "未完成";
+}
+function sceneTimes(s) {
+  if (s.times != null) return s.times;
+  if (s.copies) return s.copies.reduce((n, c) => n + c.calls, 0);
+  return sceneScored(s) ? 1 : 0;
+}
+function sceneHigh(s) {
+  if (s.high != null) return s.high;
+  const point = scenePoint(s);
+  return point === null ? "—" : point;
+}
+function sceneLast(s, member) {
+  return s.last || member.last;
+}
+function sceneDuration(scene) {
+  if (scene.duration) return scene.duration;
+  if (scene.copies && scene.copies.length) return scene.copies.reduce((n, c) => n + c.calls, 0) * 6 + "分钟";
+  const times = sceneTimes(scene);
+  return times ? times * 6 + "分钟" : "—";
+}
+function openMemberExport(task, members) {
+  const free = task.mode === "自由练习";
+  const overviewHead = ["学员", "部门", "完成进度", "最近练习时间", "综合得分"];
+  const overviewRows = members.map(m => [m.name, m.org || "—", memberProgress(m), m.last, memberScoreText(m)]);
+  const detailHead = free
+    ? ["线索昵称", "手机号", "练习场景", "练习次数", "累计时长", "最近练习时间"]
+    : ["学员", "场景名称", "完成状态", "练习次数", "最高得分", "最近练习时间"];
+  const detailRows = free
+    ? members.flatMap(m => m.scenes.map(s => [m.clueName || m.name, m.phone || "138****2618", s.name, sceneTimes(s), sceneDuration(s), sceneLast(s, m)]))
+    : members.flatMap(m => m.scenes.map(s => [m.name, s.name, sceneStatusText(s), sceneTimes(s), sceneHigh(s), sceneLast(s, m)]));
+  const sheet = (title, head, rows) => `
+    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">工作表：${esc(title)}</div>
+    <table class="el-table"><thead><tr>${head.map(h => `<th>${esc(h)}</th>`).join("")}</tr></thead>
+    <tbody>${rows.length ? rows.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join("")}</tr>`).join("") : `<tr><td colspan="${head.length}"><div class="empty">暂无数据</div></td></tr>`}</tbody></table>`;
+  document.getElementById("detailTitle").textContent = "导出明细 · " + task.name;
+  document.getElementById("detailBody").innerHTML = `
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button class="btn btn-primary btn-sm" id="sheet-overview">学员总览</button>
+      <button class="btn btn-sm" id="sheet-detail">学员明细</button>
+    </div>
+    <div id="sheet-body">${sheet("学员总览", overviewHead, overviewRows)}</div>`;
+  const show = (which) => {
+    document.getElementById("sheet-overview").className = "btn btn-sm" + (which === "overview" ? " btn-primary" : "");
+    document.getElementById("sheet-detail").className = "btn btn-sm" + (which === "detail" ? " btn-primary" : "");
+    document.getElementById("sheet-body").innerHTML = which === "overview"
+      ? sheet("学员总览", overviewHead, overviewRows)
+      : sheet("学员明细", detailHead, detailRows);
+  };
+  document.getElementById("sheet-overview").onclick = () => show("overview");
+  document.getElementById("sheet-detail").onclick = () => show("detail");
+  document.getElementById("detailMask").classList.add("show");
 }
 function renderTaskMember() {
   setCrumb("学员明细");
   setNav("taskMember");
-  const task = practiceTasks.find(t => t.id === currentTaskId);
-  const members = task.memberIds.map(id => taskMembers.find(m => m.id === id));
+  const task = practiceTasks.find(t => String(t.id) === String(currentTaskId)) || practiceTasks[0];
+  const members = (task.memberIds || []).map(id => taskMembers.find(m => m.id === id)).filter(Boolean);
+  const statusText = getTaskStatusText(task.status);
+  const statusTag = getTaskStatusTag(task.status);
+  const timeText = task.time || `${task.beginAt} ~ ${task.endAt}`;
   document.getElementById("main").innerHTML = `
     <div class="card">
-      <div class="member-head">
+      <div class="member-toolbar">
         <button class="btn" id="back-task">← 返回任务管理</button>
-        <h2>${esc(task.name)}</h2>
-        <span class="tag ${task.statusTag}">${esc(task.status)}</span>
+        <button class="btn" id="export-members">导出明细</button>
       </div>
-      <div class="member-sub">${esc(task.mode)}：${esc(task.time)}</div>
+      <div class="member-title">
+        <h2>${esc(task.name)}</h2>
+        <span class="tag ${statusTag}">${esc(statusText)}</span>
+      </div>
+      <div class="member-sub">${esc(task.mode)}：${esc(timeText)}</div>
       <table class="el-table">
         <thead><tr><th>学员</th><th>所属组织</th><th>完成进度</th><th>最近练习时间</th><th>综合得分</th><th>操作</th></tr></thead>
-        <tbody>${members.map(m => {
-          const scored = m.scenes.filter(sceneScored).length;
-          const score = personScore(m);
+        <tbody>${members.length ? members.map(m => {
+          const progress = memberProgress(m);
+          const parts = progress.split("/");
+          const ratio = parts[1] ? Number(parts[0]) / Number(parts[1]) * 100 : 0;
+          const open = memberExpanded.has(m.id);
+          const sceneRows = m.scenes.map((s, i) => `<tr>
+            <td>${esc(s.name)}</td>
+            <td>${esc(sceneStatusText(s))}</td>
+            <td>${sceneTimes(s)}</td>
+            <td>${sceneHigh(s)}</td>
+            <td>${esc(sceneLast(s, m))}</td>
+            <td><button class="btn-link" data-scene-report="${m.id}:${i}">查看报告</button></td>
+          </tr>`).join("");
           return `<tr>
             <td>${esc(m.name)}</td>
-            <td>${esc(m.org)}</td>
-            <td>${scored}/${m.scenes.length}</td>
+            <td>${esc(m.org || "")}</td>
+            <td><div class="progress-cell"><span class="progress-track"><i style="width:${ratio}%"></i></span>${esc(progress)}</div></td>
             <td>${esc(m.last)}</td>
-            <td>${score === null ? "—" : score}</td>
-            <td><button class="btn-link" data-member="${m.id}">查看报告</button></td>
-          </tr>`;
-        }).join("")}</tbody>
+            <td>${memberScoreText(m)}</td>
+            <td>
+              <button class="btn-link" data-toggle-member="${m.id}">${open ? "收起明细" : "展开明细"}</button>
+              <button class="btn-link" data-member="${m.id}">查看报告</button>
+            </td>
+          </tr>
+          ${open ? `<tr class="scene-nest"><td colspan="6"><table class="el-table"><thead><tr><th>场景名称</th><th>完成状态</th><th>练习次数</th><th>最高得分</th><th>最近练习时间</th><th>操作</th></tr></thead><tbody>${sceneRows}</tbody></table></td></tr>` : ""}`;
+        }).join("") : `<tr><td colspan="6"><div class="empty">暂无学员</div></td></tr>`}</tbody>
       </table>
+      <div class="pagination">
+        <span>共 ${members.length} 条</span>
+        <select class="select" style="width:96px;height:28px;"><option>20条/页</option></select>
+        <button class="page-btn">‹</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">›</button>
+        <span>前往</span>
+        <input class="input" value="1" style="width:42px;height:28px;text-align:center;">
+        <span>页</span>
+      </div>
     </div>`;
   document.getElementById("back-task").onclick = () => { view = "task"; render(); };
+  document.getElementById("export-members").onclick = () => openMemberExport(task, members);
+  document.querySelectorAll("[data-toggle-member]").forEach(el => el.onclick = () => {
+    const id = el.dataset.toggleMember;
+    if (memberExpanded.has(id)) memberExpanded.delete(id);
+    else memberExpanded.add(id);
+    renderTaskMember();
+  });
   document.querySelectorAll("[data-member]").forEach(el => el.onclick = () => openMemberReport(el.dataset.member));
+  document.querySelectorAll("[data-scene-report]").forEach(el => el.onclick = () => {
+    const [mid, index] = el.dataset.sceneReport.split(":");
+    const member = taskMembers.find(x => x.id === mid);
+    const scene = member.scenes[Number(index)];
+    openSceneAttemptReport(member, scene);
+  });
 }
 function openMemberReport(id) {
   const m = taskMembers.find(x => x.id === id);
+  if (!m.strengths) {
+    const scene = m.scenes[0];
+    if (scene) openSceneAttemptReport(m, scene);
+    return;
+  }
   const scored = m.scenes.filter(sceneScored);
   const scores = scored.map(s => ({ name: s.name, score: scenePoint(s) }));
   const total = personScore(m);
   document.getElementById("memberTitle").textContent = m.name + " · 整体评价与分析";
+  document.getElementById("memberDialog").style.width = "760px";
   document.getElementById("memberBody").innerHTML = `
-    <div class="call-split">${callPane()}<div class="call-main">
     <div class="metric-row">
       <div class="metric"><b>${total}</b><span>综合得分</span></div>
       <div class="metric"><b style="color:var(--text-primary)">${scored.length}/${m.scenes.length}</b><span>已评分场景</span></div>
@@ -1648,28 +2095,103 @@ function openMemberReport(id) {
     <div class="sec-title">待改进项</div>
     <ul>${m.weaknesses.map(t => `<li class="bullet">${esc(t)}</li>`).join("")}</ul>
     <div class="sec-title">AI 综合评语与建议</div>
-    <div class="comment-box">${esc(m.comment)}</div>
-    </div></div>`;
+    <div class="comment-box">${esc(m.comment)}</div>`;
   document.getElementById("memberMask").classList.add("show");
+}
+let myTaskQuery = { name: "", status: "", mode: "" };
+const myTasks = [
+  { name: "YPing-考试", status: "END", mode: "考试模式", done: 2, total: 3, beginAt: "2026-10-08 00:00:00", endAt: "2026-10-09 23:59:59", action: "详情" },
+  { name: "YPing-问答", status: "PROCESS", mode: "场景练习", done: 1, total: 4, beginAt: "2026-10-08 00:00:00", endAt: "2026-10-18 23:59:59", action: "去练习" },
+  { name: "YPing-自由练习", status: "PROCESS", mode: "自由练习", done: null, total: null, beginAt: "2026-10-08 00:00:00", endAt: "2026-10-29 23:59:59", action: "去练习" },
+  { name: "挂断开场白", status: "PROCESS", mode: "自由练习", done: null, total: null, beginAt: "2026-10-08 00:00:00", endAt: "2026-10-31 23:59:59", action: "去练习" },
+  { name: "YPing测试", status: "PROCESS", mode: "自由练习", done: null, total: null, beginAt: "2026-10-08 00:00:00", endAt: "2026-10-30 23:59:59", action: "去查看" },
+  { name: "20260910", status: "END", mode: "场景练习", done: 0, total: 1, beginAt: "2026-09-10 00:00:00", endAt: "2026-09-17 00:00:00", action: "详情" },
+  { name: "20260907", status: "END", mode: "考试模式", done: 1, total: 1, beginAt: "2026-09-07 00:00:00", endAt: "2026-09-15 00:00:00", action: "详情" },
+  { name: "20260909", status: "END", mode: "考试模式", done: 1, total: 1, beginAt: "2026-09-07 00:00:00", endAt: "2026-09-10 00:00:00", action: "详情" },
+  { name: "测试123", status: "END", mode: "考试模式", done: 0, total: 1, beginAt: "2026-09-02 00:00:00", endAt: "2026-09-23 00:00:00", action: "详情" },
+  { name: "RRRR111", status: "END", mode: "考试模式", done: 0, total: 1, beginAt: "2026-05-22 00:00:00", endAt: "2026-05-23 23:59:59", action: "详情" }
+];
+function filteredMyTasks() {
+  return myTasks.filter(t => {
+    if (myTaskQuery.name && !t.name.includes(myTaskQuery.name)) return false;
+    if (myTaskQuery.status && t.status !== myTaskQuery.status) return false;
+    if (myTaskQuery.mode && t.mode !== myTaskQuery.mode) return false;
+    return true;
+  });
 }
 function renderMyTask() {
   setCrumb("我的任务");
   setNav("mytask");
+  const rows = filteredMyTasks();
   document.getElementById("main").innerHTML = `
     <div class="card">
+      <div class="form-inline">
+        <input class="input" id="my-kw" placeholder="请输入任务名称" style="width:180px" value="${esc(myTaskQuery.name)}">
+        <select class="select" id="my-status" style="width:180px">
+          <option value="">请选择任务执行状态</option>
+          <option value="PROCESS" ${myTaskQuery.status === "PROCESS" ? "selected" : ""}>进行中</option>
+          <option value="END" ${myTaskQuery.status === "END" ? "selected" : ""}>已结束</option>
+        </select>
+        <select class="select" id="my-mode" style="width:160px">
+          <option value="">请选择任务模式</option>
+          ${["场景练习", "自由练习", "考试模式"].map(m => `<option value="${m}" ${myTaskQuery.mode === m ? "selected" : ""}>${m}</option>`).join("")}
+        </select>
+        <button class="btn btn-primary" id="my-search">搜索</button>
+        <button class="btn" id="my-reset">重置</button>
+      </div>
       <table class="el-table">
-        <thead><tr><th>任务名称</th><th>场景</th><th>得分</th><th>操作</th></tr></thead>
-        <tbody><tr>
-          <td>YPing-考试</td>
-          <td>高中｜续费邀约</td>
-          <td>46</td>
-          <td><button class="btn-link" id="open-my-report">查看评分</button></td>
-        </tr></tbody>
+        <thead><tr>
+          <th>任务名称</th><th style="width:110px;">任务状态</th><th style="width:110px;">任务模式</th>
+          <th style="width:140px;">进度</th><th style="width:180px;">开始时间</th><th style="width:180px;">截止时间</th><th style="width:90px;">操作</th>
+        </tr></thead>
+        <tbody>${rows.length ? rows.map((t, i) => {
+          const progress = t.total == null ? "—" : `<div class="progress-cell"><span class="progress-track"><i style="width:${t.total ? t.done / t.total * 100 : 0}%"></i></span>${t.done}/${t.total}</div>`;
+          return `<tr>
+            <td>${esc(t.name)}</td>
+            <td><span class="tag ${getTaskStatusTag(t.status)}">${esc(getTaskStatusText(t.status))}</span></td>
+            <td>${esc(t.mode)}</td>
+            <td>${progress}</td>
+            <td>${esc(t.beginAt)}</td>
+            <td>${esc(t.endAt)}</td>
+            <td><button class="btn-link" data-my-act="${i}">${esc(t.action)}</button></td>
+          </tr>`;
+        }).join("") : `<tr><td colspan="7"><div class="empty">没有符合条件的任务</div></td></tr>`}</tbody>
       </table>
+      <div class="pagination">
+        <span>共 ${rows.length} 条</span>
+        <select class="select" style="width:96px;height:28px;"><option>20条/页</option></select>
+        <button class="page-btn">‹</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">›</button>
+        <span>前往</span>
+        <input class="input" value="1" style="width:42px;height:28px;text-align:center;">
+        <span>页</span>
+      </div>
     </div>`;
-  document.getElementById("open-my-report").onclick = () => {
-    openReport(standards.find(s => s.name === "外呼综合五维"), "高中｜续费邀约", true);
+  document.getElementById("my-search").onclick = () => {
+    myTaskQuery = {
+      name: document.getElementById("my-kw").value.trim(),
+      status: document.getElementById("my-status").value,
+      mode: document.getElementById("my-mode").value
+    };
+    renderMyTask();
   };
+  document.getElementById("my-reset").onclick = () => {
+    myTaskQuery = { name: "", status: "", mode: "" };
+    renderMyTask();
+  };
+  document.querySelectorAll("[data-my-act]").forEach(el => {
+    el.onclick = () => {
+      const task = rows[Number(el.dataset.myAct)];
+      if (task.action === "详情") {
+        currentTaskId = "exam";
+        const member = taskMembers.find(m => m.id === "li");
+        openSceneAttemptReport(member, member.scenes[0]);
+        return;
+      }
+      toast(task.action);
+    };
+  });
 }
 
 document.querySelectorAll(".menu-item").forEach(el => {
@@ -1694,6 +2216,15 @@ document.querySelectorAll(".menu-item").forEach(el => {
 document.querySelectorAll("[data-close]").forEach(el => {
   el.onclick = () => document.getElementById(el.dataset.close).classList.remove("show");
 });
+document.addEventListener("click", event => {
+  const el = event.target.closest && event.target.closest("[data-act='disable']");
+  if (!el) return;
+  const s = findStandard(Number(el.dataset.id));
+  if (!citedByPublishedScene(s)) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  toast("该标准正在被已发布的场景引用，不允许停用");
+}, true);
 document.getElementById("confirmOk").onclick = () => {
   document.getElementById("confirmMask").classList.remove("show");
   if (confirmAction) confirmAction();
