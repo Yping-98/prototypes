@@ -170,7 +170,8 @@
   .cw-bar { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
   .inline-panel { padding:16px; margin-bottom:12px; background:#f5f7fa; border:1px solid #ebeef5; border-radius:8px; }
   .radios label { margin-right:16px; line-height:32px; }
-  .std-cell { display:flex; align-items:center; gap:6px; }
+  .std-cell { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .std-cell .input.short { width:64px; }
   .hint { color:#909399; font-size:12px; white-space:nowrap; }
   .q-item { border:1px solid #ebeef5; border-radius:6px; padding:12px; margin-bottom:10px; background:#fafafa; }
   .q-hd { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
@@ -303,9 +304,9 @@ const courses = [
       { name: "Q3专项提升", time: "2026-07-01 ~ 2026-09-30", status: "已结束" }
     ],
     coursewares: [
-      { uid: 1, name: "开场话术演示", type: "video", duration: 750, standard: "1", watched: 0, position: 0, docPage: 1, docDone: false },
-      { uid: 2, name: "异议处理手册", type: "doc", duration: 0, pages: 3, standard: "", watched: 0, position: 0, docPage: 1, docDone: false },
-      { uid: 3, name: "成交案例复盘", type: "video", duration: 480, standard: "3", watched: 0, position: 0, docPage: 1, docDone: false }
+      { uid: 1, name: "开场话术演示", type: "video", duration: 750, standardMin: "1", standardSec: "0", watched: 0, position: 0, docPage: 1, docDone: false },
+      { uid: 2, name: "异议处理手册", type: "doc", duration: 0, pages: 3, standardMin: "", standardSec: "", watched: 0, position: 0, docPage: 1, docDone: false },
+      { uid: 3, name: "成交案例复盘", type: "video", duration: 480, standardMin: "3", standardSec: "0", watched: 0, position: 0, docPage: 1, docDone: false }
     ]
   },
   {
@@ -520,7 +521,18 @@ function nowStamp() {
 function videoTotal(list) {
   return list.filter(c => c.type === "video").reduce((s, c) => s + (c.duration || 0), 0);
 }
-function maxMinutes(duration) { return Math.floor((duration || 0) / 60); }
+function standardParts(w) {
+  const minText = String(w.standardMin ?? "");
+  const secText = String(w.standardSec ?? "");
+  const min = /^\d+$/.test(minText) ? Number(minText) : 0;
+  const sec = /^\d+$/.test(secText) ? Number(secText) : 0;
+  return { minText, secText, min, sec, seconds: min * 60 + sec, filled: minText !== "" || secText !== "" };
+}
+function formatStandard(w) {
+  const part = standardParts(w);
+  if (!part.filled || part.seconds <= 0) return "未设置";
+  return part.min + " 分钟 " + part.sec + " 秒";
+}
 function toast(msg, type) {
   const el = document.getElementById("toast");
   el.textContent = msg;
@@ -716,7 +728,7 @@ function openCourseDetail(id) {
         <td>${i + 1}</td><td>${esc(w.name)}</td>
         <td><span class="tag ${w.type === "video" ? "blue" : "orange"}">${w.type === "video" ? "视频" : "文档"}</span></td>
         <td>${w.type === "video" ? formatDuration(w.duration) : "—"}</td>
-        <td>${w.type === "video" ? esc(w.standard || "—") + " 分钟" : "看完全部文件"}</td>
+        <td>${w.type === "video" ? esc(formatStandard(w) === "未设置" ? "—" : formatStandard(w)) : "看完全部文件"}</td>
       </tr>`).join("") || `<tr><td colspan="5" class="empty">暂无课件</td></tr>`}</tbody>
     </table>
   `, `<button class="btn" id="detail-close">关闭</button>`);
@@ -813,13 +825,13 @@ function drawCourseEditor() {
           <td><span class="tag ${w.type === "video" ? "blue" : "orange"}">${w.type === "video" ? "视频" : "文档"}</span></td>
           <td>${w.type === "video" ? fmtDur(w.duration) : "—"}</td>
           <td>${w.type === "video"
-            ? `<div class="std-cell"><input class="input short std-input ${w._err ? "err" : ""}" data-uid="${w.uid}" value="${esc(w.standard)}" inputmode="numeric" placeholder="分钟"><span>分钟</span><span class="hint">上限 ${maxMinutes(w.duration)} 分钟</span></div>`
+            ? `<div class="std-cell"><input class="input short std-min ${w._err ? "err" : ""}" data-uid="${w.uid}" value="${esc(w.standardMin || "")}" inputmode="numeric" placeholder="0"><span>分钟</span><input class="input short std-sec ${w._err ? "err" : ""}" data-uid="${w.uid}" value="${esc(w.standardSec || "")}" inputmode="numeric" placeholder="0"><span>秒</span><span class="hint">上限 ${fmtDur(w.duration)}</span></div>`
             : `<span class="hint">看完全部文件</span>`}</td>
           <td><button class="btn link danger" data-del-cw="${w.uid}">删除</button></td>
         </tr>`).join("") || `<tr><td colspan="6" class="empty">请添加课件</td></tr>`}
       </tbody>
     </table>
-    <p class="help">视频填写观看分钟数，达到该时长即完成，且不能超过该视频时长和课程总时长。文档不填写分钟数，看完全部文件即完成。</p>
+    <p class="help">视频填写观看分钟和秒，达到该时长即完成，且不能超过该视频时长和课程总时长。秒只能填 0 到 59。文档不填写，看完全部文件即完成。</p>
   `, published
     ? `<button class="btn" id="c-cancel">取消</button><button class="btn primary" id="c-save">保存全部修改</button>`
     : `<button class="btn" id="c-cancel">取消</button><button class="btn" id="c-draft">保存草稿</button><button class="btn primary" id="c-publish">保存并发布</button>`);
@@ -828,11 +840,17 @@ function drawCourseEditor() {
 function bindCourseEditor() {
   const name = document.getElementById("c-name");
   if (name) name.oninput = () => { editingCourse.name = name.value; };
-  document.querySelectorAll(".std-input").forEach(input => {
+  document.querySelectorAll(".std-min, .std-sec").forEach(input => {
     input.oninput = () => {
-      input.value = input.value.replace(/\D/g, "");
+      let value = input.value.replace(/\D/g, "");
+      if (input.classList.contains("std-sec") && value !== "" && Number(value) > 59) value = "59";
+      input.value = value;
       const w = editingCourse.coursewares.find(x => x.uid === Number(input.dataset.uid));
-      if (w) { w.standard = input.value; w._err = false; }
+      if (w) {
+        if (input.classList.contains("std-sec")) w.standardSec = value;
+        else w.standardMin = value;
+        w._err = false;
+      }
       input.classList.remove("err");
     };
   });
@@ -888,7 +906,7 @@ function toggleAddPanel() {
     if (editingCourse.coursewares.some(w => w.name === title)) return toast("同一课程下课件名称不可重复", "warn");
     editingCourse.coursewares.push({
       uid: ++uidSeq, name: title, type, duration: type === "video" ? fileDuration : 0,
-      pages: type === "doc" ? 3 : 0, standard: "", watched: 0, position: 0, docPage: 1, docDone: false
+      pages: type === "doc" ? 3 : 0, standardMin: "", standardSec: "", watched: 0, position: 0, docPage: 1, docDone: false
     });
     drawCourseEditor();
   };
@@ -899,11 +917,12 @@ function validateStandards() {
   editingCourse.coursewares.forEach(w => {
     w._err = false;
     if (w.type !== "video") return;
-    if (!w.standard) { w._err = true; ok = false; toast("请填写视频课件的完成标准", "warn"); return; }
-    if (!/^\d+$/.test(w.standard) || Number(w.standard) <= 0) { w._err = true; ok = false; toast("完成标准仅可输入大于 0 的数字", "warn"); return; }
-    const seconds = Number(w.standard) * 60;
-    if (seconds > w.duration) { w._err = true; ok = false; toast("完成标准不能超过该视频时长", "warn"); return; }
-    if (seconds > total) { w._err = true; ok = false; toast("完成标准不能超过课程总时长", "warn"); }
+    const part = standardParts(w);
+    if (!part.filled) { w._err = true; ok = false; toast("请填写视频课件的完成标准", "warn"); return; }
+    if ((w.standardMin && !/^\d+$/.test(w.standardMin)) || (w.standardSec && !/^\d+$/.test(w.standardSec)) || part.sec > 59) { w._err = true; ok = false; toast("秒只能填 0 到 59", "warn"); return; }
+    if (part.seconds <= 0) { w._err = true; ok = false; toast("完成标准须大于 0", "warn"); return; }
+    if (part.seconds > w.duration) { w._err = true; ok = false; toast("完成标准不能超过该视频时长", "warn"); return; }
+    if (part.seconds > total) { w._err = true; ok = false; toast("完成标准不能超过课程总时长", "warn"); }
   });
   return ok;
 }
@@ -1074,7 +1093,7 @@ function renderPlayer() {
   const course = currentCourse();
   const cw = currentCw();
   setCrumb([{ text: "在线学习" }, { text: "我的学习", nav: "learn" }, { text: "课程学习" }]);
-  const standardSec = cw.type === "video" && /^\d+$/.test(cw.standard) ? Number(cw.standard) * 60 : 0;
+  const standardSec = cw.type === "video" ? standardParts(cw).seconds : 0;
   const done = cw.type === "video" ? cw.watched >= standardSec && standardSec > 0 : cw.docDone;
   document.getElementById("app").innerHTML = `
     <div class="back-row"><button class="btn" id="leave-learn">返回我的学习</button></div>
@@ -1100,7 +1119,7 @@ function renderPlayer() {
         <div class="play-status">
           <div>课件：${esc(cw.name)}（${cw.type === "video" ? "视频" : "文档"}）</div>
           ${cw.type === "video" ? `
-            <div>完成标准：${cw.standard ? esc(cw.standard) + " 分钟" : "未设置"}</div>
+            <div>完成标准：${esc(formatStandard(cw))}</div>
             <div>已观看：${fmt(cw.watched)}（仅统计点击播放到暂停或退出的时间）</div>
             <div>当前播放位置：${fmt(cw.position)}</div>
             <div>最近同步：${esc(lastSync)}</div>
@@ -1113,7 +1132,7 @@ function renderPlayer() {
         <div class="section-title" style="margin:12px">${esc(course.name)}</div>
         ${course.coursewares.map(w => `<div class="side-item ${w.uid === cw.uid ? "active" : ""}" data-cw="${w.uid}">
           <div>${esc(w.name)}</div>
-          <div class="hint">${w.type === "video" ? "视频 · " + (w.standard || "未设") + " 分钟" : "文档 · 看完全部文件"} · ${isCwDone(w) ? "已完成" : "未完成"}</div>
+          <div class="hint">${w.type === "video" ? "视频 · " + formatStandard(w) : "文档 · 看完全部文件"} · ${isCwDone(w) ? "已完成" : "未完成"}</div>
         </div>`).join("")}
       </div>
     </div>`;
@@ -1154,7 +1173,7 @@ function renderPlayer() {
 }
 function isCwDone(w) {
   if (w.type === "doc") return !!w.docDone;
-  const need = /^\d+$/.test(w.standard) ? Number(w.standard) * 60 : Infinity;
+  const need = standardParts(w).seconds || Infinity;
   return w.watched >= need;
 }
 function flushSync(cw) {
@@ -1164,7 +1183,7 @@ function flushSync(cw) {
 function startPlay() {
   const cw = currentCw();
   if (cw.type !== "video") return;
-  if (!/^\d+$/.test(cw.standard) || Number(cw.standard) <= 0) {
+  if (standardParts(cw).seconds <= 0) {
     toast("请先在课程管理中填写该视频的完成标准", "warn");
     return;
   }
@@ -1179,7 +1198,7 @@ function startPlay() {
     cur.position = Math.min(cur.duration, cur.position + 1);
     syncBucket += 1;
     if (syncBucket >= 5) flushSync(cur);
-    const need = Number(cur.standard) * 60;
+    const need = standardParts(cur).seconds;
     if (cur.watched >= need) {
       flushSync(cur);
       playing = false;
@@ -1852,6 +1871,12 @@ function bindProjectEditor(isEdit) {
   const draft = document.getElementById("proj-draft");
   if (draft) draft.onclick = () => saveProject(isEdit);
 }
+function referencedByOtherProject(kind, id) {
+  return projects.some((proj, index) => {
+    if (index === editProjectIndex) return false;
+    return (proj.items || []).some(it => kind === "homework" ? it.kind === "homework" && it.hwId === id : it.kind === "exam" && it.examId === id);
+  });
+}
 function toggleHomeworkPick(isEdit) {
   const box = document.getElementById("hw-pick");
   if (!box) return;
@@ -1864,7 +1889,7 @@ function toggleHomeworkPick(isEdit) {
     <div class="section-title">选择已上架作业</div>
     <div class="filter-form">
       <div class="fi"><input class="input" id="hw-kw" placeholder="搜索作业名称" style="width:180px"></div>
-      <div class="fi"><span class="hint">仅可选择「已上架」状态的作业</span></div>
+      <div class="fi"><span class="hint">仅可选择「已上架」，且未被其他学习项目引用的作业</span></div>
     </div>
     <div id="hw-pick-list"></div>
     <button class="btn primary" id="hw-pick-ok">确定</button>
@@ -1877,7 +1902,7 @@ function toggleHomeworkPick(isEdit) {
       else picked.delete(id);
     });
     const keyword = document.getElementById("hw-kw").value.trim();
-    const list = homeworks.filter(h => h.status === "上架" && (!keyword || h.name.includes(keyword)));
+    const list = homeworks.filter(h => h.status === "上架" && !referencedByOtherProject("homework", h.id) && (!keyword || h.name.includes(keyword)));
     document.getElementById("hw-pick-list").innerHTML = list.length ? `<table>
       <thead><tr><th style="width:42px"></th><th>作业名称</th><th style="width:100px">作业题数</th><th style="width:100px">状态</th></tr></thead>
       <tbody>${list.map(h => `<tr>
@@ -1896,6 +1921,10 @@ function toggleHomeworkPick(isEdit) {
     const ids = [...document.querySelectorAll(".hw-check:checked")].map(el => Number(el.value));
     for (const id of ids) {
       const hw = homeworks.find(h => h.id === id);
+      if (referencedByOtherProject("homework", id)) {
+        toast("该作业已被其他学习项目引用", "warn");
+        continue;
+      }
       if (editProject.items.some(it => it.kind === "homework" && it.hwId === id)) {
         toast("该作业已添加", "warn");
         continue;
@@ -1918,7 +1947,7 @@ function toggleExamPick(isEdit) {
     <div class="section-title">选择考试</div>
     <div class="filter-form">
       <div class="fi"><input class="input" id="exam-kw" placeholder="搜索考试名称" style="width:180px"></div>
-      <div class="fi"><span class="hint">仅可选择发布位置为「学习项目」，且状态为「未开始」「进行中」的考试</span></div>
+      <div class="fi"><span class="hint">仅可选择发布位置为「学习项目」，状态为「未开始」「进行中」，且未被其他学习项目引用的考试</span></div>
     </div>
     <div id="exam-pick-list"></div>
     <button class="btn primary" id="exam-pick-ok">确定</button>
@@ -1931,7 +1960,7 @@ function toggleExamPick(isEdit) {
       else picked.delete(id);
     });
     const keyword = document.getElementById("exam-kw").value.trim();
-    const list = exams.filter(ex => ex.place === "学习项目" && (ex.status === "未开始" || ex.status === "进行中") && (!keyword || ex.name.includes(keyword)));
+    const list = exams.filter(ex => ex.place === "学习项目" && (ex.status === "未开始" || ex.status === "进行中") && !referencedByOtherProject("exam", ex.id) && (!keyword || ex.name.includes(keyword)));
     const timeOf = ex => ex.startAt && ex.endAt ? esc(ex.startAt) + " ~ " + esc(ex.endAt) : "—";
     document.getElementById("exam-pick-list").innerHTML = list.length ? `<table>
       <thead><tr><th style="width:42px"></th><th>考试名称</th><th style="min-width:280px">考试时间</th><th style="width:100px">状态</th></tr></thead>
@@ -1951,6 +1980,10 @@ function toggleExamPick(isEdit) {
     const ids = [...document.querySelectorAll(".exam-check:checked")].map(el => Number(el.value));
     for (const id of ids) {
       const ex = examById(id);
+      if (referencedByOtherProject("exam", id)) {
+        toast("该考试已被其他学习项目引用", "warn");
+        continue;
+      }
       if (editProject.items.some(it => it.kind === "exam" && it.examId === id)) {
         toast("该考试已添加", "warn");
         continue;
