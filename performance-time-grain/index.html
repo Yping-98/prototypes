@@ -322,19 +322,6 @@ function exceeds3(start, end) {
   const limit = endOfDay(addMonths(startOfDay(start), 3));
   return end.getTime() > limit.getTime();
 }
-function customFromPeriod(period) {
-  const todayEnd = endOfDay(TODAY);
-  const includesToday = period.start.getTime() <= todayEnd.getTime() && period.end.getTime() >= startOfDay(TODAY).getTime();
-  let end = includesToday ? todayEnd : period.end;
-  if (end.getTime() - period.start.getTime() > 0 && !exceeds3(period.start, end) && period.end.getTime() - period.start.getTime() < 1000 * 60 * 60 * 24 * 40) {
-    return { start: period.start, end: end };
-  }
-  const cap = period.end.getTime() < todayEnd.getTime() ? period.end : TODAY;
-  let start = startOfDay(addMonths(startOfDay(cap), -3));
-  end = endOfDay(cap);
-  if (exceeds3(start, end)) start = startOfDay(new Date(start.getFullYear(), start.getMonth(), start.getDate() + 1));
-  return { start, end };
-}
 function hintFor(s) {
   if (s.grain === "custom") return "按所选时间实时查询";
   const period = currentPeriod(s);
@@ -373,11 +360,9 @@ function validateCustom(s) {
 function closePanels() { S().panel = ""; }
 function setGrain(next) {
   const s = S();
-  const prevPeriod = s.grain === "custom" ? null : currentPeriod(s);
-  if (next === "custom" && prevPeriod) {
-    const filled = customFromPeriod(prevPeriod);
-    s.customStart = fmtInput(filled.start);
-    s.customEnd = fmtInput(filled.end);
+  if (next === "custom" && s.grain !== "custom") {
+    s.customStart = "";
+    s.customEnd = "";
   }
   if (next === "week") s.weekAnchor = new Date(TODAY);
   if (next === "month") { s.monthY = 2026; s.monthM = 10; }
@@ -683,8 +668,8 @@ window.DIFF_CHANGESET = {
       level: "field", type: "logic", title: "按粒度选择周期",
       desc: "周、月、年改为选择一个自然周期，自定义仍使用开始时间至结束时间。",
       before: "只有开始时间和结束时间，默认本月1日0点至今天23点59分",
-      after: "周选自然周，月选自然月，年选自然年，都不能晚于当前周期。自定义仍是开始时间至结束时间。切换粒度后立即带出默认时间，点击搜索才刷新列表。",
-      examples: ["选择周，展示2026年第43周（10月19日-10月25日）", "选择月，展示2026年10月", "选择年，展示2026年", "2026年11月和2027年不可选", "从2026年10月切到自定义，时间为2026-10-01 00:00:00至2026-10-21 23:59:59", "从2026年切到自定义，时间为2026-07-21 00:00:00至2026-10-21 23:59:59"],
+      after: "周选自然周，月选自然月，年选自然年，都不能晚于当前周期。自定义仍是开始时间至结束时间。切到周、月、年时立即带出当前周期；切到自定义后开始时间和结束时间为空，由用户手动填写。点击搜索才刷新列表。",
+      examples: ["选择周，展示2026年第43周（10月19日-10月25日）", "选择月，展示2026年10月", "选择年，展示2026年", "2026年11月和2027年不可选", "从2026年10月切到自定义，开始时间和结束时间都为空", "从2026年切到自定义，开始时间和结束时间都为空，需手动填写后再搜索"],
       prd: { section: "7.2 【修改】时间选择", blockId: "doxcntdsUu1SHky1nvgtjCrFRUc" }
     },
     {
