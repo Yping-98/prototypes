@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>体验营 - 转介绍业绩看板</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; color: #1f2a37; background: #f3f5f8; font-size: 13px; }
+  button, input, select { font-family: inherit; font-size: 13px; }
+  #diffPage { min-height: 100vh; display: flex; }
+  .side { width: 196px; background: #1c2b3a; color: #c9d4e0; flex: none; padding: 14px 0 24px; }
+  .brand { color: #fff; font-weight: 650; padding: 0 16px 14px; font-size: 15px; }
+  .nav-group { padding: 8px 16px 4px; color: #8ea0b3; font-size: 12px; }
+  .nav-item { padding: 8px 16px 8px 28px; cursor: default; }
+  .nav-item.active { background: #1677ff; color: #fff; }
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .top { height: 48px; background: #fff; border-bottom: 1px solid #e6ebf1; display: flex; align-items: center; padding: 0 16px; color: #5c6b7a; }
+  .content { padding: 12px; }
+  .panel { background: #fff; border: 1px solid #e6ebf1; border-radius: 4px; }
+  .tabs { display: flex; border-bottom: 1px solid #e6ebf1; }
+  .tab { padding: 10px 22px; cursor: pointer; color: #5c6b7a; background: #f7f9fb; border-right: 1px solid #e6ebf1; }
+  .tab.on { background: #fff; color: #1677ff; font-weight: 600; }
+  .subtabs { display: flex; gap: 0; padding: 12px 12px 0; }
+  .sub { padding: 6px 16px; border: 1px solid #d9e1ea; background: #fff; cursor: pointer; color: #5c6b7a; }
+  .sub.on { color: #1677ff; border-color: #1677ff; }
+  #filterBar { padding: 12px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .field { position: relative; }
+  .fake { min-width: 180px; height: 32px; border: 1px solid #d9e1ea; border-radius: 4px; background: #fff; padding: 0 10px; text-align: left; color: #98a2b0; cursor: pointer; }
+  .fake.set { color: #1f2a37; }
+  .menu { position: absolute; z-index: 5; top: 34px; left: 0; min-width: 180px; background: #fff; border: 1px solid #d9e1ea; border-radius: 4px; box-shadow: 0 6px 16px rgba(16,24,40,.08); padding: 6px 0; display: none; }
+  .menu.open { display: block; }
+  .menu label { display: flex; gap: 8px; align-items: center; padding: 6px 10px; cursor: pointer; }
+  input[type="text"], input[type="date"] { height: 32px; border: 1px solid #d9e1ea; border-radius: 4px; padding: 0 8px; }
+  .dates { display: flex; align-items: center; gap: 6px; color: #5c6b7a; }
+  .btn { height: 32px; border-radius: 4px; border: 1px solid #d9e1ea; background: #fff; padding: 0 14px; cursor: pointer; }
+  .btn.primary { background: #1677ff; border-color: #1677ff; color: #fff; }
+  #summaryBar { margin: 0 12px; background: #2f86f6; color: #fff; display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 10px 14px; border-radius: 2px; }
+  #summaryBar b { font-weight: 650; }
+  .table-wrap { padding: 12px; overflow: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 980px; }
+  th, td { border-bottom: 1px solid #eef2f6; padding: 10px 8px; text-align: left; white-space: nowrap; }
+  th { color: #66788a; font-weight: 600; background: #fafbfc; cursor: pointer; }
+  tr:hover td { background: #f7fbff; }
+  .link { color: #1677ff; background: none; border: 0; padding: 0; cursor: pointer; }
+  .empty { text-align: center; color: #98a2b0; padding: 28px 0; }
+  .pager { display: flex; justify-content: flex-end; align-items: center; gap: 8px; padding: 0 12px 12px; color: #66788a; }
+  .pager button { height: 28px; min-width: 28px; border: 1px solid #d9e1ea; background: #fff; border-radius: 4px; cursor: pointer; }
+  .pager button.on { background: #1677ff; color: #fff; border-color: #1677ff; }
+  .pager button:disabled { color: #c0c7d0; cursor: not-allowed; }
+  .mask { position: fixed; inset: 0; background: rgba(16,24,40,.45); z-index: 20; display: flex; align-items: center; justify-content: center; }
+  .dialog { width: min(760px, calc(100vw - 48px)); background: #fff; border-radius: 6px; box-shadow: 0 12px 40px rgba(16,24,40,.18); }
+  .dialog h3 { margin: 0; padding: 14px 16px; font-size: 15px; border-bottom: 1px solid #eef2f6; display: flex; justify-content: space-between; }
+  .dialog h3 button { border: 0; background: none; font-size: 18px; cursor: pointer; color: #66788a; }
+  .dialog .table-wrap { padding-top: 4px; }
+  .dialog table { min-width: 640px; }
+  @media (max-width: 800px) {
+    .side { display: none; }
+    #summaryBar { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div id="diffPage">
+  <aside class="side">
+    <div class="brand">体验营</div>
+    <div class="nav-group">数据统计</div>
+    <div class="nav-item">转介绍线索转化</div>
+    <div class="nav-item active" id="menuEntry">转介绍业绩看板</div>
+  </aside>
+  <section class="main">
+    <div class="top">数据统计 / 转介绍业绩看板</div>
+    <div class="content">
+      <div class="panel">
+        <div class="tabs" id="dimTabs">
+          <div class="tab on" data-dim="sale">销售</div>
+          <div class="tab" data-dim="study">伴学</div>
+        </div>
+        <div class="subtabs" id="subTabs">
+          <button class="sub on" data-view="group" id="groupTab">小组</button>
+          <button class="sub" data-view="person" id="personTab">个人</button>
+        </div>
+        <div id="filterBar"></div>
+        <div id="summaryBar"></div>
+        <div id="groupTable"></div>
+        <div id="personTable"></div>
+        <div class="pager" id="pager"></div>
+      </div>
+    </div>
+  </section>
+</div>
+<div id="modal"></div>
+<script>
+(function () {
+  var saleGroup = [
+    { seat: "周宁", group: "体验营1组", poster: 20, old: 8, fresh: 16, pay: 4, orders: 5, amount: 16000 },
+    { seat: "陈可", group: "体验营1组", poster: 12, old: 5, fresh: 10, pay: 2, orders: 2, amount: 6000 },
+    { seat: "赵琳", group: "体验营2组", poster: 6, old: 2, fresh: 4, pay: 0, orders: 0, amount: 0 }
+  ];
+  var studyGroup = [
+    { seat: "林夏", group: "体验营伴学1组", poster: 0, old: 4, fresh: 8, pay: 2, orders: 2, amount: 9000 },
+    { seat: "何安", group: "体验营伴学1组", poster: 0, old: 1, fresh: 2, pay: 0, orders: 0, amount: 0 }
+  ];
+  var salePerson = [
+    { seat: "周宁", group: "体验营1组", phone: "13800001111", onion: "YC10001", poster: 1, old: 1, fresh: 3, pay: 1, orders: 2, amount: 8000 },
+    { seat: "周宁", group: "体验营1组", phone: "13800002222", onion: "YC10002", poster: 1, old: 1, fresh: 1, pay: 0, orders: 0, amount: 0 },
+    { seat: "陈可", group: "体验营1组", phone: "13800003333", onion: "YC10003", poster: 1, old: 1, fresh: 2, pay: 1, orders: 1, amount: 3000 }
+  ];
+  var studyPerson = [
+    { seat: "林夏", group: "体验营伴学1组", phone: "13700001111", onion: "YC30001", poster: 0, old: 1, fresh: 2, pay: 1, orders: 1, amount: 4500 }
+  ];
+  var details = {
+    "13800001111": [
+      ["13900001111", "2026-10-08 14:21:06", "2026-10-18 09:12:33", "5000"],
+      ["13900003333", "2026-10-12 11:02:18", "", ""],
+      ["13900005555", "2026-10-15 18:06:40", "", ""]
+    ],
+    "13800003333": [
+      ["13900006666", "2026-10-09 09:18:22", "2026-10-20 11:03:11", "3000"]
+    ],
+    "13700001111": [
+      ["13600001111", "2026-10-11 10:12:08", "2026-10-21 15:26:44", "4500"]
+    ]
+  };
+  var orders = {
+    "13800001111": [
+      ["13900001111", "YC20001", "5000", "2026-10-18 09:12:33"],
+      ["13900004444", "YC20002", "3000", "2026-10-22 16:40:01"]
+    ],
+    "13800003333": [
+      ["13900006666", "YC20003", "3000", "2026-10-20 11:03:11"]
+    ],
+    "13700001111": [
+      ["13600001111", "YC30011", "4500", "2026-10-21 15:26:44"]
+    ]
+  };
+
+  var state = {
+    demo: "manager",
+    dim: "sale",
+    view: "group",
+    groups: [],
+    seats: [],
+    phone: "",
+    onion: "",
+    start: "2026-10-01",
+    end: "2026-10-30",
+    sortField: "",
+    sortDir: "",
+    page: 1,
+    openMenu: "",
+    dialog: null
+  };
+
+  function money(n) {
+    if (!n) return "0";
+    var s = (Math.round(n * 100) / 100).toFixed(2);
+    return s.replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
+  }
+  function rate(pay, fresh) {
+    if (!fresh) return "0%";
+    return (pay / fresh * 100).toFixed(2) + "%";
+  }
+  function price(amount, pay) {
+    if (!pay) return 0;
+    return Math.round((amount / pay) * 100) / 100;
+  }
+  function inRange() {
+    if (!state.start && !state.end) return true;
+    var start = state.start || "0000-01-01";
+    var end = state.end || "9999-12-31";
+    return !(end < "2026-10-01" || start > "2026-10-30");
+  }
+  function source() {
+    if (state.demo === "empty" || !inRange()) return [];
+    var rows = state.view === "group"
+      ? (state.dim === "sale" ? saleGroup : studyGroup)
+      : (state.dim === "sale" ? salePerson : studyPerson);
+    return rows.filter(function (row) {
+      if (state.demo === "agent" && row.seat !== "周宁") return false;
+      if (state.groups.length && state.groups.indexOf(row.group) < 0) return false;
+      if (state.seats.length && state.seats.indexOf(row.seat) < 0) return false;
+      if (state.view === "person" && state.phone && row.phone.indexOf(state.phone) < 0) return false;
+      if (state.view === "person" && state.onion && row.onion.indexOf(state.onion) < 0) return false;
+      return true;
+    });
+  }
+  function sorted(rows) {
+    if (!state.sortField || !state.sortDir) return rows.slice();
+    var field = state.sortField;
+    var dir = state.sortDir === "asc" ? 1 : -1;
+    return rows.slice().sort(function (a, b) {
+      var av = field === "price" ? price(a.amount, a.pay) : field === "rate" ? (a.fresh ? a.pay / a.fresh : 0) : a[field];
+      var bv = field === "price" ? price(b.amount, b.pay) : field === "rate" ? (b.fresh ? b.pay / b.fresh : 0) : b[field];
+      return av > bv ? dir : av < bv ? -dir : 0;
+    });
+  }
+  function sum(rows) {
+    return rows.reduce(function (acc, row) {
+      acc.poster += row.poster;
+      acc.old += row.old;
+      acc.fresh += row.fresh;
+      acc.pay += row.pay;
+      acc.amount += row.amount;
+      return acc;
+    }, { poster: 0, old: 0, fresh: 0, pay: 0, amount: 0 });
+  }
+  function options() {
+    var pool = state.dim === "sale" ? saleGroup : studyGroup;
+    var groups = [];
+    var seats = [];
+    pool.forEach(function (row) {
+      if (groups.indexOf(row.group) < 0) groups.push(row.group);
+      if ((!state.groups.length || state.groups.indexOf(row.group) >= 0) && seats.indexOf(row.seat) < 0) seats.push(row.seat);
+    });
+    return { groups: groups, seats: seats };
+  }
+  function mark(name) {
+    if (!state.sortField || state.sortField !== name || !state.sortDir) return "";
+    return state.sortDir === "asc" ? " ↑" : " ↓";
+  }
+  function th(label, field) {
+    return '<th data-sort="' + field + '">' + label + mark(field) + "</th>";
+  }
+  function closeMenus() { state.openMenu = ""; }
+
+  function renderFilters() {
+    var opt = options();
+    var groupText = state.groups.length ? state.groups.join("、") : (state.view === "group" ? "请选择归属坐席小组" : "请选择小组");
+    var seatText = state.seats.length ? state.seats.join("、") : (state.view === "group" ? "请选择归属坐席" : "请选择坐席");
+    var person = state.view === "person"
+      ? '<input id="phoneInput" type="text" placeholder="请输入客户手机号" value="' + state.phone + '" />' +
+        '<input id="onionInput" type="text" placeholder="请输入客户洋葱ID" value="' + state.onion + '" />'
+      : "";
+    document.getElementById("filterBar").innerHTML =
+      '<div class="field"><button type="button" class="fake ' + (state.groups.length ? "set" : "") + '" id="groupBtn">' + groupText + "</button>" +
+      '<div class="menu ' + (state.openMenu === "group" ? "open" : "") + '" id="groupMenu">' +
+      opt.groups.map(function (name) {
+        return '<label><input type="checkbox" data-kind="group" value="' + name + '"' + (state.groups.indexOf(name) >= 0 ? " checked" : "") + " />" + name + "</label>";
+      }).join("") + "</div></div>" +
+      '<div class="field"><button type="button" class="fake ' + (state.seats.length ? "set" : "") + '" id="seatBtn">' + seatText + "</button>" +
+      '<div class="menu ' + (state.openMenu === "seat" ? "open" : "") + '" id="seatMenu">' +
+      opt.seats.map(function (name) {
+        return '<label><input type="checkbox" data-kind="seat" value="' + name + '"' + (state.seats.indexOf(name) >= 0 ? " checked" : "") + " />" + name + "</label>";
+      }).join("") + "</div></div>" +
+      person +
+      '<div class="dates"><input id="startDate" type="date" value="' + state.start + '" /><span>至</span><input id="endDate" type="date" value="' + state.end + '" /></div>' +
+      '<button class="btn primary" id="searchBtn" type="button">搜索</button>' +
+      '<button class="btn" id="resetBtn" type="button">重置</button>';
+  }
+
+  function renderSummary(total) {
+    var items = [
+      ["下载海报客户量", total.poster],
+      ["裂变老客户", total.old],
+      ["裂变新客户", total.fresh],
+      ["转化新客户", total.pay],
+      ["订单金额/元", money(total.amount)],
+      ["客单价/元", money(price(total.amount, total.pay))],
+      ["转化率", rate(total.pay, total.fresh)]
+    ];
+    document.getElementById("summaryBar").innerHTML = items.map(function (item) {
+      return "<span>" + item[0] + "：<b>" + item[1] + "</b></span>";
+    }).join("");
+  }
+
+  function renderTable(rows) {
+    var sale = state.dim === "sale";
+    var head = sale ? th("线索归属坐席", "seat") : th("介绍人", "seat");
+    head += th("所属小组", "group");
+    if (state.view === "group" && sale) head += th("下载海报客户量", "poster");
+    if (state.view === "person") head += "<th>老客户手机号</th><th>老客户洋葱ID</th>";
+    if (state.view === "group") head += th("裂变老客户", "old");
+    head += th("裂变新客户", "fresh") + th("转化新客户", "pay") + th("订单量", "orders") +
+      th("订单金额/元", "amount") + th("客单价/元", "price") + th("转化率", "rate");
+    if (state.view === "person") head += "<th>操作</th>";
+    var body = rows.length ? rows.map(function (row, index) {
+      var cells = "<td>" + row.seat + "</td><td>" + row.group + "</td>";
+      if (state.view === "group" && sale) cells += "<td>" + row.poster + "</td>";
+      if (state.view === "group") cells += "<td>" + row.old + "</td>";
+      if (state.view === "person") cells += "<td>" + row.phone + "</td><td>" + row.onion + "</td>";
+      cells += "<td>" + row.fresh + "</td><td>" + row.pay + "</td>";
+      cells += state.view === "person"
+        ? '<td><button class="link" type="button" data-order="' + index + '">' + row.orders + "</button></td>"
+        : "<td>" + row.orders + "</td>";
+      cells += "<td>" + money(row.amount) + "</td><td>" + money(price(row.amount, row.pay)) + "</td><td>" + rate(row.pay, row.fresh) + "</td>";
+      if (state.view === "person") cells += '<td><button class="link" type="button" data-detail="' + index + '">查看详情</button></td>';
+      return "<tr>" + cells + "</tr>";
+    }).join("") : '<tr><td class="empty" colspan="12">暂无数据</td></tr>';
+    var html = '<div class="table-wrap"><table><thead><tr>' + head + "</tr></thead><tbody>" + body + "</tbody></table></div>";
+    document.getElementById("groupTable").innerHTML = state.view === "group" ? html : "";
+    document.getElementById("personTable").innerHTML = state.view === "person" ? html : "";
+    document.getElementById("groupTable").style.display = state.view === "group" ? "" : "none";
+    document.getElementById("personTable").style.display = state.view === "person" ? "" : "none";
+  }
+
+  function renderPager(total) {
+    var pages = Math.max(1, Math.ceil(total / 20));
+    if (state.page > pages) state.page = pages;
+    var buttons = "";
+    for (var i = 1; i <= pages; i++) buttons += '<button type="button" data-page="' + i + '" class="' + (i === state.page ? "on" : "") + '">' + i + "</button>";
+    document.getElementById("pager").innerHTML =
+      "<span>共 " + total + " 条</span><span>20条/页</span>" +
+      '<button type="button" id="prevPage"' + (state.page === 1 ? " disabled" : "") + ">‹</button>" +
+      buttons +
+      '<button type="button" id="nextPage"' + (state.page === pages ? " disabled" : "") + ">›</button>";
+  }
+
+  function renderModal(pageRows) {
+    var box = document.getElementById("modal");
+    if (!state.dialog) { box.innerHTML = ""; return; }
+    var row = pageRows[state.dialog.index];
+    if (!row) { state.dialog = null; box.innerHTML = ""; return; }
+    var isDetail = state.dialog.type === "detail";
+    var list = (isDetail ? details[row.phone] : orders[row.phone]) || [];
+    var title = (isDetail ? "查看详情 - " : "订单详情 - ") + row.phone;
+    var head = isDetail
+      ? "<th>新客户手机号</th><th>裂变时间</th><th>成交时间</th><th>订单金额/元</th>"
+      : "<th>购课用户手机号</th><th>购课用户洋葱ID</th><th>订单金额</th><th>订单成交时间</th>";
+    var body = list.length ? list.map(function (item) {
+      return "<tr>" + item.map(function (cell) { return "<td>" + (cell || "") + "</td>"; }).join("") + "</tr>";
+    }).join("") : '<tr><td class="empty" colspan="4">暂无数据</td></tr>';
+    box.innerHTML = '<div class="mask"><div class="dialog"><h3>' + title + '<button type="button" id="closeDialog">×</button></h3>' +
+      '<div class="table-wrap"><table><thead><tr>' + head + "</tr></thead><tbody>" + body + "</tbody></table></div>" +
+      '<div class="pager"><span>共 ' + list.length + " 条</span><span>20条/页</span></div></div></div>";
+  }
+
+  function render() {
+    var showGroup = state.demo !== "agent" || state.view === "group";
+    document.getElementById("groupTab").style.display = showGroup ? "" : "none";
+    if (state.demo === "agent" && state.view === "group" && state.openMenu === "keep") state.view = "person";
+    document.querySelectorAll("#dimTabs .tab").forEach(function (tab) {
+      tab.classList.toggle("on", tab.getAttribute("data-dim") === state.dim);
+    });
+    document.getElementById("groupTab").classList.toggle("on", state.view === "group");
+    document.getElementById("personTab").classList.toggle("on", state.view === "person");
+    var rows = sorted(source());
+    var total = sum(state.demo === "empty" || !inRange() ? [] : rows);
+    var pageRows = rows.slice((state.page - 1) * 20, state.page * 20);
+    renderFilters();
+    renderSummary(total);
+    renderTable(pageRows);
+    renderPager(rows.length);
+    renderModal(pageRows);
+    if (window.__diffRemeasure) window.__diffRemeasure();
+  }
+
+  function resetFilters() {
+    state.groups = [];
+    state.seats = [];
+    state.phone = "";
+    state.onion = "";
+    state.start = "2026-10-01";
+    state.end = "2026-10-30";
+    state.sortField = "";
+    state.sortDir = "";
+    state.page = 1;
+    state.dialog = null;
+  }
+
+  document.getElementById("diffPage").addEventListener("click", function (event) {
+    var dim = event.target.closest("[data-dim]");
+    if (dim) {
+      state.dim = dim.getAttribute("data-dim");
+      state.groups = [];
+      state.seats = [];
+      state.page = 1;
+      state.dialog = null;
+      state.openMenu = "";
+      render();
+      return;
+    }
+    var view = event.target.closest("[data-view]");
+    if (view) {
+      state.view = view.getAttribute("data-view");
+      state.phone = "";
+      state.onion = "";
+      state.page = 1;
+      state.dialog = null;
+      state.openMenu = "";
+      render();
+      return;
+    }
+    if (event.target.id === "groupBtn") { state.openMenu = state.openMenu === "group" ? "" : "group"; render(); return; }
+    if (event.target.id === "seatBtn") { state.openMenu = state.openMenu === "seat" ? "" : "seat"; render(); return; }
+    if (event.target.id === "searchBtn") { state.page = 1; state.dialog = null; state.openMenu = ""; render(); return; }
+    if (event.target.id === "resetBtn") { resetFilters(); state.openMenu = ""; render(); return; }
+    if (event.target.id === "prevPage" && state.page > 1) { state.page -= 1; render(); return; }
+    if (event.target.id === "nextPage") { state.page += 1; render(); return; }
+    var pageBtn = event.target.closest("[data-page]");
+    if (pageBtn) { state.page = Number(pageBtn.getAttribute("data-page")); render(); return; }
+    var sort = event.target.closest("[data-sort]");
+    if (sort) {
+      var field = sort.getAttribute("data-sort");
+      if (state.sortField !== field) { state.sortField = field; state.sortDir = "desc"; }
+      else if (state.sortDir === "desc") state.sortDir = "asc";
+      else if (state.sortDir === "asc") { state.sortField = ""; state.sortDir = ""; }
+      state.page = 1;
+      render();
+      return;
+    }
+    var detail = event.target.closest("[data-detail]");
+    if (detail) { state.dialog = { type: "detail", index: Number(detail.getAttribute("data-detail")) }; state.openMenu = ""; render(); return; }
+    var order = event.target.closest("[data-order]");
+    if (order) { state.dialog = { type: "order", index: Number(order.getAttribute("data-order")) }; state.openMenu = ""; render(); return; }
+    if (!event.target.closest(".field")) { if (state.openMenu) { closeMenus(); render(); } }
+  });
+
+  document.getElementById("diffPage").addEventListener("change", function (event) {
+    var box = event.target.closest("[data-kind]");
+    if (!box) return;
+    var kind = box.getAttribute("data-kind");
+    var list = kind === "group" ? state.groups : state.seats;
+    var value = box.value;
+    var at = list.indexOf(value);
+    if (box.checked && at < 0) list.push(value);
+    if (!box.checked && at >= 0) list.splice(at, 1);
+    if (kind === "group") state.seats = state.seats.filter(function (seat) { return options().seats.indexOf(seat) >= 0; });
+    render();
+  });
+  document.getElementById("diffPage").addEventListener("input", function (event) {
+    if (event.target.id === "phoneInput") state.phone = event.target.value.trim();
+    if (event.target.id === "onionInput") state.onion = event.target.value.trim();
+    if (event.target.id === "startDate") state.start = event.target.value;
+    if (event.target.id === "endDate") state.end = event.target.value;
+  });
+  document.getElementById("diffPage").addEventListener("keydown", function (event) {
+    if (event.key === "Enter" && (event.target.id === "phoneInput" || event.target.id === "onionInput")) {
+      state.page = 1;
+      render();
+    }
+  });
+  document.getElementById("modal").addEventListener("click", function (event) {
+    if (event.target.id === "closeDialog" || event.target.classList.contains("mask")) {
+      state.dialog = null;
+      render();
+    }
+  });
+
+  window.__board = {
+    locate: function (change) {
+      if (change.id === "chg-4") state.view = "group";
+      if (change.id === "chg-5") state.view = "person";
+      state.dialog = null;
+      state.openMenu = "";
+      render();
+    },
+    setDemoState: function (id) {
+      state.demo = id || "manager";
+      state.dim = "sale";
+      state.view = id === "agent" ? "person" : "group";
+      resetFilters();
+      render();
+    }
+  };
+  render();
+})();
+</script>
+<script>
+window.DIFF_CHANGESET = {
+  "requirement": "体验营转介绍业绩看板",
+  "slug": "camp-referral-performance",
+  "changes": [
+    {
+      "id": "chg-1",
+      "page": "转介绍业绩看板",
+      "pageKey": "board",
+      "module": "菜单入口",
+      "target": "#menuEntry",
+      "level": "page",
+      "type": "new",
+      "title": "新增转介绍业绩看板",
+      "desc": "体验营「数据统计」新增「转介绍业绩看板」，打开后默认销售、小组。",
+      "before": "无此功能",
+      "after": "数据统计下可进入该看板。有下级时默认销售和小组；无下级只看个人。",
+      "examples": [
+        "数据统计中，转介绍线索转化下方出现转介绍业绩看板",
+        "主管打开后停在销售、小组"
+      ],
+      "prd": {
+        "section": "7.1 【新增】看板入口",
+        "blockId": "doxcnWwjqhBHGM6517vUK6Bgcch"
+      }
+    },
+    {
+      "id": "chg-2",
+      "page": "转介绍业绩看板",
+      "pageKey": "board",
+      "module": "维度切换",
+      "target": "#dimTabs",
+      "level": "module",
+      "type": "new",
+      "title": "销售与伴学切换",
+      "desc": "增加销售、伴学两个维度，其下再切换小组和个人，字段与电销转介绍业绩统计一致。",
+      "before": "无此功能",
+      "after": "销售、伴学均可切换小组和个人。无下级组织时不出现小组。",
+      "examples": [
+        "销售下可切到小组或个人",
+        "伴学下同样可切到小组或个人",
+        "一线坐席打开后没有小组"
+      ],
+      "prd": {
+        "section": "7.2 【新增】维度与视图",
+        "blockId": "doxcnbR8hYeplA8KJtdjADfbabe"
+      }
+    },
+    {
+      "id": "chg-3",
+      "page": "转介绍业绩看板",
+      "pageKey": "board",
+      "module": "筛选汇总",
+      "target": "#filterBar",
+      "level": "module",
+      "type": "new",
+      "title": "筛选与汇总",
+      "desc": "按小组、坐席和日期筛选，个人还可按手机号、洋葱ID筛选；搜索后刷新汇总和列表。",
+      "before": "无此功能",
+      "after": "默认日期为本月1日至今天。搜索刷新汇总和列表，重置恢复默认条件。",
+      "examples": [
+        "默认日期为2026-10-01至2026-10-30",
+        "小组选择体验营2组后搜索，只剩赵琳",
+        "点击重置后日期回到2026-10-01至2026-10-30，小组和坐席清空"
+      ],
+      "prd": {
+        "section": "7.3 【新增】筛选与汇总",
+        "blockId": "doxcnB2CduTYYHkwIhE2koHrdEb"
+      }
+    },
+    {
+      "id": "chg-4",
+      "page": "转介绍业绩看板",
+      "pageKey": "board",
+      "module": "小组列表",
+      "target": "#groupTable",
+      "level": "field",
+      "type": "new",
+      "title": "小组业绩列表",
+      "desc": "小组视图按坐席汇总，销售含下载海报客户量，伴学以介绍人起列且不含该列。",
+      "before": "无此字段",
+      "after": "列与电销对应维度一致，支持排序和分页。",
+      "examples": [
+        "销售小组第一行是周宁、体验营1组、下载海报客户量20、裂变新客户16、转化率25.00%",
+        "伴学小组第一行是林夏、体验营伴学1组，没有下载海报客户量这一列"
+      ],
+      "prd": {
+        "section": "7.4 【新增】小组列表",
+        "blockId": "doxcnXMYZt1Vn3sPIqCOnkYXkTg"
+      }
+    },
+    {
+      "id": "chg-5",
+      "page": "转介绍业绩看板",
+      "pageKey": "board",
+      "module": "个人明细",
+      "target": "#personTable",
+      "level": "module",
+      "type": "new",
+      "title": "个人明细与详情",
+      "desc": "个人视图展示老客户手机号和洋葱ID，可查看裂变明细，订单量可打开成交明细。",
+      "before": "无此功能",
+      "after": "手机号明文。详情含新客户手机号、裂变时间、成交时间、订单金额。订单明细含购课用户手机号、洋葱ID、订单金额、成交时间。",
+      "examples": [
+        "个人第一行周宁、13800001111、洋葱ID YC10001、裂变新客户3、订单量2",
+        "查看详情看到13900001111，裂变时间2026-10-08 14:21:06，成交时间2026-10-18 09:12:33，订单金额5000",
+        "点订单量2，看到5000和3000两笔成交"
+      ],
+      "prd": {
+        "section": "7.5 【新增】个人明细",
+        "blockId": "doxcncDvdJI4hqOU6Sm9EoShMwc"
+      }
+    },
+    {
+      "id": "chg-6",
+      "page": "转介绍业绩看板",
+      "pageKey": "board",
+      "module": "取值范围",
+      "target": "#summaryBar",
+      "level": "module",
+      "type": "logic",
+      "title": "只统计体验营转介绍",
+      "desc": "汇总和列表只取体验营转介绍的海报、裂变和订单，不取电销转介绍。",
+      "before": "无此功能",
+      "after": "销售仍要求订单归属坐席等于转介绍绑定坐席；伴学仍统计绑定期间全部成交。人员和转介绍关系都只来自体验营。客单价、转化率分母为0时分别显示0和0%。",
+      "examples": [
+        "销售小组汇总：下载海报客户量38、裂变老客户15、裂变新客户30、转化新客户6、订单金额22000、客单价3666.67、转化率20.00%",
+        "赵琳转化新客户为0，客单价0，转化率0.00%",
+        "无数据时七项汇总都是0，转化率为0%"
+      ],
+      "prd": {
+        "section": "7.6 【新增】取值范围",
+        "blockId": "doxcnp1cuzHL1HcFuXHD5OF1nAb"
+      }
+    }
+  ]
+};
+window.DIFF_CHANGESET.meta = {
+  slug: "camp-referral-performance",
+  prdUrl: "https://guanghe.feishu.cn/docx/Fkmpdmo8wo6OdBxz7Poc4M1qnYe",
+  demoControls: [
+    { id: "manager", label: "主管" },
+    { id: "agent", label: "一线坐席" },
+    { id: "empty", label: "无数据" }
+  ]
+};
+window.DIFF_HOOKS = {
+  locate: function (change) { window.__board.locate(change); },
+  setDemoState: function (id) { window.__board.setDemoState(id); }
+};
+</script>
+<script>
+(function () {
+  var data = window.DIFF_CHANGESET || { meta: {}, changes: [] };
+  var meta = data.meta || {};
+  var CHANGES = data.changes || [];
+  var TYPE = { logic: "逻辑", "new": "新增", copy: "文案", enum: "枚举口径", flow: "流程", "delete": "删除" };
+  var LEVEL = { page: "页面", module: "模块", field: "字段" };
+  var slug = meta.slug || "prd";
+  var LS_KEY = "proto-note:" + slug + ":modules:v1";
+  var LS_RAIL = "proto-note:" + slug + ":rail:v1";
+
+  var style = document.createElement("style");
+  style.textContent = [
+    "#diffPage, .page { position: relative; }",
+    "#diffRail { position: fixed; top: 0; right: 0; width: 360px; height: 100%; z-index: 9100; background: #0c2340; color: #d7e4f2; display: flex; flex-direction: column; box-shadow: -8px 0 28px rgba(0,0,0,.28); font-size: 13px; }",
+    "#diffRail.collapsed { display: none; }",
+    "#diffFab { position: fixed; right: 18px; bottom: 18px; z-index: 9100; display: none; background: #0c2340; color: #fff; border: 0; border-radius: 18px; height: 36px; padding: 0 14px; box-shadow: 0 6px 18px rgba(0,0,0,.25); }",
+    "#diffFab.show { display: inline-flex; align-items: center; }",
+    ".diff-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 14px 8px; }",
+    ".diff-head b { font-size: 15px; color: #fff; font-weight: 600; }",
+    ".diff-icon { width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: #9fc0de; cursor: pointer; }",
+    ".diff-icon:hover { background: rgba(255,255,255,.08); color: #fff; }",
+    ".diff-demo { display: flex; gap: 4px; padding: 0 12px 10px; }",
+    ".diff-demo button { flex: 1; height: 28px; border: 0; border-radius: 6px; background: #16365a; color: #b7cbe0; padding: 0 4px; font-size: 12px; cursor: pointer; }",
+    ".diff-demo button.on { background: #1f6feb; color: #fff; }",
+    ".diff-mods { padding: 0 12px 8px; display: flex; flex-direction: column; gap: 8px; }",
+    ".diff-group { background: #102c4c; border-radius: 8px; padding: 8px 10px; }",
+    ".diff-group .name { color: #8fb4d6; font-size: 12px; margin-bottom: 4px; }",
+    ".diff-check { display: flex; align-items: center; gap: 8px; padding: 4px 0; color: #e7f0f8; cursor: pointer; }",
+    ".diff-check input { accent-color: #3b82f6; }",
+    "#diffCards { flex: 1; overflow: auto; padding: 4px 12px 20px; }",
+    ".diff-card { background: #14365c; border: 1px solid transparent; border-radius: 10px; padding: 12px; margin-bottom: 10px; cursor: pointer; }",
+    ".diff-card:hover, .diff-card.pin { border-color: #f0b429; }",
+    ".diff-no { display: inline-flex; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: #f0b429; color: #1a1a1a; font-weight: 700; font-size: 12px; align-items: center; justify-content: center; }",
+    ".diff-card h4 { margin: 8px 0 4px; font-size: 14px; color: #fff; font-weight: 600; }",
+    ".diff-meta { color: #8fb4d6; font-size: 12px; }",
+    ".diff-card p { margin: 8px 0; line-height: 1.55; color: #d7e4f2; }",
+    ".diff-ba { display: flex; gap: 8px; margin-top: 6px; line-height: 1.5; }",
+    ".diff-ba span { flex: none; width: 20px; height: 20px; border-radius: 4px; background: #0c2340; color: #f0b429; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }",
+    ".diff-ba div { min-width: 0; }",
+    ".diff-ex { margin: 8px 0 0; padding-left: 18px; color: #c5d7ea; }",
+    ".diff-ex li { margin: 2px 0; }",
+    ".diff-link { display: inline-block; margin-top: 8px; color: #7cc4ff; text-decoration: none; }",
+    ".diff-link:hover { text-decoration: underline; }",
+    ".diff-anchor { position: absolute; z-index: 9000; width: 22px; height: 22px; border: 0; border-radius: 11px; background: #f0b429; color: #1a1a1a; font-weight: 700; font-size: 12px; padding: 0; transform: translate(-2px, -2px); box-shadow: 0 2px 8px rgba(0,0,0,.25); cursor: pointer; }",
+    ".diff-anchor.pin { outline: 2px solid #fff; }",
+    ".diff-pulse { animation: diffPulse 1.1s ease 2; }",
+    "@keyframes diffPulse { 0% { box-shadow: 0 0 0 0 rgba(240,180,41,.7); } 100% { box-shadow: 0 0 0 8px rgba(240,180,41,0); } }",
+    "#diffCanvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 8900; pointer-events: none; }"
+  ].join("\n");
+  document.head.appendChild(style);
+
+  var rail = document.createElement("div");
+  rail.id = "diffRail";
+  rail.innerHTML = '<div class="diff-head"><b>变更批注</b><button class="diff-icon" id="diffCollapse" type="button" aria-label="收起批注栏">›</button></div><div class="diff-demo" id="diffDemo"></div><div class="diff-mods" id="diffMods"></div><div id="diffCards"></div>';
+  var fab = document.createElement("button");
+  fab.id = "diffFab";
+  fab.type = "button";
+  fab.textContent = "变更批注";
+  var canvas = document.createElement("canvas");
+  canvas.id = "diffCanvas";
+  document.body.appendChild(rail);
+  document.body.appendChild(fab);
+  document.body.appendChild(canvas);
+  var ctx = canvas.getContext("2d");
+
+  function esc(text) {
+    return String(text == null ? "" : text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function pageEl() {
+    return document.getElementById("diffPage") || document.querySelector(".page") || document.body;
+  }
+  function prdHref(item) {
+    var base = String(meta.prdUrl || "").replace(/#.*$/, "");
+    var blockId = item.prd && item.prd.blockId;
+    if (!base) return "";
+    return base + (blockId ? "#" + blockId : "");
+  }
+
+  var modules = [];
+  CHANGES.forEach(function (item) {
+    var key = item.page + "::" + item.module;
+    if (modules.indexOf(key) < 0) modules.push(key);
+  });
+  var stored = null;
+  try { stored = JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch (e) { stored = null; }
+  var checked = {};
+  modules.forEach(function (key) {
+    if (!stored) checked[key] = true;
+    else checked[key] = stored[key] === undefined ? true : !!stored[key];
+  });
+  var railOpen = localStorage.getItem(LS_RAIL) !== "0";
+  var pinId = null;
+  var hoverId = null;
+  var demo = (meta.demoControls && meta.demoControls[0] && meta.demoControls[0].id) || "";
+
+  function scrollTo(el) {
+    if (!el) return;
+    try { el.scrollIntoView({ behavior: "instant", block: "center", inline: "nearest" }); }
+    catch (e) { el.scrollIntoView(); }
+    var railW = rail.classList.contains("collapsed") ? 0 : 360;
+    var rect = el.getBoundingClientRect();
+    var limit = window.innerWidth - railW - 28;
+    if (rect.left > limit - 24) {
+      var scroller = el.closest(".table-wrap") || pageEl();
+      scroller.scrollLeft += rect.right - limit;
+    }
+  }
+  function pulse(el) {
+    if (!el) return;
+    el.classList.remove("diff-pulse");
+    void el.offsetWidth;
+    el.classList.add("diff-pulse");
+  }
+  function visibleChanges() {
+    return CHANGES.filter(function (item) { return checked[item.page + "::" + item.module]; });
+  }
+  function saveChecked() {
+    localStorage.setItem(LS_KEY, JSON.stringify(checked));
+  }
+  function focusChange(change) {
+    if (window.DIFF_HOOKS && typeof DIFF_HOOKS.locate === "function") DIFF_HOOKS.locate(change);
+    setTimeout(function () {
+      var el = document.querySelector(change.target);
+      scrollTo(el);
+      pulse(el);
+      measure();
+    }, 30);
+  }
+
+  function paintDemo() {
+    var box = document.getElementById("diffDemo");
+    var controls = meta.demoControls || [];
+    box.innerHTML = "";
+    if (!controls.length) {
+      box.style.display = "none";
+      return;
+    }
+    box.style.display = "";
+    controls.forEach(function (pair) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = pair.label;
+      btn.className = demo === pair.id ? "on" : "";
+      btn.onclick = function () {
+        demo = pair.id;
+        if (window.DIFF_HOOKS && typeof DIFF_HOOKS.setDemoState === "function") DIFF_HOOKS.setDemoState(pair.id);
+        paintDemo();
+        measure();
+      };
+      box.appendChild(btn);
+    });
+  }
+  function paintMods() {
+    var box = document.getElementById("diffMods");
+    box.innerHTML = "";
+    var pages = [];
+    modules.forEach(function (key) {
+      var page = key.split("::")[0];
+      if (pages.indexOf(page) < 0) pages.push(page);
+    });
+    pages.forEach(function (page) {
+      var group = document.createElement("div");
+      group.className = "diff-group";
+      var name = document.createElement("div");
+      name.className = "name";
+      name.textContent = page;
+      group.appendChild(name);
+      modules.forEach(function (key) {
+        if (key.split("::")[0] !== page) return;
+        var label = document.createElement("label");
+        label.className = "diff-check";
+        var input = document.createElement("input");
+        input.type = "checkbox";
+        input.checked = !!checked[key];
+        input.onchange = function () {
+          checked[key] = input.checked;
+          saveChecked();
+          if (input.checked) {
+            var first = CHANGES.filter(function (item) { return item.page + "::" + item.module === key; })[0];
+            pinId = first.id;
+            paintCards();
+            focusChange(first);
+          } else {
+            if (pinId && !visibleChanges().some(function (item) { return item.id === pinId; })) pinId = null;
+            paintCards();
+            measure();
+          }
+        };
+        var text = document.createElement("span");
+        text.textContent = key.split("::")[1];
+        label.appendChild(input);
+        label.appendChild(text);
+        group.appendChild(label);
+      });
+      box.appendChild(group);
+    });
+  }
+  function paintCards() {
+    var box = document.getElementById("diffCards");
+    box.innerHTML = "";
+    visibleChanges().forEach(function (item) {
+      var index = CHANGES.indexOf(item) + 1;
+      var no = (index < 10 ? "0" : "") + index;
+      var card = document.createElement("article");
+      card.className = "diff-card" + (pinId === item.id ? " pin" : "");
+      card.setAttribute("data-id", item.id);
+      var examples = (item.examples || []).map(function (line) { return "<li>" + esc(line) + "</li>"; }).join("");
+      var href = prdHref(item);
+      var section = item.prd && item.prd.section;
+      card.innerHTML =
+        '<span class="diff-no">' + no + '</span>' +
+        '<h4>' + esc(item.title) + '</h4>' +
+        '<div class="diff-meta">' + esc(TYPE[item.type] || item.type) + " · " + esc(LEVEL[item.level] || item.level) + '</div>' +
+        '<p>' + esc(item.desc) + '</p>' +
+        '<div class="diff-ba"><span>前</span><div>' + esc(item.before) + '</div></div>' +
+        '<div class="diff-ba"><span>后</span><div>' + esc(item.after) + '</div></div>' +
+        (examples ? '<ul class="diff-ex">' + examples + '</ul>' : '') +
+        (href && section ? '<a class="diff-link" target="_blank" rel="noopener" href="' + esc(href) + '">PRD · ' + esc(section) + '</a>' : '');
+      card.onmouseenter = function () { hoverId = item.id; draw(); };
+      card.onmouseleave = function () { if (hoverId === item.id) hoverId = null; draw(); };
+      card.onclick = function (e) {
+        if (e.target.closest("a")) return;
+        pinId = item.id;
+        paintCards();
+        var active = document.querySelector('.diff-card[data-id="' + item.id + '"]');
+        if (active) active.scrollIntoView({ block: "nearest" });
+        focusChange(item);
+      };
+      box.appendChild(card);
+    });
+  }
+  function syncRail() {
+    rail.classList.toggle("collapsed", !railOpen);
+    fab.classList.toggle("show", !railOpen);
+    localStorage.setItem(LS_RAIL, railOpen ? "1" : "0");
+    var page = pageEl();
+    var spacer = document.getElementById("diffSpacer");
+    if (railOpen) {
+      if (!spacer) {
+        spacer = document.createElement("div");
+        spacer.id = "diffSpacer";
+        spacer.style.cssText = "width:calc(100% + 360px);height:1px;pointer-events:none;";
+        page.appendChild(spacer);
+      }
+    } else if (spacer) {
+      spacer.remove();
+    }
+  }
+  function shown(el) {
+    return !!(el && el.getClientRects().length);
+  }
+  function measure() {
+    document.querySelectorAll(".diff-anchor").forEach(function (node) { node.remove(); });
+    var page = pageEl();
+    var pageRect = page.getBoundingClientRect();
+    visibleChanges().forEach(function (item) {
+      var el = document.querySelector(item.target);
+      if (!shown(el)) return;
+      var rect = el.getBoundingClientRect();
+      var anchor = document.createElement("button");
+      anchor.type = "button";
+      anchor.className = "diff-anchor" + (pinId === item.id ? " pin" : "");
+      anchor.setAttribute("data-id", item.id);
+      var index = CHANGES.indexOf(item) + 1;
+      anchor.textContent = (index < 10 ? "0" : "") + index;
+      anchor.style.left = (rect.left - pageRect.left + page.scrollLeft) + "px";
+      anchor.style.top = (rect.top - pageRect.top + page.scrollTop) + "px";
+      anchor.onclick = function (e) {
+        e.stopPropagation();
+        pinId = item.id;
+        hoverId = null;
+        if (!railOpen) {
+          railOpen = true;
+          syncRail();
+        }
+        paintCards();
+        var card = document.querySelector('.diff-card[data-id="' + item.id + '"]');
+        if (card) card.scrollIntoView({ block: "nearest" });
+        pulse(el);
+        measure();
+      };
+      anchor.onmouseenter = function () { hoverId = item.id; draw(); };
+      anchor.onmouseleave = function () { if (hoverId === item.id) hoverId = null; draw(); };
+      page.appendChild(anchor);
+      anchor.style.visibility = "hidden";
+      var top = document.elementFromPoint(rect.left + 11, rect.top + 11);
+      anchor.style.visibility = "";
+      if (top && top.closest && top.closest("#diffRail")) anchor.style.display = "none";
+    });
+    draw();
+  }
+  window.__diffRemeasure = function () { measure(); };
+  function resizeCanvas() {
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.floor(window.innerWidth * dpr);
+    canvas.height = Math.floor(window.innerHeight * dpr);
+    canvas.style.width = window.innerWidth + "px";
+    canvas.style.height = window.innerHeight + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+  function draw() {
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    if (!railOpen) return;
+    var id = pinId || hoverId;
+    if (!id) return;
+    var card = document.querySelector('.diff-card[data-id="' + id + '"]');
+    var anchor = document.querySelector('.diff-anchor[data-id="' + id + '"]');
+    if (!card || !anchor || anchor.style.display === "none") return;
+    var a = card.getBoundingClientRect();
+    var b = anchor.getBoundingClientRect();
+    var page = pageEl().getBoundingClientRect();
+    if (b.bottom < page.top || b.top > page.bottom || b.right < page.left || b.left > page.right) return;
+    var x1 = a.left;
+    var y1 = Math.min(Math.max(a.top + a.height / 2, 8), window.innerHeight - 8);
+    var x2 = b.left + b.width / 2;
+    var y2 = b.top + b.height / 2;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.bezierCurveTo((x1 + x2) / 2, y1, (x1 + x2) / 2, y2, x2, y2);
+    ctx.strokeStyle = "#f0b429";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  document.getElementById("diffCollapse").onclick = function () { railOpen = false; syncRail(); measure(); };
+  fab.onclick = function () { railOpen = true; syncRail(); measure(); };
+  rail.addEventListener("click", function (e) { e.stopPropagation(); });
+  pageEl().addEventListener("scroll", measure);
+  window.addEventListener("resize", function () { resizeCanvas(); measure(); });
+  document.querySelectorAll(".table-wrap").forEach(function (node) { node.addEventListener("scroll", measure); });
+  paintDemo();
+  paintMods();
+  paintCards();
+  syncRail();
+  resizeCanvas();
+  measure();
+})();
+
+</script>
+
+</body>
+</html>
