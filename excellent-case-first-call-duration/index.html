@@ -48,6 +48,7 @@
       padding-bottom: 6px;
     }
     .content { padding: 16px; }
+    #diffPage { position: relative; min-width: 0; padding-right: 24px; }
     .card {
       background: var(--card);
       border-radius: 8px;
@@ -168,7 +169,7 @@
   </style>
 </head>
 <body>
-  <div class="layout" id="diffPage">
+  <div class="layout">
     <aside class="side">
       <div class="brand">电销CRM</div>
       <div class="item">首页</div>
@@ -183,7 +184,7 @@
         <span class="on">优秀案例库</span>
         <span>课程管理</span>
       </div>
-      <div class="content">
+      <div class="content" id="diffPage">
         <div class="card">
           <div class="demo-bar" id="permHint">
             演示权限：
