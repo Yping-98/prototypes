@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>优秀案例库首通时长配置 - 可交互原型</title>
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --card: #fff;
+      --line: #e5e7eb;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #1677ff;
+      --side: #001529;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .layout { display: flex; min-height: 100vh; }
+    .side {
+      width: 200px;
+      background: var(--side);
+      color: rgba(255,255,255,.75);
+      padding: 16px 0;
+      flex: none;
+    }
+    .side .brand { color: #fff; font-weight: 600; padding: 0 16px 16px; }
+    .side .item { padding: 10px 20px; font-size: 13px; }
+    .side .item.active { background: #1677ff; color: #fff; }
+    .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .tabs {
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      padding: 10px 16px;
+      display: flex;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .tabs .on {
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 6px;
+    }
+    .content { padding: 16px; }
+    .card {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .field {
+      height: 32px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      padding: 0 10px;
+      min-width: 120px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .btn {
+      height: 32px;
+      border-radius: 4px;
+      border: 1px solid #d9d9d9;
+      background: #fff;
+      padding: 0 14px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .btn.ghost { color: var(--text); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 0 12px;
+      min-height: 18px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 8px; text-align: left; white-space: nowrap; }
+    th { color: var(--muted); font-weight: 500; background: #fafafa; }
+    .tag {
+      display: inline-block;
+      background: #e6f4ff;
+      color: #1677ff;
+      border-radius: 2px;
+      padding: 0 6px;
+      margin-right: 4px;
+      font-size: 12px;
+    }
+    .mask { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 1000; align-items: center; justify-content: center; }
+    .mask.show { display: flex; }
+    .dialog {
+      width: 420px;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(0,0,0,.18);
+    }
+    .dialog-hd {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .dialog-bd { padding: 16px; }
+    .dialog-ft {
+      padding: 12px 16px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .form-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+    .form-row label { width: 140px; flex: none; font-size: 13px; }
+    .form-row input {
+      width: 120px;
+      height: 32px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      padding: 0 8px;
+    }
+    .form-row input.invalid { border-color: #ff4d4f; }
+    .err { color: #ff4d4f; font-size: 12px; margin-top: 8px; min-height: 18px; }
+    .toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.78);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      z-index: 1200;
+      display: none;
+    }
+    .toast.show { display: block; }
+    .demo-bar {
+      margin-bottom: 12px;
+      padding: 8px 10px;
+      background: #fffbe6;
+      border: 1px solid #ffe58f;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #874d00;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout" id="diffPage">
+    <aside class="side">
+      <div class="brand">电销CRM</div>
+      <div class="item">首页</div>
+      <div class="item">课程管理</div>
+      <div class="item active">优秀案例库</div>
+      <div class="item">优秀题库</div>
+      <div class="item">任务管理</div>
+    </aside>
+    <div class="main">
+      <div class="tabs">
+        <span>首页</span>
+        <span class="on">优秀案例库</span>
+        <span>课程管理</span>
+      </div>
+      <div class="content">
+        <div class="card">
+          <div class="demo-bar" id="permHint">
+            演示权限：
+            <button class="btn" type="button" id="demoHasPerm">有配置权限</button>
+            <button class="btn" type="button" id="demoNoPerm">无配置权限</button>
+            <span id="permText">当前：有配置权限（按钮可见）</span>
+          </div>
+
+          <div class="filters">
+            <div class="field">选择小组</div>
+            <div class="field">选择坐席</div>
+            <div class="field">请输入通话ID</div>
+            <div class="field">最小通话时长/s</div>
+            <span>至</span>
+            <div class="field">最大通话时长/s</div>
+            <div class="field" style="min-width:220px">开始时间 — 结束时间</div>
+          </div>
+          <div class="actions" style="margin-bottom:12px">
+            <button class="btn primary" type="button">搜索</button>
+            <button class="btn ghost" type="button">重置</button>
+            <button class="btn ghost" type="button" id="configDurationBtn">首通时长配置</button>
+          </div>
+          <p class="hint" id="thresholdHint">当前自动入库阈值：首通通话时长大于 <b id="thresholdText">5</b> 分钟</p>
+
+          <div class="table-wrap" style="overflow:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>通话ID</th>
+                  <th>客户手机号</th>
+                  <th>创建时间</th>
+                  <th>坐席名称</th>
+                  <th>所属小组</th>
+                  <th>通话时长</th>
+                  <th>通话标签</th>
+                  <th>通话评级</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>c7f2a91b-1a2b-4c3d</td>
+                  <td>138****1024</td>
+                  <td>2026-11-11 10:21:08</td>
+                  <td>柳小飞01</td>
+                  <td>12-左阳</td>
+                  <td>12分36秒</td>
+                  <td><span class="tag">开场白</span><span class="tag">异议处理</span></td>
+                  <td>A</td>
+                  <td>人工审核 / 查看通话 / 加入案例</td>
+                </tr>
+                <tr>
+                  <td>9e8d7c6b-2f3e-4a1b</td>
+                  <td>159****8831</td>
+                  <td>2026-11-11 09:48:22</td>
+                  <td>王明02</td>
+                  <td>08-陈涛</td>
+                  <td>08分12秒</td>
+                  <td><span class="tag">挖需</span><span class="tag">产介</span></td>
+                  <td>B</td>
+                  <td>人工审核 / 查看通话 / 加入案例</td>
+                </tr>
+                <tr>
+                  <td>1a2b3c4d-5e6f-7081</td>
+                  <td>186****5509</td>
+                  <td>2026-11-10 18:05:41</td>
+                  <td>赵敏03</td>
+                  <td>03-李倩</td>
+                  <td>28分04秒</td>
+                  <td><span class="tag">报价</span><span class="tag">截杀关单</span></td>
+                  <td>A</td>
+                  <td>人工审核 / 查看通话 / 加入案例</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mask" id="dialogMask">
+    <div class="dialog" id="durationConfigDialog">
+      <div class="dialog-hd">
+        <span>首通时长配置</span>
+        <button class="btn" type="button" id="closeDialog" style="border:0;height:auto;padding:0 4px">×</button>
+      </div>
+      <div class="dialog-bd">
+        <div style="font-size:13px;color:#595959;line-height:1.6">
+          配置后，系统将按「首通通话时长大于设定分钟数」自动进入优秀案例库评分。仅影响配置生效后的新入库，不回溯历史。
+        </div>
+        <div class="form-row">
+          <label>首通通话时长大于</label>
+          <input id="durationInput" type="number" min="1" max="100" step="1" />
+          <span>分钟</span>
+        </div>
+        <div class="err" id="durationErr"></div>
+      </div>
+      <div class="dialog-ft">
+        <button class="btn" type="button" id="cancelDialog">取消</button>
+        <button class="btn primary" type="button" id="saveDialog">保存</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    window.DIFF_CHANGESET = {
+      meta: {
+        slug: "excellent-case-first-call-duration",
+        prdUrl: "https://guanghe.feishu.cn/docx/GOdndDkVEolalwxh5BkccJeWnHb",
+        demoControls: [
+          { id: "hasPerm", label: "有权限" },
+          { id: "noPerm", label: "无权限" },
+          { id: "invalid", label: "非法输入" }
+        ]
+      },
+      changes: [
+        {
+          id: "chg-1",
+          page: "优秀案例库",
+          pageKey: "excellentCases",
+          module: "筛选区操作",
+          target: "#configDurationBtn",
+          level: "field",
+          type: "new",
+          title: "新增首通时长配置按钮",
+          desc: "在搜索、重置旁新增「首通时长配置」按钮，用于设置自动进入优秀案例库评分的首通通话时长阈值。",
+          before: "无此按钮",
+          after: "有权限时展示按钮；无权限时不展示。",
+          examples: [
+            "有配置权限时，搜索右侧可见「首通时长配置」",
+            "无配置权限时，该按钮不展示"
+          ],
+          prd: { section: "7.1 【新增】首通时长配置按钮", blockId: "doxcnyTHFdK2KkNBUPzw0vSUljd" }
+        },
+        {
+          id: "chg-2",
+          page: "优秀案例库",
+          pageKey: "excellentCases",
+          module: "配置弹窗",
+          target: "#durationConfigDialog",
+          level: "module",
+          type: "new",
+          title: "新增首通时长配置弹窗",
+          desc: "点击按钮打开弹窗，可配置「首通通话时长大于 X 分钟」自动进入优秀案例库评分；X 最低 1、最高 100，保存后立即对后续入库判定生效。",
+          before: "无此功能；系统固定按大于 5 分钟判定",
+          after: "弹窗展示当前阈值，可输入 1～100 的整数分钟并保存；非法值不可保存。",
+          examples: [
+            "打开弹窗默认回填当前已保存值，未配置过时默认 5",
+            "输入 0 或空值，提示「请输入 1～100 的整数分钟」且不可保存",
+            "输入 101，提示「请输入 1～100 的整数分钟」且不可保存",
+            "输入 8 并保存，提示「保存成功」，后续按大于 8 分钟判定入库评分"
+          ],
+          prd: { section: "7.1 【新增】首通时长配置弹窗", blockId: "doxcnggjrSjFDuG1u1FhNwJOuPg" }
+        },
+        {
+          id: "chg-3",
+          page: "优秀案例库",
+          pageKey: "excellentCases",
+          module: "权限控制",
+          target: "#permHint",
+          level: "logic",
+          type: "logic",
+          title: "配置按钮受权限控制",
+          desc: "仅拥有「首通时长配置」按钮权限的账号可看到并打开配置；无权限账号不可配置。",
+          before: "无独立配置入口与权限点",
+          after: "新增独立按钮权限；页面权限与配置权限分离，仅有页面权限不能配置。",
+          examples: [
+            "仅有优秀案例库页面权限、无配置权限：看不到配置按钮",
+            "同时拥有页面权限与配置权限：可打开弹窗并保存"
+          ],
+          prd: { section: "九、权限说明", blockId: "doxcn8AC3vzpAWFeMLLFnprM3Y0" }
+        }
+      ]
+    };
+
+    (function () {
+      var hasPerm = true;
+      var savedMinutes = 5;
+      var btn = document.getElementById("configDurationBtn");
+      var mask = document.getElementById("dialogMask");
+      var input = document.getElementById("durationInput");
+      var err = document.getElementById("durationErr");
+      var toast = document.getElementById("toast");
+      var thresholdText = document.getElementById("thresholdText");
+      var permText = document.getElementById("permText");
+
+      function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add("show");
+        setTimeout(function () { toast.classList.remove("show"); }, 1600);
+      }
+      function syncPerm() {
+        btn.style.display = hasPerm ? "" : "none";
+        permText.textContent = hasPerm
+          ? "当前：有配置权限（按钮可见）"
+          : "当前：无配置权限（按钮隐藏）";
+        if (window.__diffRemeasure) window.__diffRemeasure();
+      }
+      function openDialog(preset) {
+        if (!hasPerm) return;
+        input.value = preset == null ? savedMinutes : preset;
+        input.classList.remove("invalid");
+        err.textContent = "";
+        mask.classList.add("show");
+        if (window.__diffRemeasure) window.__diffRemeasure();
+      }
+      function closeDialog() {
+        mask.classList.remove("show");
+        if (window.__diffRemeasure) window.__diffRemeasure();
+      }
+      function validate() {
+        var raw = String(input.value || "").trim();
+        var n = Number(raw);
+        var ok = raw !== "" && Number.isInteger(n) && n >= 1 && n <= 100;
+        input.classList.toggle("invalid", !ok);
+        err.textContent = ok ? "" : "请输入 1～100 的整数分钟";
+        return ok ? n : null;
+      }
+
+      btn.addEventListener("click", function () { openDialog(); });
+      document.getElementById("closeDialog").onclick = closeDialog;
+      document.getElementById("cancelDialog").onclick = closeDialog;
+      document.getElementById("saveDialog").onclick = function () {
+        var n = validate();
+        if (n == null) return;
+        savedMinutes = n;
+        thresholdText.textContent = String(n);
+        closeDialog();
+        showToast("保存成功");
+        if (window.__diffRemeasure) window.__diffRemeasure();
+      };
+      input.addEventListener("input", function () { validate(); });
+      document.getElementById("demoHasPerm").onclick = function () {
+        hasPerm = true;
+        syncPerm();
+      };
+      document.getElementById("demoNoPerm").onclick = function () {
+        hasPerm = false;
+        closeDialog();
+        syncPerm();
+      };
+
+      window.DIFF_HOOKS = {
+        locate: function (change) {
+          if (change && change.id === "chg-2") {
+            hasPerm = true;
+            syncPerm();
+            openDialog();
+          } else if (change && change.id === "chg-1") {
+            hasPerm = true;
+            syncPerm();
+            closeDialog();
+          } else if (change && change.id === "chg-3") {
+            closeDialog();
+          }
+        },
+        setDemoState: function (id) {
+          if (id === "hasPerm") {
+            hasPerm = true;
+            syncPerm();
+            closeDialog();
+          } else if (id === "noPerm") {
+            hasPerm = false;
+            closeDialog();
+            syncPerm();
+          } else if (id === "invalid") {
+            hasPerm = true;
+            syncPerm();
+            openDialog(0);
+            validate();
+          }
+        }
+      };
+
+      syncPerm();
+    })();
+  </script>
+  <script>
+(function () {
+  var data = window.DIFF_CHANGESET || { meta: {}, changes: [] };
+  var meta = data.meta || {};
+  var CHANGES = data.changes || [];
+  var TYPE = { logic: "逻辑", "new": "新增", copy: "文案", enum: "枚举口径", flow: "流程", "delete": "删除" };
+  var LEVEL = { page: "页面", module: "模块", field: "字段" };
+  var slug = meta.slug || "prd";
+  var LS_KEY = "proto-note:" + slug + ":modules:v1";
+  var LS_RAIL = "proto-note:" + slug + ":rail:v1";
+
+  var style = document.createElement("style");
+  style.textContent = [
+    "#diffPage, .page { position: relative; }",
+    "#diffRail { position: fixed; top: 0; right: 0; width: 360px; height: 100%; z-index: 9100; background: #0c2340; color: #d7e4f2; display: flex; flex-direction: column; box-shadow: -8px 0 28px rgba(0,0,0,.28); font-size: 13px; }",
+    "#diffRail.collapsed { display: none; }",
+    "#diffFab { position: fixed; right: 18px; bottom: 18px; z-index: 9100; display: none; background: #0c2340; color: #fff; border: 0; border-radius: 18px; height: 36px; padding: 0 14px; box-shadow: 0 6px 18px rgba(0,0,0,.25); }",
+    "#diffFab.show { display: inline-flex; align-items: center; }",
+    ".diff-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 14px 8px; }",
+    ".diff-head b { font-size: 15px; color: #fff; font-weight: 600; }",
+    ".diff-icon { width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: #9fc0de; cursor: pointer; }",
+    ".diff-icon:hover { background: rgba(255,255,255,.08); color: #fff; }",
+    ".diff-demo { display: flex; gap: 4px; padding: 0 12px 10px; }",
+    ".diff-demo button { flex: 1; height: 28px; border: 0; border-radius: 6px; background: #16365a; color: #b7cbe0; padding: 0 4px; font-size: 12px; cursor: pointer; }",
+    ".diff-demo button.on { background: #1f6feb; color: #fff; }",
+    ".diff-mods { padding: 0 12px 8px; display: flex; flex-direction: column; gap: 8px; }",
+    ".diff-group { background: #102c4c; border-radius: 8px; padding: 8px 10px; }",
+    ".diff-group .name { color: #8fb4d6; font-size: 12px; margin-bottom: 4px; }",
+    ".diff-check { display: flex; align-items: center; gap: 8px; padding: 4px 0; color: #e7f0f8; cursor: pointer; }",
+    ".diff-check input { accent-color: #3b82f6; }",
+    "#diffCards { flex: 1; overflow: auto; padding: 4px 12px 20px; }",
+    ".diff-card { background: #14365c; border: 1px solid transparent; border-radius: 10px; padding: 12px; margin-bottom: 10px; cursor: pointer; }",
+    ".diff-card:hover, .diff-card.pin { border-color: #f0b429; }",
+    ".diff-no { display: inline-flex; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: #f0b429; color: #1a1a1a; font-weight: 700; font-size: 12px; align-items: center; justify-content: center; }",
+    ".diff-card h4 { margin: 8px 0 4px; font-size: 14px; color: #fff; font-weight: 600; }",
+    ".diff-meta { color: #8fb4d6; font-size: 12px; }",
+    ".diff-card p { margin: 8px 0; line-height: 1.55; color: #d7e4f2; }",
+    ".diff-ba { display: flex; gap: 8px; margin-top: 6px; line-height: 1.5; }",
+    ".diff-ba span { flex: none; width: 20px; height: 20px; border-radius: 4px; background: #0c2340; color: #f0b429; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }",
+    ".diff-ba div { min-width: 0; }",
+    ".diff-ex { margin: 8px 0 0; padding-left: 18px; color: #c5d7ea; }",
+    ".diff-ex li { margin: 2px 0; }",
+    ".diff-link { display: inline-block; margin-top: 8px; color: #7cc4ff; text-decoration: none; }",
+    ".diff-link:hover { text-decoration: underline; }",
+    ".diff-anchor { position: absolute; z-index: 9000; width: 22px; height: 22px; border: 0; border-radius: 11px; background: #f0b429; color: #1a1a1a; font-weight: 700; font-size: 12px; padding: 0; transform: translate(-2px, -2px); box-shadow: 0 2px 8px rgba(0,0,0,.25); cursor: pointer; }",
+    ".diff-anchor.pin { outline: 2px solid #fff; }",
+    ".diff-pulse { animation: diffPulse 1.1s ease 2; }",
+    "@keyframes diffPulse { 0% { box-shadow: 0 0 0 0 rgba(240,180,41,.7); } 100% { box-shadow: 0 0 0 8px rgba(240,180,41,0); } }",
+    "#diffCanvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 8900; pointer-events: none; }"
+  ].join("\n");
+  document.head.appendChild(style);
+
+  var rail = document.createElement("div");
+  rail.id = "diffRail";
+  rail.innerHTML = '<div class="diff-head"><b>变更批注</b><button class="diff-icon" id="diffCollapse" type="button" aria-label="收起批注栏">›</button></div><div class="diff-demo" id="diffDemo"></div><div class="diff-mods" id="diffMods"></div><div id="diffCards"></div>';
+  var fab = document.createElement("button");
+  fab.id = "diffFab";
+  fab.type = "button";
+  fab.textContent = "变更批注";
+  var canvas = document.createElement("canvas");
+  canvas.id = "diffCanvas";
+  document.body.appendChild(rail);
+  document.body.appendChild(fab);
+  document.body.appendChild(canvas);
+  var ctx = canvas.getContext("2d");
+
+  function esc(text) {
+    return String(text == null ? "" : text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function pageEl() {
+    return document.getElementById("diffPage") || document.querySelector(".page") || document.body;
+  }
+  function prdHref(item) {
+    var base = String(meta.prdUrl || "").replace(/#.*$/, "");
+    var blockId = item.prd && item.prd.blockId;
+    if (!base) return "";
+    return base + (blockId ? "#" + blockId : "");
+  }
+
+  var modules = [];
+  CHANGES.forEach(function (item) {
+    var key = item.page + "::" + item.module;
+    if (modules.indexOf(key) < 0) modules.push(key);
+  });
+  var stored = null;
+  try { stored = JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch (e) { stored = null; }
+  var checked = {};
+  modules.forEach(function (key) {
+    if (!stored) checked[key] = true;
+    else checked[key] = stored[key] === undefined ? true : !!stored[key];
+  });
+  var railOpen = localStorage.getItem(LS_RAIL) !== "0";
+  var pinId = null;
+  var hoverId = null;
+  var demo = (meta.demoControls && meta.demoControls[0] && meta.demoControls[0].id) || "";
+
+  function scrollTo(el) {
+    if (!el) return;
+    try { el.scrollIntoView({ behavior: "instant", block: "center", inline: "nearest" }); }
+    catch (e) { el.scrollIntoView(); }
+    var railW = rail.classList.contains("collapsed") ? 0 : 360;
+    var rect = el.getBoundingClientRect();
+    var limit = window.innerWidth - railW - 28;
+    if (rect.left > limit - 24) {
+      var scroller = el.closest(".table-wrap") || pageEl();
+      scroller.scrollLeft += rect.right - limit;
+    }
+  }
+  function pulse(el) {
+    if (!el) return;
+    el.classList.remove("diff-pulse");
+    void el.offsetWidth;
+    el.classList.add("diff-pulse");
+  }
+  function visibleChanges() {
+    return CHANGES.filter(function (item) { return checked[item.page + "::" + item.module]; });
+  }
+  function saveChecked() {
+    localStorage.setItem(LS_KEY, JSON.stringify(checked));
+  }
+  function focusChange(change) {
+    if (window.DIFF_HOOKS && typeof DIFF_HOOKS.locate === "function") DIFF_HOOKS.locate(change);
+    setTimeout(function () {
+      var el = document.querySelector(change.target);
+      scrollTo(el);
+      pulse(el);
+      measure();
+    }, 30);
+  }
+
+  function paintDemo() {
+    var box = document.getElementById("diffDemo");
+    var controls = meta.demoControls || [];
+    box.innerHTML = "";
+    if (!controls.length) {
+      box.style.display = "none";
+      return;
+    }
+    box.style.display = "";
+    controls.forEach(function (pair) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = pair.label;
+      btn.className = demo === pair.id ? "on" : "";
+      btn.onclick = function () {
+        demo = pair.id;
+        if (window.DIFF_HOOKS && typeof DIFF_HOOKS.setDemoState === "function") DIFF_HOOKS.setDemoState(pair.id);
+        paintDemo();
+        measure();
+      };
+      box.appendChild(btn);
+    });
+  }
+  function paintMods() {
+    var box = document.getElementById("diffMods");
+    box.innerHTML = "";
+    var pages = [];
+    modules.forEach(function (key) {
+      var page = key.split("::")[0];
+      if (pages.indexOf(page) < 0) pages.push(page);
+    });
+    pages.forEach(function (page) {
+      var group = document.createElement("div");
+      group.className = "diff-group";
+      var name = document.createElement("div");
+      name.className = "name";
+      name.textContent = page;
+      group.appendChild(name);
+      modules.forEach(function (key) {
+        if (key.split("::")[0] !== page) return;
+        var label = document.createElement("label");
+        label.className = "diff-check";
+        var input = document.createElement("input");
+        input.type = "checkbox";
+        input.checked = !!checked[key];
+        input.onchange = function () {
+          checked[key] = input.checked;
+          saveChecked();
+          if (input.checked) {
+            var first = CHANGES.filter(function (item) { return item.page + "::" + item.module === key; })[0];
+            pinId = first.id;
+            paintCards();
+            focusChange(first);
+          } else {
+            if (pinId && !visibleChanges().some(function (item) { return item.id === pinId; })) pinId = null;
+            paintCards();
+            measure();
+          }
+        };
+        var text = document.createElement("span");
+        text.textContent = key.split("::")[1];
+        label.appendChild(input);
+        label.appendChild(text);
+        group.appendChild(label);
+      });
+      box.appendChild(group);
+    });
+  }
+  function paintCards() {
+    var box = document.getElementById("diffCards");
+    box.innerHTML = "";
+    visibleChanges().forEach(function (item) {
+      var index = CHANGES.indexOf(item) + 1;
+      var no = (index < 10 ? "0" : "") + index;
+      var card = document.createElement("article");
+      card.className = "diff-card" + (pinId === item.id ? " pin" : "");
+      card.setAttribute("data-id", item.id);
+      var examples = (item.examples || []).map(function (line) { return "<li>" + esc(line) + "</li>"; }).join("");
+      var href = prdHref(item);
+      var section = item.prd && item.prd.section;
+      card.innerHTML =
+        '<span class="diff-no">' + no + '</span>' +
+        '<h4>' + esc(item.title) + '</h4>' +
+        '<div class="diff-meta">' + esc(TYPE[item.type] || item.type) + " · " + esc(LEVEL[item.level] || item.level) + '</div>' +
+        '<p>' + esc(item.desc) + '</p>' +
+        '<div class="diff-ba"><span>前</span><div>' + esc(item.before) + '</div></div>' +
+        '<div class="diff-ba"><span>后</span><div>' + esc(item.after) + '</div></div>' +
+        (examples ? '<ul class="diff-ex">' + examples + '</ul>' : '') +
+        (href && section ? '<a class="diff-link" target="_blank" rel="noopener" href="' + esc(href) + '">PRD · ' + esc(section) + '</a>' : '');
+      card.onmouseenter = function () { hoverId = item.id; draw(); };
+      card.onmouseleave = function () { if (hoverId === item.id) hoverId = null; draw(); };
+      card.onclick = function (e) {
+        if (e.target.closest("a")) return;
+        pinId = item.id;
+        paintCards();
+        var active = document.querySelector('.diff-card[data-id="' + item.id + '"]');
+        if (active) active.scrollIntoView({ block: "nearest" });
+        focusChange(item);
+      };
+      box.appendChild(card);
+    });
+  }
+  function syncRail() {
+    rail.classList.toggle("collapsed", !railOpen);
+    fab.classList.toggle("show", !railOpen);
+    localStorage.setItem(LS_RAIL, railOpen ? "1" : "0");
+    var page = pageEl();
+    var spacer = document.getElementById("diffSpacer");
+    if (railOpen) {
+      if (!spacer) {
+        spacer = document.createElement("div");
+        spacer.id = "diffSpacer";
+        spacer.style.cssText = "width:calc(100% + 360px);height:1px;pointer-events:none;";
+        page.appendChild(spacer);
+      }
+    } else if (spacer) {
+      spacer.remove();
+    }
+  }
+  function shown(el) {
+    return !!(el && el.getClientRects().length);
+  }
+  function measure() {
+    document.querySelectorAll(".diff-anchor").forEach(function (node) { node.remove(); });
+    var page = pageEl();
+    var pageRect = page.getBoundingClientRect();
+    visibleChanges().forEach(function (item) {
+      var el = document.querySelector(item.target);
+      if (!shown(el)) return;
+      var rect = el.getBoundingClientRect();
+      var anchor = document.createElement("button");
+      anchor.type = "button";
+      anchor.className = "diff-anchor" + (pinId === item.id ? " pin" : "");
+      anchor.setAttribute("data-id", item.id);
+      var index = CHANGES.indexOf(item) + 1;
+      anchor.textContent = (index < 10 ? "0" : "") + index;
+      anchor.style.left = (rect.left - pageRect.left + page.scrollLeft) + "px";
+      anchor.style.top = (rect.top - pageRect.top + page.scrollTop) + "px";
+      anchor.onclick = function (e) {
+        e.stopPropagation();
+        pinId = item.id;
+        hoverId = null;
+        if (!railOpen) {
+          railOpen = true;
+          syncRail();
+        }
+        paintCards();
+        var card = document.querySelector('.diff-card[data-id="' + item.id + '"]');
+        if (card) card.scrollIntoView({ block: "nearest" });
+        pulse(el);
+        measure();
+      };
+      anchor.onmouseenter = function () { hoverId = item.id; draw(); };
+      anchor.onmouseleave = function () { if (hoverId === item.id) hoverId = null; draw(); };
+      page.appendChild(anchor);
+      anchor.style.visibility = "hidden";
+      var top = document.elementFromPoint(rect.left + 11, rect.top + 11);
+      anchor.style.visibility = "";
+      if (top && top.closest && top.closest("#diffRail")) anchor.style.display = "none";
+    });
+    draw();
+  }
+  window.__diffRemeasure = function () { measure(); };
+  function resizeCanvas() {
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.floor(window.innerWidth * dpr);
+    canvas.height = Math.floor(window.innerHeight * dpr);
+    canvas.style.width = window.innerWidth + "px";
+    canvas.style.height = window.innerHeight + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+  function draw() {
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    if (!railOpen) return;
+    var id = pinId || hoverId;
+    if (!id) return;
+    var card = document.querySelector('.diff-card[data-id="' + id + '"]');
+    var anchor = document.querySelector('.diff-anchor[data-id="' + id + '"]');
+    if (!card || !anchor || anchor.style.display === "none") return;
+    var a = card.getBoundingClientRect();
+    var b = anchor.getBoundingClientRect();
+    var page = pageEl().getBoundingClientRect();
+    if (b.bottom < page.top || b.top > page.bottom || b.right < page.left || b.left > page.right) return;
+    var x1 = a.left;
+    var y1 = Math.min(Math.max(a.top + a.height / 2, 8), window.innerHeight - 8);
+    var x2 = b.left + b.width / 2;
+    var y2 = b.top + b.height / 2;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.bezierCurveTo((x1 + x2) / 2, y1, (x1 + x2) / 2, y2, x2, y2);
+    ctx.strokeStyle = "#f0b429";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  document.getElementById("diffCollapse").onclick = function () { railOpen = false; syncRail(); measure(); };
+  fab.onclick = function () { railOpen = true; syncRail(); measure(); };
+  rail.addEventListener("click", function (e) { e.stopPropagation(); });
+  pageEl().addEventListener("scroll", measure);
+  window.addEventListener("resize", function () { resizeCanvas(); measure(); });
+  document.querySelectorAll(".table-wrap").forEach(function (node) { node.addEventListener("scroll", measure); });
+  paintDemo();
+  paintMods();
+  paintCards();
+  syncRail();
+  resizeCanvas();
+  measure();
+})();
+
+</script>
+</body>
+</html>
