@@ -65,12 +65,7 @@
   .el-checkbox input:checked + .box::after { content: ""; position: absolute; left: 4px; top: 1px; width: 3px; height: 7px; border: solid #fff; border-width: 0 1px 1px 0; transform: rotate(45deg); }
   .el-checkbox input:checked ~ .txt { color: #409eff; }
 
-  /* textarea / 有效申请说明 */
-  .el-textarea { position: relative; max-width: 520px; }
-  .el-textarea textarea { width: 100%; border: 1px solid #dcdfe6; border-radius: 4px; padding: 6px 11px 18px; font: inherit; color: #606266; line-height: 1.5; resize: vertical; outline: none; }
-  .el-textarea textarea:focus { border-color: #409eff; }
-  .el-textarea.is-error textarea { border-color: #f56c6c; }
-  .el-textarea__count { position: absolute; right: 10px; bottom: 4px; font-size: 12px; color: #909399; line-height: 1; }
+  /* 有效申请说明 */
   .valid-def { max-width: 960px; background: #f4f8ff; border: 1px solid #d9ecff; border-radius: 4px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; line-height: 1.8; color: #606266; }
   .valid-def b { color: #303133; }
 
@@ -227,18 +222,6 @@
               </div>
             </div>
 
-            <div class="el-form-item" id="fieldTip">
-              <label class="el-form-item__label required">不能领取权益提示语：</label>
-              <div class="el-form-item__content">
-                <div class="el-textarea" id="tipBox">
-                  <textarea id="tipInput" rows="2" maxlength="50" placeholder="请输入用户被拦截时看到的提示语"></textarea>
-                  <span class="el-textarea__count" id="tipCount">0/50</span>
-                </div>
-                <div class="form-tip">被推荐人命中任一风控规则时，在领取免费会员处弹出该提示语；不透出风控原因</div>
-                <div class="form-error" id="errTip"></div>
-              </div>
-            </div>
-
             <div class="el-form-item">
               <label class="el-form-item__label required">风控规则：</label>
               <div class="el-form-item__content">
@@ -325,14 +308,12 @@ var RULES = {
   rule1: { no: 1, who: '用户', word: '人' },
   rule2: { no: 2, who: '账号', word: '个' }
 };
-var DEFAULT_TIP = '很抱歉，您暂不符合领取条件，无法领取免费会员';
 
 function defaultState() {
   return {
     enable: '0',
     lines: ['telesale'],
     intercept: '0',
-    tip: DEFAULT_TIP,
     rule1: { on: true, list: [{ time: 60, unit: 's', count: 5 }, { time: 10, unit: 'm', count: 15 }, { time: 24, unit: 'h', count: 30 }] },
     rule2: { on: true, list: [{ time: 24, unit: 'h', count: 3 }] },
     rule3: { on: true }
@@ -379,10 +360,6 @@ function renderLimits() {
     ? '是：被拦截用户不发免费会员，且不进行转介绍入库、转介绍小程序入库，不建立转介绍绑定关系'
     : '否：被拦截用户仅不发免费会员，入库与转介绍绑定关系沿用现有规则';
 }
-function renderTip() {
-  document.getElementById('tipInput').value = state.tip;
-  document.getElementById('tipCount').textContent = state.tip.length + '/50';
-}
 
 function renderAll() {
   document.querySelector('input[name="enable"][value="' + state.enable + '"]').checked = true;
@@ -398,9 +375,7 @@ function renderAll() {
   renderRule('rule1');
   renderRule('rule2');
   renderLimits();
-  renderTip();
-  ['errLine', 'errTip', 'err1', 'err2'].forEach(function (id) { document.getElementById(id).textContent = ''; });
-  document.getElementById('tipBox').classList.remove('is-error');
+  ['errLine', 'err1', 'err2'].forEach(function (id) { document.getElementById(id).textContent = ''; });
   remeasure();
 }
 function remeasure() { if (window.__diffRemeasure) window.__diffRemeasure(); }
@@ -424,7 +399,7 @@ document.querySelectorAll('.el-tabs__item').forEach(function (tab) {
   tab.addEventListener('click', function () { switchTab(tab.dataset.tab); });
 });
 
-/* radios, checkboxes, switches, tip */
+/* radios, checkboxes, switches */
 document.querySelectorAll('input[name="enable"]').forEach(function (el) {
   el.addEventListener('change', function () { state.enable = el.value; renderAll(); });
 });
@@ -437,11 +412,6 @@ document.querySelectorAll('input[name="line"]').forEach(function (el) {
 });
 document.querySelectorAll('input[name="intercept"]').forEach(function (el) {
   el.addEventListener('change', function () { state.intercept = el.value; renderLimits(); remeasure(); });
-});
-document.getElementById('tipInput').addEventListener('input', function (e) {
-  state.tip = e.target.value;
-  document.getElementById('tipCount').textContent = state.tip.length + '/50';
-  if (state.tip.trim()) { document.getElementById('errTip').textContent = ''; document.getElementById('tipBox').classList.remove('is-error'); }
 });
 [1, 2, 3].forEach(function (n) {
   document.getElementById('sw' + n).addEventListener('change', function (e) {
@@ -518,11 +488,6 @@ function validate() {
   var ok = true;
   if (state.enable !== '1') return true;
   if (!state.lines.length) { document.getElementById('errLine').textContent = '请至少选择一个风控业务线'; ok = false; }
-  if (!state.tip.trim()) {
-    document.getElementById('errTip').textContent = '请输入不能领取权益提示语';
-    document.getElementById('tipBox').classList.add('is-error');
-    ok = false;
-  }
   if (!state.rule1.on && !state.rule2.on && !state.rule3.on) { showMsg('开启风控限制后，至少开启一条规则', 'error'); remeasure(); return false; }
   ['rule1', 'rule2'].forEach(function (key) {
     var err = state[key].on ? checkList(state[key].list) : '';
@@ -557,7 +522,7 @@ function showMsg(text, type) {
 renderAll();
 </script>
 <script>
-window.DIFF_CHANGESET = {"meta": {"slug": "point-rule-risk-control", "prdUrl": "https://guanghe.feishu.cn/docx/VlVKdDIO0oTLYkxUVsccbvHGnse", "demoControls": [{"id": "on", "label": "开启风控"}, {"id": "off", "label": "关闭风控"}, {"id": "invalid", "label": "保存校验失败"}]}, "changes": [{"id": "chg-1", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则Tab", "target": "#tabRisk", "level": "page", "type": "new", "title": "新增风控规则Tab", "desc": "在「电销」「体验营」之后新增「风控规则」Tab，用于统一配置被推荐人申请发放权益时的风控拦截规则。", "before": "无此Tab", "after": "有风控规则配置权限的账号可见「风控规则」Tab；无权限不展示。", "examples": ["有权限：Tab 栏展示「电销」「体验营」「风控规则」", "无权限：不展示「风控规则」Tab"], "prd": {"section": "7.1.1 【新增】风控规则Tab", "blockId": "doxcnUE41JtQb0jP3v8xAHKWmHg"}}, {"id": "chg-2", "page": "积分规则设置", "pageKey": "risk", "module": "基础配置", "target": "#fieldEnable", "level": "field", "type": "new", "title": "新增是否开启风控限制", "desc": "单选「是/否」，必填，默认「否」；选「是」时展示风控业务线、拦截用户是否入库、不能领取权益提示语和三条风控规则。", "before": "无此字段", "after": "选「否」：仅展示本字段，不做风控校验；选「是」：展示其余配置，并对符合转介绍条件的新用户按配置校验。", "examples": ["选「否」并保存：领取免费会员不做风控校验", "选「是」：展开风控业务线、拦截用户是否入库、不能领取权益提示语、风控规则"], "prd": {"section": "7.1.2 【新增】风控规则配置项", "blockId": "doxcnWqdziwzHbBLtb1IicW1Ead"}}, {"id": "chg-3", "page": "积分规则设置", "pageKey": "risk", "module": "基础配置", "target": "#fieldLine", "level": "field", "type": "new", "title": "新增风控业务线", "desc": "多选「电销/体验营」，必填，至少选一个；风控规则只对已勾选业务线的权益申请生效。", "before": "无此字段", "after": "可同时勾选电销与体验营；全部不勾选时保存提示「请至少选择一个风控业务线」。", "examples": ["只勾选电销：仅电销业务线的权益申请走风控校验", "电销、体验营都勾选：两条业务线都走风控校验", "都不勾选点保存：提示「请至少选择一个风控业务线」"], "prd": {"section": "7.1.2 【新增】风控规则配置项", "blockId": "doxcnWqdziwzHbBLtb1IicW1Ead"}}, {"id": "chg-4", "page": "积分规则设置", "pageKey": "risk", "module": "基础配置", "target": "#fieldIntercept", "level": "field", "type": "new", "title": "新增拦截用户是否入库", "desc": "单选「是/否」，必填，默认「否」；决定被风控拦截的用户是否同时拦截入库，规则表「限制」列随之变化。", "before": "无此字段", "after": "选「是」：限制展示「限制入库&不发免费会员」，不进行转介绍入库、转介绍小程序入库，也不建立转介绍绑定关系；选「否」：限制展示「不发免费会员」，入库与绑定关系沿用现有规则。", "examples": ["选「是」：三条规则的限制列都展示「限制入库&不发免费会员」", "选「否」：三条规则的限制列都展示「不发免费会员」", "选「是」且命中规则：用户不进转介绍入库、不进转介绍小程序入库、无转介绍绑定关系"], "prd": {"section": "7.1.2 【新增】风控规则配置项", "blockId": "doxcnWqdziwzHbBLtb1IicW1Ead"}}, {"id": "chg-5", "page": "积分规则设置", "pageKey": "risk", "module": "基础配置", "target": "#fieldTip", "level": "field", "type": "new", "title": "新增不能领取权益提示语", "desc": "必填，最多50字，默认「很抱歉，您暂不符合领取条件，无法领取免费会员」；用户命中任一风控规则时，在领取免费会员处弹出该提示语。", "before": "无此字段", "after": "运营可修改提示语；为空时不可保存。提示语不透出具体风控原因。", "examples": ["命中规则一、二或三：用户领取免费会员时弹出该提示语", "清空提示语点保存：提示「请输入不能领取权益提示语」"], "prd": {"section": "7.1.2 【新增】风控规则配置项", "blockId": "doxcnWqdziwzHbBLtb1IicW1Ead"}}, {"id": "chg-6", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则", "target": "#validDef", "level": "field", "type": "logic", "title": "新增有效申请说明", "desc": "风控只对符合转介绍条件的新用户生效；这类用户提交的领取免费会员申请为「有效申请」，是三条规则的统计口径。", "before": "无此说明", "after": "符合转介绍条件：通过老用户海报或链接进入小程序且推荐人非本人、推荐人积分未被禁用、满足转介绍新用户条件。同一用户多次提交只计一次，被拦截的申请也计入；不符合条件的用户不校验、不计入。", "examples": ["自己扫自己的海报：不符合转介绍条件，不参与风控", "老用户积分被禁用：其被推荐人不参与风控", "同一用户60秒内提交3次：规则一只计1人"], "prd": {"section": "7.1.3 【新增】风控规则", "blockId": "doxcnAvRJLN0nyrJhWEnat0AVMf"}}, {"id": "chg-7", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则", "target": "#card1", "level": "module", "type": "new", "title": "新增规则一：同一推荐人频次限制", "desc": "同一推荐人在时间窗口内，提交有效申请的不同被推荐人数达到阈值时，从第N个起拦截；可单独开关，最多配置5条。", "before": "无此规则", "after": "默认开启，预置 60秒≥5人、10分钟≥15人、24小时≥30人；时间、单位、人数可修改，可新增或删除；限制列按「拦截用户是否入库」展示。", "examples": ["60秒内同一推荐人下第5个不同用户提交有效申请：拦截", "10分钟内第15个、24小时内第30个不同用户提交有效申请：拦截", "仅剩1条时删除按钮置灰；已有5条时新增按钮置灰"], "prd": {"section": "7.1.3 【新增】风控规则", "blockId": "doxcnAvRJLN0nyrJhWEnat0AVMf"}}, {"id": "chg-8", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则", "target": "#card2", "level": "module", "type": "new", "title": "新增规则二：同一设备多账号限制", "desc": "同一设备在时间窗口内，提交有效申请的不同账号数达到阈值时，从第N个起拦截；可单独开关，支持新增、删除，最多配置5条。", "before": "无此规则", "after": "默认开启，预置 24小时≥3个；时间、单位、账号数可修改；新增「新增」按钮和每行「删除」按钮，交互同规则一。", "examples": ["24小时内同一设备第3个不同账号提交有效申请：拦截", "点击新增可再加一条，如 1小时≥2个", "仅剩1条时删除按钮置灰；已有5条时新增按钮置灰"], "prd": {"section": "7.1.3 【新增】风控规则", "blockId": "doxcnAvRJLN0nyrJhWEnat0AVMf"}}, {"id": "chg-9", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则", "target": "#card3", "level": "module", "type": "new", "title": "新增规则三：设备信息缺失限制", "desc": "符合转介绍条件的新用户提交申请时未获取到设备信息，则拦截；仅可开关，无其他配置项。", "before": "无此规则", "after": "默认开启；开启后无设备信息的有效申请被拦截，限制列按「拦截用户是否入库」展示。", "examples": ["开启时未获取到设备信息：拦截", "关闭时：不校验设备信息"], "prd": {"section": "7.1.3 【新增】风控规则", "blockId": "doxcnAvRJLN0nyrJhWEnat0AVMf"}}, {"id": "chg-10", "page": "积分规则设置", "pageKey": "risk", "module": "保存校验", "target": "#saveBtn", "level": "field", "type": "logic", "title": "新增保存与校验", "desc": "点击保存时校验配置，校验通过才保存并刷新最近更新时间和操作人；保存后对新提交的权益申请生效。", "before": "无此功能", "after": "校验不通过在对应位置展示红字提示且不保存；通过后提示「保存成功」。重置恢复为上次保存的配置。", "examples": ["风控业务线都未勾选：提示「请至少选择一个风控业务线」", "提示语为空：提示「请输入不能领取权益提示语」", "开启风控但三条规则都关闭：提示「开启风控限制后，至少开启一条规则」", "规则一或规则二时间留空：提示「第N行：时间窗口需为正整数」", "时间超过24小时：提示「时间窗口最长不超过24小时」", "人数或账号数小于2：提示「阈值需为不小于2的整数」", "同一规则两行时间窗口相同：提示「第N行：时间窗口与第M行重复」"], "prd": {"section": "7.4 状态与异常变更", "blockId": "doxcn2kfBARObTQlZCgA322v2Qd"}}]}; // END_CHANGESET
+window.DIFF_CHANGESET = {"meta": {"slug": "point-rule-risk-control", "prdUrl": "https://guanghe.feishu.cn/docx/VlVKdDIO0oTLYkxUVsccbvHGnse", "demoControls": [{"id": "on", "label": "开启风控"}, {"id": "off", "label": "关闭风控"}, {"id": "invalid", "label": "保存校验失败"}]}, "changes": [{"id": "chg-1", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则Tab", "target": "#tabRisk", "level": "page", "type": "new", "title": "新增风控规则Tab", "desc": "在「电销」「体验营」之后新增「风控规则」Tab，用于统一配置被推荐人申请发放权益时的风控拦截规则。", "before": "无此Tab", "after": "有风控规则配置权限的账号可见「风控规则」Tab；无权限不展示。", "examples": ["有权限：Tab 栏展示「电销」「体验营」「风控规则」", "无权限：不展示「风控规则」Tab"], "prd": {"section": "7.1.1 【新增】风控规则Tab", "blockId": "doxcnXnfSS8FrxTRlQ5mmvLBzKb"}}, {"id": "chg-2", "page": "积分规则设置", "pageKey": "risk", "module": "基础配置", "target": "#fieldEnable", "level": "field", "type": "new", "title": "新增是否开启风控限制", "desc": "单选「是/否」，必填，默认「否」；选「是」时展示风控业务线、拦截用户是否入库和三条风控规则。", "before": "无此字段", "after": "选「否」：仅展示本字段，不做风控校验；选「是」：展示其余配置，并对符合转介绍条件的新用户按配置校验。", "examples": ["选「否」并保存：领取免费会员不做风控校验", "选「是」：展开风控业务线、拦截用户是否入库、风控规则"], "prd": {"section": "7.1.2 【新增】风控规则配置项", "blockId": "doxcntLOd4oR0IUX6fLdQDxsxQb"}}, {"id": "chg-3", "page": "积分规则设置", "pageKey": "risk", "module": "基础配置", "target": "#fieldLine", "level": "field", "type": "new", "title": "新增风控业务线", "desc": "多选「电销/体验营」，必填，至少选一个；风控规则只对已勾选业务线的权益申请生效。", "before": "无此字段", "after": "可同时勾选电销与体验营；全部不勾选时保存提示「请至少选择一个风控业务线」。", "examples": ["只勾选电销：仅电销业务线的权益申请走风控校验", "电销、体验营都勾选：两条业务线都走风控校验", "都不勾选点保存：提示「请至少选择一个风控业务线」"], "prd": {"section": "7.1.2 【新增】风控规则配置项", "blockId": "doxcntLOd4oR0IUX6fLdQDxsxQb"}}, {"id": "chg-4", "page": "积分规则设置", "pageKey": "risk", "module": "基础配置", "target": "#fieldIntercept", "level": "field", "type": "new", "title": "新增拦截用户是否入库", "desc": "单选「是/否」，必填，默认「否」；决定被风控拦截的用户是否同时拦截入库，规则表「限制」列随之变化。", "before": "无此字段", "after": "选「是」：限制展示「限制入库&不发免费会员」，不进行转介绍入库、转介绍小程序入库，也不建立转介绍绑定关系；选「否」：限制展示「不发免费会员」，入库与绑定关系沿用现有规则。", "examples": ["选「是」：三条规则的限制列都展示「限制入库&不发免费会员」", "选「否」：三条规则的限制列都展示「不发免费会员」", "选「是」且命中规则：用户不进转介绍入库、不进转介绍小程序入库、无转介绍绑定关系"], "prd": {"section": "7.1.2 【新增】风控规则配置项", "blockId": "doxcntLOd4oR0IUX6fLdQDxsxQb"}}, {"id": "chg-5", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则", "target": "#validDef", "level": "field", "type": "logic", "title": "新增有效申请说明", "desc": "风控只对符合转介绍条件的新用户生效；这类用户提交的领取免费会员申请为「有效申请」，是三条规则的统计口径。", "before": "无此说明", "after": "符合转介绍条件：通过老用户海报或链接进入小程序且推荐人非本人、推荐人积分未被禁用、满足转介绍新用户条件。同一用户多次提交只计一次，被拦截的申请也计入；不符合条件的用户不校验、不计入。", "examples": ["自己扫自己的海报：不符合转介绍条件，不参与风控", "老用户积分被禁用：其被推荐人不参与风控", "同一用户60秒内提交3次：规则一只计1人"], "prd": {"section": "7.1.3 【新增】风控规则", "blockId": "doxcnD6pXIVAQatSm35XOe4wwZd"}}, {"id": "chg-6", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则", "target": "#card1", "level": "module", "type": "new", "title": "新增规则一：同一推荐人频次限制", "desc": "同一推荐人在时间窗口内，提交有效申请的不同被推荐人数达到阈值时，从第N个起拦截；可单独开关，最多配置5条。", "before": "无此规则", "after": "默认开启，预置 60秒≥5人、10分钟≥15人、24小时≥30人；时间、单位、人数可修改，可新增或删除；限制列按「拦截用户是否入库」展示。", "examples": ["60秒内同一推荐人下第5个不同用户提交有效申请：拦截", "10分钟内第15个、24小时内第30个不同用户提交有效申请：拦截", "仅剩1条时删除按钮置灰；已有5条时新增按钮置灰"], "prd": {"section": "7.1.3 【新增】风控规则", "blockId": "doxcnD6pXIVAQatSm35XOe4wwZd"}}, {"id": "chg-7", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则", "target": "#card2", "level": "module", "type": "new", "title": "新增规则二：同一设备多账号限制", "desc": "同一设备在时间窗口内，提交有效申请的不同账号数达到阈值时，从第N个起拦截；可单独开关，支持新增、删除，最多配置5条。", "before": "无此规则", "after": "默认开启，预置 24小时≥3个；时间、单位、账号数可修改；新增「新增」按钮和每行「删除」按钮，交互同规则一。", "examples": ["24小时内同一设备第3个不同账号提交有效申请：拦截", "点击新增可再加一条，如 1小时≥2个", "仅剩1条时删除按钮置灰；已有5条时新增按钮置灰"], "prd": {"section": "7.1.3 【新增】风控规则", "blockId": "doxcnD6pXIVAQatSm35XOe4wwZd"}}, {"id": "chg-8", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则", "target": "#card3", "level": "module", "type": "new", "title": "新增规则三：设备信息缺失限制", "desc": "符合转介绍条件的新用户提交申请时未获取到设备信息，则拦截；仅可开关，无其他配置项。", "before": "无此规则", "after": "默认开启；开启后无设备信息的有效申请被拦截，限制列按「拦截用户是否入库」展示。", "examples": ["开启时未获取到设备信息：拦截", "关闭时：不校验设备信息"], "prd": {"section": "7.1.3 【新增】风控规则", "blockId": "doxcnD6pXIVAQatSm35XOe4wwZd"}}, {"id": "chg-9", "page": "积分规则设置", "pageKey": "risk", "module": "保存校验", "target": "#saveBtn", "level": "field", "type": "logic", "title": "新增保存与校验", "desc": "点击保存时校验配置，校验通过才保存并刷新最近更新时间和操作人；保存后对新提交的权益申请生效。", "before": "无此功能", "after": "校验不通过在对应位置展示红字提示且不保存；通过后提示「保存成功」。重置恢复为上次保存的配置。", "examples": ["风控业务线都未勾选：提示「请至少选择一个风控业务线」", "开启风控但三条规则都关闭：提示「开启风控限制后，至少开启一条规则」", "规则一或规则二时间留空：提示「第N行：时间窗口需为正整数」", "时间超过24小时：提示「时间窗口最长不超过24小时」", "人数或账号数小于2：提示「阈值需为不小于2的整数」", "同一规则两行时间窗口相同：提示「第N行：时间窗口与第M行重复」"], "prd": {"section": "7.4 状态与异常变更", "blockId": "doxcnCjuJEFEeIZqVxLLDhtZJKb"}}]}; // END_CHANGESET
 window.DIFF_HOOKS = {
   locate: function () {
     switchTab('risk');
