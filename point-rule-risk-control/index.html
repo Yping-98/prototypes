@@ -43,7 +43,7 @@
 
   /* ===== el-form ===== */
   .el-form-item { display: flex; margin-bottom: 22px; align-items: flex-start; }
-  .el-form-item__label { width: 170px; flex-shrink: 0; text-align: right; padding-right: 12px; line-height: 32px; color: #606266; }
+  .el-form-item__label { width: 180px; flex-shrink: 0; text-align: right; padding-right: 12px; line-height: 32px; color: #606266; }
   .el-form-item__label.required::before { content: "*"; color: #f56c6c; margin-right: 4px; }
   .el-form-item__content { flex: 1; min-width: 0; line-height: 32px; }
   .form-tip { font-size: 12px; color: #909399; line-height: 1.6; margin-top: 4px; }
@@ -64,6 +64,15 @@
   .el-checkbox input:checked + .box { border-color: #409eff; background: #409eff; }
   .el-checkbox input:checked + .box::after { content: ""; position: absolute; left: 4px; top: 1px; width: 3px; height: 7px; border: solid #fff; border-width: 0 1px 1px 0; transform: rotate(45deg); }
   .el-checkbox input:checked ~ .txt { color: #409eff; }
+
+  /* textarea / 有效申请说明 */
+  .el-textarea { position: relative; max-width: 520px; }
+  .el-textarea textarea { width: 100%; border: 1px solid #dcdfe6; border-radius: 4px; padding: 6px 11px 18px; font: inherit; color: #606266; line-height: 1.5; resize: vertical; outline: none; }
+  .el-textarea textarea:focus { border-color: #409eff; }
+  .el-textarea.is-error textarea { border-color: #f56c6c; }
+  .el-textarea__count { position: absolute; right: 10px; bottom: 4px; font-size: 12px; color: #909399; line-height: 1; }
+  .valid-def { max-width: 960px; background: #f4f8ff; border: 1px solid #d9ecff; border-radius: 4px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; line-height: 1.8; color: #606266; }
+  .valid-def b { color: #303133; }
 
   /* el-switch */
   .el-switch { display: inline-flex; align-items: center; cursor: pointer; vertical-align: middle; }
@@ -87,7 +96,9 @@
   .el-table th, .el-table td { border: 1px solid #ebeef5; padding: 10px 12px; text-align: center; line-height: 1.5; }
   .el-table th { background: #fafafa; color: #909399; font-weight: 500; }
   .el-table td { color: #606266; }
-  .tag-danger { display: inline-block; padding: 0 8px; line-height: 22px; font-size: 12px; color: #f56c6c; background: #fef0f0; border: 1px solid #fde2e2; border-radius: 4px; }
+  .el-table td:first-child { white-space: nowrap; }
+  .rule-body { overflow-x: auto; }
+  .tag-danger { white-space: nowrap; display: inline-block; padding: 0 8px; line-height: 22px; font-size: 12px; color: #f56c6c; background: #fef0f0; border: 1px solid #fde2e2; border-radius: 4px; }
 
   /* 规则卡片 */
   .rule-card { border: 1px solid #ebeef5; border-radius: 4px; margin-bottom: 16px; max-width: 960px; }
@@ -108,7 +119,7 @@
   .el-button + .el-button { margin-left: 12px; }
   .el-link-btn { background: none; border: none; color: #409eff; cursor: pointer; font-size: 14px; font-family: inherit; }
   .el-link-btn:disabled { color: #c0c4cc; cursor: not-allowed; }
-  .footer-bar { border-top: 1px solid #ebeef5; padding-top: 18px; margin-top: 8px; padding-left: 170px; }
+  .footer-bar { border-top: 1px solid #ebeef5; padding-top: 18px; margin-top: 8px; padding-left: 180px; }
   .update-info { font-size: 12px; color: #909399; margin-left: 16px; }
 
   /* 旧 tab 示意 */
@@ -193,7 +204,7 @@
             <div class="el-form-item__content">
               <label class="el-radio"><input type="radio" name="enable" value="1"><span class="dot"></span><span class="txt">是</span></label>
               <label class="el-radio"><input type="radio" name="enable" value="0" checked><span class="dot"></span><span class="txt">否</span></label>
-              <div class="form-tip">开启后，被推荐人申请发放权益时按下方规则校验，命中任一规则则不发放权益</div>
+              <div class="form-tip">开启后，符合转介绍条件的新用户申请领取免费会员时按下方规则校验，命中任一已开启规则即拦截</div>
             </div>
           </div>
 
@@ -212,12 +223,33 @@
               <div class="el-form-item__content">
                 <label class="el-radio"><input type="radio" name="intercept" value="1"><span class="dot"></span><span class="txt">是</span></label>
                 <label class="el-radio"><input type="radio" name="intercept" value="0"><span class="dot"></span><span class="txt">否</span></label>
+                <div class="form-tip" id="interceptTip"></div>
+              </div>
+            </div>
+
+            <div class="el-form-item" id="fieldTip">
+              <label class="el-form-item__label required">不能领取权益提示语：</label>
+              <div class="el-form-item__content">
+                <div class="el-textarea" id="tipBox">
+                  <textarea id="tipInput" rows="2" maxlength="50" placeholder="请输入用户被拦截时看到的提示语"></textarea>
+                  <span class="el-textarea__count" id="tipCount">0/50</span>
+                </div>
+                <div class="form-tip">被推荐人命中任一风控规则时，在领取免费会员处弹出该提示语；不透出风控原因</div>
+                <div class="form-error" id="errTip"></div>
               </div>
             </div>
 
             <div class="el-form-item">
               <label class="el-form-item__label required">风控规则：</label>
               <div class="el-form-item__content">
+
+                <div class="valid-def" id="validDef">
+                  <b>有效申请说明：</b>仅对<b>符合转介绍条件的新用户</b>校验与拦截，同时满足：
+                  ① 通过老用户分享的海报或链接进入小程序，且推荐人不是本人；
+                  ② 推荐人积分未被禁用；
+                  ③ 满足转介绍新用户条件（沿用现有判定）。
+                  这类用户提交的领取免费会员申请即为「有效申请」；同一用户多次提交只计 1 人 / 1 个账号，被拦截的申请也计入统计。不符合转介绍条件的用户不参与风控校验，也不计入统计。
+                </div>
 
                 <!-- 规则一 -->
                 <div class="rule-card" id="card1">
@@ -226,12 +258,12 @@
                     <label class="el-switch"><input type="checkbox" id="sw1" checked><span class="core"></span><span class="status">已开启</span></label>
                   </div>
                   <div class="rule-body">
-                    <div class="rule-desc">计算逻辑：当一个账号提交申请时，向前回溯时间窗口内同一推荐人下已提交有效申请的不同用户数（含本次），达到阈值则本次不发放权益。</div>
+                    <div class="rule-desc">计算逻辑：当一个账号提交有效申请时，向前回溯时间窗口内同一推荐人下已提交有效申请的不同用户数（含本次），达到阈值则本次拦截。</div>
                     <table class="el-table">
-                      <thead><tr><th style="width:44%">规则</th><th>触发点</th><th style="width:110px">限制</th><th style="width:80px">操作</th></tr></thead>
+                      <thead><tr><th style="width:40%">规则</th><th>触发点</th><th style="width:170px">限制</th><th style="width:70px">操作</th></tr></thead>
                       <tbody id="rule1Body"></tbody>
                     </table>
-                    <div style="margin-top:10px"><button class="el-button el-button--primary el-button--small" id="addRule1">新增</button><span class="form-tip" style="margin-left:8px">最多 5 条</span></div>
+                    <div style="margin-top:10px"><button class="el-button el-button--primary el-button--small" id="addRule1" data-add="rule1">新增</button><span class="form-tip" style="margin-left:8px">最多 5 条</span></div>
                     <div class="form-error" id="err1"></div>
                   </div>
                 </div>
@@ -239,15 +271,16 @@
                 <!-- 规则二 -->
                 <div class="rule-card" id="card2">
                   <div class="rule-head">
-                    <span class="name">规则二：同一设备多账号限制<small>同一设备在时间窗口内提交申请的不同账号数</small></span>
+                    <span class="name">规则二：同一设备多账号限制<small>同一设备在时间窗口内提交有效申请的不同账号数</small></span>
                     <label class="el-switch"><input type="checkbox" id="sw2" checked><span class="core"></span><span class="status">已开启</span></label>
                   </div>
                   <div class="rule-body">
-                    <div class="rule-desc">计算逻辑：被推荐人申请发放权益时，校验申请设备在时间窗口内已提交有效申请的不同账号数（含本次），达到阈值则本次不发放权益。</div>
+                    <div class="rule-desc">计算逻辑：被推荐人提交有效申请时，校验申请设备在时间窗口内已提交有效申请的不同账号数（含本次），达到阈值则本次拦截。</div>
                     <table class="el-table">
-                      <thead><tr><th style="width:44%">规则</th><th>触发点</th><th style="width:110px">限制</th></tr></thead>
+                      <thead><tr><th style="width:40%">规则</th><th>触发点</th><th style="width:170px">限制</th><th style="width:70px">操作</th></tr></thead>
                       <tbody id="rule2Body"></tbody>
                     </table>
+                    <div style="margin-top:10px"><button class="el-button el-button--primary el-button--small" id="addRule2" data-add="rule2">新增</button><span class="form-tip" style="margin-left:8px">最多 5 条</span></div>
                     <div class="form-error" id="err2"></div>
                   </div>
                 </div>
@@ -260,8 +293,8 @@
                   </div>
                   <div class="rule-body">
                     <table class="el-table">
-                      <thead><tr><th style="width:44%">规则</th><th>触发点</th><th style="width:110px">限制</th></tr></thead>
-                      <tbody><tr><td>未获取到账号的设备信息</td><td>被推荐人提交申请时无设备信息</td><td><span class="tag-danger">不发放权益</span></td></tr></tbody>
+                      <thead><tr><th style="width:40%">规则</th><th>触发点</th><th style="width:170px">限制</th></tr></thead>
+                      <tbody><tr><td>未获取到账号的设备信息</td><td>被推荐人提交有效申请时无设备信息</td><td class="limit-cell"></td></tr></tbody>
                     </table>
                   </div>
                 </div>
@@ -287,20 +320,32 @@
 var UNIT = { s: '秒', m: '分钟', h: '小时' };
 var UNIT_SEC = { s: 1, m: 60, h: 3600 };
 var MAX_SEC = 24 * 3600;
+var MAX_ROWS = 5;
+var RULES = {
+  rule1: { no: 1, who: '用户', word: '人' },
+  rule2: { no: 2, who: '账号', word: '个' }
+};
+var DEFAULT_TIP = '很抱歉，您暂不符合领取条件，无法领取免费会员';
 
 function defaultState() {
   return {
     enable: '0',
     lines: ['telesale'],
     intercept: '0',
+    tip: DEFAULT_TIP,
     rule1: { on: true, list: [{ time: 60, unit: 's', count: 5 }, { time: 10, unit: 'm', count: 15 }, { time: 24, unit: 'h', count: 30 }] },
-    rule2: { on: true, time: 24, unit: 'h', count: 3 },
+    rule2: { on: true, list: [{ time: 24, unit: 'h', count: 3 }] },
     rule3: { on: true }
   };
 }
 var saved = defaultState();
 var state = JSON.parse(JSON.stringify(saved));
 
+function limitHtml() {
+  return state.intercept === '1'
+    ? '<span class="tag-danger">限制入库&amp;不发免费会员</span>'
+    : '<span class="tag-danger">不发免费会员</span>';
+}
 function numberInput(path, value, min) {
   return '<span class="el-input-number" data-path="' + path + '">'
     + '<button type="button" data-step="-1">−</button>'
@@ -314,33 +359,35 @@ function unitSelect(path, unit) {
 }
 function triggerText(count, who) { return count ? '第' + count + '个不同' + who + '提交有效申请' : '—'; }
 
-function renderRule1() {
-  var list = state.rule1.list;
-  var html = '';
+function renderRule(key) {
+  var cfg = RULES[key], list = state[key].list, html = '';
   list.forEach(function (r, i) {
-    html += '<tr><td>' + numberInput('rule1.' + i + '.time', r.time, 1) + ' ' + unitSelect('rule1.' + i + '.unit', r.unit)
-      + ' <span style="margin:0 4px">≥</span> ' + numberInput('rule1.' + i + '.count', r.count, 2) + ' 人</td>'
-      + '<td id="t1_' + i + '">' + triggerText(r.count, '用户') + '</td>'
-      + '<td><span class="tag-danger">不发放权益</span></td>'
-      + '<td><button class="el-link-btn" data-del="' + i + '"' + (list.length <= 1 ? ' disabled' : '') + '>删除</button></td></tr>';
+    var p = key + '.' + i;
+    html += '<tr><td>' + numberInput(p + '.time', r.time, 1) + ' ' + unitSelect(p + '.unit', r.unit)
+      + ' <span style="margin:0 4px">≥</span> ' + numberInput(p + '.count', r.count, 2) + ' ' + cfg.word + '</td>'
+      + '<td id="t_' + key + '_' + i + '">' + triggerText(r.count, cfg.who) + '</td>'
+      + '<td class="limit-cell">' + limitHtml() + '</td>'
+      + '<td><button class="el-link-btn" data-del="' + key + '.' + i + '"' + (list.length <= 1 ? ' disabled' : '') + '>删除</button></td></tr>';
   });
-  document.getElementById('rule1Body').innerHTML = html;
-  document.getElementById('addRule1').disabled = list.length >= 5;
+  document.getElementById(key + 'Body').innerHTML = html;
+  document.getElementById('addRule' + cfg.no).disabled = list.length >= MAX_ROWS;
   remeasure();
 }
-function renderRule2() {
-  var r = state.rule2;
-  document.getElementById('rule2Body').innerHTML = '<tr><td>' + numberInput('rule2.time', r.time, 1) + ' ' + unitSelect('rule2.unit', r.unit)
-    + ' <span style="margin:0 4px">≥</span> ' + numberInput('rule2.count', r.count, 2) + ' 个</td>'
-    + '<td id="t2">' + triggerText(r.count, '账号') + '</td>'
-    + '<td><span class="tag-danger">不发放权益</span></td></tr>';
+function renderLimits() {
+  document.querySelectorAll('.limit-cell').forEach(function (td) { td.innerHTML = limitHtml(); });
+  document.getElementById('interceptTip').textContent = state.intercept === '1'
+    ? '是：被拦截用户不发免费会员，且不进行转介绍入库、转介绍小程序入库，不建立转介绍绑定关系'
+    : '否：被拦截用户仅不发免费会员，入库与转介绍绑定关系沿用现有规则';
+}
+function renderTip() {
+  document.getElementById('tipInput').value = state.tip;
+  document.getElementById('tipCount').textContent = state.tip.length + '/50';
 }
 
 function renderAll() {
   document.querySelector('input[name="enable"][value="' + state.enable + '"]').checked = true;
   document.querySelectorAll('input[name="line"]').forEach(function (el) { el.checked = state.lines.indexOf(el.value) > -1; });
   document.querySelector('input[name="intercept"][value="' + state.intercept + '"]').checked = true;
-  document.getElementById('errLine').textContent = '';
   document.getElementById('riskDetail').style.display = state.enable === '1' ? 'block' : 'none';
   [1, 2, 3].forEach(function (n) {
     var on = state['rule' + n].on;
@@ -348,10 +395,12 @@ function renderAll() {
     document.getElementById('card' + n).classList.toggle('is-off', !on);
     document.querySelector('#card' + n + ' .status').textContent = on ? '已开启' : '已关闭';
   });
-  renderRule1();
-  renderRule2();
-  document.getElementById('err1').textContent = '';
-  document.getElementById('err2').textContent = '';
+  renderRule('rule1');
+  renderRule('rule2');
+  renderLimits();
+  renderTip();
+  ['errLine', 'errTip', 'err1', 'err2'].forEach(function (id) { document.getElementById(id).textContent = ''; });
+  document.getElementById('tipBox').classList.remove('is-error');
   remeasure();
 }
 function remeasure() { if (window.__diffRemeasure) window.__diffRemeasure(); }
@@ -363,13 +412,11 @@ function switchTab(name) {
 
 function setByPath(path, value) {
   var p = path.split('.');
-  if (p[0] === 'rule1') state.rule1.list[+p[1]][p[2]] = value;
-  else state.rule2[p[1]] = value;
+  state[p[0]].list[+p[1]][p[2]] = value;
 }
 function refreshTrigger(path) {
   var p = path.split('.');
-  if (p[0] === 'rule1') document.getElementById('t1_' + p[1]).textContent = triggerText(state.rule1.list[+p[1]].count, '用户');
-  else document.getElementById('t2').textContent = triggerText(state.rule2.count, '账号');
+  document.getElementById('t_' + p[0] + '_' + p[1]).textContent = triggerText(state[p[0]].list[+p[1]].count, RULES[p[0]].who);
 }
 
 /* tabs */
@@ -377,7 +424,7 @@ document.querySelectorAll('.el-tabs__item').forEach(function (tab) {
   tab.addEventListener('click', function () { switchTab(tab.dataset.tab); });
 });
 
-/* radios & switches */
+/* radios, checkboxes, switches, tip */
 document.querySelectorAll('input[name="enable"]').forEach(function (el) {
   el.addEventListener('change', function () { state.enable = el.value; renderAll(); });
 });
@@ -389,7 +436,12 @@ document.querySelectorAll('input[name="line"]').forEach(function (el) {
   });
 });
 document.querySelectorAll('input[name="intercept"]').forEach(function (el) {
-  el.addEventListener('change', function () { state.intercept = el.value; });
+  el.addEventListener('change', function () { state.intercept = el.value; renderLimits(); remeasure(); });
+});
+document.getElementById('tipInput').addEventListener('input', function (e) {
+  state.tip = e.target.value;
+  document.getElementById('tipCount').textContent = state.tip.length + '/50';
+  if (state.tip.trim()) { document.getElementById('errTip').textContent = ''; document.getElementById('tipBox').classList.remove('is-error'); }
 });
 [1, 2, 3].forEach(function (n) {
   document.getElementById('sw' + n).addEventListener('change', function (e) {
@@ -398,7 +450,7 @@ document.querySelectorAll('input[name="intercept"]').forEach(function (el) {
   });
 });
 
-/* number inputs / selects / delete (delegated) */
+/* number inputs / selects / add / delete (delegated) */
 var riskPane = document.getElementById('pane-risk');
 riskPane.addEventListener('click', function (e) {
   var stepBtn = e.target.closest('[data-step]');
@@ -413,7 +465,17 @@ riskPane.addEventListener('click', function (e) {
     return;
   }
   var del = e.target.closest('[data-del]');
-  if (del && !del.disabled) { state.rule1.list.splice(+del.dataset.del, 1); renderRule1(); }
+  if (del && !del.disabled) {
+    var d = del.dataset.del.split('.');
+    state[d[0]].list.splice(+d[1], 1);
+    renderRule(d[0]);
+    return;
+  }
+  var add = e.target.closest('[data-add]');
+  if (add && !add.disabled) {
+    var key = add.dataset.add;
+    if (state[key].list.length < MAX_ROWS) { state[key].list.push({ time: '', unit: 'm', count: '' }); renderRule(key); }
+  }
 });
 riskPane.addEventListener('input', function (e) {
   var box = e.target.closest('.el-input-number');
@@ -426,9 +488,6 @@ riskPane.addEventListener('input', function (e) {
 riskPane.addEventListener('change', function (e) {
   if (e.target.matches('select[data-path]')) setByPath(e.target.dataset.path, e.target.value);
 });
-document.getElementById('addRule1').addEventListener('click', function () {
-  if (state.rule1.list.length < 5) { state.rule1.list.push({ time: '', unit: 'm', count: '' }); renderRule1(); }
-});
 
 /* validate & save */
 function checkItem(item, minCount) {
@@ -437,35 +496,39 @@ function checkItem(item, minCount) {
   if (!item.count || item.count < minCount) return '阈值需为不小于' + minCount + '的整数';
   return '';
 }
+function checkList(list) {
+  var err = '', seen = {};
+  list.forEach(function (r, i) {
+    if (err) return;
+    var e = checkItem(r, 2);
+    if (e) { err = '第' + (i + 1) + '行：' + e; return; }
+    var key = r.time * UNIT_SEC[r.unit];
+    if (seen[key]) err = '第' + (i + 1) + '行：时间窗口与第' + seen[key] + '行重复';
+    seen[key] = i + 1;
+  });
+  return err;
+}
 function markErrors(prefix) {
-  document.querySelectorAll('.el-input-number[data-path^="' + prefix + '"]').forEach(function (box) {
-    var v = box.querySelector('input').value;
-    if (v === '' || +v < +box.querySelector('input').dataset.min) box.classList.add('is-error');
+  document.querySelectorAll('.el-input-number[data-path^="' + prefix + '."]').forEach(function (box) {
+    var input = box.querySelector('input');
+    if (input.value === '' || +input.value < +input.dataset.min) box.classList.add('is-error');
   });
 }
 function validate() {
   var ok = true;
-  var err1 = '', err2 = '';
   if (state.enable !== '1') return true;
-  if (!state.lines.length) { document.getElementById('errLine').textContent = '请至少选择一个风控业务线'; remeasure(); return false; }
-  if (!state.rule1.on && !state.rule2.on && !state.rule3.on) { showMsg('开启风控限制后，至少开启一条规则', 'error'); return false; }
-  if (state.rule1.on) {
-    var seen = {};
-    state.rule1.list.forEach(function (r, i) {
-      var e = checkItem(r, 2);
-      if (e && !err1) err1 = '第' + (i + 1) + '行：' + e;
-      var key = r.time * UNIT_SEC[r.unit];
-      if (!e && seen[key] && !err1) err1 = '第' + (i + 1) + '行：时间窗口与第' + seen[key] + '行重复';
-      seen[key] = i + 1;
-    });
-    if (err1) { ok = false; markErrors('rule1'); }
+  if (!state.lines.length) { document.getElementById('errLine').textContent = '请至少选择一个风控业务线'; ok = false; }
+  if (!state.tip.trim()) {
+    document.getElementById('errTip').textContent = '请输入不能领取权益提示语';
+    document.getElementById('tipBox').classList.add('is-error');
+    ok = false;
   }
-  if (state.rule2.on) {
-    err2 = checkItem(state.rule2, 2);
-    if (err2) { ok = false; markErrors('rule2'); }
-  }
-  document.getElementById('err1').textContent = err1;
-  document.getElementById('err2').textContent = err2;
+  if (!state.rule1.on && !state.rule2.on && !state.rule3.on) { showMsg('开启风控限制后，至少开启一条规则', 'error'); remeasure(); return false; }
+  ['rule1', 'rule2'].forEach(function (key) {
+    var err = state[key].on ? checkList(state[key].list) : '';
+    document.getElementById('err' + RULES[key].no).textContent = err;
+    if (err) { ok = false; markErrors(key); }
+  });
   remeasure();
   return ok;
 }
@@ -494,7 +557,7 @@ function showMsg(text, type) {
 renderAll();
 </script>
 <script>
-window.DIFF_CHANGESET = {"meta": {"slug": "point-rule-risk-control", "prdUrl": "https://guanghe.feishu.cn/docx/VlVKdDIO0oTLYkxUVsccbvHGnse", "demoControls": [{"id": "on", "label": "开启风控"}, {"id": "off", "label": "关闭风控"}, {"id": "invalid", "label": "保存校验失败"}]}, "changes": [{"id": "chg-1", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则Tab", "target": "#tabRisk", "level": "page", "type": "new", "title": "新增风控规则Tab", "desc": "在「电销」「体验营」之后新增「风控规则」Tab，用于统一配置被推荐人申请发放权益时的风控拦截规则。", "before": "无此Tab", "after": "有风控规则配置权限的账号可见「风控规则」Tab；无权限不展示。", "examples": ["有权限：Tab 栏展示「电销」「体验营」「风控规则」", "无权限：不展示「风控规则」Tab"], "prd": {"section": "7.1.1 【新增】风控规则Tab", "blockId": "doxcnlviRcnGolJJysmqEoL4c4f"}}, {"id": "chg-2", "page": "积分规则设置", "pageKey": "risk", "module": "基础配置", "target": "#fieldEnable", "level": "field", "type": "new", "title": "新增是否开启风控限制", "desc": "单选「是/否」，必填，默认「否」；选「是」时展示风控业务线、拦截用户是否入库和三条风控规则。", "before": "无此字段", "after": "选「否」：仅展示本字段，不做风控校验；选「是」：展示其余配置并按配置校验。", "examples": ["选「否」并保存：被推荐人申请权益不做风控校验", "选「是」：展开风控业务线、拦截用户是否入库、风控规则"], "prd": {"section": "7.1.2 【新增】风控规则配置项", "blockId": "doxcnEKmuKfxhjtHLpz6eEvYJec"}}, {"id": "chg-3", "page": "积分规则设置", "pageKey": "risk", "module": "基础配置", "target": "#fieldLine", "level": "field", "type": "new", "title": "新增风控业务线", "desc": "多选「电销/体验营」，必填，至少选一个；风控规则只对已勾选业务线的权益申请生效。", "before": "无此字段", "after": "可同时勾选电销与体验营；全部不勾选时保存提示「请至少选择一个风控业务线」。", "examples": ["只勾选电销：仅电销业务线的权益申请走风控校验", "电销、体验营都勾选：两条业务线都走风控校验", "都不勾选点保存：提示「请至少选择一个风控业务线」"], "prd": {"section": "7.1.2 【新增】风控规则配置项", "blockId": "doxcnEKmuKfxhjtHLpz6eEvYJec"}}, {"id": "chg-4", "page": "积分规则设置", "pageKey": "risk", "module": "基础配置", "target": "#fieldIntercept", "level": "field", "type": "new", "title": "新增拦截用户是否入库", "desc": "单选「是/否」，必填，默认「否」；决定被风控拦截、未发放权益的被推荐人是否仍入库。", "before": "无此字段", "after": "选「是」：被拦截用户沿用现有规则入库；选「否」：被拦截用户不入库。", "examples": ["选「是」：被拦截用户不发权益，但仍入库", "选「否」：被拦截用户不发权益，也不入库"], "prd": {"section": "7.1.2 【新增】风控规则配置项", "blockId": "doxcnEKmuKfxhjtHLpz6eEvYJec"}}, {"id": "chg-5", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则", "target": "#card1", "level": "module", "type": "new", "title": "新增规则一：同一推荐人频次限制", "desc": "同一推荐人在时间窗口内，提交有效申请的不同被推荐人数达到阈值时，从第N个起不发放权益；可单独开关，最多配置5条。", "before": "无此规则", "after": "默认开启，预置 60秒≥5人、10分钟≥15人、24小时≥30人；时间、单位、人数可修改，可新增或删除。", "examples": ["60秒内同一推荐人下第5个不同用户提交申请：不发放权益", "10分钟内第15个不同用户提交申请：不发放权益", "24小时内第30个不同用户提交申请：不发放权益", "仅剩1条时删除按钮置灰；已有5条时新增按钮置灰"], "prd": {"section": "7.1.3 【新增】风控规则", "blockId": "doxcnpbl2BtLAWo0ntPtiASLjLd"}}, {"id": "chg-6", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则", "target": "#card2", "level": "module", "type": "new", "title": "新增规则二：同一设备多账号限制", "desc": "同一设备在时间窗口内，提交有效申请的不同账号数达到阈值时，从第N个起不发放权益；可单独开关。", "before": "无此规则", "after": "默认开启，预置 24小时≥3个；时间、单位、账号数可修改。", "examples": ["24小时内同一设备第3个不同账号提交申请：不发放权益"], "prd": {"section": "7.1.3 【新增】风控规则", "blockId": "doxcnpbl2BtLAWo0ntPtiASLjLd"}}, {"id": "chg-7", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则", "target": "#card3", "level": "module", "type": "new", "title": "新增规则三：设备信息缺失限制", "desc": "被推荐人提交申请时未获取到设备信息，则不发放权益；仅可开关，无其他配置项。", "before": "无此规则", "after": "默认开启；开启后无设备信息的申请不发放权益。", "examples": ["开启时未获取到设备信息：不发放权益", "关闭时：不校验设备信息"], "prd": {"section": "7.1.3 【新增】风控规则", "blockId": "doxcnpbl2BtLAWo0ntPtiASLjLd"}}, {"id": "chg-8", "page": "积分规则设置", "pageKey": "risk", "module": "保存校验", "target": "#saveBtn", "level": "field", "type": "logic", "title": "新增保存与校验", "desc": "点击保存时校验配置，校验通过才保存并刷新最近更新时间和操作人；保存后对新提交的权益申请生效。", "before": "无此功能", "after": "校验不通过在对应位置展示红字提示且不保存；通过后提示「保存成功」。重置恢复为上次保存的配置。", "examples": ["开启风控但三条规则都关闭：提示「开启风控限制后，至少开启一条规则」", "规则一时间留空：提示「第N行：时间窗口需为正整数」", "时间超过24小时：提示「时间窗口最长不超过24小时」", "人数或账号数小于2：提示「阈值需为不小于2的整数」", "规则一两行时间窗口相同：提示「第N行：时间窗口与第M行重复」"], "prd": {"section": "7.4 状态与异常变更", "blockId": "doxcnBXuO6pc8GVLwoxHXJ9Myih"}}]}; // END_CHANGESET
+window.DIFF_CHANGESET = {"meta": {"slug": "point-rule-risk-control", "prdUrl": "https://guanghe.feishu.cn/docx/VlVKdDIO0oTLYkxUVsccbvHGnse", "demoControls": [{"id": "on", "label": "开启风控"}, {"id": "off", "label": "关闭风控"}, {"id": "invalid", "label": "保存校验失败"}]}, "changes": [{"id": "chg-1", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则Tab", "target": "#tabRisk", "level": "page", "type": "new", "title": "新增风控规则Tab", "desc": "在「电销」「体验营」之后新增「风控规则」Tab，用于统一配置被推荐人申请发放权益时的风控拦截规则。", "before": "无此Tab", "after": "有风控规则配置权限的账号可见「风控规则」Tab；无权限不展示。", "examples": ["有权限：Tab 栏展示「电销」「体验营」「风控规则」", "无权限：不展示「风控规则」Tab"], "prd": {"section": "7.1.1 【新增】风控规则Tab", "blockId": "doxcnUE41JtQb0jP3v8xAHKWmHg"}}, {"id": "chg-2", "page": "积分规则设置", "pageKey": "risk", "module": "基础配置", "target": "#fieldEnable", "level": "field", "type": "new", "title": "新增是否开启风控限制", "desc": "单选「是/否」，必填，默认「否」；选「是」时展示风控业务线、拦截用户是否入库、不能领取权益提示语和三条风控规则。", "before": "无此字段", "after": "选「否」：仅展示本字段，不做风控校验；选「是」：展示其余配置，并对符合转介绍条件的新用户按配置校验。", "examples": ["选「否」并保存：领取免费会员不做风控校验", "选「是」：展开风控业务线、拦截用户是否入库、不能领取权益提示语、风控规则"], "prd": {"section": "7.1.2 【新增】风控规则配置项", "blockId": "doxcnWqdziwzHbBLtb1IicW1Ead"}}, {"id": "chg-3", "page": "积分规则设置", "pageKey": "risk", "module": "基础配置", "target": "#fieldLine", "level": "field", "type": "new", "title": "新增风控业务线", "desc": "多选「电销/体验营」，必填，至少选一个；风控规则只对已勾选业务线的权益申请生效。", "before": "无此字段", "after": "可同时勾选电销与体验营；全部不勾选时保存提示「请至少选择一个风控业务线」。", "examples": ["只勾选电销：仅电销业务线的权益申请走风控校验", "电销、体验营都勾选：两条业务线都走风控校验", "都不勾选点保存：提示「请至少选择一个风控业务线」"], "prd": {"section": "7.1.2 【新增】风控规则配置项", "blockId": "doxcnWqdziwzHbBLtb1IicW1Ead"}}, {"id": "chg-4", "page": "积分规则设置", "pageKey": "risk", "module": "基础配置", "target": "#fieldIntercept", "level": "field", "type": "new", "title": "新增拦截用户是否入库", "desc": "单选「是/否」，必填，默认「否」；决定被风控拦截的用户是否同时拦截入库，规则表「限制」列随之变化。", "before": "无此字段", "after": "选「是」：限制展示「限制入库&不发免费会员」，不进行转介绍入库、转介绍小程序入库，也不建立转介绍绑定关系；选「否」：限制展示「不发免费会员」，入库与绑定关系沿用现有规则。", "examples": ["选「是」：三条规则的限制列都展示「限制入库&不发免费会员」", "选「否」：三条规则的限制列都展示「不发免费会员」", "选「是」且命中规则：用户不进转介绍入库、不进转介绍小程序入库、无转介绍绑定关系"], "prd": {"section": "7.1.2 【新增】风控规则配置项", "blockId": "doxcnWqdziwzHbBLtb1IicW1Ead"}}, {"id": "chg-5", "page": "积分规则设置", "pageKey": "risk", "module": "基础配置", "target": "#fieldTip", "level": "field", "type": "new", "title": "新增不能领取权益提示语", "desc": "必填，最多50字，默认「很抱歉，您暂不符合领取条件，无法领取免费会员」；用户命中任一风控规则时，在领取免费会员处弹出该提示语。", "before": "无此字段", "after": "运营可修改提示语；为空时不可保存。提示语不透出具体风控原因。", "examples": ["命中规则一、二或三：用户领取免费会员时弹出该提示语", "清空提示语点保存：提示「请输入不能领取权益提示语」"], "prd": {"section": "7.1.2 【新增】风控规则配置项", "blockId": "doxcnWqdziwzHbBLtb1IicW1Ead"}}, {"id": "chg-6", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则", "target": "#validDef", "level": "field", "type": "logic", "title": "新增有效申请说明", "desc": "风控只对符合转介绍条件的新用户生效；这类用户提交的领取免费会员申请为「有效申请」，是三条规则的统计口径。", "before": "无此说明", "after": "符合转介绍条件：通过老用户海报或链接进入小程序且推荐人非本人、推荐人积分未被禁用、满足转介绍新用户条件。同一用户多次提交只计一次，被拦截的申请也计入；不符合条件的用户不校验、不计入。", "examples": ["自己扫自己的海报：不符合转介绍条件，不参与风控", "老用户积分被禁用：其被推荐人不参与风控", "同一用户60秒内提交3次：规则一只计1人"], "prd": {"section": "7.1.3 【新增】风控规则", "blockId": "doxcnAvRJLN0nyrJhWEnat0AVMf"}}, {"id": "chg-7", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则", "target": "#card1", "level": "module", "type": "new", "title": "新增规则一：同一推荐人频次限制", "desc": "同一推荐人在时间窗口内，提交有效申请的不同被推荐人数达到阈值时，从第N个起拦截；可单独开关，最多配置5条。", "before": "无此规则", "after": "默认开启，预置 60秒≥5人、10分钟≥15人、24小时≥30人；时间、单位、人数可修改，可新增或删除；限制列按「拦截用户是否入库」展示。", "examples": ["60秒内同一推荐人下第5个不同用户提交有效申请：拦截", "10分钟内第15个、24小时内第30个不同用户提交有效申请：拦截", "仅剩1条时删除按钮置灰；已有5条时新增按钮置灰"], "prd": {"section": "7.1.3 【新增】风控规则", "blockId": "doxcnAvRJLN0nyrJhWEnat0AVMf"}}, {"id": "chg-8", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则", "target": "#card2", "level": "module", "type": "new", "title": "新增规则二：同一设备多账号限制", "desc": "同一设备在时间窗口内，提交有效申请的不同账号数达到阈值时，从第N个起拦截；可单独开关，支持新增、删除，最多配置5条。", "before": "无此规则", "after": "默认开启，预置 24小时≥3个；时间、单位、账号数可修改；新增「新增」按钮和每行「删除」按钮，交互同规则一。", "examples": ["24小时内同一设备第3个不同账号提交有效申请：拦截", "点击新增可再加一条，如 1小时≥2个", "仅剩1条时删除按钮置灰；已有5条时新增按钮置灰"], "prd": {"section": "7.1.3 【新增】风控规则", "blockId": "doxcnAvRJLN0nyrJhWEnat0AVMf"}}, {"id": "chg-9", "page": "积分规则设置", "pageKey": "risk", "module": "风控规则", "target": "#card3", "level": "module", "type": "new", "title": "新增规则三：设备信息缺失限制", "desc": "符合转介绍条件的新用户提交申请时未获取到设备信息，则拦截；仅可开关，无其他配置项。", "before": "无此规则", "after": "默认开启；开启后无设备信息的有效申请被拦截，限制列按「拦截用户是否入库」展示。", "examples": ["开启时未获取到设备信息：拦截", "关闭时：不校验设备信息"], "prd": {"section": "7.1.3 【新增】风控规则", "blockId": "doxcnAvRJLN0nyrJhWEnat0AVMf"}}, {"id": "chg-10", "page": "积分规则设置", "pageKey": "risk", "module": "保存校验", "target": "#saveBtn", "level": "field", "type": "logic", "title": "新增保存与校验", "desc": "点击保存时校验配置，校验通过才保存并刷新最近更新时间和操作人；保存后对新提交的权益申请生效。", "before": "无此功能", "after": "校验不通过在对应位置展示红字提示且不保存；通过后提示「保存成功」。重置恢复为上次保存的配置。", "examples": ["风控业务线都未勾选：提示「请至少选择一个风控业务线」", "提示语为空：提示「请输入不能领取权益提示语」", "开启风控但三条规则都关闭：提示「开启风控限制后，至少开启一条规则」", "规则一或规则二时间留空：提示「第N行：时间窗口需为正整数」", "时间超过24小时：提示「时间窗口最长不超过24小时」", "人数或账号数小于2：提示「阈值需为不小于2的整数」", "同一规则两行时间窗口相同：提示「第N行：时间窗口与第M行重复」"], "prd": {"section": "7.4 状态与异常变更", "blockId": "doxcn2kfBARObTQlZCgA322v2Qd"}}]}; // END_CHANGESET
 window.DIFF_HOOKS = {
   locate: function () {
     switchTab('risk');
