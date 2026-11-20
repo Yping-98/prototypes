@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>体验营CRM - 薪酬体系 - 交互原型</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+    font-size: 14px; color: #606266; background: #f1f1f1;
+  }
+  button, input, select, textarea { font-family: inherit; }
+
+  /* ===== 布局 ===== */
+  .layout { display: flex; height: 100vh; overflow: hidden; }
+  .sidebar { width: 230px; background: #001529; display: flex; flex-direction: column; flex-shrink: 0; }
+  .side-title { height: 56px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; font-weight: 500; position: relative; flex-shrink: 0; }
+  .side-title .fold { position: absolute; right: 12px; color: #a5adb3; font-size: 16px; cursor: pointer; }
+  .side-menu { flex: 1; overflow-y: auto; }
+  .side-menu::-webkit-scrollbar { display: none; }
+  .m-row { height: 56px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; color: #a5adb3; cursor: pointer; white-space: nowrap; transition: color .2s, background .2s; }
+  .m-row:hover { background: #00111f; color: #fff; }
+  .m-row .arrow { font-size: 12px; transition: transform .2s; }
+  .m-row.open .arrow { transform: rotate(180deg); }
+  .m-children .m-row { height: 50px; padding-left: 40px; }
+  .m-row.active { color: #fff; background: #1677ff; }
+  .m-row.active:hover { background: #1677ff; }
+  .m-row.is-new-parent { color: #fff; }
+  .new-badge { display: inline-block; margin-left: 6px; padding: 0 5px; height: 16px; line-height: 16px; font-size: 11px; border-radius: 8px; background: #f56c6c; color: #fff; vertical-align: middle; }
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .navbar { background: #fff; flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,21,41,.08); position: relative; z-index: 5; }
+  .nav-top { height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+  .breadcrumb { color: #97a8be; }
+  .breadcrumb b { color: #303133; font-weight: 400; }
+  .nav-user { display: flex; align-items: center; gap: 14px; color: #606266; }
+  .avatar { width: 32px; height: 32px; border-radius: 6px; background: linear-gradient(135deg,#409eff,#73b8ff); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .router-tabs { display: flex; gap: 4px; padding: 0 12px; border-bottom: 1px solid #e4e7ed; height: 40px; align-items: flex-end; }
+  .r-tab { height: 34px; line-height: 32px; padding: 0 14px; border: 1px solid #e4e7ed; border-bottom: none; border-radius: 4px 4px 0 0; font-size: 14px; color: #303133; cursor: pointer; display: flex; align-items: center; gap: 6px; background: #fff; }
+  .r-tab.active { color: #409eff; border-bottom: 1px solid #fff; margin-bottom: -1px; }
+  .r-tab .x { font-size: 12px; color: #909399; width: 14px; height: 14px; line-height: 14px; text-align: center; border-radius: 50%; }
+  .r-tab .x:hover { background: #c0c4cc; color: #fff; }
+  .app-main { flex: 1; overflow: auto; background: #f1f1f1; }
+  .page { margin: 20px; }
+
+  /* ===== 卡片 / Tabs ===== */
+  .card { background: #fff; border: 1px solid #ebeef5; border-radius: 4px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.04); }
+  .tabs { display: flex; border-bottom: 2px solid #e4e7ed; margin-bottom: 20px; }
+  .tabs.thin { border-bottom-width: 1px; }
+  .tab { padding: 0 20px; height: 40px; line-height: 40px; cursor: pointer; color: #303133; position: relative; font-size: 14px; }
+  .tab:first-child { padding-left: 0; }
+  .tab:hover { color: #409eff; }
+  .tab.active { color: #409eff; }
+  .tab.active::after { content: ""; position: absolute; left: 20px; right: 20px; bottom: -2px; height: 2px; background: #409eff; }
+  .tab.active:first-child::after { left: 0; }
+  .sub-card { border: 1px solid #ebeef5; border-radius: 4px; margin-bottom: 16px; background: #fff; }
+  .sub-card-h { padding: 18px 20px; border-bottom: 1px solid #ebeef5; display: flex; justify-content: space-between; align-items: center; }
+  .sub-card-t { font-size: 16px; font-weight: 600; color: #303133; }
+  .sub-card-d { font-size: 14px; color: #909399; margin-left: 12px; }
+  .sub-card-b { padding: 20px; }
+  .footer-buttons { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+  .footer-buttons .btn + .btn { margin-left: 0; }
+
+  /* ===== 表单 ===== */
+  .form-inline { display: flex; flex-wrap: wrap; align-items: center; }
+  .form-item { display: flex; align-items: center; margin: 0 16px 18px 0; }
+  .form-item > label { margin-right: 12px; color: #606266; white-space: nowrap; }
+  .form-item.right { margin-left: auto; margin-right: 0; }
+  .el-input { height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 11px; font-size: 14px; color: #606266; outline: none; width: 200px; background: #fff; transition: border-color .2s; }
+  .el-input:hover { border-color: #c0c4cc; }
+  .el-input:focus { border-color: #409eff; }
+  .el-input.ph { color: #a8abb2; }
+  .el-input.err { border-color: #f56c6c; }
+  select.el-input { padding-right: 26px; appearance: none; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 1024 1024'%3E%3Cpath fill='%23a8abb2' d='M831.872 340.864 512 652.672 192.128 340.864a30.592 30.592 0 0 0-42.752 0 29.12 29.12 0 0 0 0 41.6L489.664 714.24a32 32 0 0 0 44.672 0l340.288-331.712a29.12 29.12 0 0 0 0-41.728 30.592 30.592 0 0 0-42.752 0z'/%3E%3C/svg%3E") no-repeat right 9px center; cursor: pointer; }
+  textarea.el-input { height: auto; padding: 6px 11px; resize: vertical; line-height: 1.6; }
+  .el-input.num { width: 150px; }
+  .el-input.sm { width: 100px; }
+  .el-input.md { width: 120px; }
+  .el-input.full { width: 100%; }
+  .unit { margin-left: 8px; }
+  .f-row { display: flex; align-items: flex-start; margin-bottom: 18px; }
+  .f-label { width: 110px; text-align: right; padding-right: 12px; line-height: 32px; color: #606266; flex-shrink: 0; }
+  .f-label.req::before { content: "*"; color: #f56c6c; margin-right: 4px; }
+  .f-ctrl { flex: 1; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-height: 32px; }
+  .f-err { color: #f56c6c; font-size: 12px; width: 100%; margin-top: -4px; }
+  .check-grid { display: flex; flex-wrap: wrap; gap: 8px 4px; }
+  .check-grid label { display: inline-flex; align-items: center; gap: 4px; min-width: 64px; cursor: pointer; }
+  .check-grid label.dis { color: #c0c4cc; cursor: not-allowed; }
+  .radio-group { display: flex; gap: 16px; }
+  .radio-group label { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+
+  /* ===== 按钮 ===== */
+  .btn { height: 32px; padding: 0 15px; font-size: 14px; border-radius: 4px; border: 1px solid #dcdfe6; background: #fff; color: #606266; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; transition: all .15s; vertical-align: middle; }
+  .btn + .btn { margin-left: 12px; }
+  .btn:hover { color: #409eff; border-color: #c6e2ff; background: #ecf5ff; }
+  .btn-primary { background: #409eff; border-color: #409eff; color: #fff; }
+  .btn-primary:hover { background: #79bbff; border-color: #79bbff; color: #fff; }
+  .btn-success { background: #67c23a; border-color: #67c23a; color: #fff; }
+  .btn-success:hover { background: #95d475; border-color: #95d475; color: #fff; }
+  .btn-warning { background: #e6a23c; border-color: #e6a23c; color: #fff; }
+  .btn-warning:hover { background: #eebe77; border-color: #eebe77; color: #fff; }
+  .btn-danger { background: #f56c6c; border-color: #f56c6c; color: #fff; }
+  .btn-danger:hover { background: #f89898; border-color: #f89898; color: #fff; }
+  .btn-purple { background: #722ed1; border-color: #722ed1; color: #fff; }
+  .btn-purple:hover { background: #9254de; border-color: #9254de; color: #fff; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; pointer-events: none; }
+  .btn-sm { height: 24px; padding: 0 11px; font-size: 12px; }
+  .link { border: none; background: none; color: #409eff; cursor: pointer; font-size: 14px; padding: 0 4px; }
+  .link:hover { color: #79bbff; }
+  .link.danger { color: #f56c6c; }
+  .link.danger:hover { color: #f89898; }
+  .link[disabled] { color: #a0cfff; cursor: not-allowed; pointer-events: none; }
+  .link.danger[disabled] { color: #fab6b6; }
+  .flex-end { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+  .flex-between { display: flex; justify-content: space-between; align-items: flex-start; }
+
+  /* ===== 表格 ===== */
+  .tbl-wrap { overflow: auto; border: 1px solid #ebeef5; border-bottom: none; border-right: none; position: relative; }
+  .tbl { border-collapse: separate; border-spacing: 0; min-width: 100%; }
+  .tbl th, .tbl td { padding: 0 10px; height: 40px; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; white-space: nowrap; font-size: 14px; text-align: left; background: #fff; }
+  .tbl th { background: #f5f7fa; color: #909399; font-weight: 600; position: sticky; top: 0; z-index: 3; }
+  .tbl td { color: #606266; }
+  .tbl tr:hover td { background: #f5f7fa; }
+  .tbl .fx { position: sticky; z-index: 2; }
+  .tbl th.fx { z-index: 4; }
+  .tbl .fx-left-last { box-shadow: 3px 0 6px -3px rgba(0,0,0,.15); }
+  .tbl .fx-right-first { box-shadow: -3px 0 6px -3px rgba(0,0,0,.15); }
+  .tbl .center { text-align: center; }
+  .tbl .empty { text-align: center; color: #909399; height: 80px; }
+  .sortable { cursor: pointer; user-select: none; display: inline-flex; align-items: center; gap: 4px; }
+  .caret { display: inline-flex; flex-direction: column; font-size: 8px; line-height: 7px; color: #c0c4cc; }
+  .caret .on { color: #409eff; }
+  .tbl-day { text-align: center; font-weight: 600; }
+  .copy-ic { color: #409eff; cursor: pointer; margin-left: 4px; font-size: 12px; }
+  .pager { display: flex; justify-content: flex-end; align-items: center; gap: 6px; margin-top: 16px; font-size: 13px; color: #606266; }
+  .pg { min-width: 30px; height: 28px; border: none; background: #f4f4f5; color: #606266; border-radius: 2px; cursor: pointer; font-size: 13px; }
+  .pg.on { background: #409eff; color: #fff; }
+  .pg[disabled] { color: #c0c4cc; cursor: not-allowed; }
+  .pg-size { margin-left: 8px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 3px 10px; }
+
+  /* ===== 标签 / 其他 ===== */
+  .tag { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; font-size: 12px; border-radius: 4px; border: 1px solid; white-space: nowrap; gap: 4px; }
+  .tag.small { height: 20px; padding: 0 7px; }
+  .tag-success { background: #f0f9eb; border-color: #e1f3d8; color: #67c23a; }
+  .tag-danger { background: #fef0f0; border-color: #fde2e2; color: #f56c6c; }
+  .tag-primary { background: #ecf5ff; border-color: #d9ecff; color: #409eff; }
+  .tag-dark { background: #409eff; border-color: #409eff; color: #fff; }
+  .tag-info { background: #f4f4f5; border-color: #e9e9eb; color: #909399; }
+  .tag .close { cursor: pointer; font-size: 12px; opacity: .8; }
+  .tag .close:hover { opacity: 1; }
+  .sum-box { display: flex; flex-wrap: wrap; gap: 8px 40px; padding: 12px 16px; margin-bottom: 14px; background: #f5f7fa; border-radius: 4px; }
+  .sum-box .title-name { color: #606266; }
+  .sum-box .text-name { color: #409eff; font-weight: 600; font-size: 16px; }
+  .cutoff { color: #409eff; font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+  .selected-count { color: #722ed1; font-size: 14px; font-weight: 500; margin-left: 12px; }
+  .lock-tip { color: #909399; font-size: 13px; margin: -8px 0 12px; display: flex; align-items: center; gap: 6px; }
+  .lock-tip::before { content: "i"; width: 14px; height: 14px; border-radius: 50%; background: #909399; color: #fff; font-size: 10px; display: inline-flex; align-items: center; justify-content: center; font-style: italic; font-weight: 700; }
+  .section-title { font-size: 16px; font-weight: 600; color: #303133; margin: 24px 0 16px; padding-bottom: 8px; border-bottom: 1px solid #e4e7ed; }
+  .section-title:first-child { margin-top: 0; }
+  .tip-text { margin: -6px 0 16px 140px; padding: 12px; background: #f4f4f5; border-radius: 4px; font-size: 13px; color: #606266; line-height: 1.8; }
+  .bc-row { display: flex; align-items: center; margin-bottom: 20px; }
+  .bc-row > .bc-label { width: 140px; text-align: right; padding-right: 12px; font-weight: 500; color: #606266; flex-shrink: 0; }
+  .bc-row > .bc-ctrl { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .sentence { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 14px; }
+
+  /* ===== 弹窗 ===== */
+  .mask { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; justify-content: center; align-items: flex-start; overflow: auto; z-index: 100; }
+  .dialog { background: #fff; border-radius: 4px; margin: 10vh auto 50px; box-shadow: 0 12px 32px 4px rgba(0,0,0,.08), 0 8px 20px rgba(0,0,0,.12); max-width: 94vw; position: relative; }
+  .dlg-h { padding: 20px 20px 10px; display: flex; justify-content: space-between; align-items: center; }
+  .dlg-t { font-size: 18px; color: #303133; }
+  .dlg-x { font-size: 18px; color: #909399; cursor: pointer; line-height: 1; }
+  .dlg-x:hover { color: #409eff; }
+  .dlg-b { padding: 10px 20px 20px; color: #606266; position: relative; }
+  .dlg-f { padding: 10px 20px 20px; text-align: right; }
+  .confirm-body { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; font-size: 14px; }
+  .warn-ic { width: 20px; height: 20px; border-radius: 50%; background: #e6a23c; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 13px; }
+  .ds-title { font-size: 16px; font-weight: 700; color: #303133; margin: 14px 0 10px; }
+  .ds-title:first-child { margin-top: 0; }
+  .ds-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 16px; margin-bottom: 6px; }
+  .ds-grid.one { grid-template-columns: 1fr; }
+  .ds-item { font-size: 14px; line-height: 22px; }
+  .ds-label { color: #303133; }
+  .ds-content { color: #1c9bea; }
+  .d-tit { font-size: 20px; text-align: center; margin-bottom: 10px; color: #303133; }
+  .d-date-box { width: 701px; margin: 16px auto 10px; border-top: 1px solid #ccc; border-left: 1px solid #ccc; display: flex; flex-wrap: wrap; cursor: pointer; user-select: none; position: relative; }
+  .d-click { border-bottom: 1px solid #ccc; border-right: 1px solid #ccc; width: 100px; height: 50px; line-height: 50px; padding: 0 20px; display: flex; justify-content: space-between; }
+  .d-click:hover { background: #f5f7fa; }
+  .d-current { color: #409eff; font-weight: 700; }
+  .sel-box { position: absolute; width: 150px; background: #fff; border-radius: 4px; box-shadow: 0 2px 12px rgba(0,0,0,.15); display: flex; overflow: hidden; z-index: 10; }
+  .sel-box > div { width: 50%; }
+  .sel-box .opt { padding: 9px 0; text-align: center; border-bottom: 1px solid #ebeef5; border-left: 1px solid #ebeef5; font-size: 13px; cursor: pointer; }
+  .sel-box .opt:hover { color: #409eff; }
+  .sel-box .opt.on { background: #409eff; color: #fff; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 10px 20px; }
+  .cal-item { padding: 10px; border: 1px solid #e4e7ed; border-radius: 4px; text-align: center; cursor: pointer; transition: all .2s; }
+  .cal-item:hover { background: #f5f7fa; border-color: #409eff; }
+  .cal-item.active { background: #ecf5ff; border-color: #409eff; }
+  .cal-item.disabled { cursor: not-allowed; opacity: .5; background: #f5f7fa; }
+  .cal-item .dn { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #303133; }
+  .batch-label { font-weight: 500; color: #303133; margin-bottom: 8px; }
+  .batch-label.req::before { content: "*"; color: #f56c6c; margin-right: 4px; }
+  .batch-tags { display: flex; flex-wrap: wrap; gap: 8px; max-height: 120px; overflow: auto; margin-bottom: 18px; }
+  .batch-preview { background: #f5f7fa; border-radius: 4px; padding: 10px 14px; margin-top: 14px; }
+  .preview-item { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+  .preview-change { color: #722ed1; font-weight: 500; }
+  .rule-title { margin: 6px 0 8px; font-size: 15px; font-weight: 600; color: #303133; }
+  .rule-item { display: flex; padding: 4px 0; line-height: 1.6; }
+  .rule-label { width: 120px; flex-shrink: 0; font-weight: 500; color: #606266; }
+  .rule-desc { color: #909399; }
+  .holiday-tags { min-height: 40px; padding: 8px; border: 1px solid #e4e7ed; border-radius: 4px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .upload-area { border: 1px dashed #dcdfe6; border-radius: 6px; padding: 30px 0; text-align: center; cursor: pointer; color: #606266; }
+  .upload-area:hover { border-color: #409eff; }
+  .upload-area .ic { font-size: 40px; color: #a8abb2; line-height: 1; margin-bottom: 8px; }
+  .upload-area em { color: #409eff; font-style: normal; }
+
+  /* ===== 提示 ===== */
+  #toasts { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 300; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+  .toast { padding: 10px 16px; border-radius: 4px; font-size: 14px; border: 1px solid; box-shadow: 0 2px 12px rgba(0,0,0,.08); animation: tin .2s ease; }
+  .toast.success { background: #f0f9eb; border-color: #e1f3d8; color: #67c23a; }
+  .toast.warning { background: #fdf6ec; border-color: #faecd8; color: #e6a23c; }
+  .toast.error { background: #fef0f0; border-color: #fde2e2; color: #f56c6c; }
+  .toast.info { background: #f4f4f5; border-color: #e9e9eb; color: #909399; }
+  @keyframes tin { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+
+  /* ===== 需求说明面板 ===== */
+  .note-btn { position: fixed; right: 24px; bottom: 24px; z-index: 90; background: #722ed1; color: #fff; border: none; border-radius: 20px; padding: 10px 18px; font-size: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(114,46,209,.35); }
+  .note-panel { position: fixed; right: 24px; bottom: 76px; width: 420px; max-height: 70vh; overflow: auto; background: #fff; border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,.18); z-index: 90; padding: 18px 20px; font-size: 13px; line-height: 1.8; color: #606266; display: none; }
+  .note-panel.show { display: block; }
+  .note-panel h4 { font-size: 14px; color: #303133; margin: 10px 0 4px; }
+  .note-panel h4:first-child { margin-top: 0; }
+  .note-panel ul { padding-left: 18px; }
+  .note-panel code { background: #f4f4f5; padding: 0 4px; border-radius: 3px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="side-title">体验营<span class="fold">☰</span></div>
+    <div class="side-menu" id="sideMenu"></div>
+  </aside>
+  <div class="main">
+    <div class="navbar">
+      <div class="nav-top">
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div class="nav-user"><span>🔔</span><span>管理员</span><div class="avatar">管</div></div>
+      </div>
+      <div class="router-tabs" id="routerTabs"></div>
+    </div>
+    <div class="app-main" id="appMain"></div>
+  </div>
+</div>
+<div id="dialogs"></div>
+<div id="toasts"></div>
+<button class="note-btn" onclick="document.getElementById('notePanel').classList.toggle('show')">需求说明</button>
+<div class="note-panel" id="notePanel">
+  <h4>本次变更</h4>
+  <ul>
+    <li>体验营CRM左侧菜单新增一级菜单「薪酬体系」，放在「坐席管理」之后。</li>
+    <li>二级菜单：坐席查询、实际出勤、坐席薪酬配置。</li>
+    <li>三个页面的布局、字段、按钮、弹窗均复刻电销CRM「薪酬体系」下的同名页面（电销侧菜单名为「坐席薪酬设置」，体验营侧按需求命名为「坐席薪酬配置」）。</li>
+  </ul>
+  <h4>页面对照（电销CRM源码）</h4>
+  <ul>
+    <li>坐席查询：<code>salarySystem/agentSalary</code>，含 薪酬 / 系统外业绩 / 微信加成核算 三个 Tab</li>
+    <li>实际出勤：<code>salarySystem/actualAttendance</code></li>
+    <li>坐席薪酬配置：<code>salarySystem/agentSalarySetting</code>，含 底薪 / 提成 / 奖金 / 自定义项 / 基础配置 五个 Tab</li>
+  </ul>
+  <h4>原型约定</h4>
+  <ul>
+    <li>系统当前日期按 2026-11-20 模拟；薪酬每月 5 号生成，10 月及以前月份已生成，相关数据不可编辑（与电销一致）。</li>
+    <li>实际出勤默认展示上月（10 月，已锁定，不显示编辑列），切到 11 月可体验编辑和批量编辑。</li>
+    <li>坐席、小组、金额均为模拟数据。</li>
+  </ul>
+  <h4>待确认</h4>
+  <ul>
+    <li>体验营坐席的业绩、营收、退款口径与数据来源。</li>
+    <li>底薪老员工排名、当配排名奖是否保留「小学/初中/高中」学段维度。</li>
+    <li>体验营坐席排班、请假是否同样从飞书同步。</li>
+    <li>「微信加成核算」「系统外业绩」是否适用于体验营。</li>
+    <li>权限点命名，建议：<code>space_training_camp_agent_salary</code>、<code>space_training_camp_actual_attendance</code>、<code>space_training_camp_agent_salary_setting</code>。</li>
+  </ul>
+</div>
+
+<script>
+/* ==================== 基础工具 ==================== */
+const NOW = new Date(2026, 10, 20, 11, 30, 0);
+const $ = id => document.getElementById(id);
+const val = id => { const el = $(id); return el ? String(el.value).trim() : ''; };
+const pad = n => String(n).padStart(2, '0');
+const ymOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+const CUR_YM = ymOf(NOW);
+const PREV_YM = ymOf(new Date(NOW.getFullYear(), NOW.getMonth() - 1, 1));
+const daysIn = ym => { const [y, m] = ym.split('-').map(Number); return new Date(y, m, 0).getDate(); };
+const fmtDT = d => d ? `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` : '-';
+const fmtD = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const money = n => (Number(n) || 0).toFixed(2);
+const clone = o => JSON.parse(JSON.stringify(o));
+function hash(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rng(seed) { let a = hash(seed); return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+function toast(text, type = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`; el.textContent = text;
+  $('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 2200);
+}
+
+/* ==================== 模拟数据 ==================== */
+const DEPTS = [
+  { id: 1, name: '体验营一部', children: [{ id: 11, name: '体验营一组' }, { id: 12, name: '体验营二组' }] },
+  { id: 2, name: '体验营二部', children: [{ id: 21, name: '体验营三组' }, { id: 22, name: '体验营四组' }] }
+];
+const GROUPS = DEPTS.flatMap(d => d.children.map(g => ({ ...g, deptId: d.id })));
+const GROUP_MAP = Object.fromEntries(GROUPS.map(g => [g.id, g]));
+const NAMES = ['张雨萱', '李浩然', '王思琪', '刘子轩', '陈梓涵', '杨一诺', '赵欣怡', '黄俊杰', '周佳怡', '吴宇航', '徐诗涵', '孙浩宇', '胡梦瑶', '朱晨阳', '高雅婷', '林泽宇', '何静怡', '郭子豪', '马晓雯', '罗嘉怡', '梁文博', '宋可欣', '郑天佑', '谢婉清'];
+const AGENTS = NAMES.map((name, i) => {
+  const r = rng('agent' + i);
+  let joinAt = new Date(2024 + Math.floor(r() * 2), Math.floor(r() * 12), 1 + Math.floor(r() * 27), 9, 0, 0);
+  if (i === 5) joinAt = new Date(2026, 8, 15, 9, 0, 0);
+  if (i === 17) joinAt = new Date(2026, 9, 8, 9, 0, 0);
+  let leaveAt = null;
+  if (i === 9) leaveAt = new Date(2026, 9, 20, 18, 0, 0);
+  if (i === 21) leaveAt = new Date(2026, 8, 30, 18, 0, 0);
+  return { id: 3001 + i, name, empNo: 'YC' + (20100 + Math.floor(r() * 8000)), groupId: GROUPS[i % 4].id, joinAt, leaveAt };
+});
+const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
+const groupName = a => GROUP_MAP[a.groupId].name;
+function inMonth(a, ym) {
+  const [y, m] = ym.split('-').map(Number);
+  const start = new Date(y, m - 1, 1), end = new Date(y, m, 0, 23, 59, 59);
+  return a.joinAt <= end && (!a.leaveAt || a.leaveAt >= start);
+}
+function matchOrg(a, org) {
+  if (!org) return true;
+  if (org[0] === 'd') return GROUP_MAP[a.groupId].deptId === +org.slice(1);
+  return a.groupId === +org.slice(1);
+}
+function monthsSinceTrain(a, ym) {
+  const t = new Date(a.joinAt.getTime() - 7 * 86400000);
+  const [y, m] = ym.split('-').map(Number);
+  return (y - t.getFullYear()) * 12 + (m - 1 - t.getMonth());
+}
+
+/* ==================== 全局状态 ==================== */
+const PAGES = {
+  agentSalary: '坐席查询',
+  actualAttendance: '实际出勤',
+  agentSalarySetting: '坐席薪酬配置'
+};
+const state = {
+  page: 'agentSalary',
+  openedTabs: ['agentSalary'],
+  openMenus: new Set(['薪酬体系']),
+  salaryTab: 'salary',
+  settingTab: 'baseSalary',
+  sal: { org: '', worker: '', ym: CUR_YM, searchedYm: CUR_YM, sort: { f: '', d: 0 }, list: [] },
+  ext: { phone: '', orderNo: '', payYm: '', attrYm: '', worker: '', page: 1, selected: new Set() },
+  wx: { ym: CUR_YM, org: '', worker: '', page: 1, overrides: {} },
+  att: { ym: PREV_YM, org: '', worker: '', min: '', max: '', list: [], searchedYm: PREV_YM, selected: new Set(), overrides: {} },
+  holidays: ['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07', '2027-01-01'],
+  cust: { org: '', worker: '', ym: '', page: 1, selected: new Set() },
+  cfg: {
+    base: {
+      newDefault: 3000,
+      rules: [
+        { minOp: 'gte', min: 0, maxOp: 'lte', max: 20, base: 3500, tier: 1500 },
+        { minOp: 'gt', min: 20, maxOp: 'lte', max: 50, base: 3500, tier: 1000 },
+        { minOp: 'gt', min: 50, maxOp: 'lte', max: 80, base: 3500, tier: 500 },
+        { minOp: 'gt', min: 80, maxOp: 'lte', max: 100, base: 3500, tier: 0 }
+      ]
+    },
+    comm: {
+      gears: [
+        { minOp: 'gte', min: 0, maxOp: 'lt', max: 30000, ok: 3, no: 2 },
+        { minOp: 'gte', min: 30000, maxOp: 'lt', max: 60000, ok: 5, no: 4 },
+        { minOp: 'gte', min: 60000, maxOp: 'lt', max: 100000, ok: 7, no: 6 },
+        { minOp: 'gte', min: 100000, maxOp: '', max: null, ok: 9, no: 8 }
+      ],
+      threshold: 20000, rate: 60
+    },
+    bonus: {
+      dangpei: [
+        { grade: '小学', ranks: [1, 2, 3], bonus: 800 },
+        { grade: '初中', ranks: [1, 2], bonus: 600 },
+        { grade: '高中', ranks: [1], bonus: 600 }
+      ],
+      newbie: [
+        { ranks: [1], bonus: 1000 },
+        { ranks: [2, 3], bonus: 600 },
+        { ranks: ['其余'], bonus: 200 }
+      ],
+      order: { days: 20, op: 'GTE', perf: 1000, bonus: 500 }
+    },
+    basic: { newMonths: 2, oldMonths: 3, genDay: 5, rankCount: 10, rankTop: 3, rankPct: 30, perfBase: 1000 }
+  }
+};
+state.cfgSaved = clone(state.cfg);
+
+function isLocked(ym) {
+  if (ym >= CUR_YM) return false;
+  if (ym === PREV_YM && NOW.getDate() < state.cfgSaved.basic.genDay) return false;
+  return true;
+}
+
+/* 系统外业绩 */
+let EXT_ID = 1;
+const EXT_LIST = (() => {
+  const r = rng('ext'); const arr = [];
+  const months = ['2026-09', '2026-10', '2026-11'];
+  for (let i = 0; i < 17; i++) {
+    const a = AGENTS[Math.floor(r() * AGENTS.length)];
+    const pm = months[Math.floor(r() * 3)];
+    const updater = AGENTS[Math.floor(r() * 4)];
+    arr.push({
+      id: EXT_ID++, phone: '1' + ['38', '59', '77', '86', '35'][Math.floor(r() * 5)] + String(Math.floor(r() * 1e8)).padStart(8, '0'),
+      orderNo: 'TY' + pm.replace('-', '') + String(Math.floor(r() * 1e6)).padStart(6, '0'),
+      payYm: pm, attrYm: pm, amount: [199, 399, 699, 1299, 2599, 3999][Math.floor(r() * 6)],
+      workerId: a.id, updatedBy: '运营-' + updater.name, updatedAt: new Date(+pm.slice(0, 4), +pm.slice(5) - 1, 1 + Math.floor(r() * (pm === CUR_YM ? NOW.getDate() - 1 : 27)), 10 + Math.floor(r() * 8), Math.floor(r() * 60), Math.floor(r() * 60))
+    });
+  }
+  return arr.sort((a, b) => b.updatedAt - a.updatedAt);
+})();
+
+/* 自定义项 */
+let CUST_ID = 1;
+const CUST_LIST = [
+  { name: '服务投诉扣款', type: 1, amount: -200, category: 1, description: '家长投诉服务态度，核实属实', targets: [11], ym: '2026-11' },
+  { name: '月度优秀坐席', type: 2, amount: 500, category: 2, description: '月度综合评分第一', targets: [12], ym: '2026-11' },
+  { name: '话术质检不合格', type: 1, amount: -100, category: 1, description: '质检抽查不合格 2 次', targets: [21, 22], ym: '2026-11' },
+  { name: '团建补贴', type: 2, amount: 150, category: 3, description: '季度团建补贴', targets: [11, 12, 21, 22], ym: '2026-10' },
+  { name: '迟到扣款', type: 1, amount: -50, category: 3, description: '当月迟到超过 3 次', targets: [22], ym: '2026-10' },
+  { name: '转介绍激励', type: 2, amount: 300, category: 2, description: '转介绍成单奖励', targets: [21], ym: '2026-10' },
+  { name: '培训补贴', type: 2, amount: 200, category: 3, description: '新人培训补贴', targets: [12], ym: '2026-09' },
+  { name: '工牌丢失扣款', type: 1, amount: -30, category: 3, description: '补办工牌费用', targets: [11], ym: '2026-09' }
+].map((x, i) => ({ id: CUST_ID++, ...x, updaterName: ['张雨萱', '李浩然'][i % 2], updatedAt: new Date(+x.ym.slice(0, 4), +x.ym.slice(5) - 1, 2 + i, 14, 20 + i, 8) }));
+const TYPE_LIST = [[1, '惩罚'], [2, '奖励']];
+const CATEGORY_LIST = [[1, '绩效'], [2, '奖金'], [3, '其他']];
+const labelOf = (list, v) => (list.find(x => x[0] === v) || [, '-'])[1];
+
+/* ==================== 薪酬计算（模拟） ==================== */
+const OPS = [['lt', '小于'], ['lte', '小于等于'], ['eq', '等于'], ['gt', '大于'], ['gte', '大于等于']];
+const OP_SYM = { lt: '<', lte: '<=', eq: '=', gt: '>', gte: '>=' };
+function fmtRange(minOp, min, maxOp, max, unit = '') {
+  const hasMin = minOp && min !== null && min !== '' && min !== undefined;
+  const hasMax = maxOp && max !== null && max !== '' && max !== undefined;
+  if (hasMin && hasMax) {
+    if (['gt', 'gte'].includes(minOp) && ['lt', 'lte'].includes(maxOp)) {
+      return `${min}${unit} ${minOp === 'gt' ? '<' : '<='} X ${maxOp === 'lt' ? '<' : '<='} ${max}${unit}`;
+    }
+    if (['lt', 'lte'].includes(minOp) && ['gt', 'gte'].includes(maxOp)) {
+      return `${max}${unit} ${maxOp === 'gt' ? '<' : '<='} X ${minOp === 'lt' ? '<' : '<='} ${min}${unit}`;
+    }
+    return `X${OP_SYM[minOp]}${min}${unit} 且 X${OP_SYM[maxOp]}${max}${unit}`;
+  }
+  const parts = [];
+  if (hasMin) parts.push(`X${OP_SYM[minOp]}${min}${unit}`);
+  if (hasMax) parts.push(`X${OP_SYM[maxOp]}${max}${unit}`);
+  return parts.length ? parts.join(' 且 ') : '-';
+}
+function hit(op, a, b) { return { lt: a < b, lte: a <= b, eq: a === b, gt: a > b, gte: a >= b }[op]; }
+function inRange(x, g) {
+  const okMin = !g.minOp || g.min === null || hit(g.minOp, x, g.min);
+  const okMax = !g.maxOp || g.max === null || hit(g.maxOp, x, g.max);
+  return okMin && okMax;
+}
+
+function salaryRow(a, ym) {
+  if (!inMonth(a, ym)) return null;
+  const cfg = state.cfgSaved;
+  const r = rng(a.id + ym);
+  const partial = ym === CUR_YM ? NOW.getDate() / daysIn(ym) : 1;
+  const isNew = monthsSinceTrain(a, ym) < cfg.basic.newMonths;
+  const revenue = Math.round((22000 + r() * 115000) * partial / 100) * 100;
+  const refund = r() < .45 ? Math.round(r() * 6000 / 100) * 100 : 0;
+  const external = EXT_LIST.filter(x => x.workerId === a.id && x.attrYm === ym).reduce((s, x) => s + x.amount, 0);
+  const totalPerf = revenue + external - refund;
+  const goalOk = r() < .7;
+  const gear = cfg.comm.gears.find(g => inRange(totalPerf, g)) || cfg.comm.gears[0];
+  const point = goalOk ? gear.ok : gear.no;
+  const lastMonthRefund = r() < .3 ? Math.round(r() * 3000 / 100) * 100 : 0;
+  const lastMonthAppeal = r() < .2 ? Math.round(r() * 2000 / 100) * 100 : 0;
+  const lastDiff = Math.round((lastMonthAppeal - lastMonthRefund) * point / 100);
+  const commission = Math.max(0, Math.round(totalPerf * point / 100) + lastDiff);
+
+  const expected = Math.round(attExpected(a, ym));
+  const actualDays = Math.max(0, expected - (r() < .3 ? 1 : 0) - (r() < .1 ? 1 : 0));
+  const legalDays = ym === '2026-10' && r() < .3 ? 1 : 0;
+  let base, tier = 0, rule = null;
+  if (isNew) { base = cfg.base.newDefault; }
+  else {
+    rule = cfg.base.rules[Math.floor(r() * cfg.base.rules.length)];
+    base = rule.base; tier = rule.tier;
+  }
+  const baseSummary = expected ? Math.round((base + tier) * actualDays / expected * 100) / 100 : 0;
+
+  const unpassed = r() < .55 ? [] : Array.from({ length: 1 + Math.floor(r() * 3) }, () => 1 + Math.floor(r() * Math.min(daysIn(ym), ym === CUR_YM ? NOW.getDate() : 31))).sort((x, y) => x - y);
+  const perfBase = cfg.basic.perfBase;
+  const groupCust = CUST_LIST.filter(c => c.ym === ym && c.targets.includes(a.groupId));
+  const perfDeds = groupCust.filter(c => c.category === 1).map(c => ({ name: c.name, amount: c.amount, reason: c.description }));
+  const performance = Math.max(0, perfBase - unpassed.length * 100 + perfDeds.reduce((s, x) => s + x.amount, 0));
+
+  const rankBonus = !isNew && goalOk && r() < .25 ? cfg.bonus.dangpei[Math.floor(r() * cfg.bonus.dangpei.length)].bonus : 0;
+  const newOrder = isNew && totalPerf >= cfg.bonus.order.perf ? cfg.bonus.order.bonus : 0;
+  const newRank = isNew && r() < .6 ? cfg.bonus.newbie[Math.floor(r() * cfg.bonus.newbie.length)].bonus : 0;
+  const bonusDeds = groupCust.filter(c => c.category === 2).map(c => ({ name: c.name, amount: c.amount, reason: c.description }));
+  const bonus = Math.max(0, rankBonus + newOrder + newRank + bonusDeds.reduce((s, x) => s + x.amount, 0));
+  const others = groupCust.filter(c => c.category === 3).map(c => ({ name: c.name, amount: c.amount, description: c.description }));
+  const customItem = others.reduce((s, x) => s + x.amount, 0);
+  const payable = commission + performance + baseSummary + bonus + customItem;
+  const actual = payable - (r() < .25 ? Math.round(r() * 300) : 0);
+  return {
+    workerId: a.id, ym, commission, performance, baseSalary: baseSummary, bonus, customItem, payableSalary: payable, actualSalary: actual,
+    d: { isNew, rule, base, tier, expected, actualDays, legalDays, perfBase, goalOk, unpassed, perfDeds, totalPerf, point, revenue, refund, external, lastMonthRefund, lastMonthAppeal, lastDiff, rankBonus, newOrder, newRank, bonusDeds, others }
+  };
+}
+
+/* ==================== 出勤计算（模拟） ==================== */
+function baseAttendance(a, ym) {
+  const key = a.id + '-' + ym;
+  const n = daysIn(ym); const [y, m] = ym.split('-').map(Number);
+  const r = rng('att' + key);
+  const days = [];
+  for (let d = 1; d <= n; d++) {
+    const dt = new Date(y, m - 1, d, 12);
+    const ds = fmtD(dt); const wd = dt.getDay();
+    const rv = r();
+    if (ym === CUR_YM && d > NOW.getDate()) { days.push(0); continue; }
+    if (dt < new Date(a.joinAt.getFullYear(), a.joinAt.getMonth(), a.joinAt.getDate()) || (a.leaveAt && dt > a.leaveAt)) { days.push(1); continue; }
+    if (state.holidays.includes(ds)) { days.push(rv < .15 ? 4 : rv < .2 ? 6 : 5); continue; }
+    if (wd === 0 || wd === 6) { days.push(rv < .08 ? 2 : 1); continue; }
+    days.push(rv < .05 ? 3 : rv < .09 ? 1 : 2);
+  }
+  return days;
+}
+function attExpected(a, ym) {
+  const o = state.att.overrides[a.id + '-' + ym];
+  if (o && o.expected !== undefined && o.expected !== null) return o.expected;
+  const n = daysIn(ym); const [y, m] = ym.split('-').map(Number);
+  let c = 0;
+  for (let d = 1; d <= n; d++) {
+    const dt = new Date(y, m - 1, d, 12); const wd = dt.getDay();
+    if (wd !== 0 && wd !== 6 && !state.holidays.includes(fmtD(dt))) c++;
+  }
+  return c;
+}
+function attDays(a, ym) {
+  const o = state.att.overrides[a.id + '-' + ym];
+  return o && o.days ? o.days : baseAttendance(a, ym);
+}
+const STATE_MAP = {
+  1: { text: '休', color: '#67c23a' }, 2: { text: '班', color: '#f56c6c' }, 3: { text: '半', color: '#ffdc59' },
+  4: { text: '法', color: '#409eff' }, 5: { text: '薪', color: '#e6a23c' }, 6: { text: '0.5法', color: '#13c2c2' }
+};
+
+/* ==================== 通用组件 ==================== */
+function orgSelect(id, v, ph = '请选择小组', w = 180) {
+  return `<select class="el-input ${v ? '' : 'ph'}" id="${id}" style="width:${w}px" onchange="this.classList.toggle('ph',!this.value)">
+    <option value="">${ph}</option>
+    ${DEPTS.map(d => `<option value="d${d.id}" ${v === 'd' + d.id ? 'selected' : ''}>${d.name}</option>${d.children.map(g => `<option value="g${g.id}" ${v === 'g' + g.id ? 'selected' : ''}>　└ ${g.name}</option>`).join('')}`).join('')}
+  </select>`;
+}
+function agentSelect(id, v, ph = '请选择坐席', w = 180) {
+  return `<select class="el-input ${v ? '' : 'ph'}" id="${id}" style="width:${w}px" onchange="this.classList.toggle('ph',!this.value)">
+    <option value="">${ph}</option>
+    ${AGENTS.map(a => `<option value="${a.id}" ${String(v) === String(a.id) ? 'selected' : ''}>${a.name}</option>`).join('')}
+  </select>`;
+}
+function monthInput(id, v, ph = '选择月份', opt = {}) {
+  return `<input type="${v ? 'month' : 'text'}" class="el-input" id="${id}" value="${v || ''}" ${opt.max ? `max="${opt.max}"` : ''} placeholder="${ph}" style="width:${opt.w || 180}px" onfocus="this.type='month'" onblur="if(!this.value)this.type='text'">`;
+}
+function opSelect(id, v, w = 120, list = OPS) {
+  return `<select class="el-input" id="${id}" style="width:${w}px"><option value="">请选择</option>${list.map(([k, l]) => `<option value="${k}" ${v === k ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+}
+function tabsHtml(items, active, fn) {
+  return `<div class="tabs">${items.map(([k, l]) => `<div class="tab ${k === active ? 'active' : ''}" onclick="${fn}('${k}')">${l}</div>`).join('')}</div>`;
+}
+function table(cols, rows, opt = {}) {
+  let left = 0;
+  cols.forEach(c => { if (c.fixed === 'left') { c._left = left; left += c.width; } });
+  let right = 0;
+  [...cols].reverse().forEach(c => { if (c.fixed === 'right') { c._right = right; right += c.width; } });
+  const lefts = cols.filter(c => c.fixed === 'left'); const rights = cols.filter(c => c.fixed === 'right');
+  const st = c => {
+    let s = '';
+    if (c.width) s += `width:${c.width}px;min-width:${c.width}px;max-width:${c.width}px;`;
+    else if (c.minWidth) s += `min-width:${c.minWidth}px;`;
+    if (c.fixed === 'left') s += `left:${c._left}px;`;
+    if (c.fixed === 'right') s += `right:${c._right}px;`;
+    if (c.align) s += `text-align:${c.align};`;
+    return s;
+  };
+  const cl = c => [c.fixed ? 'fx' : '', c === lefts[lefts.length - 1] ? 'fx-left-last' : '', c === rights[0] ? 'fx-right-first' : '', c.cls || ''].join(' ');
+  const head = cols.map(c => `<th class="${cl(c)}" style="${st(c)}">${typeof c.title === 'function' ? c.title() : c.title}</th>`).join('');
+  const body = rows.length
+    ? rows.map((r, i) => `<tr>${cols.map(c => `<td class="${cl(c)}" style="${st(c)}">${c.render ? c.render(r, i) : (r[c.field] ?? '')}</td>`).join('')}</tr>`).join('')
+    : `<tr><td colspan="${cols.length}" class="empty">暂无数据</td></tr>`;
+  return `<div class="tbl-wrap" style="${opt.maxHeight ? `max-height:${opt.maxHeight}px;` : ''}"><table class="tbl"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+function pager(total, page, fn, size = 10) {
+  const pages = Math.max(1, Math.ceil(total / size));
+  let btns = '';
+  for (let p = 1; p <= pages; p++) btns += `<button class="pg ${p === page ? 'on' : ''}" onclick="${fn}(${p})">${p}</button>`;
+  return `<div class="pager"><span>共 ${total} 条</span><span class="pg-size">${size}条/页</span><button class="pg" ${page <= 1 ? 'disabled' : ''} onclick="${fn}(${page - 1})">‹</button>${btns}<button class="pg" ${page >= pages ? 'disabled' : ''} onclick="${fn}(${page + 1})">›</button></div>`;
+}
+
+/* ==================== 弹窗 ==================== */
+let DIALOGS = [];
+function openDialog(d) { DIALOGS = DIALOGS.filter(x => x.key !== d.key); DIALOGS.push(d); renderDialogs(); }
+function closeDialog(key) { DIALOGS = DIALOGS.filter(x => x.key !== key); renderDialogs(); }
+function renderDialogs() {
+  $('dialogs').innerHTML = DIALOGS.map((d, i) => `
+    <div class="mask" style="z-index:${100 + i * 2}" data-dlg="${d.key}">
+      <div class="dialog" style="width:${d.width || 560}px">
+        <div class="dlg-h"><span class="dlg-t">${d.title}</span><span class="dlg-x" onclick="closeDialog('${d.key}')">✕</span></div>
+        <div class="dlg-b">${d.body()}</div>
+        ${d.footer ? `<div class="dlg-f">${d.footer()}</div>` : ''}
+      </div>
+    </div>`).join('');
+}
+function refreshDialog(key) {
+  const d = DIALOGS.find(x => x.key === key); if (!d) return;
+  const root = document.querySelector(`[data-dlg="${key}"]`); if (!root) return;
+  root.querySelector('.dlg-b').innerHTML = d.body();
+  if (d.footer) root.querySelector('.dlg-f').innerHTML = d.footer();
+}
+let __confirmCb = null;
+function confirmBox(text, cb, title = '提示') {
+  __confirmCb = cb;
+  openDialog({
+    key: 'confirm', title, width: 420,
+    body: () => `<div class="confirm-body"><span class="warn-ic">!</span><span>${text}</span></div>`,
+    footer: () => `<button class="btn" onclick="closeDialog('confirm')">取消</button><button class="btn btn-primary" onclick="closeDialog('confirm');__confirmCb&&__confirmCb()">确定</button>`
+  });
+}
+
+/* ==================== 布局：菜单 / 页签 ==================== */
+const MENU = [
+  { t: '客户管理' }, { t: 'AB号审核' }, { t: '线索查询' }, { t: '线索追溯' }, { t: '专属售卖链接' },
+  { t: '转介绍', c: ['转介绍跟进', '转介绍海报配置', '抽奖活动'] },
+  { t: '裂变活动', c: ['裂变活动配置', '用户参与明细', '活动中奖明细'] },
+  { t: '非服务期客户' }, { t: '抖音小店' }, { t: '仅加微客户线索' },
+  { t: '运营工具', c: ['人群排除包', '信息流线索订单查询', '兑换码补充', '数据库外呼状态', '灰产账号处理', '会场链接配置', 'H5投放灰产账号处理', '质检坐席设置'] },
+  { t: '订单管理', c: ['坐席订单', '其他订单', '订单申诉'] },
+  { t: '数据统计', c: ['公司个人业绩排行榜', '当期线索转化', '当期过程数据', 'SOP流程监控', '各渠道线索转化', '跟进任务数据看板', '公海线索转化', '公海线索分配', '当期线索质量', '月度转化', '月度gmv', '营收', '外呼数据统计', '线索分配结果', '月度线索分配统计', '往期线索转化', '转介绍线索转化', '转介绍业绩看板'] },
+  { t: '坐席管理', c: ['架构管理', '外呼工号配置'] },
+  { t: '薪酬体系', isNew: true, c: [{ t: '坐席查询', page: 'agentSalary' }, { t: '实际出勤', page: 'actualAttendance' }, { t: '坐席薪酬配置', page: 'agentSalarySetting' }] },
+  { t: '小程序' }, { t: '企业微信直播' },
+  { t: '配置', c: ['配置投放渠道信息', '线索投放计划', '信息流测试账号', '信息流承接配置', '加微工具配置', '月度目标配置', '月度线索目标配置', '渠道获客二维码/链接', '新销售每天可领取公海线索数', '发放公海客户的销售人员配置', 'H5投放页面配置'] }
+];
+function renderMenu() {
+  $('sideMenu').innerHTML = MENU.map(m => {
+    if (!m.c) return `<div class="m-row" onclick="toast('原型仅演示「薪酬体系」菜单','info')">${m.t}</div>`;
+    const open = state.openMenus.has(m.t);
+    const kids = open ? `<div class="m-children">${m.c.map(c => {
+      const item = typeof c === 'string' ? { t: c } : c;
+      return item.page
+        ? `<div class="m-row ${state.page === item.page ? 'active' : ''}" onclick="goPage('${item.page}')">${item.t}</div>`
+        : `<div class="m-row" onclick="toast('原型仅演示「薪酬体系」菜单','info')">${item.t}</div>`;
+    }).join('')}</div>` : '';
+    return `<div class="m-row ${open ? 'open' : ''} ${m.isNew ? 'is-new-parent' : ''}" onclick="toggleMenu('${m.t}')"><span>${m.t}${m.isNew ? '<span class="new-badge">新增</span>' : ''}</span><span class="arrow">▾</span></div>${kids}`;
+  }).join('');
+}
+function toggleMenu(t) { state.openMenus.has(t) ? state.openMenus.delete(t) : state.openMenus.add(t); renderMenu(); }
+function goPage(p) {
+  state.page = p;
+  if (!state.openedTabs.includes(p)) state.openedTabs.push(p);
+  render();
+}
+function closeTab(p, e) {
+  e.stopPropagation();
+  if (state.openedTabs.length === 1) { toast('至少保留一个页签', 'warning'); return; }
+  const idx = state.openedTabs.indexOf(p);
+  state.openedTabs.splice(idx, 1);
+  if (state.page === p) state.page = state.openedTabs[Math.max(0, idx - 1)];
+  render();
+}
+function renderChrome() {
+  renderMenu();
+  $('breadcrumb').innerHTML = `薪酬体系 &nbsp;/&nbsp; <b>${PAGES[state.page]}</b>`;
+  $('routerTabs').innerHTML = state.openedTabs.map(p => `<div class="r-tab ${p === state.page ? 'active' : ''}" onclick="goPage('${p}')">${PAGES[p]}<span class="x" onclick="closeTab('${p}',event)">✕</span></div>`).join('');
+}
+function render() {
+  renderChrome();
+  const fn = { agentSalary: renderAgentSalary, actualAttendance: renderAttendance, agentSalarySetting: renderSetting }[state.page];
+  $('appMain').innerHTML = fn();
+}
+
+/* ==================== 页面一：坐席查询 ==================== */
+function setSalaryTab(t) { state.salaryTab = t; render(); }
+function renderAgentSalary() {
+  const t = state.salaryTab;
+  const body = t === 'salary' ? renderSalaryTab() : t === 'external' ? renderExternalTab() : renderWechatTab();
+  return `<div class="page"><div class="card">${tabsHtml([['salary', '薪酬'], ['external', '系统外业绩'], ['wechat', '微信加成核算']], t, 'setSalaryTab')}${body}</div></div>`;
+}
+
+/* --- 薪酬 Tab --- */
+function searchSalary(fromDom = true) {
+  const s = state.sal;
+  if (fromDom) { s.org = val('salOrg'); s.worker = val('salWorker'); s.ym = val('salYm') || CUR_YM; }
+  s.searchedYm = s.ym;
+  s.list = AGENTS.filter(a => matchOrg(a, s.org) && (!s.worker || String(a.id) === s.worker)).map(a => salaryRow(a, s.ym)).filter(Boolean);
+  if (fromDom) render();
+}
+function sortSal(f) {
+  const s = state.sal.sort;
+  if (s.f !== f) { s.f = f; s.d = 1; } else s.d = s.d === 1 ? -1 : s.d === -1 ? 0 : 1;
+  render();
+}
+function exportSalary() { toast('导出任务已提交，文件下载中（原型演示）'); }
+function renderSalaryTab() {
+  const s = state.sal;
+  let list = [...s.list];
+  if (s.sort.f && s.sort.d) list.sort((a, b) => (a[s.sort.f] - b[s.sort.f]) * s.sort.d);
+  const sum = { commission: 0, performance: 0, salary: 0, bonus: 0 };
+  list.forEach(r => { sum.commission += r.commission; sum.performance += r.performance; sum.salary += r.baseSalary; sum.bonus += r.bonus; });
+  const sortTitle = (f, t) => () => `<span class="sortable" onclick="sortSal('${f}')">${t}<span class="caret"><span class="${s.sort.f === f && s.sort.d === 1 ? 'on' : ''}">▲</span><span class="${s.sort.f === f && s.sort.d === -1 ? 'on' : ''}">▼</span></span></span>`;
+  const mcol = (f, t, w) => ({ title: sortTitle(f, t), minWidth: w, render: r => money(r[f]) });
+  const cols = [
+    mcol('commission', '提成/元', 110), mcol('performance', '绩效/元', 110), mcol('baseSalary', '基础薪资/元', 130), mcol('bonus', '奖金/元', 110),
+    mcol('customItem', '其他类别/元', 120), mcol('payableSalary', '应发薪资/元', 120), mcol('actualSalary', '实发薪资/元', 120),
+    { title: '坐席名称', minWidth: 90, render: r => AGENT_MAP[r.workerId].name },
+    { title: '飞书工号', minWidth: 90, render: r => AGENT_MAP[r.workerId].empNo },
+    { title: '所属小组', minWidth: 120, render: r => groupName(AGENT_MAP[r.workerId]) },
+    { title: '操作', width: 100, fixed: 'right', render: r => `<button class="link" onclick="openSalaryDetail(${r.workerId})">查看明细</button>` }
+  ];
+  return `
+    <div class="form-inline">
+      <div class="form-item">${orgSelect('salOrg', s.org)}</div>
+      <div class="form-item">${agentSelect('salWorker', s.worker)}</div>
+      <div class="form-item">${monthInput('salYm', s.ym, '选择月份', { max: CUR_YM })}</div>
+      <div class="form-item"><button class="btn btn-primary" onclick="searchSalary()">🔍 搜索</button></div>
+      <div class="form-item right"><button class="btn btn-primary" onclick="exportSalary()">导出</button></div>
+    </div>
+    <div class="sum-box">
+      ${[['提成/元', 'commission'], ['绩效/元', 'performance'], ['基础薪资/元', 'salary'], ['奖金/元', 'bonus']].map(([l, k]) => `<div><span class="title-name">${l}：</span><span class="text-name">${money(sum[k])}</span></div>`).join('')}
+    </div>
+    <div class="cutoff">数据截止时间：${s.searchedYm === CUR_YM ? fmtDT(new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate(), 10, 0, 0)) : fmtDT(new Date(+s.searchedYm.slice(0, 4), +s.searchedYm.slice(5), state.cfgSaved.basic.genDay, 0, 0, 0))}</div>
+    ${table(cols, list, { maxHeight: 520 })}`;
+}
+function openSalaryDetail(id) {
+  const row = salaryRow(AGENT_MAP[id], state.sal.searchedYm);
+  openDialog({ key: 'salDetail', title: '查看明细', width: 800, body: () => salaryDetailHtml(row) });
+}
+const di = (label, content, span = 1) => `<div class="ds-item" style="grid-column:span ${span}"><span class="ds-label">${label}</span><span class="ds-content">${content}</span></div>`;
+function salaryDetailHtml(row) {
+  const d = row.d; const [y, m] = row.ym.split('-').map(Number);
+  const rank = d.rule ? fmtRange(d.rule.minOp, d.rule.min, d.rule.maxOp, d.rule.max, '%') : '';
+  return `
+    <div class="ds-title">底薪</div>
+    <div class="ds-grid">
+      ${di('基础薪资：', money(row.baseSalary) + '元', 3)}
+      ${rank ? di('排名分布：', rank) : ''}
+      ${di('底薪：', d.base + '元')}
+      ${d.tier ? di('档位薪资：', d.tier + '元') : ''}
+      ${di('应出勤天数：', d.expected + '天')}
+      ${di('实际出勤天数：', d.actualDays + '天')}
+      ${di('法定假日上班天数：', d.legalDays + '天')}
+    </div>
+    <div class="ds-title">绩效</div>
+    <div class="ds-grid">
+      ${di('绩效结果：', row.performance + '元')}
+      ${di('绩效基数：', d.perfBase + '元')}
+      ${di('个人目标是否达标：', d.goalOk ? '是' : '否')}
+      ${di('KPI未达标次数：', `${d.unpassed.length} 次${d.unpassed.length ? `（ ${d.unpassed.map(x => `${y}/${m}/${x}`).join('、')} ）` : ''}`, 3)}
+      ${d.perfDeds.map(x => di(x.name + '：', `${x.amount}元（${x.reason}）`, 3)).join('')}
+    </div>
+    <div class="ds-title">提成</div>
+    <div class="ds-grid">
+      ${di('提成：', row.commission + '元')}
+      ${di('总业绩：', d.totalPerf + '元')}
+      ${di('提成系数：', d.point + '%')}
+      ${di('营收：', d.revenue + '元')}
+      ${di('退款：', `${d.refund}元 <button class="link" onclick="openCommDetail('refund',${row.workerId})">查看明细</button>`)}
+      ${di('系统外业绩：', d.external + '元')}
+      ${di('上月订单本月退款：', `${d.lastMonthRefund}元 <button class="link" onclick="openCommDetail('lastMonthRefund',${row.workerId})">查看明细</button>`)}
+      ${di('上月订单本月申诉：', `${d.lastMonthAppeal}元 <button class="link" onclick="openCommDetail('lastMonthAppeal',${row.workerId})">查看明细</button>`)}
+      ${di('上月提成差值：', d.lastDiff + '元')}
+    </div>
+    <div class="ds-title">奖金</div>
+    <div class="ds-grid one">
+      ${di('当配排名奖：', d.rankBonus + '元')}
+      ${di('新人开单奖：', d.newOrder + '元')}
+      ${di('新人排名奖：', d.newRank + '元')}
+      ${d.bonusDeds.map(x => di(x.name + '：', `${x.amount}元（${x.reason}）`)).join('')}
+    </div>
+    <div class="ds-title">其他</div>
+    <div class="ds-grid one">
+      ${d.others.length ? d.others.map(x => di(x.name + '：', `${x.amount}元（${x.description}）`)).join('') : di('', '无')}
+    </div>`;
+}
+const COMM_TITLE = { refund: '退款明细', lastMonthRefund: '上月订单本月退款明细', lastMonthAppeal: '上月订单本月申诉明细' };
+function openCommDetail(type, id) {
+  const row = salaryRow(AGENT_MAP[id], state.sal.searchedYm);
+  const total = type === 'refund' ? row.d.refund : type === 'lastMonthRefund' ? row.d.lastMonthRefund : row.d.lastMonthAppeal;
+  const r = rng(type + id + row.ym);
+  const n = total ? 1 + Math.floor(r() * 3) : 0;
+  const [y, m] = row.ym.split('-').map(Number);
+  const list = Array.from({ length: n }, (_, i) => {
+    const amt = i === n - 1 ? total - Math.floor(total / n) * (n - 1) : Math.floor(total / n);
+    const payMonth = type === 'refund' ? m : m - 1;
+    return {
+      phone: '1' + ['39', '58', '86'][i % 3] + '****' + String(1000 + Math.floor(r() * 8999)), onionId: String(10000000 + Math.floor(r() * 8e7)),
+      orderNo: 'TY' + y + pad(payMonth) + String(Math.floor(r() * 1e6)).padStart(6, '0'),
+      payTime: fmtDT(new Date(y, payMonth - 1, 1 + Math.floor(r() * 27), 10 + i, 12, 30)),
+      pay: amt + [0, 400, 1000][i % 3], amt, time: fmtDT(new Date(y, m - 1, 2 + Math.floor(r() * 18), 15, 20 + i, 5))
+    };
+  });
+  const cols = [
+    { title: '序号', width: 60, render: (r, i) => i + 1 },
+    { title: '手机号', minWidth: 120, field: 'phone' }, { title: '洋葱ID', minWidth: 110, field: 'onionId' },
+    { title: '订单号', minWidth: 160, field: 'orderNo' }, { title: '支付时间', minWidth: 160, field: 'payTime' },
+    ...(type === 'lastMonthAppeal'
+      ? [{ title: '申诉金额', minWidth: 100, field: 'amt' }, { title: '申诉成功时间', minWidth: 160, field: 'time' }]
+      : [{ title: '订单实付金额', minWidth: 110, field: 'pay' }, { title: '退款金额', minWidth: 100, field: 'amt' }, { title: '退款时间', minWidth: 160, field: 'time' }])
+  ];
+  openDialog({ key: 'commDetail', title: COMM_TITLE[type], width: 960, body: () => table(cols, list, { maxHeight: 400 }) });
+}
+
+/* --- 系统外业绩 Tab --- */
+function extFiltered() {
+  const e = state.ext;
+  return EXT_LIST.filter(x => (!e.phone || x.phone.includes(e.phone)) && (!e.orderNo || x.orderNo.includes(e.orderNo)) && (!e.payYm || x.payYm === e.payYm) && (!e.attrYm || x.attrYm === e.attrYm) && (!e.worker || String(x.workerId) === e.worker));
+}
+function searchExt() {
+  Object.assign(state.ext, { phone: val('extPhone'), orderNo: val('extOrder'), payYm: val('extPay'), attrYm: val('extAttr'), worker: val('extWorker'), page: 1 });
+  render();
+}
+function extPage(p) { state.ext.page = p; render(); }
+function toggleExt(id, c) { c ? state.ext.selected.add(id) : state.ext.selected.delete(id); }
+function toggleExtAll(c, ids) { ids.forEach(id => c ? state.ext.selected.add(id) : state.ext.selected.delete(id)); render(); }
+function copyText(t) { navigator.clipboard?.writeText(t); toast('复制成功'); }
+function renderExternalTab() {
+  const e = state.ext; const all = extFiltered();
+  const rows = all.slice((e.page - 1) * 10, e.page * 10);
+  const ids = rows.map(r => r.id);
+  const allChecked = ids.length && ids.every(id => e.selected.has(id));
+  const cols = [
+    { title: `<input type="checkbox" ${allChecked ? 'checked' : ''} onchange="toggleExtAll(this.checked,[${ids}])">`, width: 46, align: 'center', render: r => `<input type="checkbox" ${e.selected.has(r.id) ? 'checked' : ''} onchange="toggleExt(${r.id},this.checked)">` },
+    { title: '序号', minWidth: 80, render: (r, i) => (e.page - 1) * 10 + i + 1 },
+    { title: '用户手机号', minWidth: 140, render: r => `${r.phone}<span class="copy-ic" onclick="copyText('${r.phone}')">⧉</span>` },
+    { title: '订单编号', minWidth: 150, field: 'orderNo' },
+    { title: '支付月份', minWidth: 100, render: r => r.payYm.replace('-', '') },
+    { title: '薪资归属月份', minWidth: 110, render: r => r.attrYm.replace('-', '') },
+    { title: '订单金额', minWidth: 100, render: r => money(r.amount) },
+    { title: '归属坐席', minWidth: 100, render: r => AGENT_MAP[r.workerId].name },
+    { title: '所属小组', minWidth: 110, render: r => groupName(AGENT_MAP[r.workerId]) },
+    { title: '更新人', minWidth: 110, field: 'updatedBy' },
+    { title: '更新时间', minWidth: 160, render: r => fmtDT(r.updatedAt) },
+    { title: '操作', width: 130, fixed: 'right', render: r => { const lk = isLocked(r.attrYm); return `<button class="link" ${lk ? 'disabled' : ''} onclick="openExtForm(${r.id})">编辑</button><button class="link" ${lk ? 'disabled' : ''} onclick="delExt(${r.id})">删除</button>`; } }
+  ];
+  return `
+    <div class="form-inline">
+      <div class="form-item"><input class="el-input" id="extPhone" placeholder="请输入手机号" value="${e.phone}" onkeyup="event.key==='Enter'&&searchExt()"></div>
+      <div class="form-item"><input class="el-input" id="extOrder" placeholder="请输入订单编号" value="${e.orderNo}" onkeyup="event.key==='Enter'&&searchExt()"></div>
+      <div class="form-item">${monthInput('extPay', e.payYm, '请选择支付月份')}</div>
+      <div class="form-item">${monthInput('extAttr', e.attrYm, '请选择薪资归属月份')}</div>
+      <div class="form-item">${agentSelect('extWorker', e.worker)}</div>
+      <div class="form-item"><button class="btn btn-primary" onclick="searchExt()">🔍 搜索</button></div>
+    </div>
+    <div class="flex-end">
+      <button class="btn btn-danger" onclick="batchDelExt()">批量删除</button>
+      <button class="btn btn-primary" onclick="openUpload('ext')">批量上传</button>
+      <button class="btn btn-primary" onclick="openExtForm()">新增</button>
+    </div>
+    ${table(cols, rows)}
+    ${pager(all.length, e.page, 'extPage')}`;
+}
+function delExt(id) {
+  confirmBox('确定是否要删除此记录?', () => {
+    EXT_LIST.splice(EXT_LIST.findIndex(x => x.id === id), 1);
+    state.ext.selected.delete(id); toast('删除成功'); render();
+  });
+}
+function batchDelExt() {
+  const ids = [...state.ext.selected].filter(id => EXT_LIST.some(x => x.id === id));
+  if (!ids.length) { toast('您未选择任何数据', 'warning'); return; }
+  if (ids.some(id => isLocked(EXT_LIST.find(x => x.id === id).attrYm))) { toast('存在已生成薪酬的月份数据，不可删除', 'warning'); return; }
+  confirmBox(`确定要删除选中的 ${ids.length} 条数据吗？`, () => {
+    ids.forEach(id => EXT_LIST.splice(EXT_LIST.findIndex(x => x.id === id), 1));
+    state.ext.selected.clear(); toast('删除成功'); render();
+  }, '批量删除确认');
+}
+function openExtForm(id) {
+  const r = id ? EXT_LIST.find(x => x.id === id) : { phone: '', orderNo: '', payYm: '', attrYm: '', amount: '', workerId: '' };
+  openDialog({
+    key: 'extForm', title: id ? '编辑' : '新增', width: 520,
+    body: () => `
+      <div class="f-row"><div class="f-label req">用户手机号</div><div class="f-ctrl"><input class="el-input full" id="ef_phone" placeholder="请输入用户手机号" value="${r.phone}"></div></div>
+      <div class="f-row"><div class="f-label req">订单编号</div><div class="f-ctrl"><input class="el-input full" id="ef_order" placeholder="请输入订单编号" value="${r.orderNo}"></div></div>
+      <div class="f-row"><div class="f-label req">支付月份</div><div class="f-ctrl">${monthInput('ef_pay', r.payYm, '请选择支付月份', { w: 340 })}</div></div>
+      <div class="f-row"><div class="f-label req">薪资归属月份</div><div class="f-ctrl">${monthInput('ef_attr', r.attrYm, '请选择薪资归属月份', { w: 340 })}</div></div>
+      <div class="f-row"><div class="f-label req">订单金额</div><div class="f-ctrl"><input type="number" class="el-input full" id="ef_amount" placeholder="请输入订单金额" value="${r.amount}"></div></div>
+      <div class="f-row"><div class="f-label req">归属坐席</div><div class="f-ctrl">${agentSelect('ef_worker', r.workerId, '请选择归属坐席', 340)}</div></div>`,
+    footer: () => `<button class="btn" onclick="closeDialog('extForm')">取消</button><button class="btn btn-primary" onclick="saveExt(${id || 0})">确定</button>`
+  });
+}
+function saveExt(id) {
+  const f = { phone: val('ef_phone'), orderNo: val('ef_order'), payYm: val('ef_pay'), attrYm: val('ef_attr'), amount: val('ef_amount'), workerId: val('ef_worker') };
+  const miss = Object.entries(f).find(([, v]) => !v);
+  if (miss) { toast('请完善必填项', 'warning'); return; }
+  if (!/^1\d{10}$/.test(f.phone)) { toast('请输入正确的手机号', 'warning'); return; }
+  if (isLocked(f.attrYm)) { toast('该薪资归属月份薪酬已生成，不可新增/编辑', 'warning'); return; }
+  const data = { ...f, amount: Number(f.amount), workerId: Number(f.workerId), updatedBy: '管理员', updatedAt: new Date(NOW) };
+  if (id) Object.assign(EXT_LIST.find(x => x.id === id), data);
+  else EXT_LIST.unshift({ id: EXT_ID++, ...data });
+  closeDialog('extForm'); toast(id ? '编辑成功' : '新增成功'); render();
+}
+function openUpload(kind) {
+  const title = kind === 'ext' ? '批量上传' : '导入自定义配置';
+  let fileName = '';
+  openDialog({
+    key: 'upload', title, width: 520,
+    body: () => `
+      <div style="margin-bottom:14px">1. 请先 <button class="link" onclick="toast('模板下载中（原型演示）')">下载模板</button>，按模板格式填写后上传</div>
+      <div style="margin-bottom:8px">2. 上传文件</div>
+      <div class="upload-area" onclick="document.getElementById('upFile').click()">
+        <div class="ic">☁</div><div>将文件拖到此处，或<em>点击上传</em></div>
+        <div style="font-size:12px;color:#909399;margin-top:6px">仅支持 .xlsx / .xls 文件</div>
+        <div id="upName" style="margin-top:8px;color:#409eff">${fileName}</div>
+      </div>
+      <input type="file" id="upFile" accept=".xlsx,.xls" style="display:none" onchange="document.getElementById('upName').textContent=this.files[0]?this.files[0].name:''">`,
+    footer: () => `<button class="btn" onclick="closeDialog('upload')">取消</button><button class="btn btn-primary" onclick="doUpload('${kind}')">确定</button>`
+  });
+}
+function doUpload(kind) {
+  if (!$('upName').textContent) { toast('请先选择文件', 'warning'); return; }
+  closeDialog('upload');
+  if (kind === 'ext') {
+    const r = rng('up' + EXT_ID);
+    for (let i = 0; i < 3; i++) {
+      const a = AGENTS[Math.floor(r() * AGENTS.length)];
+      EXT_LIST.unshift({ id: EXT_ID++, phone: '13' + String(Math.floor(r() * 1e9)).padStart(9, '0'), orderNo: 'TY202611' + String(Math.floor(r() * 1e6)).padStart(6, '0'), payYm: CUR_YM, attrYm: CUR_YM, amount: [399, 699, 1299][i], workerId: a.id, updatedBy: '管理员', updatedAt: new Date(NOW) });
+    }
+  } else {
+    CUST_LIST.unshift({ id: CUST_ID++, name: '批量导入-质检奖励', type: 2, amount: 100, category: 2, description: '批量导入示例', targets: [11, 12], ym: CUR_YM, updaterName: '管理员', updatedAt: new Date(NOW) });
+  }
+  toast(`导入成功，共 ${kind === 'ext' ? 3 : 1} 条`); render();
+}
+
+/* --- 微信加成核算 Tab --- */
+function wxStatus(a, ym) {
+  const key = a.id + '-' + ym;
+  if (state.wx.overrides[key]) return state.wx.overrides[key];
+  const r = rng('wx' + key); const n = daysIn(ym); const map = {};
+  for (let d = 1; d <= n; d++) {
+    const future = ym === CUR_YM && d > NOW.getDate();
+    map[d] = !future && r() < .82 ? 'pass' : 'fail';
+  }
+  return map;
+}
+function wxCanEdit(ym) {
+  if (ym > CUR_YM) return false;
+  if (ym === CUR_YM) return true;
+  const gen = new Date(NOW.getFullYear(), NOW.getMonth(), state.cfgSaved.basic.genDay, 12, 0, 0);
+  return NOW <= gen && ym === PREV_YM;
+}
+function searchWx() { Object.assign(state.wx, { ym: val('wxYm') || CUR_YM, org: val('wxOrg'), worker: val('wxWorker'), page: 1 }); render(); }
+function resetWx() { Object.assign(state.wx, { ym: CUR_YM, org: '', worker: '', page: 1 }); render(); }
+function wxPage(p) { state.wx.page = p; render(); }
+function renderWechatTab() {
+  const w = state.wx; const n = daysIn(w.ym);
+  const all = AGENTS.filter(a => inMonth(a, w.ym) && matchOrg(a, w.org) && (!w.worker || String(a.id) === w.worker));
+  const rows = all.slice((w.page - 1) * 10, w.page * 10);
+  const canEdit = wxCanEdit(w.ym);
+  const cols = [
+    { title: '坐席', width: 120, fixed: 'left', render: a => a.name },
+    ...Array.from({ length: n }, (_, i) => ({ title: String(i + 1), width: 80, align: 'center', render: a => { const s = wxStatus(a, w.ym)[i + 1]; return `<span class="tag small ${s === 'pass' ? 'tag-success' : 'tag-danger'}">${s === 'pass' ? '通过' : '不通过'}</span>`; } })),
+    { title: '操作', width: 100, fixed: 'right', align: 'center', render: a => `<button class="link" ${canEdit ? '' : 'disabled'} onclick="openWxEdit(${a.id})">编辑</button>` }
+  ];
+  return `
+    <div class="form-inline">
+      <div class="form-item"><label>月份</label>${monthInput('wxYm', w.ym, '选择月份', { max: CUR_YM })}</div>
+      <div class="form-item">${orgSelect('wxOrg', w.org)}</div>
+      <div class="form-item">${agentSelect('wxWorker', w.worker)}</div>
+      <div class="form-item"><button class="btn btn-primary" onclick="searchWx()">搜索</button><button class="btn" onclick="resetWx()">重置</button></div>
+    </div>
+    ${canEdit ? '' : '<div class="lock-tip">该月份已过薪酬生成时间，不可编辑</div>'}
+    ${table(cols, rows)}
+    ${pager(all.length, w.page, 'wxPage')}`;
+}
+let WX_EDIT = null;
+function openWxEdit(id) {
+  const a = AGENT_MAP[id]; const ym = state.wx.ym;
+  WX_EDIT = { id, ym, map: { ...wxStatus(a, ym) }, orig: { ...wxStatus(a, ym) } };
+  openDialog({
+    key: 'wxEdit', title: '编辑', width: 800,
+    body: () => {
+      const n = daysIn(ym);
+      return `<div style="padding:0 20px;color:#303133">${ym}：${a.name}（点击日期切换 通过/不通过）</div><div class="cal-grid">${Array.from({ length: n }, (_, i) => {
+        const d = i + 1; const s = WX_EDIT.map[d]; const dis = !wxDayEditable(d);
+        return `<div class="cal-item ${s === 'pass' ? 'active' : ''} ${dis ? 'disabled' : ''}" onclick="toggleWxDay(${d})"><div class="dn">${d}</div><span class="tag small ${s === 'pass' ? 'tag-success' : 'tag-danger'}">${s === 'pass' ? '通过' : '不通过'}</span></div>`;
+      }).join('')}</div>`;
+    },
+    footer: () => `<button class="btn" onclick="closeDialog('wxEdit')">取消</button><button class="btn btn-primary" onclick="saveWx()">确认</button>`
+  });
+}
+function wxDayEditable(d) {
+  if (!wxCanEdit(WX_EDIT.ym)) return false;
+  return !(WX_EDIT.ym === CUR_YM && d > NOW.getDate());
+}
+function toggleWxDay(d) {
+  if (!wxDayEditable(d)) { toast('该日期不可编辑', 'warning'); return; }
+  WX_EDIT.map[d] = WX_EDIT.map[d] === 'pass' ? 'fail' : 'pass';
+  refreshDialog('wxEdit');
+}
+function saveWx() {
+  const changed = Object.keys(WX_EDIT.map).filter(d => WX_EDIT.map[d] !== WX_EDIT.orig[d]);
+  if (!changed.length) { toast('没有修改任何数据', 'info'); closeDialog('wxEdit'); return; }
+  state.wx.overrides[WX_EDIT.id + '-' + WX_EDIT.ym] = { ...WX_EDIT.map };
+  closeDialog('wxEdit'); toast('保存成功'); render();
+}
+
+/* ==================== 页面二：实际出勤 ==================== */
+function searchAtt(fromDom = true) {
+  const t = state.att;
+  if (fromDom) {
+    const min = val('attMin'), max = val('attMax');
+    if (min !== '' && max !== '' && Number(min) > Number(max)) { toast('应出勤天数最小值不能大于最大值', 'warning'); return; }
+    Object.assign(t, { ym: val('attYm') || PREV_YM, org: val('attOrg'), worker: val('attWorker'), min, max });
+  }
+  t.searchedYm = t.ym;
+  t.list = AGENTS.filter(a => inMonth(a, t.ym) && matchOrg(a, t.org) && (!t.worker || String(a.id) === t.worker))
+    .filter(a => { const e = attExpected(a, t.ym); return (t.min === '' || e >= Number(t.min)) && (t.max === '' || e <= Number(t.max)); });
+  const ids = new Set(t.list.map(a => a.id));
+  [...t.selected].forEach(id => { if (!ids.has(id)) t.selected.delete(id); });
+  if (fromDom) render();
+}
+function toggleAtt(id, c) { c ? state.att.selected.add(id) : state.att.selected.delete(id); render(); }
+function toggleAttAll(c) { state.att.list.forEach(a => c ? state.att.selected.add(a.id) : state.att.selected.delete(a.id)); render(); }
+function renderAttendance() {
+  const t = state.att; const ym = t.searchedYm; const n = daysIn(ym);
+  const canOp = !isLocked(ym);
+  const selCount = t.selected.size;
+  const allChecked = t.list.length && t.list.every(a => t.selected.has(a.id));
+  const cols = [
+    ...(canOp ? [{ title: `<input type="checkbox" ${allChecked ? 'checked' : ''} onchange="toggleAttAll(this.checked)">`, width: 46, fixed: 'left', align: 'center', render: a => `<input type="checkbox" ${t.selected.has(a.id) ? 'checked' : ''} onchange="toggleAtt(${a.id},this.checked)">` }] : []),
+    { title: '序号', width: 60, fixed: 'left', align: 'center', render: (a, i) => i + 1 },
+    { title: '坐席', width: 140, fixed: 'left', render: a => a.name },
+    { title: '应出勤', width: 80, render: a => attExpected(a, ym) },
+    { title: '所属小组', minWidth: 120, render: a => groupName(a) },
+    { title: '入职时间', minWidth: 170, render: a => fmtDT(a.joinAt) },
+    { title: '离职时间', minWidth: 170, render: a => a.leaveAt ? fmtDT(a.leaveAt) : '-' },
+    ...Array.from({ length: n }, (_, i) => ({ title: String(i + 1), width: 60, align: 'center', render: a => { const s = STATE_MAP[attDays(a, ym)[i]]; return s ? `<span class="tbl-day" style="color:${s.color}">${s.text}</span>` : ''; } })),
+    ...(canOp ? [{ title: '操作', width: 80, fixed: 'right', render: a => `<button class="link" onclick="openSetValue(${a.id})">编辑</button>` }] : [])
+  ];
+  return `<div class="page"><div class="card">
+    <div class="form-inline">
+      <div class="form-item">${monthInput('attYm', t.ym, '选择月份', { max: CUR_YM })}</div>
+      <div class="form-item">${orgSelect('attOrg', t.org)}</div>
+      <div class="form-item">${agentSelect('attWorker', t.worker)}</div>
+      <div class="form-item"><label>应出勤天数</label>
+        <input type="number" class="el-input sm" id="attMin" placeholder="最小值" min="0" max="31" step="0.5" value="${t.min}">
+        <span style="padding:0 6px">~</span>
+        <input type="number" class="el-input sm" id="attMax" placeholder="最大值" min="0" max="31" step="0.5" value="${t.max}">
+      </div>
+      <div class="form-item">
+        <button class="btn btn-primary" onclick="searchAtt()">🔍 搜索</button>
+        <button class="btn btn-success" onclick="toast('导出成功：出勤数据_${ym}.xlsx（原型演示）')">导出</button>
+        <button class="btn btn-warning" onclick="openLegalHoliday()">特殊设置</button>
+        <button class="btn" onclick="openAttRule()">说明</button>
+      </div>
+      ${canOp ? `<div class="form-item">
+        <button class="btn ${selCount ? 'btn-purple' : 'btn-primary'}" ${selCount ? '' : 'disabled'} onclick="openBatchEdit()">批量编辑天数</button>
+        ${selCount ? `<span class="selected-count">已选 ${selCount} 人</span>` : ''}
+      </div>` : ''}
+    </div>
+    ${canOp ? '' : `<div class="lock-tip">${ym} 薪酬已生成，出勤数据不可编辑（原型提示，线上为直接隐藏编辑列与批量编辑）</div>`}
+    ${table(cols, t.list, { maxHeight: 560 })}
+  </div></div>`;
+}
+let SV = null;
+function openSetValue(id) {
+  const a = AGENT_MAP[id]; const ym = state.att.searchedYm;
+  SV = { id, ym, days: [...attDays(a, ym)].map(x => x || 1), expected: attExpected(a, ym), menu: null };
+  openDialog({
+    key: 'setValue', title: '编辑', width: 768,
+    body: () => {
+      const today = ym === CUR_YM ? NOW.getDate() : 0;
+      const m = SV.menu;
+      return `<div class="d-tit" onclick="hideSvMenu()">${ym} ：${a.name}</div>
+        <div class="form-inline" style="justify-content:center"><div class="form-item"><label>应出勤天数</label><input type="number" class="el-input num" min="0" max="31" step="0.5" value="${SV.expected}" oninput="SV.expected=this.value===''?null:Number(this.value)" placeholder="请输入"></div></div>
+        <div style="text-align:center;font-size:12px;color:#909399">单击日期切换状态；右键或双击可批量设置</div>
+        <div class="d-date-box" onclick="if(event.target===this)hideSvMenu()">
+          ${SV.days.map((s, i) => { const st = STATE_MAP[s]; return `<div class="d-click" onclick="svClick(${i})" oncontextmenu="event.preventDefault();svMenu(event,${i})" ondblclick="svMenu(event,${i})"><span class="${i + 1 === today ? 'd-current' : ''}">${i + 1}</span><span style="color:${st.color}">${st.text}</span></div>`; }).join('')}
+          ${m ? `<div class="sel-box" style="left:${m.x}px;top:${m.y}px">
+            <div>${[['all', '全部'], ['left', `${m.i + 1}号之前`], ['right', `${m.i + 1}号以后`]].map(([k, l]) => `<div class="opt ${m.site === k ? 'on' : ''}" onclick="svSite('${k}')">${l}</div>`).join('')}</div>
+            <div>${[1, 2, 3, 4, 5, 6].map(k => `<div class="opt" onclick="svSet(${k})">${STATE_MAP[k].text}</div>`).join('')}</div>
+          </div>` : ''}
+        </div>`;
+    },
+    footer: () => `<button class="btn btn-primary" onclick="saveSetValue()">确定</button><button class="btn" onclick="closeDialog('setValue')">取消</button>`
+  });
+}
+function svClick(i) { if (SV.menu) { SV.menu = null; refreshDialog('setValue'); return; } SV.days[i] = SV.days[i] === 6 ? 1 : SV.days[i] + 1; refreshDialog('setValue'); }
+function svMenu(e, i) {
+  const box = e.currentTarget.parentElement.getBoundingClientRect();
+  SV.menu = { i, site: 'right', x: Math.min(e.clientX - box.left + 10, 540), y: e.clientY - box.top - 20 };
+  refreshDialog('setValue');
+}
+function hideSvMenu() { if (SV.menu) { SV.menu = null; refreshDialog('setValue'); } }
+function svSite(k) { SV.menu.site = k; refreshDialog('setValue'); }
+function svSet(s) {
+  const { i, site } = SV.menu; let start = 0, end = SV.days.length;
+  if (site === 'left') end = i + 1; if (site === 'right') start = i;
+  for (let k = start; k < end; k++) SV.days[k] = s;
+  SV.menu = null; refreshDialog('setValue');
+}
+function saveSetValue() {
+  state.att.overrides[SV.id + '-' + SV.ym] = { days: [...SV.days], expected: SV.expected };
+  closeDialog('setValue'); toast('操作成功'); searchAtt(false); render();
+}
+let BATCH = null;
+function openBatchEdit() {
+  BATCH = { ids: [...state.att.selected], expected: null };
+  openDialog({
+    key: 'batch', title: '批量编辑应出勤天数', width: 520,
+    body: () => `
+      <div class="batch-label">已选择坐席（${BATCH.ids.length}人）</div>
+      <div class="batch-tags">${BATCH.ids.map(id => `<span class="tag tag-dark">${AGENT_MAP[id].name}<span class="close" onclick="batchRemove(${id})">✕</span></span>`).join('')}</div>
+      <div class="batch-label req">应出勤天数</div>
+      <input type="number" class="el-input full" min="0" max="31" step="0.5" placeholder="请输入应出勤天数" value="${BATCH.expected ?? ''}" onchange="BATCH.expected=this.value===''?null:Number(this.value);refreshDialog('batch')">
+      ${BATCH.expected !== null && BATCH.ids.length ? `<div class="batch-preview"><div class="batch-label">变更预览</div>${BATCH.ids.map(id => `<div class="preview-item"><span>${AGENT_MAP[id].name}</span><span class="preview-change">${attExpected(AGENT_MAP[id], state.att.searchedYm)} → ${BATCH.expected}</span></div>`).join('')}</div>` : ''}`,
+    footer: () => `<button class="btn" onclick="closeDialog('batch')">取消</button><button class="btn btn-primary" ${BATCH.ids.length ? '' : 'disabled'} onclick="saveBatch()">确定</button>`
+  });
+}
+function batchRemove(id) {
+  BATCH.ids = BATCH.ids.filter(x => x !== id); state.att.selected.delete(id);
+  refreshDialog('batch'); render();
+}
+function saveBatch() {
+  if (BATCH.expected === null || BATCH.expected < 0 || BATCH.expected > 31) { toast('请输入 0~31 之间的应出勤天数', 'warning'); return; }
+  const ym = state.att.searchedYm;
+  BATCH.ids.forEach(id => {
+    const key = id + '-' + ym; const o = state.att.overrides[key] || {};
+    state.att.overrides[key] = { ...o, expected: BATCH.expected };
+  });
+  state.att.selected.clear();
+  closeDialog('batch'); toast(`已更新 ${BATCH.ids.length} 名坐席的应出勤天数`); searchAtt(false); render();
+}
+let HOLIDAY_DRAFT = [];
+function openLegalHoliday() {
+  HOLIDAY_DRAFT = [...state.holidays];
+  openDialog({
+    key: 'holiday', title: '特殊设置 - 法定节假日', width: 600,
+    body: () => `
+      <div style="font-size:12px;color:#909399;margin-bottom:12px">选择法定节假日日期，若当天状态为【班】则自动更新为【法】</div>
+      <input type="date" class="el-input full" style="margin-bottom:12px" onchange="addHoliday(this.value)">
+      <div class="holiday-tags">${HOLIDAY_DRAFT.length ? HOLIDAY_DRAFT.map(d => `<span class="tag tag-primary">${d}<span class="close" onclick="removeHoliday('${d}')">✕</span></span>`).join('') : '<span style="color:#909399">暂无已设置的法定节假日</span>'}</div>`,
+    footer: () => `<button class="btn" onclick="closeDialog('holiday')">取消</button><button class="btn btn-primary" onclick="saveHoliday()">确定</button>`
+  });
+}
+function addHoliday(v) { if (v && !HOLIDAY_DRAFT.includes(v)) { HOLIDAY_DRAFT.push(v); HOLIDAY_DRAFT.sort(); } refreshDialog('holiday'); }
+function removeHoliday(d) { HOLIDAY_DRAFT = HOLIDAY_DRAFT.filter(x => x !== d); refreshDialog('holiday'); }
+function saveHoliday() { state.holidays = [...HOLIDAY_DRAFT]; closeDialog('holiday'); toast('法定节假日设置成功'); searchAtt(false); render(); }
+function openAttRule() {
+  const states = [['班', '当天排班状态为【班】'], ['半', '当天排班为【班】但请假半天'], ['休', '当天排班状态为【休】或者当天请假'], ['薪', '法定节假日排班为【休】'], ['法', '法定节假日排班为【班】'], ['0.5法', '法定节假日排班为【班】但请了半天假']];
+  const syncs = [['出勤同步', '每月 1 日、15 日、30 日 自动同步飞书排班'], ['请假同步', '每月 1 日 0 点，或 薪酬核算日 0 点同步飞书请假数据'], ['法定节假日状态同步', '每月月底最后一天、薪酬核算日当天更新状态']];
+  openDialog({
+    key: 'rule', title: '说明', width: 560,
+    body: () => `<div class="rule-title">出勤状态说明</div>${states.map(([l, d]) => `<div class="rule-item"><span class="rule-label">${l}</span><span class="rule-desc">${d}</span></div>`).join('')}
+      <div class="rule-title" style="margin-top:16px">同步说明</div>${syncs.map(([l, d]) => `<div class="rule-item"><span class="rule-label">${l}</span><span class="rule-desc">${d}</span></div>`).join('')}`,
+    footer: () => `<button class="btn btn-primary" onclick="closeDialog('rule')">我知道了</button>`
+  });
+}
+
+/* ==================== 页面三：坐席薪酬配置 ==================== */
+function setSettingTab(t) { state.settingTab = t; render(); }
+function renderSetting() {
+  const t = state.settingTab;
+  const body = { baseSalary: renderBaseSalary, commission: renderCommission, bonus: renderBonus, customItem: renderCustomItem, basicConfig: renderBasicConfig }[t]();
+  return `<div class="page"><div class="card">${tabsHtml([['baseSalary', '底薪'], ['commission', '提成'], ['bonus', '奖金'], ['customItem', '自定义项'], ['basicConfig', '基础配置']], t, 'setSettingTab').replace('class="tabs"', 'class="tabs thin"')}${body}</div></div>`;
+}
+function resetCfg(part) {
+  confirmBox('确定要重置为上次保存的结果吗？', () => { state.cfg[part] = clone(state.cfgSaved[part]); toast('重置成功'); render(); }, '重置确认');
+}
+function saveCfg(part) { state.cfgSaved[part] = clone(state.cfg[part]); toast('保存成功'); if (state.sal.list.length) searchSalary(false); render(); }
+function footerBtns(part) { return `<div class="footer-buttons"><button class="btn" onclick="resetCfg('${part}')">重置</button><button class="btn btn-primary" onclick="saveCfg('${part}')">保存</button></div>`; }
+const subCard = (title, desc, body, extra = '') => `<div class="sub-card"><div class="sub-card-h"><div><span class="sub-card-t">${title}</span>${desc ? `<span class="sub-card-d">${desc}</span>` : ''}</div>${extra}</div><div class="sub-card-b">${body}</div></div>`;
+const numIn = (path, v, attrs = '', cls = 'num') => `<input type="number" class="el-input ${cls}" value="${v ?? ''}" ${attrs} onchange="setCfg('${path}',this.value)">`;
+function setCfg(path, v) {
+  const keys = path.split('.'); let o = state.cfg;
+  keys.slice(0, -1).forEach(k => o = o[k]);
+  o[keys[keys.length - 1]] = v === '' ? null : (isNaN(Number(v)) ? v : Number(v));
+}
+
+/* --- 底薪 --- */
+function renderBaseSalary() {
+  const c = state.cfg.base;
+  const cols = [
+    { title: '排名分布', minWidth: 200, render: r => fmtRange(r.minOp, r.min, r.maxOp, r.max, '%') },
+    { title: '底薪', minWidth: 120, render: r => r.base + '元' },
+    { title: '档位薪资', minWidth: 120, render: r => r.tier + '元' },
+    { title: '操作', width: 150, fixed: 'right', render: (r, i) => `<button class="link" onclick="openRangeDialog('base',${i})">编辑</button><button class="link danger" onclick="delRange('base',${i})">删除</button>` }
+  ];
+  return subCard('新员工', '新员工保护期内为默认底薪', `<div class="f-row" style="margin:0"><div class="f-label" style="width:120px">默认底薪</div><div class="f-ctrl">${numIn('base.newDefault', c.newDefault, 'min="0" placeholder="请输入默认底薪"')}<span>元</span></div></div>`)
+    + subCard('老员工', '分小学、初中、高中三个学段分开排名', `<div class="flex-end"><button class="btn btn-primary" onclick="openRangeDialog('base')">＋ 新增</button></div>${table(cols, c.rules)}${footerBtns('base')}`);
+}
+/* --- 提成 --- */
+function renderCommission() {
+  const c = state.cfg.comm;
+  const cols = [
+    { title: '业绩达成区间', minWidth: 300, render: r => fmtRange(r.minOp, r.min, r.maxOp, r.max) },
+    { title: '业绩达标', minWidth: 150, render: r => r.ok + '%' },
+    { title: '业绩不达标', minWidth: 150, render: r => r.no + '%' },
+    { title: '操作', width: 150, fixed: 'right', render: (r, i) => `<button class="link" onclick="openRangeDialog('comm',${i})">编辑</button><button class="link danger" onclick="delRange('comm',${i})">删除</button>` }
+  ];
+  return subCard('提成档位分布', '当月业绩=当月营收+系统外业绩-当月产生的退款，以下规则对新员工全部适用，老员工需增加特殊规则判断',
+    `<div class="flex-end"><button class="btn btn-primary" onclick="openRangeDialog('comm')">＋ 新增</button></div>${table(cols, c.gears)}`)
+    + subCard('特殊规则', '', `<div class="sentence"><span>老员工业绩低于（不含）</span>${numIn('comm.threshold', c.threshold, 'min="0"')}<span>时，若业绩完成率高于（不含）</span>${numIn('comm.rate', c.rate, 'min="0" max="100" step="0.01"', 'md')}<span><b>%</b> 则正常按区间档位提成，否则无提成</span></div>${footerBtns('comm')}`);
+}
+function delRange(kind, i) {
+  confirmBox(kind === 'base' ? '确定要删除该配置吗？' : '确认删除该档位吗？', () => {
+    (kind === 'base' ? state.cfg.base.rules : state.cfg.comm.gears).splice(i, 1); toast('删除成功'); render();
+  }, kind === 'base' ? '删除确认' : '提示');
+}
+function openRangeDialog(kind, i) {
+  const list = kind === 'base' ? state.cfg.base.rules : state.cfg.comm.gears;
+  const r = i !== undefined ? list[i] : { minOp: '', min: '', maxOp: '', max: '' };
+  const unit = kind === 'base' ? '%' : '元';
+  openDialog({
+    key: 'range', title: i !== undefined ? '编辑' : '新增', width: 560,
+    body: () => `
+      <div class="f-row"><div class="f-label">区间下限</div><div class="f-ctrl">${opSelect('rg_minOp', r.minOp)}<input type="number" class="el-input md" id="rg_min" placeholder="请输入" value="${r.min ?? ''}"><span>${unit}</span></div></div>
+      <div class="f-row"><div class="f-label">区间上限</div><div class="f-ctrl">${opSelect('rg_maxOp', r.maxOp)}<input type="number" class="el-input md" id="rg_max" placeholder="请输入" value="${r.max ?? ''}"><span>${unit}</span></div></div>
+      ${kind === 'base' ? `
+        <div class="f-row"><div class="f-label req">底薪</div><div class="f-ctrl"><input type="number" class="el-input" id="rg_a" placeholder="请输入底薪" value="${r.base ?? ''}"><span>元</span></div></div>
+        <div class="f-row"><div class="f-label req">档位薪资</div><div class="f-ctrl"><input type="number" class="el-input" id="rg_b" placeholder="请输入档位薪资" value="${r.tier ?? ''}"><span>元</span></div></div>`
+      : `
+        <div class="f-row"><div class="f-label req">业绩达标</div><div class="f-ctrl"><input type="number" class="el-input" id="rg_a" placeholder="请输入业绩达标比例" value="${r.ok ?? ''}"><span>%</span></div></div>
+        <div class="f-row"><div class="f-label req">业绩不达标</div><div class="f-ctrl"><input type="number" class="el-input" id="rg_b" placeholder="请输入业绩不达标比例" value="${r.no ?? ''}"><span>%</span></div></div>`}
+      <div style="font-size:12px;color:#909399;padding-left:110px">区间下限、区间上限至少填写一项${kind === 'base' ? '，排名分布单位为百分比' : ''}</div>`,
+    footer: () => `<button class="btn" onclick="closeDialog('range')">取消</button><button class="btn btn-primary" onclick="saveRange('${kind}',${i ?? -1})">确定</button>`
+  });
+}
+function saveRange(kind, i) {
+  const minOp = val('rg_minOp'), min = val('rg_min'), maxOp = val('rg_maxOp'), max = val('rg_max'), a = val('rg_a'), b = val('rg_b');
+  const hasMin = minOp && min !== '', hasMax = maxOp && max !== '';
+  if (!hasMin && !hasMax) { toast('请至少填写一个完整的区间条件', 'warning'); return; }
+  if ((minOp && min === '') || (!minOp && min !== '') || (maxOp && max === '') || (!maxOp && max !== '')) { toast('区间运算符与数值需同时填写', 'warning'); return; }
+  if (a === '' || b === '') { toast('请完善必填项', 'warning'); return; }
+  const rng_ = { minOp: hasMin ? minOp : '', min: hasMin ? Number(min) : null, maxOp: hasMax ? maxOp : '', max: hasMax ? Number(max) : null };
+  const item = kind === 'base' ? { ...rng_, base: Number(a), tier: Number(b) } : { ...rng_, ok: Number(a), no: Number(b) };
+  const list = kind === 'base' ? state.cfg.base.rules : state.cfg.comm.gears;
+  if (i >= 0) list[i] = item; else list.push(item);
+  closeDialog('range'); toast(i >= 0 ? '编辑成功' : '新增成功'); render();
+}
+/* --- 奖金 --- */
+function renderBonus() {
+  const c = state.cfg.bonus;
+  const dcols = [
+    { title: '学段', minWidth: 100, field: 'grade' },
+    { title: '当配排名', minWidth: 200, render: r => r.ranks.join('/') },
+    { title: '奖金', minWidth: 150, field: 'bonus' },
+    { title: '操作', width: 150, fixed: 'right', render: (r, i) => `<button class="link" onclick="openDangpei(${i})">编辑</button><button class="link danger" onclick="delBonus('dangpei',${i})">删除</button>` }
+  ];
+  const ncols = [
+    { title: '排名', minWidth: 150, render: r => r.ranks.join('、') },
+    { title: '奖励', minWidth: 150, field: 'bonus' },
+    { title: '操作', width: 150, fixed: 'right', render: (r, i) => `<button class="link" onclick="openNewbie(${i})">编辑</button><button class="link danger" onclick="delBonus('newbie',${i})">删除</button>` }
+  ];
+  const o = c.order;
+  return subCard('当配排名奖', '当配排名奖需完成业绩目标才进行排名奖励', table(dcols, c.dangpei), `<button class="btn btn-primary" onclick="openDangpei()">＋ 新增</button>`)
+    + subCard('新人排名奖', '新人入职当月及前两个完整月内，设置排名奖励，二次入职不参与排名奖励', table(ncols, c.newbie), `<button class="btn btn-primary" onclick="openNewbie()">＋ 新增</button>`)
+    + subCard('新人开单奖', '', `<div class="sentence"><span>自参培之日起</span>${numIn('bonus.order.days', o.days, 'min="1"', 'sm')}<span>天内，若业绩</span>
+        <select class="el-input sm" onchange="setCfg('bonus.order.op',this.value)">${[['EQ', '等于'], ['GT', '大于'], ['GTE', '大于等于']].map(([k, l]) => `<option value="${k}" ${o.op === k ? 'selected' : ''}>${l}</option>`).join('')}</select>
+        ${numIn('bonus.order.perf', o.perf, 'min="0" step="0.01"')}<span>元，则奖励</span>${numIn('bonus.order.bonus', o.bonus, 'min="0" step="0.01"')}<span>元</span></div>${footerBtns('bonus')}`);
+}
+function delBonus(kind, i) { confirmBox('确认删除该配置吗？', () => { state.cfg.bonus[kind].splice(i, 1); toast('删除成功'); render(); }); }
+function openDangpei(i) {
+  const list = state.cfg.bonus.dangpei;
+  const r = i !== undefined ? clone(list[i]) : { grade: '', ranks: [], bonus: '' };
+  const DP = { r, i };
+  window.__DP = DP;
+  openDialog({
+    key: 'dangpei', title: i !== undefined ? '编辑' : '新增', width: 560,
+    body: () => {
+      const used = dpUsed(DP.r.grade);
+      return `
+      <div class="f-row"><div class="f-label req">学段</div><div class="f-ctrl"><select class="el-input" onchange="dpGrade(this.value)"><option value="">请选择学段</option>${['小学', '初中', '高中', '不限'].map(g => `<option ${DP.r.grade === g ? 'selected' : ''}>${g}</option>`).join('')}</select></div></div>
+      <div class="f-row"><div class="f-label req">当配排名</div><div class="f-ctrl"><div class="check-grid">${Array.from({ length: 10 }, (_, k) => k + 1).map(n => { const dis = used.includes(n); return `<label class="${dis ? 'dis' : ''}"><input type="checkbox" ${DP.r.ranks.includes(n) ? 'checked' : ''} ${dis ? 'disabled' : ''} onchange="this.checked?__DP.r.ranks.push(${n}):__DP.r.ranks.splice(__DP.r.ranks.indexOf(${n}),1);__DP.r.ranks.sort((a,b)=>a-b)">第${n}名</label>`; }).join('')}</div><div style="font-size:12px;color:#909399;width:100%">灰色为同学段下已被其他配置占用的排名</div></div></div>
+      <div class="f-row"><div class="f-label req">奖金</div><div class="f-ctrl"><input type="number" class="el-input" placeholder="请输入奖金" value="${DP.r.bonus}" oninput="__DP.r.bonus=this.value"><span>元</span></div></div>`;
+    },
+    footer: () => `<button class="btn" onclick="closeDialog('dangpei')">取消</button><button class="btn btn-primary" onclick="saveDangpei(${i ?? -1})">确定</button>`
+  });
+}
+function dpUsed(grade) {
+  return state.cfg.bonus.dangpei.filter((x, k) => k !== __DP.i && x.grade === grade).flatMap(x => x.ranks);
+}
+function dpGrade(g) {
+  const used = dpUsed(g);
+  __DP.r.grade = g;
+  __DP.r.ranks = __DP.r.ranks.filter(x => !used.includes(x));
+  refreshDialog('dangpei');
+}
+function saveDangpei(i) {
+  const r = window.__DP.r;
+  if (!r.grade) { toast('请选择学段', 'warning'); return; }
+  if (!r.ranks.length) { toast('请选择排名', 'warning'); return; }
+  if (r.bonus === '' || r.bonus === null) { toast('请输入奖金', 'warning'); return; }
+  const item = { grade: r.grade, ranks: [...r.ranks], bonus: Number(r.bonus) };
+  i >= 0 ? state.cfg.bonus.dangpei[i] = item : state.cfg.bonus.dangpei.push(item);
+  closeDialog('dangpei'); toast(i >= 0 ? '编辑成功' : '新增成功'); render();
+}
+function openNewbie(i) {
+  const list = state.cfg.bonus.newbie;
+  const r = i !== undefined ? clone(list[i]) : { ranks: [], bonus: '' };
+  window.__NB = { r };
+  const used = list.filter((x, k) => k !== i).flatMap(x => x.ranks);
+  openDialog({
+    key: 'newbie', title: i !== undefined ? '编辑' : '新增', width: 560,
+    body: () => `
+      <div class="f-row"><div class="f-label req">排名</div><div class="f-ctrl"><div class="check-grid">${[...Array.from({ length: 10 }, (_, k) => k + 1), '其余'].map(n => { const dis = used.includes(n); const q = typeof n === 'string' ? `'${n}'` : n; return `<label class="${dis ? 'dis' : ''}"><input type="checkbox" ${__NB.r.ranks.includes(n) ? 'checked' : ''} ${dis ? 'disabled' : ''} onchange="this.checked?__NB.r.ranks.push(${q}):__NB.r.ranks.splice(__NB.r.ranks.indexOf(${q}),1)">${typeof n === 'number' ? `第${n}名` : n}</label>`; }).join('')}</div></div></div>
+      <div class="f-row"><div class="f-label req">奖金</div><div class="f-ctrl"><input type="number" class="el-input" placeholder="请输入奖金" value="${__NB.r.bonus}" oninput="__NB.r.bonus=this.value"><span>元</span></div></div>`,
+    footer: () => `<button class="btn" onclick="closeDialog('newbie')">取消</button><button class="btn btn-primary" onclick="saveNewbie(${i ?? -1})">确定</button>`
+  });
+}
+function saveNewbie(i) {
+  const r = window.__NB.r;
+  if (!r.ranks.length) { toast('请选择排名', 'warning'); return; }
+  if (r.bonus === '' || r.bonus === null) { toast('请输入奖金', 'warning'); return; }
+  const ranks = [...r.ranks.filter(x => typeof x === 'number').sort((a, b) => a - b), ...r.ranks.filter(x => typeof x === 'string')];
+  const item = { ranks, bonus: Number(r.bonus) };
+  i >= 0 ? state.cfg.bonus.newbie[i] = item : state.cfg.bonus.newbie.push(item);
+  closeDialog('newbie'); toast(i >= 0 ? '编辑成功' : '新增成功'); render();
+}
+/* --- 自定义项 --- */
+function custFiltered() {
+  const c = state.cust;
+  const groupIds = !c.org ? null : c.org[0] === 'd' ? GROUPS.filter(g => g.deptId === +c.org.slice(1)).map(g => g.id) : [+c.org.slice(1)];
+  return CUST_LIST.filter(x => (!groupIds || x.targets.some(t => groupIds.includes(t))) && (!c.worker || x.targets.includes(AGENT_MAP[c.worker].groupId)) && (!c.ym || x.ym === c.ym));
+}
+function searchCust() { Object.assign(state.cust, { org: val('cuOrg'), worker: val('cuWorker'), ym: val('cuYm'), page: 1 }); render(); }
+function resetCust() { Object.assign(state.cust, { org: '', worker: '', ym: '', page: 1 }); render(); }
+function custPage(p) { state.cust.page = p; render(); }
+function toggleCust(id, c) { c ? state.cust.selected.add(id) : state.cust.selected.delete(id); }
+function toggleCustAll(c, ids) { ids.forEach(id => c ? state.cust.selected.add(id) : state.cust.selected.delete(id)); render(); }
+function renderCustomItem() {
+  const c = state.cust; const all = custFiltered();
+  const rows = all.slice((c.page - 1) * 10, c.page * 10); const ids = rows.map(r => r.id);
+  const allChecked = ids.length && ids.every(id => c.selected.has(id));
+  const cols = [
+    { title: `<input type="checkbox" ${allChecked ? 'checked' : ''} onchange="toggleCustAll(this.checked,[${ids}])">`, width: 46, align: 'center', render: r => `<input type="checkbox" ${c.selected.has(r.id) ? 'checked' : ''} onchange="toggleCust(${r.id},this.checked)">` },
+    { title: '名称', minWidth: 120, field: 'name' },
+    { title: '类型', minWidth: 70, render: r => labelOf(TYPE_LIST, r.type) },
+    { title: '金额', minWidth: 90, render: r => `${r.amount > 0 ? '+' : ''}${r.amount}元` },
+    { title: '归属类别', minWidth: 90, render: r => labelOf(CATEGORY_LIST, r.category) },
+    { title: '说明', minWidth: 180, field: 'description' },
+    { title: '适用对象', minWidth: 160, render: r => r.targets.map(t => GROUP_MAP[t].name).join('、') || '-' },
+    { title: '适用时间', minWidth: 90, render: r => `${+r.ym.slice(0, 4)}-${+r.ym.slice(5)}` },
+    { title: '更新人', minWidth: 80, field: 'updaterName' },
+    { title: '更新时间', minWidth: 160, render: r => fmtDT(r.updatedAt) },
+    { title: '操作', width: 130, fixed: 'right', render: r => { const lk = isLocked(r.ym); return `<button class="link" ${lk ? 'disabled' : ''} onclick="openCustForm(${r.id})">编辑</button><button class="link" ${lk ? 'disabled' : ''} onclick="delCust(${r.id})">删除</button>`; } }
+  ];
+  return `
+    <div class="flex-between">
+      <div class="form-inline">
+        <div class="form-item">${orgSelect('cuOrg', c.org, '请选择团队', 200)}</div>
+        <div class="form-item">${agentSelect('cuWorker', c.worker, '请选择坐席', 200)}</div>
+        <div class="form-item">${monthInput('cuYm', c.ym, '请选择月份', { w: 200 })}</div>
+        <div class="form-item"><button class="btn btn-primary" onclick="searchCust()">搜索</button><button class="btn" onclick="resetCust()">重置</button></div>
+      </div>
+      <div style="flex-shrink:0;margin-bottom:18px"><button class="btn btn-danger" onclick="batchDelCust()">批量删除</button><button class="btn btn-primary" onclick="openUpload('cust')">批量上传</button><button class="btn btn-primary" onclick="openCustForm()">新增</button></div>
+    </div>
+    ${table(cols, rows)}
+    ${pager(all.length, c.page, 'custPage')}`;
+}
+function delCust(id) {
+  confirmBox('确定是否要删除此自定义项?', () => { CUST_LIST.splice(CUST_LIST.findIndex(x => x.id === id), 1); state.cust.selected.delete(id); toast('删除成功'); render(); });
+}
+function batchDelCust() {
+  const ids = [...state.cust.selected].filter(id => CUST_LIST.some(x => x.id === id));
+  if (!ids.length) { toast('您未选择任何数据', 'warning'); return; }
+  if (ids.some(id => isLocked(CUST_LIST.find(x => x.id === id).ym))) { toast('存在已生成薪酬的月份数据，不可删除', 'warning'); return; }
+  confirmBox(`确定要删除选中的 ${ids.length} 条数据吗？`, () => { ids.forEach(id => CUST_LIST.splice(CUST_LIST.findIndex(x => x.id === id), 1)); state.cust.selected.clear(); toast('删除成功'); render(); }, '批量删除确认');
+}
+function openCustForm(id) {
+  const r = id ? CUST_LIST.find(x => x.id === id) : { name: '', type: '', amount: '', category: '', description: '', targets: [], ym: '' };
+  openDialog({
+    key: 'custForm', title: id ? '编辑自定义项' : '新增自定义项', width: 600,
+    body: () => `
+      <div class="f-row"><div class="f-label req">名称</div><div class="f-ctrl"><input class="el-input full" id="cf_name" placeholder="请输入名称" value="${r.name}"></div></div>
+      <div class="f-row"><div class="f-label req">类型</div><div class="f-ctrl"><select class="el-input full" id="cf_type"><option value="">请选择类型</option>${TYPE_LIST.map(([k, l]) => `<option value="${k}" ${r.type === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div></div>
+      <div class="f-row"><div class="f-label req">金额</div><div class="f-ctrl"><input type="number" class="el-input full" id="cf_amount" placeholder="请输入金额" value="${r.amount === '' ? '' : Math.abs(r.amount)}"></div></div>
+      <div class="f-row"><div class="f-label req">归属类别</div><div class="f-ctrl"><select class="el-input full" id="cf_cat"><option value="">请选择归属类别</option>${CATEGORY_LIST.map(([k, l]) => `<option value="${k}" ${r.category === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div></div>
+      <div class="f-row"><div class="f-label">说明</div><div class="f-ctrl"><textarea class="el-input full" id="cf_desc" rows="3" placeholder="请输入说明">${r.description}</textarea></div></div>
+      <div class="f-row"><div class="f-label req">适用对象</div><div class="f-ctrl"><div class="check-grid" id="cf_targets">${DEPTS.map(d => `<div style="width:100%;color:#909399;font-size:12px">${d.name}</div>${d.children.map(g => `<label><input type="checkbox" value="${g.id}" ${r.targets.includes(g.id) ? 'checked' : ''}>${g.name}</label>`).join('')}`).join('')}</div></div></div>
+      <div class="f-row"><div class="f-label req">适用时间</div><div class="f-ctrl">${monthInput('cf_ym', r.ym, '请选择适用时间', { w: 440 })}</div></div>`,
+    footer: () => `<button class="btn" onclick="closeDialog('custForm')">取消</button><button class="btn btn-primary" onclick="saveCust(${id || 0})">确定</button>`
+  });
+}
+function saveCust(id) {
+  const name = val('cf_name'), type = Number(val('cf_type')), amount = val('cf_amount'), category = Number(val('cf_cat')), description = val('cf_desc'), ym = val('cf_ym');
+  const targets = [...document.querySelectorAll('#cf_targets input:checked')].map(x => Number(x.value));
+  if (!name || !type || amount === '' || !category || !targets.length || !ym) { toast('请完善必填项', 'warning'); return; }
+  if (isLocked(ym)) { toast('该月份薪酬已生成，不可新增/编辑', 'warning'); return; }
+  const amt = Math.abs(Number(amount)) * (type === 1 ? -1 : 1);
+  const data = { name, type, amount: amt, category, description, targets, ym, updaterName: '管理员', updatedAt: new Date(NOW) };
+  if (id) Object.assign(CUST_LIST.find(x => x.id === id), data); else CUST_LIST.unshift({ id: CUST_ID++, ...data });
+  closeDialog('custForm'); toast(id ? '编辑成功' : '新增成功'); render();
+}
+/* --- 基础配置 --- */
+function renderBasicConfig() {
+  const b = state.cfg.basic;
+  const row = (label, ctrl) => `<div class="bc-row"><div class="bc-label">${label}</div><div class="bc-ctrl">${ctrl}</div></div>`;
+  return `<div class="sub-card"><div class="sub-card-b">
+    <div class="section-title">员工定义</div>
+    ${row('新员工', `<span>体验营职场，自参培日起</span>${numIn('basic.newMonths', b.newMonths, 'min="1" placeholder="请输入月数"')}<span>个完整月为新人保护期，在此期间为新员工</span>`)}
+    ${row('老员工', `<span>体验营职场，自参培日起第</span>${numIn('basic.oldMonths', b.oldMonths, 'min="1" placeholder="请输入月数"')}<span>个完整月在职的员工，即为老员工</span>`)}
+    <div class="tip-text">
+      <div>参培之日：CRM系统入职日期-7天</div>
+      <div>• 参培之日为月初第一天，则当月为完整月</div>
+      <div>• 参培之日不是月初第一天则当月不是完整月，完整月从第二个月开始计算</div>
+      <div style="margin-left:16px">示例：<br>- CRM入职日期4/13，则参培日为4/6，5月为第一个完整月<br>- CRM入职日期4/8，则参培日为4/1，4月为第一个完整月</div>
+      <div>• 未配置员工定义时，默认所有员工为老员工</div>
+    </div>
+    <div class="section-title">薪酬生成时间</div>
+    ${row('薪酬生成时间', `<span>每月</span>${numIn('basic.genDay', b.genDay, 'min="1" max="28" placeholder="日期"', 'md')}<span>号</span>`)}
+    <div class="tip-text">默认为当天0点，在该日期生成上月薪酬数据，且在该日期之后上月薪酬数据将固定，不再发生变化，后续时间变更以及规则变更都不会影响历史已经生成的薪酬数据。未配置薪酬生成时间时，默认每月5号为薪酬生成日期。</div>
+    <div class="section-title">新人排名奖</div>
+    ${row('排名人数条件', `<span>当月排名人数大于等于</span>${numIn('basic.rankCount', b.rankCount, 'min="1" placeholder="人数"', 'md')}<span>则取前</span>${numIn('basic.rankTop', b.rankTop, 'min="1" placeholder="名次"', 'md')}<span>名发放新人排名奖</span>`)}
+    ${row('否则取比例', `<span>否则取前</span>${numIn('basic.rankPct', b.rankPct, 'min="0" max="100" step="0.01" placeholder="百分比"', 'md')}<span><b>%</b> 发放新人排名奖</span>`)}
+    <div class="tip-text">未配置新人排名奖时，则默认不发放新人排名奖</div>
+    <div class="section-title">绩效</div>
+    ${row('绩效基数', `${numIn('basic.perfBase', b.perfBase, 'min="0" step="0.01" placeholder="请输入绩效基数"')}<span>元</span>`)}
+    <div class="tip-text">未配置绩效基数时，默认绩效基数为0</div>
+    <div style="border-top:1px solid #e4e7ed;margin-top:32px;padding-top:4px">${footerBtnsBasic()}</div>
+  </div></div>`;
+}
+function footerBtnsBasic() {
+  return `<div class="footer-buttons"><button class="btn" onclick="resetCfg('basic')">重置</button><button class="btn btn-primary" onclick="saveBasic()">保存</button></div>`;
+}
+function saveBasic() {
+  const b = state.cfg.basic;
+  const has = v => v !== null && v !== undefined && v !== '' && v !== 0;
+  const any = has(b.rankCount) || has(b.rankTop) || has(b.rankPct);
+  if (any) {
+    if (!has(b.rankCount)) { toast('请填写排名人数条件', 'warning'); return; }
+    if (!has(b.rankTop)) { toast('请填写排名名次', 'warning'); return; }
+    if (!has(b.rankPct)) { toast('请填写否则取比例', 'warning'); return; }
+  }
+  saveCfg('basic');
+}
+
+/* ==================== 启动 ==================== */
+searchSalary(false);
+searchAtt(false);
+render();
+</script>
+</body>
+</html>
