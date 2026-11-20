@@ -191,12 +191,6 @@
   .sel-box .opt { padding: 9px 0; text-align: center; border-bottom: 1px solid #ebeef5; border-left: 1px solid #ebeef5; font-size: 13px; cursor: pointer; }
   .sel-box .opt:hover { color: #409eff; }
   .sel-box .opt.on { background: #409eff; color: #fff; }
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 10px 20px; }
-  .cal-item { padding: 10px; border: 1px solid #e4e7ed; border-radius: 4px; text-align: center; cursor: pointer; transition: all .2s; }
-  .cal-item:hover { background: #f5f7fa; border-color: #409eff; }
-  .cal-item.active { background: #ecf5ff; border-color: #409eff; }
-  .cal-item.disabled { cursor: not-allowed; opacity: .5; background: #f5f7fa; }
-  .cal-item .dn { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #303133; }
   .batch-label { font-weight: 500; color: #303133; margin-bottom: 8px; }
   .batch-label.req::before { content: "*"; color: #f56c6c; margin-right: 4px; }
   .batch-tags { display: flex; flex-wrap: wrap; gap: 8px; max-height: 120px; overflow: auto; margin-bottom: 18px; }
@@ -261,7 +255,7 @@
   </ul>
   <h4>页面对照（电销CRM源码）</h4>
   <ul>
-    <li>坐席查询：<code>salarySystem/agentSalary</code>，含 薪酬 / 系统外业绩 / 微信加成核算 三个 Tab</li>
+    <li>坐席查询：<code>salarySystem/agentSalary</code>，保留 薪酬 / 系统外业绩 两个 Tab（电销侧的「微信加成核算」Tab 体验营不需要，已去除）</li>
     <li>实际出勤：<code>salarySystem/actualAttendance</code></li>
     <li>坐席薪酬配置：<code>salarySystem/agentSalarySetting</code>，含 底薪 / 提成 / 奖金 / 自定义项 / 基础配置 五个 Tab</li>
   </ul>
@@ -276,7 +270,7 @@
     <li>体验营坐席的业绩、营收、退款口径与数据来源。</li>
     <li>底薪老员工排名、当配排名奖是否保留「小学/初中/高中」学段维度。</li>
     <li>体验营坐席排班、请假是否同样从飞书同步。</li>
-    <li>「微信加成核算」「系统外业绩」是否适用于体验营。</li>
+    <li>「系统外业绩」是否适用于体验营。</li>
     <li>权限点命名，建议：<code>space_training_camp_agent_salary</code>、<code>space_training_camp_actual_attendance</code>、<code>space_training_camp_agent_salary_setting</code>。</li>
   </ul>
 </div>
@@ -355,7 +349,6 @@ const state = {
   settingTab: 'baseSalary',
   sal: { org: '', worker: '', ym: CUR_YM, searchedYm: CUR_YM, sort: { f: '', d: 0 }, list: [] },
   ext: { phone: '', orderNo: '', payYm: '', attrYm: '', worker: '', page: 1, selected: new Set() },
-  wx: { ym: CUR_YM, org: '', worker: '', page: 1, overrides: {} },
   att: { ym: PREV_YM, org: '', worker: '', min: '', max: '', list: [], searchedYm: PREV_YM, selected: new Set(), overrides: {} },
   holidays: ['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07', '2027-01-01'],
   cust: { org: '', worker: '', ym: '', page: 1, selected: new Set() },
@@ -689,8 +682,8 @@ function render() {
 function setSalaryTab(t) { state.salaryTab = t; render(); }
 function renderAgentSalary() {
   const t = state.salaryTab;
-  const body = t === 'salary' ? renderSalaryTab() : t === 'external' ? renderExternalTab() : renderWechatTab();
-  return `<div class="page"><div class="card">${tabsHtml([['salary', '薪酬'], ['external', '系统外业绩'], ['wechat', '微信加成核算']], t, 'setSalaryTab')}${body}</div></div>`;
+  const body = t === 'salary' ? renderSalaryTab() : renderExternalTab();
+  return `<div class="page"><div class="card">${tabsHtml([['salary', '薪酬'], ['external', '系统外业绩']], t, 'setSalaryTab')}${body}</div></div>`;
 }
 
 /* --- 薪酬 Tab --- */
@@ -935,79 +928,6 @@ function doUpload(kind) {
     CUST_LIST.unshift({ id: CUST_ID++, name: '批量导入-质检奖励', type: 2, amount: 100, category: 2, description: '批量导入示例', targets: [11, 12], ym: CUR_YM, updaterName: '管理员', updatedAt: new Date(NOW) });
   }
   toast(`导入成功，共 ${kind === 'ext' ? 3 : 1} 条`); render();
-}
-
-/* --- 微信加成核算 Tab --- */
-function wxStatus(a, ym) {
-  const key = a.id + '-' + ym;
-  if (state.wx.overrides[key]) return state.wx.overrides[key];
-  const r = rng('wx' + key); const n = daysIn(ym); const map = {};
-  for (let d = 1; d <= n; d++) {
-    const future = ym === CUR_YM && d > NOW.getDate();
-    map[d] = !future && r() < .82 ? 'pass' : 'fail';
-  }
-  return map;
-}
-function wxCanEdit(ym) {
-  if (ym > CUR_YM) return false;
-  if (ym === CUR_YM) return true;
-  const gen = new Date(NOW.getFullYear(), NOW.getMonth(), state.cfgSaved.basic.genDay, 12, 0, 0);
-  return NOW <= gen && ym === PREV_YM;
-}
-function searchWx() { Object.assign(state.wx, { ym: val('wxYm') || CUR_YM, org: val('wxOrg'), worker: val('wxWorker'), page: 1 }); render(); }
-function resetWx() { Object.assign(state.wx, { ym: CUR_YM, org: '', worker: '', page: 1 }); render(); }
-function wxPage(p) { state.wx.page = p; render(); }
-function renderWechatTab() {
-  const w = state.wx; const n = daysIn(w.ym);
-  const all = AGENTS.filter(a => inMonth(a, w.ym) && matchOrg(a, w.org) && (!w.worker || String(a.id) === w.worker));
-  const rows = all.slice((w.page - 1) * 10, w.page * 10);
-  const canEdit = wxCanEdit(w.ym);
-  const cols = [
-    { title: '坐席', width: 120, fixed: 'left', render: a => a.name },
-    ...Array.from({ length: n }, (_, i) => ({ title: String(i + 1), width: 80, align: 'center', render: a => { const s = wxStatus(a, w.ym)[i + 1]; return `<span class="tag small ${s === 'pass' ? 'tag-success' : 'tag-danger'}">${s === 'pass' ? '通过' : '不通过'}</span>`; } })),
-    { title: '操作', width: 100, fixed: 'right', align: 'center', render: a => `<button class="link" ${canEdit ? '' : 'disabled'} onclick="openWxEdit(${a.id})">编辑</button>` }
-  ];
-  return `
-    <div class="form-inline">
-      <div class="form-item"><label>月份</label>${monthInput('wxYm', w.ym, '选择月份', { max: CUR_YM })}</div>
-      <div class="form-item">${orgSelect('wxOrg', w.org)}</div>
-      <div class="form-item">${agentSelect('wxWorker', w.worker)}</div>
-      <div class="form-item"><button class="btn btn-primary" onclick="searchWx()">搜索</button><button class="btn" onclick="resetWx()">重置</button></div>
-    </div>
-    ${canEdit ? '' : '<div class="lock-tip">该月份已过薪酬生成时间，不可编辑</div>'}
-    ${table(cols, rows)}
-    ${pager(all.length, w.page, 'wxPage')}`;
-}
-let WX_EDIT = null;
-function openWxEdit(id) {
-  const a = AGENT_MAP[id]; const ym = state.wx.ym;
-  WX_EDIT = { id, ym, map: { ...wxStatus(a, ym) }, orig: { ...wxStatus(a, ym) } };
-  openDialog({
-    key: 'wxEdit', title: '编辑', width: 800,
-    body: () => {
-      const n = daysIn(ym);
-      return `<div style="padding:0 20px;color:#303133">${ym}：${a.name}（点击日期切换 通过/不通过）</div><div class="cal-grid">${Array.from({ length: n }, (_, i) => {
-        const d = i + 1; const s = WX_EDIT.map[d]; const dis = !wxDayEditable(d);
-        return `<div class="cal-item ${s === 'pass' ? 'active' : ''} ${dis ? 'disabled' : ''}" onclick="toggleWxDay(${d})"><div class="dn">${d}</div><span class="tag small ${s === 'pass' ? 'tag-success' : 'tag-danger'}">${s === 'pass' ? '通过' : '不通过'}</span></div>`;
-      }).join('')}</div>`;
-    },
-    footer: () => `<button class="btn" onclick="closeDialog('wxEdit')">取消</button><button class="btn btn-primary" onclick="saveWx()">确认</button>`
-  });
-}
-function wxDayEditable(d) {
-  if (!wxCanEdit(WX_EDIT.ym)) return false;
-  return !(WX_EDIT.ym === CUR_YM && d > NOW.getDate());
-}
-function toggleWxDay(d) {
-  if (!wxDayEditable(d)) { toast('该日期不可编辑', 'warning'); return; }
-  WX_EDIT.map[d] = WX_EDIT.map[d] === 'pass' ? 'fail' : 'pass';
-  refreshDialog('wxEdit');
-}
-function saveWx() {
-  const changed = Object.keys(WX_EDIT.map).filter(d => WX_EDIT.map[d] !== WX_EDIT.orig[d]);
-  if (!changed.length) { toast('没有修改任何数据', 'info'); closeDialog('wxEdit'); return; }
-  state.wx.overrides[WX_EDIT.id + '-' + WX_EDIT.ym] = { ...WX_EDIT.map };
-  closeDialog('wxEdit'); toast('保存成功'); render();
 }
 
 /* ==================== 页面二：实际出勤 ==================== */
