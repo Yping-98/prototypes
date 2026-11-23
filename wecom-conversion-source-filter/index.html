@@ -43,6 +43,8 @@ select.ctl { padding-right: 4px; }
 .ms-panel.show { display: block; }
 .ms-panel label { display: flex; align-items: center; gap: 6px; padding: 6px 12px; cursor: pointer; }
 .ms-panel label:hover { background: #f5f7fa; }
+.ms-clear { width: 20px; height: 20px; border: 0; border-radius: 10px; background: #c0c4cc; color: #fff; font-size: 12px; line-height: 20px; padding: 0; cursor: pointer; }
+.ms-clear[hidden] { display: none; }
 .btn { height: 30px; padding: 0 15px; border-radius: 4px; border: 1px solid #dcdfe6; background: #fff; color: #606266; cursor: pointer; font-size: 13px; }
 .btn.primary { background: #1677ff; border-color: #1677ff; color: #fff; }
 .btn.primary:hover { background: #4096ff; }
@@ -138,6 +140,7 @@ tfoot tr.sum td { bottom: 38px; } tfoot tr.avg td { bottom: 0; }
         </div>
         <div class="f-item ms" id="fSource">
           <button class="ctl ms-btn placeholder" type="button" data-ms="source">选择来源</button>
+          <button class="ms-clear" type="button" data-clear="source" title="清空" hidden>×</button>
           <div class="ms-panel" data-panel="source"></div>
         </div>
         <button class="btn primary" id="btnSearch" type="button">搜索</button>
@@ -337,7 +340,7 @@ tfoot tr.sum td { bottom: 38px; } tfoot tr.avg td { bottom: 0; }
       return scopeSeats().filter(function (s) { return !state.groups.length || state.groups.indexOf(s.sub) >= 0; }).map(function (s) { return s.name; });
     }, key: "workers" },
     level: { placeholder: "选择线索等级", options: function () { return LEVELS.map(levelLabel).concat([NO_LEVEL]); }, key: "levels" },
-    source: { placeholder: "选择来源", options: function () { return SOURCES.slice(); }, key: "sources" }
+    source: { placeholder: "选择来源", options: function () { return SOURCES.slice(); }, key: "sources", single: true }
   };
   function uniq(arr) { return arr.filter(function (v, i) { return arr.indexOf(v) === i; }); }
   function scopeSeats() { return state.allData ? SEATS : SEATS.filter(function (s) { return MY_SCOPE.indexOf(s.sub) >= 0; }); }
@@ -350,11 +353,19 @@ tfoot tr.sum td { bottom: 38px; } tfoot tr.avg td { bottom: 0; }
     var sel = state[cfg.key];
     btn.textContent = sel.length ? sel.join("、") : cfg.placeholder;
     btn.classList.toggle("placeholder", !sel.length);
+    var clear = document.querySelector('[data-clear="' + name + '"]');
+    if (clear) clear.hidden = !sel.length;
     panel.innerHTML = opts.map(function (o) {
-      return '<label><input type="checkbox" value="' + o + '"' + (sel.indexOf(o) >= 0 ? " checked" : "") + '>' + o + '</label>';
+      return '<label><input type="' + (cfg.single ? "radio" : "checkbox") + '" name="ms-' + name + '" value="' + o + '"' + (sel.indexOf(o) >= 0 ? " checked" : "") + '>' + o + '</label>';
     }).join("");
     panel.querySelectorAll("input").forEach(function (input) {
       input.onchange = function () {
+        if (cfg.single) {
+          state[cfg.key] = [input.value];
+          paintMs(name);
+          panel.classList.remove("show");
+          return;
+        }
         var list = state[cfg.key];
         if (input.checked) list.push(input.value);
         else list.splice(list.indexOf(input.value), 1);
@@ -372,6 +383,14 @@ tfoot tr.sum td { bottom: 38px; } tfoot tr.avg td { bottom: 0; }
       var open = panel.classList.contains("show");
       document.querySelectorAll(".ms-panel").forEach(function (p) { p.classList.remove("show"); });
       if (!open) panel.classList.add("show");
+    };
+  });
+  document.querySelectorAll("[data-clear]").forEach(function (btn) {
+    btn.onclick = function (e) {
+      e.stopPropagation();
+      var name = btn.getAttribute("data-clear");
+      state[MS[name].key] = [];
+      paintMs(name);
     };
   });
   document.querySelectorAll(".ms-panel").forEach(function (p) { p.addEventListener("click", function (e) { e.stopPropagation(); }); });
@@ -815,12 +834,12 @@ window.DIFF_CHANGESET = {
       "level": "field",
       "type": "new",
       "title": "新增来源筛选",
-      "desc": "在线索等级后新增「来源」筛选，枚举为 AI机器人、企业微信，可多选；不选时查询全部来源。",
+      "desc": "在线索等级后新增「来源」单选筛选，枚举为 AI机器人、企业微信；不选时查询全部来源。",
       "before": "无此筛选，统计全部来源的企微线索。",
-      "after": "选择来源后，领取线索量和转化类指标只统计所选来源的线索，导出同步生效；不选或两项都选，均统计全部来源。",
+      "after": "单选 AI机器人 或 企业微信，选中后可清空；选择后领取线索量和转化类指标只统计所选来源的线索，导出同步生效；不选则统计全部来源。",
       "examples": [
         "不选来源：统计 AI机器人 和 企业微信 两种来源的全部线索",
-        "只选 AI机器人：只统计 AI机器人 来源的线索及其转化",
+        "选 AI机器人：只统计 AI机器人 来源的线索及其转化",
         "来源选 企业微信、线索等级选 A级：只统计企业微信来源的 A 级线索"
       ],
       "prd": {
