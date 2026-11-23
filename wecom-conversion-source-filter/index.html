@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>企微转化统计 - 来源筛选与导出优化</title>
+<title>企微转化统计 - 来源筛选与无等级</title>
 <style>
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 13px; color: #303133; background: #f0f2f5; }
@@ -666,27 +666,11 @@ window.DIFF_CHANGESET = {
     "demoControls": [
       {
         "id": "normal",
-        "label": "当月"
-      },
-      {
-        "id": "history",
-        "label": "往月"
-      },
-      {
-        "id": "dealEmpty",
-        "label": "成交空"
-      },
-      {
-        "id": "scope",
-        "label": "无权限"
-      },
-      {
-        "id": "invalid",
-        "label": "领取空"
+        "label": "默认"
       },
       {
         "id": "sourceAI",
-        "label": "AI来源"
+        "label": "AI机器人"
       },
       {
         "id": "noLevel",
@@ -699,137 +683,7 @@ window.DIFF_CHANGESET = {
       "id": "chg-1",
       "page": "企微转化统计",
       "pageKey": "list",
-      "module": "时间筛选",
-      "target": "#fReceive",
-      "level": "field",
-      "type": "logic",
-      "title": "时间筛选改为线索领取时间",
-      "desc": "原时间筛选改名为「线索领取时间」，只用于圈定领取线索的范围；必填，默认当月。",
-      "before": "只有一个时间筛选（月份/周/自定义）；领取线索量按分配时间统计，转化数据按支付时间统计，两者互不关联。",
-      "after": "「线索领取时间」支持月份/周/自定义，默认当月，不提供清空；领取线索量及其后续转化都以该时间内领取的线索为范围。",
-      "examples": [
-        "默认进入：线索领取时间为 2026-11",
-        "切到自定义未选日期就点搜索：提示「请选择线索领取时间」"
-      ],
-      "prd": {
-        "section": "7.2.1 【修改】时间筛选改为线索领取时间",
-        "blockId": "doxcn0iMNnPWNACtaycdnieKP9g"
-      }
-    },
-    {
-      "id": "chg-2",
-      "page": "企微转化统计",
-      "pageKey": "list",
-      "module": "时间筛选",
-      "target": "#fDeal",
-      "level": "field",
-      "type": "new",
-      "title": "新增成交时间筛选",
-      "desc": "在线索领取时间后新增「成交时间」，用于限定转化订单的支付时间；默认当月，可清空。",
-      "before": "无此筛选",
-      "after": "支持月份/周/自定义，默认当月；清空后不限成交时间，统计所选领取线索截至当前的全部转化。",
-      "examples": [
-        "领取 2026-11、成交 2026-11：当月领取的线索在当月成交",
-        "领取 2026-10、成交 2026-11：10 月领取的线索在 11 月成交",
-        "领取 2026-10、成交为空：10 月领取的线索截至今天的全部成交"
-      ],
-      "prd": {
-        "section": "7.1.1 【新增】成交时间筛选",
-        "blockId": "doxcnaFkbXYB6bZiBZUZYH131Uf"
-      }
-    },
-    {
-      "id": "chg-3",
-      "page": "企微转化统计",
-      "pageKey": "list",
-      "module": "列表统计口径",
-      "target": "#thConv",
-      "level": "module",
-      "type": "logic",
-      "title": "转化指标按两个时间联动统计",
-      "desc": "转化线索量、转化金额只统计所选领取时间内领取的线索，在所选成交时间内产生的转化订单；转化率、客单价、ARPU 随之计算。",
-      "before": "转化线索量、转化金额统计所选时间内支付的全部企微转化订单，不限线索何时领取。",
-      "after": "领取线索量只受线索领取时间影响；转化类指标同时受两个时间影响；转化定义（企微来源、成交时线索在库、金额大于 298 元等）沿用现有。",
-      "examples": [
-        "坐席 10 月领取 80 条，其中 3 条 10 月成交、2 条 11 月成交",
-        "领取 10 月、成交 10 月：转化线索量 3",
-        "领取 10 月、成交 11 月：转化线索量 2",
-        "领取 10 月、成交为空：转化线索量 5"
-      ],
-      "prd": {
-        "section": "7.2.2 【修改】转化指标统计口径",
-        "blockId": "doxcn59UyY8j9sUAWQ9qBt2Ed5d"
-      }
-    },
-    {
-      "id": "chg-4",
-      "page": "企微转化统计",
-      "pageKey": "list",
-      "module": "查询校验",
-      "target": "#btnSearch",
-      "level": "field",
-      "type": "logic",
-      "title": "新增时间筛选校验",
-      "desc": "点击搜索或导出前校验两个时间，校验不通过时不查询、不导出。",
-      "before": "仅校验自定义时间不超过 3 个月",
-      "after": "线索领取时间为空：提示「请选择线索领取时间」；成交时间早于线索领取时间：提示「成交时间不能早于线索领取时间」；自定义超过 3 个月沿用现有提示。",
-      "examples": [
-        "线索领取时间切到自定义且未选日期：提示「请选择线索领取时间」",
-        "领取 2026-11、成交 2026-10：提示「成交时间不能早于线索领取时间」",
-        "领取 2026-10、成交 2026-11：校验通过"
-      ],
-      "prd": {
-        "section": "7.4 状态与异常变更",
-        "blockId": "doxcnF9GtjazHV0qvfwD5KF1zse"
-      }
-    },
-    {
-      "id": "chg-5",
-      "page": "企微转化统计",
-      "pageKey": "list",
-      "module": "数据权限",
-      "target": "#fGroup",
-      "level": "page",
-      "type": "new",
-      "title": "新增查看所有数据权限",
-      "desc": "新增「查看所有数据」权限；有权限的账号不受自身组织架构层级限制，可查看和导出全部坐席的数据。",
-      "before": "只能查看本人管理范围内的坐席数据",
-      "after": "有权限：小组、坐席筛选项展示全部小组和坐席，列表、总数行、均值行和导出都按全部坐席统计；无权限：沿用现有管理范围。",
-      "examples": [
-        "小组长被授予该权限：可查看全部小组和坐席",
-        "未授予该权限：仅展示本人管理的小组和坐席"
-      ],
-      "prd": {
-        "section": "7.1.2 【新增】查看所有数据权限",
-        "blockId": "doxcnZUtdOzLdhhWhFWndUqASlb"
-      }
-    },
-    {
-      "id": "chg-6",
-      "page": "企微转化统计",
-      "pageKey": "export",
-      "module": "导出",
-      "target": "#sheetTabDetail",
-      "level": "module",
-      "type": "new",
-      "title": "导出新增转化订单明细 Sheet",
-      "desc": "导出文件在现有统计 Sheet 后新增「转化订单明细」Sheet，导出当前查询条件（含来源、线索等级）下所有转化线索对应的订单，一个订单一行。",
-      "before": "导出文件只有一个 Sheet，内容为坐席转化统计",
-      "after": "新 Sheet 字段：坐席名称、所属学段、所属团队、所属组、所属小组、洋葱ID、线索领取时间、线索等级、订单号、支付时间、支付金额；支付金额合计与列表转化金额总数一致。",
-      "examples": [
-        "同一线索有 2 笔转化订单：导出 2 行",
-        "查询条件下无转化订单：新 Sheet 只有表头"
-      ],
-      "prd": {
-        "section": "7.1.3 【新增】导出转化订单明细",
-        "blockId": "doxcnlVNfhx2FAlu2LNUJgjwsUb"
-      }
-    },
-    {
-      "id": "chg-7",
-      "page": "企微转化统计",
-      "pageKey": "list",
-      "module": "来源与等级筛选",
+      "module": "来源筛选",
       "target": "#fSource",
       "level": "field",
       "type": "new",
@@ -843,15 +697,15 @@ window.DIFF_CHANGESET = {
         "来源选 企业微信、线索等级选 A级：只统计企业微信来源的 A 级线索"
       ],
       "prd": {
-        "section": "7.1.4 【新增】来源筛选",
-        "blockId": "doxcnCxc0Yea3FYxV75VKAEJRFe"
+        "section": "7.1.1 【新增】来源筛选",
+        "blockId": "doxcnOUOuVZ7TB1qnb98CPBKoVh"
       }
     },
     {
-      "id": "chg-8",
+      "id": "chg-2",
       "page": "企微转化统计",
       "pageKey": "list",
-      "module": "来源与等级筛选",
+      "module": "线索等级",
       "target": "#fLevel",
       "level": "field",
       "type": "enum",
@@ -865,8 +719,8 @@ window.DIFF_CHANGESET = {
         "不选线索等级：统计全部线索，包含无等级线索"
       ],
       "prd": {
-        "section": "7.2.3 【修改】线索等级新增无等级",
-        "blockId": "doxcnrsp0phCJ64Esksp1UFQ4Kg"
+        "section": "7.2.1 【修改】线索等级新增无等级",
+        "blockId": "doxcnNpbmKde1oQUwjfSF2Ttcfh"
       }
     }
   ]
