@@ -281,7 +281,7 @@
   <h4>KPI看板（新增页面）</h4>
   <ul>
     <li>位于「薪酬体系」下第四个二级菜单。</li>
-    <li>字段：有效通话时长、有效通话次数、有效通话人数、订单金额、加微数、达标情况（绩效考核天数 / 达标天数）、坐席、所在小组；默认按订单金额倒序。</li>
+    <li>字段：有效通话时长、有效通话次数、有效通话人数、订单金额、加微数、达标情况（达标/考核，展示为「达标天数/绩效考核天数」，如 12/15）、坐席、所在小组；默认按订单金额倒序。</li>
     <li>列表最后一行固定展示前五个指标的总计与均值（均值 = 总计 ÷ 列表坐席数）。</li>
     <li>筛选：坐席、小组、时间范围（默认当天，含今天/昨天/近7天/本月快捷项）；支持导出，导出范围与当前筛选及角色权限一致。</li>
     <li>数据范围按角色控制：组员只看自己，主管看本组，团长看全部。页面顶部紫色条为原型演示用的角色切换，线上按登录账号角色自动判断，不展示该条。</li>
@@ -1485,7 +1485,7 @@ function renderKpi() {
   const cols = [
     { title: '序号', width: 90, align: 'center', render: (r, i) => i + 1 },
     ...metrics.map(([f, t, fmt]) => ({ title: sortTitle(f, t), minWidth: 140, render: r => fmt(r[f]) })),
-    { title: '达标情况', minWidth: 200, render: r => `考核 ${r.assess} 天 / 达标 <b style="color:${r.pass < r.assess ? '#e6a23c' : '#67c23a'}">${r.pass}</b> 天` },
+    { title: '达标情况（达标/考核）', minWidth: 170, render: r => `${r.pass}/${r.assess}` },
     { title: '坐席', minWidth: 100, render: r => r.a.name },
     { title: '所在小组', minWidth: 120, render: r => groupName(r.a) }
   ];
