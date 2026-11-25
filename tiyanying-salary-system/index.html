@@ -375,8 +375,8 @@ const AGENTS = NAMES.map((name, i) => {
   if (i === 5) joinAt = new Date(2026, 8, 15, 9, 0, 0);
   if (i === 17) joinAt = new Date(2026, 9, 8, 9, 0, 0);
   let leaveAt = null;
-  if (i === 9) leaveAt = new Date(2026, 9, 20, 18, 0, 0);
-  if (i === 21) leaveAt = new Date(2026, 8, 30, 18, 0, 0);
+  if (i === 9) leaveAt = new Date(2026, 9, 20, 23, 59, 59);
+  if (i === 21) leaveAt = new Date(2026, 8, 30, 23, 59, 59);
   return { id: 3001 + i, name, empNo: 'YC' + (20100 + Math.floor(r() * 8000)), groupId: GROUPS[i % 4].id, grade: GRADES[i % 2], joinAt, leaveAt };
 });
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
@@ -2201,13 +2201,13 @@ function savePlan() {
 const POSTS = ['销售', '主管', '团长', '其他'];
 AGENTS.forEach(a => Object.assign(a, {
   post: '销售', email: `seat${a.id}@guanghe.tv`, phone: '+86' + (15500000000 + (a.id * 7919) % 99999999), qw: 'Seat' + a.id, roles: [],
-  feishuLeaveAt: a.leaveAt, createdAt: new Date(a.joinAt.getTime() + 30 * 3600000), updatedAt: new Date(a.joinAt.getTime() + 30 * 3600000)
+  leaveManual: false, createdAt: new Date(a.joinAt.getTime() + 30 * 3600000), updatedAt: new Date(a.joinAt.getTime() + 30 * 3600000)
 }));
 const ORG_EXTRA = [
   { id: 9001, name: '周敏', empNo: 'YC20001', groupId: 11, post: '主管', roles: ['主管'], joinAt: new Date(2023, 5, 1, 9), leaveAt: null },
   { id: 9002, name: '刘洋', empNo: 'YC20002', groupId: 21, post: '团长', roles: ['团长', '主管'], joinAt: new Date(2022, 2, 7, 9), leaveAt: null },
   { id: 9003, name: '王琳', empNo: 'YC20003', groupId: 22, post: '其他', roles: [], joinAt: new Date(2025, 7, 18, 9), leaveAt: null }
-].map(x => ({ ...x, email: `staff${x.id}@guanghe.tv`, phone: '+86' + (18600000000 + x.id), qw: 'Staff' + x.id, feishuLeaveAt: null, createdAt: new Date(x.joinAt.getTime() + 30 * 3600000), updatedAt: new Date(x.joinAt.getTime() + 30 * 3600000) }));
+].map(x => ({ ...x, email: `staff${x.id}@guanghe.tv`, phone: '+86' + (18600000000 + x.id), qw: 'Staff' + x.id, leaveManual: false, createdAt: new Date(x.joinAt.getTime() + 30 * 3600000), updatedAt: new Date(x.joinAt.getTime() + 30 * 3600000) }));
 const orgMembers = () => [...AGENTS, ...ORG_EXTRA];
 state.org = { node: '', name: '', leave: '0', page: 1 };
 const dOnly = d => d ? fmtD(d) : '-';
@@ -2236,9 +2236,8 @@ function renderOrg() {
     { title: '职级', minWidth: 110, render: m => m.roles.length ? m.roles.join('/') + '/组员' : '组员' },
     { title: '<span id="tgtOrgPostCol">岗位</span>', minWidth: 70, render: m => m.post },
     { title: '入职时间', minWidth: 100, render: m => dOnly(m.joinAt) },
-    { title: '离职时间', minWidth: 100, render: m => dOnly(m.leaveAt) },
     { title: '操作离职时间', minWidth: 100, render: () => '-' },
-    { title: '飞书离职时间', minWidth: 100, render: m => dOnly(m.feishuLeaveAt) },
+    { title: '<span id="tgtOrgLeaveCol">飞书离职时间</span>', minWidth: 160, render: m => m.leaveAt ? fmtDT(m.leaveAt) : '-' },
     { title: '创建时间', minWidth: 160, render: m => fmtDT(m.createdAt) },
     { title: '修改时间', minWidth: 160, render: m => fmtDT(m.updatedAt) },
     { title: '操作', width: 170, fixed: 'right', render: m => `<button class="link" onclick="openOrgMember(${m.id})">编辑</button><button class="link" onclick="toast('原型不演示认证企微','info')">认证企微</button>${m.leaveAt && m.leaveAt <= NOW ? '' : `<button class="link" onclick="toast('原型不演示离职操作','info')">离职</button>`}` }
@@ -2276,7 +2275,7 @@ function openOrgMember(id) {
       <div class="f-row"><div class="f-label req">组织架构</div><div class="f-ctrl"><select class="el-input full" onchange="OM.groupId=this.value"><option value="">请选择</option>${DEPTS.map(d => d.children.map(g => `<option value="${g.id}" ${OM.groupId === String(g.id) ? 'selected' : ''}>体验营 / ${d.name} / ${g.name}</option>`).join('')).join('')}</select></div></div>
       <div class="f-row"><div class="f-label">角色选择</div><div class="f-ctrl"><div class="check-grid">${['主管', '团长'].map(r => `<label><input type="checkbox" ${OM.roles.includes(r) ? 'checked' : ''} onchange="this.checked?OM.roles.push('${r}'):OM.roles.splice(OM.roles.indexOf('${r}'),1)">${r}</label>`).join('')}</div></div></div>
       <div class="f-row" id="tgtOrgPost"><div class="f-label req">岗位</div><div class="f-ctrl"><select class="el-input full" onchange="OM.post=this.value"><option value="">请选择岗位</option>${POSTS.map(p => `<option ${OM.post === p ? 'selected' : ''}>${p}</option>`).join('')}</select><div class="f-hint">销售薪酬核算只统计岗位为「销售」的人员</div></div></div>
-      ${OM.id ? `<div class="f-row" id="tgtOrgLeave"><div class="f-label">离职时间</div><div class="f-ctrl"><input type="date" class="el-input" style="width:220px" value="${OM.leave}" onchange="OM.leave=this.value"><div class="f-hint">默认带出飞书离职时间，可修改；薪酬核算以此离职时间为准</div></div></div>` : ''}`,
+      ${OM.id ? `<div class="f-row" id="tgtOrgLeave"><div class="f-label">飞书离职时间</div><div class="f-ctrl"><input type="date" class="el-input" style="width:220px" value="${OM.leave}" onchange="OM.leave=this.value"><div class="f-hint">默认同步飞书离职结果，可修改，按所选日期当天 23:59:59 计算；手动修改后，飞书同步不再覆盖</div></div></div>` : ''}`,
     footer: () => `<button class="btn" onclick="closeDialog('orgMember')">取消</button><button class="btn btn-primary" onclick="saveOrgMember()">提交</button>`
   });
 }
@@ -2291,9 +2290,10 @@ function saveOrgMember() {
   if (OM.id) {
     const m = orgMembers().find(x => x.id === OM.id);
     const [y, mo, d] = OM.leave ? OM.leave.split('-').map(Number) : [];
-    Object.assign(m, { email: OM.email, groupId: Number(OM.groupId), roles: [...OM.roles], post: OM.post, leaveAt: OM.leave ? new Date(y, mo - 1, d, 23, 59, 59) : null, updatedAt: now });
+    const leaveManual = m.leaveManual || OM.leave !== (m.leaveAt ? fmtD(m.leaveAt) : '');
+    Object.assign(m, { email: OM.email, groupId: Number(OM.groupId), roles: [...OM.roles], post: OM.post, leaveAt: OM.leave ? new Date(y, mo - 1, d, 23, 59, 59) : null, leaveManual, updatedAt: now });
   } else {
-    ORG_EXTRA.push({ id: 9100 + ORG_EXTRA.length, name: OM.email.split('@')[0], empNo: 'YC2' + String(9000 + ORG_EXTRA.length), groupId: Number(OM.groupId), post: OM.post, roles: [...OM.roles], email: OM.email, phone: '-', qw: '-', joinAt: now, leaveAt: null, feishuLeaveAt: null, createdAt: now, updatedAt: now });
+    ORG_EXTRA.push({ id: 9100 + ORG_EXTRA.length, name: OM.email.split('@')[0], empNo: 'YC2' + String(9000 + ORG_EXTRA.length), groupId: Number(OM.groupId), post: OM.post, roles: [...OM.roles], email: OM.email, phone: '-', qw: '-', joinAt: now, leaveAt: null, leaveManual: false, createdAt: now, updatedAt: now });
   }
   closeDialog('orgMember'); searchSalary(false); toast('操作成功'); render();
 }
@@ -2313,7 +2313,7 @@ function openOrgImport() {
         <table class="tpl-table"><tr><th>邮箱</th><th>离职时间</th></tr><tr><td>xiaozhen_it@guanghe.tv</td><td>2025-12-12</td></tr></table>
       </div></div>
       <div class="f-row"><div class="f-label">导入说明</div><div class="f-ctrl" style="line-height:1.7;display:block">
-        按邮箱匹配架构中的坐席，导入成功后更新其离职时间。以下情况无法导入成功：<br>1、邮箱不在组织架构中<br>2、离职时间为空或格式不是「年-月-日」<br>3、离职时间早于入职时间
+        按邮箱匹配架构中的坐席，导入成功后更新其飞书离职时间（按当天 23:59:59 计算），飞书同步不再覆盖。以下情况无法导入成功：<br>1、邮箱不在组织架构中<br>2、离职时间为空或格式不是「年-月-日」<br>3、离职时间早于入职时间
       </div></div>`,
     footer: () => `<button class="btn" onclick="closeDialog('orgImport')">取消</button><button class="btn btn-primary" onclick="submitOrgImport()">提交</button>`
   });
@@ -2338,7 +2338,7 @@ function applyLeaveRows(lines) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(ds)) { fail.push([email, ds, '离职时间为空或格式错误']); return; }
     if (ds < fmtD(m.joinAt)) { fail.push([email, ds, '离职时间早于入职时间']); return; }
     const [y, mo, d] = ds.split('-').map(Number);
-    Object.assign(m, { leaveAt: new Date(y, mo - 1, d, 23, 59, 59), updatedAt: clock() }); ok.push(email);
+    Object.assign(m, { leaveAt: new Date(y, mo - 1, d, 23, 59, 59), leaveManual: true, updatedAt: clock() }); ok.push(email);
   });
   return { ok, fail };
 }
@@ -2918,17 +2918,17 @@ window.DIFF_CHANGESET = {
     {
       "id": "chg-26",
       "page": "架构管理",
-      "module": "岗位与离职时间",
+      "module": "岗位与飞书离职时间",
       "target": "#tgtOrgPostCol",
       "view": {
         "page": "orgManage"
       },
       "level": "field",
       "type": "new",
-      "title": "列表新增「岗位」「离职时间」",
-      "desc": "「坐席管理 → 架构管理」列表在职级后新增「岗位」（销售 / 主管 / 团长 / 其他），在入职时间后新增「离职时间」；销售薪酬核算只统计岗位为「销售」的人员，离职时间以该字段为准。",
+      "title": "列表新增「岗位」，沿用「飞书离职时间」",
+      "desc": "「坐席管理 → 架构管理」列表在职级后新增「岗位」（销售 / 主管 / 团长 / 其他），销售薪酬核算只统计岗位为「销售」的人员。离职时间不新增列，沿用现有「飞书离职时间」：按现有逻辑同步飞书结果，已有手动编辑值时不覆盖；时间按当天 23:59:59 计算，薪酬核算以该字段为准。",
       "before": "无此字段；薪酬核算范围不区分岗位",
-      "after": "按岗位圈定薪酬核算人员，离职时间可维护",
+      "after": "按岗位圈定薪酬核算人员，飞书离职时间可维护",
       "examples": [
         "岗位改为「其他」：该人员不出现在坐席查询薪酬列表，也不参与GMV排名、新人王、转化率排名"
       ],
@@ -2948,10 +2948,10 @@ window.DIFF_CHANGESET = {
       },
       "level": "field",
       "type": "new",
-      "title": "新增/编辑坐席增加岗位与离职时间",
-      "desc": "新增坐席时必须选择岗位（销售、主管、团长、其他）；编辑坐席时可修改岗位，并可编辑离职时间（默认带出飞书离职时间，不能早于入职时间）。",
+      "title": "新增/编辑坐席增加岗位与飞书离职时间",
+      "desc": "新增坐席时必须选择岗位（销售、主管、团长、其他）；编辑坐席时可修改岗位，并可编辑飞书离职时间（默认带出当前值，按当天 23:59:59 计算，不能早于入职时间；手动修改后飞书同步不再覆盖）。",
       "before": "弹窗只有飞书邮箱地址、组织架构、角色选择",
-      "after": "新增岗位必选项；编辑时可改离职时间",
+      "after": "新增岗位必选项；编辑时可改飞书离职时间",
       "prd": {
         "section": "7.2.9 架构管理",
         "blockId": "doxcnCi04eYx6NFV5QTFS8Rxbfe"
@@ -2968,9 +2968,9 @@ window.DIFF_CHANGESET = {
       "level": "module",
       "type": "new",
       "title": "新增批量导入离职时间",
-      "desc": "新增「批量导入离职时间」按钮，点击弹出上传弹窗，可下载模版（邮箱、离职时间两列）并上传；按邮箱匹配坐席更新离职时间，展示成功与失败条数，失败明细可下载。",
+      "desc": "新增「批量导入离职时间」按钮，点击弹出上传弹窗，可下载模版（邮箱、离职时间两列）并上传；按邮箱匹配坐席更新其飞书离职时间（按当天 23:59:59 计算，飞书同步不再覆盖），展示成功与失败条数，失败明细可下载。",
       "before": "无此功能",
-      "after": "支持批量维护离职时间",
+      "after": "支持批量维护飞书离职时间",
       "examples": [
         "邮箱不在组织架构中、离职时间为空或格式错误、早于入职时间：导入失败"
       ],
