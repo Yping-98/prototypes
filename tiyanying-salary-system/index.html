@@ -321,9 +321,9 @@
   </ul>
   <h4>页面对照（电销CRM源码）</h4>
   <ul>
-    <li>坐席查询：<code>salarySystem/agentSalary</code>，保留 薪酬 / 系统外业绩 两个 Tab（电销侧的「微信加成核算」Tab 体验营不需要，已去除）</li>
+    <li>坐席查询：<code>salarySystem/agentSalary</code>，保留 薪酬 / 双算业绩 两个 Tab（电销侧的「系统外业绩」在体验营用于录入双算业绩；「微信加成核算」Tab 体验营不需要，已去除）</li>
     <li>实际出勤：<code>salarySystem/actualAttendance</code></li>
-    <li>坐席薪酬配置：<code>salarySystem/agentSalarySetting</code>，含 底薪 / 提成 / 奖金 / 自定义项 / 基础配置 五个 Tab。按体验营规则调整：「底薪」新老员工统一排名、不区分学段；「提成」特殊规则新增新人入职当月规则；「奖金」改为新人王奖励 + 当期转化率奖金；「基础配置」仅保留老员工定义（按飞书入职时间，次月为第一个完整月），绩效新增累计未达标扣款档位</li>
+    <li>坐席薪酬配置：<code>salarySystem/agentSalarySetting</code>，含 底薪 / 提成 / 奖金 / 自定义项 / 基础配置 五个 Tab。按体验营规则调整：「底薪」改为基本薪资基数 + GMV排名薪资；「提成」按体验营档位表，特殊规则含新人入职当月、老员工两条；「奖金」改为新人王奖励 + 当期转化率奖金（按期次排名）；「基础配置」含新人保护期、老员工定义（按飞书入职时间，次月为第一个完整月）、当日KPI达标标准与累计未达标扣款档位</li>
   </ul>
   <h4>原型约定</h4>
   <ul>
@@ -362,22 +362,26 @@
     <li>小组目标改为单独设置（原逻辑为组内人员目标自动加总），列表新增「组内人员目标合计」列，低于小组目标时标红提示差额。</li>
     <li>历史月份仅可查看，不可修改（沿用原逻辑）。</li>
   </ul>
+  <h4>已确认的薪酬口径（11/25）</h4>
+  <ul>
+    <li>月薪 = 基本薪资 + 月度绩效 + 个人提成 + 奖金（新人王 + 当期转化率）+ 自定义项；只核算一线销售，不含主管。</li>
+    <li>GMV = 净GMV（营收 − 退款）+ 双算业绩；订单实付超过 49 元计入营收，订单归属在坐席名下即计入；退款、申诉、上月提成差值与电销一致。</li>
+    <li>基本薪资：4000 ÷ 应出勤 × 实际出勤 + 法定节假日上班薪资（4000 ÷ 21.75 × 3 × 天数）+ GMV排名薪资；带薪假期不计；排名薪资不按出勤折算；当月填写了目标即参与排名，不区分学段。</li>
+    <li>绩效：1000 × 出勤率 − KPI扣款 − 质检等扣款，小于 0 按 0；新人入职当月不扣 KPI；当月 GMV ÷ 目标 ≥ 100% 不考核过程指标；半天出勤、法定节假日上班均需考核，半天出勤考核减半。</li>
+    <li>提成：业绩达标 = 当月GMV ÷ 当月目标 ≥ 100%；新人保护期 = 入职当月 + 两个完整月；入职当月业绩超过 2 万按达标比例；老员工（入职第 4 个月起）业绩低于 4 万且完成率 ≤ 50% 无提成，该规则只对老员工生效。</li>
+    <li>离职：提成延后一个月发，奖金正常发；核算后退费不追扣奖金。</li>
+    <li>新人王：GMV = 净GMV + 双算业绩，并列第一都发。</li>
+    <li>当期转化率奖金：每个期次单独排名，同月多个期次奖金累加；转化率相同按当期线索转化订单金额排序；只有初中、小学两个学段参与。</li>
+  </ul>
   <h4>待确认</h4>
   <ul>
-    <li>KPI看板：有效通话的判定标准（如单通时长阈值）、有效通话人数是否按手机号去重、订单金额是否扣除退款、加微数取数口径。</li>
-    <li>KPI看板：单日「达标」的判定规则，以及「绩效考核天数」是否按排班出勤天数计算。</li>
-    <li>KPI看板：时间范围是否限制最大跨度；主管带多个小组时是否看全部所带小组。</li>
-    <li>加微数申报：主管/团长本人是否也需要申报；薪酬核算日之后，上月待审核的申报是否还能审核通过。</li>
-    <li>加微数申报：审核通过的数量是与系统统计的加微数相加，还是覆盖；图片格式与大小限制。</li>
-    <li>月度目标配置：团长修改小组目标后，若某组人员目标之和低于新小组目标，是否允许团长直接保存（原型为不允许，需先调整人员目标）；原页面中组员可修改本人目标的逻辑是否取消。</li>
-  </ul>
-  <ul>
-    <li>体验营坐席的业绩、营收、退款口径与数据来源。</li>
-    <li>新人王奖励：GMV 并列第一时是否都发放。</li>
-    <li>底薪「排名分布」的排名依据（按业绩还是 GMV 排名）。</li>
-    <li>当期转化率奖金：转化率的计算口径（分子、分母、统计周期），以及坐席所属学段的取数来源。</li>
-    <li>体验营坐席排班、请假是否同样从飞书同步。</li>
-    <li>「系统外业绩」是否适用于体验营。</li>
+    <li>「半天出勤考核减半」：原型理解为半天出勤当天的 KPI 达标标准减半（如通时 25 分钟），请确认。</li>
+    <li>加微数：1124 会议纪要写「当日加微数 = 手动提报 + 截图」，是否意味着 KPI 加微数只取审核通过的申报数、不再叠加系统统计数（原型当前为相加）。</li>
+    <li>KPI：「有效沟通 15 个」是否就是「有效通话人数（通话 &gt; 10 秒去重）」；企微通话时长的接入方式；制度中「私人电话可计通时」系统无法获取，如何处理。</li>
+    <li>数据来源：坐席承接期次的关系、坐席学段（含历史学段）从架构管理新增字段取；双算业绩走「坐席查询 → 双算业绩」导入；质检扣款走「自定义项（归属绩效）」；飞书入离职时间需人工导入入口。</li>
+    <li>KPI看板：主管带多个小组时是否看全部所带小组。</li>
+    <li>加微数申报：主管/团长本人是否也需要申报；薪酬核算日之后，上月待审核的申报是否还能审核通过；图片格式与大小限制。</li>
+    <li>月度目标配置：团长调高小组目标后组内人员目标不足时，是否允许团长先保存（原型为不允许）；原页面中组员可修改本人目标的逻辑是否取消。</li>
     <li>权限点命名，建议：<code>space_training_camp_agent_salary</code>、<code>space_training_camp_actual_attendance</code>、<code>space_training_camp_agent_salary_setting</code>。</li>
   </ul>
 </div>
@@ -413,7 +417,7 @@ const DEPTS = [
 ];
 const GROUPS = DEPTS.flatMap(d => d.children.map(g => ({ ...g, deptId: d.id })));
 const GROUP_MAP = Object.fromEntries(GROUPS.map(g => [g.id, g]));
-const GRADES = ['小学', '初中', '高中'];
+const GRADES = ['初中', '小学'];
 const NAMES = ['张雨萱', '李浩然', '王思琪', '刘子轩', '陈梓涵', '杨一诺', '赵欣怡', '黄俊杰', '周佳怡', '吴宇航', '徐诗涵', '孙浩宇', '胡梦瑶', '朱晨阳', '高雅婷', '林泽宇', '何静怡', '郭子豪', '马晓雯', '罗嘉怡', '梁文博', '宋可欣', '郑天佑', '谢婉清'];
 const AGENTS = NAMES.map((name, i) => {
   const r = rng('agent' + i);
@@ -423,7 +427,7 @@ const AGENTS = NAMES.map((name, i) => {
   let leaveAt = null;
   if (i === 9) leaveAt = new Date(2026, 9, 20, 18, 0, 0);
   if (i === 21) leaveAt = new Date(2026, 8, 30, 18, 0, 0);
-  return { id: 3001 + i, name, empNo: 'YC' + (20100 + Math.floor(r() * 8000)), groupId: GROUPS[i % 4].id, grade: GRADES[i % 3], joinAt, leaveAt };
+  return { id: 3001 + i, name, empNo: 'YC' + (20100 + Math.floor(r() * 8000)), groupId: GROUPS[i % 4].id, grade: GRADES[i % 2], joinAt, leaveAt };
 });
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
 const groupName = a => GROUP_MAP[a.groupId].name;
@@ -464,34 +468,44 @@ const state = {
   cust: { org: '', worker: '', ym: '', page: 1, selected: new Set() },
   cfg: {
     base: {
+      baseAmount: 4000,
       rules: [
-        { minOp: 'gte', min: 0, maxOp: 'lte', max: 20, base: 3500, tier: 1500 },
-        { minOp: 'gt', min: 20, maxOp: 'lte', max: 50, base: 3500, tier: 1000 },
-        { minOp: 'gt', min: 50, maxOp: 'lte', max: 80, base: 3500, tier: 500 },
-        { minOp: 'gt', min: 80, maxOp: 'lte', max: 100, base: 3500, tier: 0 }
+        { minOp: 'gte', min: 0, maxOp: 'lt', max: 10, salary: 2500 },
+        { minOp: 'gte', min: 10, maxOp: 'lt', max: 20, salary: 2000 },
+        { minOp: 'gte', min: 20, maxOp: 'lt', max: 30, salary: 1500 },
+        { minOp: 'gte', min: 30, maxOp: 'lt', max: 40, salary: 1000 },
+        { minOp: 'gte', min: 40, maxOp: 'lt', max: 50, salary: 500 },
+        { minOp: 'gte', min: 50, maxOp: 'lte', max: 100, salary: 0 }
       ]
     },
     comm: {
       gears: [
-        { minOp: 'gte', min: 0, maxOp: 'lt', max: 30000, ok: 3, no: 2 },
-        { minOp: 'gte', min: 30000, maxOp: 'lt', max: 60000, ok: 5, no: 4 },
-        { minOp: 'gte', min: 60000, maxOp: 'lt', max: 100000, ok: 7, no: 6 },
-        { minOp: 'gte', min: 100000, maxOp: '', max: null, ok: 9, no: 8 }
+        { minOp: 'gte', min: 0, maxOp: 'lt', max: 20000, ok: 0, no: 0 },
+        { minOp: 'gte', min: 20000, maxOp: 'lt', max: 40000, ok: 5, no: 4 },
+        { minOp: 'gte', min: 40000, maxOp: 'lt', max: 60000, ok: 7, no: 6 },
+        { minOp: 'gte', min: 60000, maxOp: 'lt', max: 80000, ok: 8, no: 7 },
+        { minOp: 'gte', min: 80000, maxOp: 'lt', max: 110000, ok: 9, no: 8 },
+        { minOp: 'gte', min: 110000, maxOp: 'lt', max: 140000, ok: 11, no: 10 },
+        { minOp: 'gte', min: 140000, maxOp: 'lt', max: 170000, ok: 12, no: 11 },
+        { minOp: 'gte', min: 170000, maxOp: 'lt', max: 200000, ok: 13, no: 12 },
+        { minOp: 'gte', min: 200000, maxOp: '', max: null, ok: 15, no: 14 }
       ],
-      threshold: 20000, rate: 60, newPerf: null
+      threshold: 40000, rate: 50, newPerf: 20000
     },
     bonus: {
       newKing: { gmv: null, bonus: null },
+      convRate: 8, convOrders: 2, convLevels: ['S', 'A', 'B', 'C', 'E', 'I'],
       conv: [
-        { grade: '小学', ranks: [1], bonus: 800 },
-        { grade: '小学', ranks: [2, 3], bonus: 500 },
         { grade: '初中', ranks: [1], bonus: 800 },
-        { grade: '初中', ranks: [2], bonus: 400 },
-        { grade: '高中', ranks: [1], bonus: 600 }
+        { grade: '初中', ranks: [2], bonus: 500 },
+        { grade: '初中', ranks: [3], bonus: 300 },
+        { grade: '小学', ranks: [1], bonus: 800 },
+        { grade: '小学', ranks: [2], bonus: 500 }
       ]
     },
     basic: {
-      oldMonths: 3, genDay: 5, perfBase: 1000,
+      newMonths: 2, oldMonths: 3, genDay: 5, perfBase: 1000,
+      kpiStd: { minutes: 50, talks: 15, wechat: 6, revenue: 2000 },
       kpiDeds: [{ count: 1, amount: 0 }, { count: 2, amount: 100 }, { count: 3, amount: 200 }, { count: 4, amount: 300 }, { count: 5, amount: 500 }]
     }
   }
@@ -504,7 +518,7 @@ function isLocked(ym) {
   return true;
 }
 
-/* 系统外业绩 */
+/* 双算业绩 */
 let EXT_ID = 1;
 const EXT_LIST = (() => {
   const r = rng('ext'); const arr = [];
@@ -571,54 +585,120 @@ function salaryRow(a, ym) {
   const cfg = state.cfgSaved;
   const r = rng(a.id + ym);
   r();
-  const revenue = gmvOf(a, ym);
-  const refund = r() < .45 ? Math.round(r() * 6000 / 100) * 100 : 0;
-  const external = EXT_LIST.filter(x => x.workerId === a.id && x.attrYm === ym).reduce((s, x) => s + x.amount, 0);
+  const stage = empStage(a, ym);
+  const revenue = gmvOf(a, ym), refund = refundOf(a, ym), external = dsOf(a, ym);
   const totalPerf = revenue + external - refund;
-  const goalOk = r() < .7;
+  const target = targetOf(a, ym);
+  const completion = target ? Math.round(totalPerf / target * 10000) / 100 : 0;
+  const goalOk = target > 0 && completion >= 100;
   const gear = cfg.comm.gears.find(g => inRange(totalPerf, g)) || cfg.comm.gears[0];
-  const newPerfRule = cfg.comm.newPerf !== null && monthsSinceJoin(a, ym) === 0 && totalPerf > cfg.comm.newPerf;
-  const point = goalOk || newPerfRule ? gear.ok : gear.no;
+  let point = goalOk ? gear.ok : gear.no, commRule = '';
+  if (stage === 'join' && cfg.comm.newPerf !== null && totalPerf > cfg.comm.newPerf) {
+    point = gear.ok; commRule = `新人入职当月业绩超过${cfg.comm.newPerf}元，按业绩达标比例`;
+  } else if (stage === 'old' && totalPerf < cfg.comm.threshold && completion <= cfg.comm.rate) {
+    point = 0; commRule = `老员工业绩低于${cfg.comm.threshold}元且完成率未高于${cfg.comm.rate}%，无提成`;
+  }
   const lastMonthRefund = r() < .3 ? Math.round(r() * 3000 / 100) * 100 : 0;
   const lastMonthAppeal = r() < .2 ? Math.round(r() * 2000 / 100) * 100 : 0;
   const lastDiff = Math.round((lastMonthAppeal - lastMonthRefund) * point / 100);
   const commission = Math.max(0, Math.round(totalPerf * point / 100) + lastDiff);
+  const [y, m] = ym.split('-').map(Number);
+  const commDelayed = !!(a.leaveAt && a.leaveAt.getFullYear() === y && a.leaveAt.getMonth() + 1 === m);
 
   const expected = Math.round(attExpected(a, ym));
   const actualDays = Math.max(0, expected - (r() < .3 ? 1 : 0) - (r() < .1 ? 1 : 0));
   const legalDays = ym === '2026-10' && r() < .3 ? 1 : 0;
-  const rule = cfg.base.rules.length ? cfg.base.rules[Math.floor(r() * cfg.base.rules.length)] : null;
-  const base = rule ? rule.base : 0, tier = rule ? rule.tier : 0;
-  const baseSummary = expected ? Math.round((base + tier) * actualDays / expected * 100) / 100 : 0;
+  const baseAmount = cfg.base.baseAmount;
+  const attendBase = expected ? Math.round(baseAmount * actualDays / expected * 100) / 100 : 0;
+  const legalPay = Math.round(baseAmount / 21.75 * 3 * legalDays * 100) / 100;
+  const gmvRank = gmvRankOf(a, ym);
+  const rankRule = gmvRank ? cfg.base.rules.find(x => inRange(gmvRank.pct, x)) : null;
+  const rankSalary = rankRule ? rankRule.salary : 0;
+  const baseSummary = Math.round((attendBase + legalPay + rankSalary) * 100) / 100;
 
-  const unpassed = r() < .45 ? [] : [...new Set(Array.from({ length: 1 + Math.floor(r() * 5) }, () => 1 + Math.floor(r() * Math.min(daysIn(ym), ym === CUR_YM ? NOW.getDate() : 31))))].sort((x, y) => x - y);
+  const unpassed = r() < .45 ? [] : [...new Set(Array.from({ length: 1 + Math.floor(r() * 5) }, () => 1 + Math.floor(r() * Math.min(daysIn(ym), ym === CUR_YM ? NOW.getDate() : 31))))].sort((x, y2) => x - y2);
   const perfBase = cfg.basic.perfBase;
-  const kpiDeduct = kpiDeductOf(unpassed.length);
+  const attRate = expected ? actualDays / expected : 0;
+  const perfByAtt = Math.round(perfBase * attRate * 100) / 100;
+  const joinLeaveSame = stage === 'join' && commDelayed;
+  const kpiExempt = stage === 'join' ? '新人入职当月不扣减' : goalOk ? '当月已完成目标，不考核过程指标' : '';
+  const kpiDeduct = kpiExempt ? 0 : kpiDeductOf(unpassed.length);
   const groupCust = CUST_LIST.filter(c => c.ym === ym && c.targets.includes(a.groupId));
   const perfDeds = groupCust.filter(c => c.category === 1).map(c => ({ name: c.name, amount: c.amount, reason: c.description }));
-  const performance = Math.max(0, perfBase - kpiDeduct + perfDeds.reduce((s, x) => s + x.amount, 0));
+  const performance = joinLeaveSame ? 0 : Math.max(0, Math.round((perfByAtt - kpiDeduct + perfDeds.reduce((s, x) => s + x.amount, 0)) * 100) / 100);
 
   const nk = cfg.bonus.newKing;
   const nkConfigured = nk.gmv !== null && nk.bonus !== null;
-  const isNewKing = newKingOf(ym) === a.id;
-  const newKingBonus = nkConfigured && isNewKing && revenue >= nk.gmv ? nk.bonus : 0;
-  const convRank = convRankOf(a, ym);
-  const convRule = cfg.bonus.conv.find(x => x.grade === a.grade && x.ranks.includes(convRank));
-  const convBonus = convRule ? convRule.bonus : 0;
+  const isNewKing = newKingAwarded(ym).includes(a.id);
+  const newKingBonus = isNewKing ? nk.bonus : 0;
+  const conv = convBonusOf(a, ym);
   const bonusDeds = groupCust.filter(c => c.category === 2).map(c => ({ name: c.name, amount: c.amount, reason: c.description }));
-  const bonus = Math.max(0, newKingBonus + convBonus + bonusDeds.reduce((s, x) => s + x.amount, 0));
+  const bonus = Math.max(0, newKingBonus + conv.total + bonusDeds.reduce((s, x) => s + x.amount, 0));
   const others = groupCust.filter(c => c.category === 3).map(c => ({ name: c.name, amount: c.amount, description: c.description }));
   const customItem = others.reduce((s, x) => s + x.amount, 0);
-  const payable = commission + performance + baseSummary + bonus + customItem;
-  const actual = payable - (r() < .25 ? Math.round(r() * 300) : 0);
+  const payable = Math.round((commission + performance + baseSummary + bonus + customItem) * 100) / 100;
+  const actual = Math.round((payable - (commDelayed ? commission : 0)) * 100) / 100;
   return {
     workerId: a.id, ym, commission, performance, baseSalary: baseSummary, bonus, customItem, payableSalary: payable, actualSalary: actual,
-    d: { rule, base, tier, expected, actualDays, legalDays, perfBase, goalOk, unpassed, kpiDeduct, perfDeds, totalPerf, point, newPerfRule, revenue, refund, external, lastMonthRefund, lastMonthAppeal, lastDiff, isNewKing, nkConfigured, newKingBonus, convRank, convRate: convRateOf(a, ym), convBonus, bonusDeds, others }
+    d: { stage, baseAmount, attendBase, legalPay, gmvRank, rankRule, rankSalary, expected, actualDays, legalDays, perfBase, attRate, perfByAtt, joinLeaveSame, kpiExempt, goalOk, target, completion, unpassed, kpiDeduct, perfDeds, totalPerf, point, commRule, commDelayed, revenue, refund, external, lastMonthRefund, lastMonthAppeal, lastDiff, isNewKing, nkConfigured, newKingBonus, conv, bonusDeds, others }
   };
 }
 function gmvOf(a, ym) {
   const partial = ym === CUR_YM ? NOW.getDate() / daysIn(ym) : 1;
   return Math.round((22000 + rng(a.id + ym)() * 115000) * partial / 100) * 100;
+}
+function refundOf(a, ym) { const r = rng('refund' + a.id + ym); return r() < .45 ? Math.round(r() * 6000 / 100) * 100 : 0; }
+function dsOf(a, ym) { return EXT_LIST.filter(x => x.workerId === a.id && x.attrYm === ym).reduce((s, x) => s + x.amount, 0); }
+function perfOf(a, ym) { return gmvOf(a, ym) - refundOf(a, ym) + dsOf(a, ym); }
+function targetOf(a, ym) { goalInit(ym); return state.goal.saved[ym].members[a.id] || 0; }
+function prevYmOf(ym) { const [y, m] = ym.split('-').map(Number); return ymOf(new Date(y, m - 2, 1)); }
+function empStage(a, ym) {
+  const idx = monthsSinceJoin(a, ym), b = state.cfgSaved.basic;
+  return idx === 0 ? 'join' : idx <= b.newMonths ? 'protect' : idx >= b.oldMonths ? 'old' : 'normal';
+}
+const STAGE_TEXT = { join: '新人（入职当月）', protect: '新人保护期', normal: '正式员工', old: '老员工' };
+function gmvRankOf(a, ym) {
+  const peers = AGENTS.filter(x => inMonth(x, ym) && targetOf(x, ym) > 0);
+  if (!peers.some(x => x.id === a.id)) return null;
+  const perf = perfOf(a, ym);
+  const rank = peers.filter(x => perfOf(x, ym) > perf).length + 1;
+  return { rank, total: peers.length, pct: Math.round(rank / peers.length * 10000) / 100 };
+}
+function newKingAwarded(ym, depth = 0) {
+  const nk = state.cfgSaved.bonus.newKing;
+  if (nk.gmv === null || nk.bonus === null) return [];
+  const prev = depth < 1 ? newKingAwarded(prevYmOf(ym), depth + 1) : [];
+  const pool = AGENTS.filter(a => inMonth(a, ym) && newKingEligible(a, ym) && !prev.includes(a.id));
+  if (!pool.length) return [];
+  const best = Math.max(...pool.map(a => perfOf(a, ym)));
+  return best >= nk.gmv ? pool.filter(a => perfOf(a, ym) === best).map(a => a.id) : [];
+}
+function periodsOf(ym) {
+  const [y, m] = ym.split('-').map(Number);
+  return [7, 14, 21, 28].map((d, i) => ({ name: `${String(y).slice(2)}${pad(m)}-${i + 1}期`, end: fmtD(new Date(y, m - 1, d)) })).filter(p => p.end <= TODAY);
+}
+function convStatOf(a, p) {
+  const r = rng('cv' + a.id + p.name), levels = state.cfgSaved.bonus.convLevels.length || 1;
+  const orders = Math.floor(r() * 6);
+  const leads = Math.max(orders, Math.round((18 + Math.floor(r() * 22)) * levels / 6)) || 1;
+  let amount = 0; for (let i = 0; i < orders; i++) amount += [399, 699, 1299][Math.floor(r() * 3)];
+  return { orders, leads, rate: Math.round(orders / leads * 10000) / 100, amount };
+}
+function convBonusOf(a, ym) {
+  const cfg = state.cfgSaved.bonus;
+  if (!GRADES.includes(a.grade) || !(targetOf(a, ym) > 0)) return { total: 0, items: [] };
+  const peersOf = () => AGENTS.filter(x => x.grade === a.grade && inMonth(x, ym) && targetOf(x, ym) > 0);
+  const qualified = s => s.rate >= cfg.convRate && s.orders >= cfg.convOrders;
+  const items = periodsOf(ym).map(p => {
+    const stats = peersOf().map(x => ({ id: x.id, ...convStatOf(x, p) }));
+    const me = stats.find(x => x.id === a.id);
+    if (!qualified(me)) return { period: p.name, ...me, rank: null, bonus: 0 };
+    const sorted = stats.filter(qualified).sort((x, y) => y.rate - x.rate || y.amount - x.amount);
+    const rank = sorted.findIndex(x => x.id === a.id) + 1;
+    const rule = cfg.conv.find(x => x.grade === a.grade && x.ranks.includes(rank));
+    return { period: p.name, ...me, rank, bonus: rule ? rule.bonus : 0 };
+  });
+  return { total: items.reduce((s, x) => s + x.bonus, 0), items };
 }
 function kpiDeductOf(n) {
   if (!n) return 0;
@@ -629,16 +709,6 @@ function kpiDeductOf(n) {
 function newKingEligible(a, ym) {
   const idx = monthsSinceJoin(a, ym);
   return idx === 0 || idx === 1;
-}
-function newKingOf(ym) {
-  const cands = AGENTS.filter(a => inMonth(a, ym) && newKingEligible(a, ym));
-  if (!cands.length) return null;
-  return cands.reduce((best, a) => gmvOf(a, ym) > gmvOf(best, ym) ? a : best).id;
-}
-function convRateOf(a, ym) { return Math.round(rng('conv' + a.id + ym)() * 2500) / 100; }
-function convRankOf(a, ym) {
-  const peers = AGENTS.filter(x => x.grade === a.grade && inMonth(x, ym)).sort((x, y) => convRateOf(y, ym) - convRateOf(x, ym));
-  return peers.findIndex(x => x.id === a.id) + 1;
 }
 
 /* ==================== 出勤计算（模拟） ==================== */
@@ -818,7 +888,7 @@ function setSalaryTab(t) { state.salaryTab = t; render(); }
 function renderAgentSalary() {
   const t = state.salaryTab;
   const body = t === 'salary' ? renderSalaryTab() : renderExternalTab();
-  return `<div class="page"><div class="card">${tabsHtml([['salary', '薪酬'], ['external', '系统外业绩']], t, 'setSalaryTab')}${body}</div></div>`;
+  return `<div class="page"><div class="card">${tabsHtml([['salary', '薪酬'], ['external', '双算业绩']], t, 'setSalaryTab')}${body}</div></div>`;
 }
 
 /* --- 薪酬 Tab --- */
@@ -872,43 +942,53 @@ function openSalaryDetail(id) {
 const di = (label, content, span = 1) => `<div class="ds-item" style="grid-column:span ${span}"><span class="ds-label">${label}</span><span class="ds-content">${content}</span></div>`;
 function salaryDetailHtml(row) {
   const d = row.d; const [y, m] = row.ym.split('-').map(Number);
-  const rank = d.rule ? fmtRange(d.rule.minOp, d.rule.min, d.rule.maxOp, d.rule.max, '%') : '';
+  const rank = d.rankRule ? fmtRange(d.rankRule.minOp, d.rankRule.min, d.rankRule.maxOp, d.rankRule.max, '%') : '';
+  const unpassedText = `${d.unpassed.length} 次${d.unpassed.length ? `（ ${d.unpassed.map(x => `${y}/${m}/${x}`).join('、')} ）` : ''}`;
+  const kpiText = d.kpiExempt ? `0元（${d.kpiExempt}）` : d.unpassed.length ? (d.kpiDeduct ? `${d.kpiDeduct}元（当月累计${d.unpassed.length}次未达标）` : `0元（当月累计${d.unpassed.length}次未达标，仅警告）`) : '0元';
   return `
-    <div class="ds-title">底薪</div>
+    <div class="ds-title">底薪 <span style="font-size:12px;font-weight:400;color:#909399">员工阶段：${STAGE_TEXT[d.stage]}</span></div>
     <div class="ds-grid">
       ${di('基础薪资：', money(row.baseSalary) + '元', 3)}
-      ${rank ? di('排名分布：', rank) : ''}
-      ${di('底薪：', d.base + '元')}
-      ${d.tier ? di('档位薪资：', d.tier + '元') : ''}
+      ${di('基本薪资基数：', d.baseAmount + '元')}
       ${di('应出勤天数：', d.expected + '天')}
       ${di('实际出勤天数：', d.actualDays + '天')}
+      ${di('出勤折算：', money(d.attendBase) + '元')}
       ${di('法定假日上班天数：', d.legalDays + '天')}
+      ${di('法定节假日上班薪资：', money(d.legalPay) + '元')}
+      ${d.gmvRank ? di('GMV排名：', `第${d.gmvRank.rank}名 / 共${d.gmvRank.total}人（前${d.gmvRank.pct}%）`) : di('GMV排名：', '当月未填写目标，不参与排名')}
+      ${rank ? di('排名分布：', rank) : ''}
+      ${di('排名薪资：', d.rankSalary + '元（不按出勤折算）')}
     </div>
     <div class="ds-title">绩效</div>
     <div class="ds-grid">
-      ${di('绩效结果：', row.performance + '元')}
+      ${di('绩效结果：', money(row.performance) + '元' + (d.joinLeaveSame ? '（当月入职当月离职，不发放）' : ''))}
       ${di('绩效基数：', d.perfBase + '元')}
+      ${di('按出勤折算：', `${money(d.perfByAtt)}元（出勤率 ${d.actualDays}/${d.expected}）`)}
       ${di('个人目标是否达标：', d.goalOk ? '是' : '否')}
-      ${di('KPI未达标次数：', `${d.unpassed.length} 次${d.unpassed.length ? `（ ${d.unpassed.map(x => `${y}/${m}/${x}`).join('、')} ）` : ''}`, 3)}
-      ${d.unpassed.length ? di('未达标扣款：', d.kpiDeduct ? `${d.kpiDeduct}元（当月累计${d.unpassed.length}次未达标）` : `0元（当月累计${d.unpassed.length}次未达标，仅警告）`, 3) : ''}
+      ${di('KPI未达标次数：', unpassedText, 3)}
+      ${di('KPI扣款：', kpiText, 3)}
       ${d.perfDeds.map(x => di(x.name + '：', `${x.amount}元（${x.reason}）`, 3)).join('')}
     </div>
     <div class="ds-title">提成</div>
     <div class="ds-grid">
-      ${di('提成：', row.commission + '元')}
-      ${di('总业绩：', d.totalPerf + '元')}
-      ${di('提成系数：', d.point + '%' + (d.newPerfRule ? '（新人入职当月业绩达标规则）' : ''))}
+      ${di('提成：', row.commission + '元' + (d.commDelayed ? '（当月离职，提成延后一个月发放）' : ''))}
+      ${di('当月GMV：', d.totalPerf + '元')}
+      ${di('当月目标：', d.target ? d.target + '元' : '未填写')}
+      ${di('目标完成率：', d.target ? d.completion + '%' : '-')}
+      ${di('是否达标：', d.goalOk ? '是' : '否')}
+      ${di('提成系数：', d.point + '%' + (d.commRule ? `（${d.commRule}）` : ''))}
       ${di('营收：', d.revenue + '元')}
       ${di('退款：', `${d.refund}元 <button class="link" onclick="openCommDetail('refund',${row.workerId})">查看明细</button>`)}
-      ${di('系统外业绩：', d.external + '元')}
+      ${di('双算业绩：', d.external + '元')}
       ${di('上月订单本月退款：', `${d.lastMonthRefund}元 <button class="link" onclick="openCommDetail('lastMonthRefund',${row.workerId})">查看明细</button>`)}
       ${di('上月订单本月申诉：', `${d.lastMonthAppeal}元 <button class="link" onclick="openCommDetail('lastMonthAppeal',${row.workerId})">查看明细</button>`)}
       ${di('上月提成差值：', d.lastDiff + '元')}
     </div>
     <div class="ds-title">奖金</div>
     <div class="ds-grid one">
-      ${di('新人王奖励：', d.newKingBonus + '元' + (d.isNewKing ? `（入职当月及第一个完整月GMV排名第一，当月GMV ${d.revenue}元${d.nkConfigured ? '' : '，奖励未配置'}）` : ''))}
-      ${di('当期转化率奖金：', `${d.convBonus}元（${AGENT_MAP[row.workerId].grade}学段第${d.convRank}名，转化率 ${d.convRate}%）`)}
+      ${di('新人王奖励：', d.newKingBonus + '元' + (d.isNewKing ? `（入职当月及第一个完整月GMV排名第一，当月GMV ${d.totalPerf}元）` : ''))}
+      ${di('当期转化率奖金：', `${d.conv.total}元${d.conv.items.length ? `（${AGENT_MAP[row.workerId].grade}学段，按期次单独排名，奖金累加）` : '（当月未填写目标或无结营期次，不参与）'}`)}
+      ${d.conv.items.map(x => di('', `<span style="color:#606266">· ${x.period}：转化率 ${x.rate}%（${x.orders}单，订单金额 ${x.amount}元），${x.rank ? `第${x.rank}名，${x.bonus}元` : '未达参与门槛'}</span>`)).join('')}
       ${d.bonusDeds.map(x => di(x.name + '：', `${x.amount}元（${x.reason}）`)).join('')}
     </div>
     <div class="ds-title">其他</div>
@@ -944,7 +1024,7 @@ function openCommDetail(type, id) {
   openDialog({ key: 'commDetail', title: COMM_TITLE[type], width: 960, body: () => table(cols, list, { maxHeight: 400 }) });
 }
 
-/* --- 系统外业绩 Tab --- */
+/* --- 双算业绩 Tab --- */
 function extFiltered() {
   const e = state.ext;
   return EXT_LIST.filter(x => (!e.phone || x.phone.includes(e.phone)) && (!e.orderNo || x.orderNo.includes(e.orderNo)) && (!e.payYm || x.payYm === e.payYm) && (!e.attrYm || x.attrYm === e.attrYm) && (!e.worker || String(x.workerId) === e.worker));
@@ -1242,12 +1322,16 @@ function setCfg(path, v) {
 function renderBaseSalary() {
   const c = state.cfg.base;
   const cols = [
-    { title: '排名分布', minWidth: 200, render: r => fmtRange(r.minOp, r.min, r.maxOp, r.max, '%') },
-    { title: '底薪', minWidth: 120, render: r => r.base + '元' },
-    { title: '档位薪资', minWidth: 120, render: r => r.tier + '元' },
+    { title: '月度GMV排名分布', minWidth: 220, render: r => fmtRange(r.minOp, r.min, r.maxOp, r.max, '%') },
+    { title: '排名薪资', minWidth: 160, render: r => r.salary + '元' },
     { title: '操作', width: 150, fixed: 'right', render: (r, i) => `<button class="link" onclick="openRangeDialog('base',${i})">编辑</button><button class="link danger" onclick="delRange('base',${i})">删除</button>` }
   ];
-  return subCard('底薪与档位薪资', '新老员工统一排名，不区分学段', `<div class="flex-end"><button class="btn btn-primary" onclick="openRangeDialog('base')">＋ 新增</button></div>${table(cols, c.rules)}${footerBtns('base')}`);
+  return subCard('基本薪资基数', '按出勤折算；新老员工一致',
+      `<div class="sentence"><span>基本薪资基数</span>${numIn('base.baseAmount', c.baseAmount, 'min="0" placeholder="请输入"')}<span>元</span></div>
+       <div class="tip-text" style="margin:12px 0 0">基本薪资 = 基数 ÷ 应出勤天数 × 实际出勤天数；法定节假日上班薪资 = 基数 ÷ 21.75 × 3 × 法定节假日上班天数（同电销，只按基数计算，不含排名薪资）；带薪假期不计入</div>`)
+    + subCard('GMV排名薪资', '不按出勤折算',
+      `<div class="tip-text" style="margin:0 0 12px">参与排名：当月填写了目标的坐席，新老员工统一排名、不区分学段；未填写目标的坐席无排名薪资<br>排名分位 = 当月GMV排名 ÷ 参与排名人数 × 100%；GMV = 净GMV（营收 − 退款）+ 双算业绩；GMV相同名次并列</div>
+       <div class="flex-end"><button class="btn btn-primary" onclick="openRangeDialog('base')">＋ 新增</button></div>${table(cols, c.rules)}${footerBtns('base')}`);
 }
 /* --- 提成 --- */
 function renderCommission() {
@@ -1258,12 +1342,13 @@ function renderCommission() {
     { title: '业绩不达标', minWidth: 150, render: r => r.no + '%' },
     { title: '操作', width: 150, fixed: 'right', render: (r, i) => `<button class="link" onclick="openRangeDialog('comm',${i})">编辑</button><button class="link danger" onclick="delRange('comm',${i})">删除</button>` }
   ];
-  return subCard('提成档位分布', '当月业绩=当月营收+系统外业绩-当月产生的退款',
-    `<div class="flex-end"><button class="btn btn-primary" onclick="openRangeDialog('comm')">＋ 新增</button></div>${table(cols, c.gears)}`)
+  return subCard('提成档位分布', '提成 = 当月GMV × 对应档位提点 + 上月提成差值',
+    `<div class="tip-text" style="margin:0 0 12px">当月GMV = 净GMV（当月营收 − 当月退款）+ 双算业绩；订单实付金额超过 49 元才计入营收；订单归属在坐席名下即计入<br>业绩达标：当月GMV ÷ 当月目标 ≥ 100%<br>退款、申诉、上月提成差值规则与电销一致：以薪酬核算日为界，核算日后发生的上月订单退款/申诉计入「上月订单本月退款/申诉」，上月提成差值 =（上月业绩 + 上月申诉 − 上月退款）× 新提点 − 上月业绩 × 原提点</div>
+     <div class="flex-end"><button class="btn btn-primary" onclick="openRangeDialog('comm')">＋ 新增</button></div>${table(cols, c.gears)}`)
     + subCard('特殊规则', '', `
-      <div class="sentence"><span>老员工业绩低于（不含）</span>${numIn('comm.threshold', c.threshold, 'min="0"')}<span>时，若业绩完成率高于（不含）</span>${numIn('comm.rate', c.rate, 'min="0" max="100" step="0.01"', 'md')}<span><b>%</b> 则正常按区间档位提成，否则无提成</span></div>
-      <div class="sentence" style="margin-top:16px"><span>新人入职当月，业绩超过（不含）</span>${numIn('comm.newPerf', c.newPerf, 'min="0" step="0.01" placeholder="请输入"')}<span>元时，按对应档位的「业绩达标」比例计算提成</span></div>
-      <div style="font-size:12px;color:#909399;margin-top:10px">新人入职当月规则未填写时不启用；入职当月按飞书系统入职时间所在月份判断</div>
+      <div class="sentence"><span>新人入职当月，业绩超过（不含）</span>${numIn('comm.newPerf', c.newPerf, 'min="0" step="0.01" placeholder="请输入"')}<span>元时，按对应档位的「业绩达标」比例计算提成</span></div>
+      <div class="sentence" style="margin-top:16px"><span>老员工业绩低于（不含）</span>${numIn('comm.threshold', c.threshold, 'min="0"')}<span>时，若业绩完成率高于（不含）</span>${numIn('comm.rate', c.rate, 'min="0" max="100" step="0.01"', 'md')}<span><b>%</b> 则正常按区间档位提成，否则无提成</span></div>
+      <div class="tip-text" style="margin:14px 0 0">新人保护期（入职当月 + 两个完整月）内按档位表正常提成，老员工规则不对保护期生效；员工阶段按「基础配置 → 员工定义」判断<br>员工当月离职：提成延后一个月发放，奖金正常发放；核算后发生的退费不追扣奖金</div>
       ${footerBtns('comm')}`);
 }
 function delRange(kind, i) {
@@ -1281,8 +1366,7 @@ function openRangeDialog(kind, i) {
       <div class="f-row"><div class="f-label">区间下限</div><div class="f-ctrl">${opSelect('rg_minOp', r.minOp)}<input type="number" class="el-input md" id="rg_min" placeholder="请输入" value="${r.min ?? ''}"><span>${unit}</span></div></div>
       <div class="f-row"><div class="f-label">区间上限</div><div class="f-ctrl">${opSelect('rg_maxOp', r.maxOp)}<input type="number" class="el-input md" id="rg_max" placeholder="请输入" value="${r.max ?? ''}"><span>${unit}</span></div></div>
       ${kind === 'base' ? `
-        <div class="f-row"><div class="f-label req">底薪</div><div class="f-ctrl"><input type="number" class="el-input" id="rg_a" placeholder="请输入底薪" value="${r.base ?? ''}"><span>元</span></div></div>
-        <div class="f-row"><div class="f-label req">档位薪资</div><div class="f-ctrl"><input type="number" class="el-input" id="rg_b" placeholder="请输入档位薪资" value="${r.tier ?? ''}"><span>元</span></div></div>`
+        <div class="f-row"><div class="f-label req">排名薪资</div><div class="f-ctrl"><input type="number" class="el-input" id="rg_a" placeholder="请输入排名薪资" value="${r.salary ?? ''}"><span>元</span></div></div>`
       : `
         <div class="f-row"><div class="f-label req">业绩达标</div><div class="f-ctrl"><input type="number" class="el-input" id="rg_a" placeholder="请输入业绩达标比例" value="${r.ok ?? ''}"><span>%</span></div></div>
         <div class="f-row"><div class="f-label req">业绩不达标</div><div class="f-ctrl"><input type="number" class="el-input" id="rg_b" placeholder="请输入业绩不达标比例" value="${r.no ?? ''}"><span>%</span></div></div>`}
@@ -1295,9 +1379,9 @@ function saveRange(kind, i) {
   const hasMin = minOp && min !== '', hasMax = maxOp && max !== '';
   if (!hasMin && !hasMax) { toast('请至少填写一个完整的区间条件', 'warning'); return; }
   if ((minOp && min === '') || (!minOp && min !== '') || (maxOp && max === '') || (!maxOp && max !== '')) { toast('区间运算符与数值需同时填写', 'warning'); return; }
-  if (a === '' || b === '') { toast('请完善必填项', 'warning'); return; }
+  if (a === '' || (kind !== 'base' && b === '')) { toast('请完善必填项', 'warning'); return; }
   const rng_ = { minOp: hasMin ? minOp : '', min: hasMin ? Number(min) : null, maxOp: hasMax ? maxOp : '', max: hasMax ? Number(max) : null };
-  const item = kind === 'base' ? { ...rng_, base: Number(a), tier: Number(b) } : { ...rng_, ok: Number(a), no: Number(b) };
+  const item = kind === 'base' ? { ...rng_, salary: Number(a) } : { ...rng_, ok: Number(a), no: Number(b) };
   const list = kind === 'base' ? state.cfg.base.rules : state.cfg.comm.gears;
   if (i >= 0) list[i] = item; else list.push(item);
   closeDialog('range'); toast(i >= 0 ? '编辑成功' : '新增成功'); render();
@@ -1313,13 +1397,24 @@ function renderBonus() {
     { title: '操作', width: 150, fixed: 'right', render: r => `<button class="link" onclick="openConv(${r._i})">编辑</button><button class="link danger" onclick="delConv(${r._i})">删除</button>` }
   ];
   const nk = c.newKing;
+  const levelBox = ['S', 'A', 'B', 'C', 'D', 'E', 'I'].map(l => `<label><input type="checkbox" ${c.convLevels.includes(l) ? 'checked' : ''} onchange="toggleConvLevel('${l}',this.checked)">${l}</label>`).join('');
   return subCard('新人王奖励', '入职当月及第一个完整月，GMV排名第一且达到门槛的坐席发放',
     `<div class="sentence"><span>入职当月及第一个完整月，GMV排名第一，且当月GMV ≥</span>${numIn('bonus.newKing.gmv', nk.gmv, 'min="0" step="0.01" placeholder="请输入，如10000"')}<span>元，奖金</span>${numIn('bonus.newKing.bonus', nk.bonus, 'min="0" step="0.01" placeholder="请输入，如600"')}<span>元</span></div>
-     <div style="font-size:12px;color:#909399;margin-top:10px">GMV门槛与奖金需同时填写；均不填写时不发放新人王奖励</div>`)
-    + subCard('当期转化率奖金', '按学段分别对坐席当期转化率排名，可为不同学段的不同名次配置奖金；未配置的名次不发放', table(ccols, rows), `<button class="btn btn-primary" onclick="openConv()">＋ 新增</button>`)
+     <div class="tip-text" style="margin:12px 0 0">GMV = 净GMV + 双算业绩；GMV 并列第一均发放；每人仅可获得一次，获得后下个月不再参与排名<br>GMV门槛与奖金需同时填写；均不填写时不发放新人王奖励</div>`)
+    + subCard('当期转化率奖金', '每个期次单独排名，同月多个期次奖金累加',
+      `<div class="sentence"><span>参与门槛：当月已填写目标，且期次当期转化率 ≥</span>${numIn('bonus.convRate', c.convRate, 'min="0" max="100" step="0.01"', 'sm')}<span>% 且转化订单数 ≥</span>${numIn('bonus.convOrders', c.convOrders, 'min="0" step="1"', 'sm')}<span>单</span></div>
+       <div class="sentence" style="margin-top:14px"><span>统计线索等级：</span><span class="check-grid">${levelBox}</span></div>
+       <div class="tip-text" style="margin:12px 0 12px">结营时间落在薪酬核算月份的期次参与计算；当期转化率 = 结营组合品净付费人数 ÷ 所选等级线索数 × 100%<br>按学段（初中 / 小学）分开排名，学段以期次结营最后一天所在学段为准；转化率相同按当期线索转化订单金额排序；其他学段不参与</div>
+       <div class="flex-end"><button class="btn btn-primary" onclick="openConv()">＋ 新增</button></div>${table(ccols, rows)}`)
     + `<div class="footer-buttons"><button class="btn" onclick="resetCfg('bonus')">重置</button><button class="btn btn-primary" onclick="saveBonus()">保存</button></div>`;
 }
+function toggleConvLevel(l, on) {
+  const list = state.cfg.bonus.convLevels;
+  if (on && !list.includes(l)) list.push(l);
+  if (!on) list.splice(list.indexOf(l), 1);
+}
 function saveBonus() {
+  if (!state.cfg.bonus.convLevels.length) { toast('请至少选择一个统计线索等级', 'warning'); return; }
   const nk = state.cfg.bonus.newKing;
   if ((nk.gmv === null) !== (nk.bonus === null)) { toast(nk.gmv === null ? '请填写新人王奖励的GMV门槛' : '请填写新人王奖励的奖金', 'warning'); return; }
   saveCfg('bonus');
@@ -1439,11 +1534,11 @@ function renderBasicConfig() {
   const row = (label, ctrl) => `<div class="bc-row"><div class="bc-label">${label}</div><div class="bc-ctrl">${ctrl}</div></div>`;
   return `<div class="sub-card"><div class="sub-card-b">
     <div class="section-title">员工定义</div>
-    ${row('老员工', `<span>自入职时间起第</span>${numIn('basic.oldMonths', b.oldMonths, 'min="1" placeholder="请输入月数"')}<span>个完整月在职的员工，即为老员工</span>`)}
+    ${row('新人保护期', `<span>入职当月 +</span>${numIn('basic.newMonths', b.newMonths, 'min="0" placeholder="请输入月数"', 'sm')}<span>个完整月为新人保护期</span>`)}
+    ${row('老员工', `<span>自入职时间起第</span>${numIn('basic.oldMonths', b.oldMonths, 'min="1" placeholder="请输入月数"', 'sm')}<span>个完整月在职的员工，即为老员工</span>`)}
     <div class="tip-text">
-      <div>入职时间：飞书系统入职时间</div>
-      <div>• 入职时间的次月为第一个完整月</div>
-      <div style="margin-left:16px">示例：飞书入职时间为4/1或4/13，均以5月为第一个完整月</div>
+      <div>入职时间：飞书系统入职时间；入职时间的次月为第一个完整月</div>
+      <div style="margin-left:16px">示例：4/1 或 4/13 入职，4 月为入职当月，5、6 月为两个完整月（与入职当月一起为新人保护期），7 月（第 3 个完整月，即入职第 4 个月）起为老员工</div>
       <div>• 未配置员工定义时，默认所有员工为老员工</div>
     </div>
     <div class="section-title">薪酬生成时间</div>
@@ -1451,7 +1546,9 @@ function renderBasicConfig() {
     <div class="tip-text">默认为当天0点，在该日期生成上月薪酬数据，且在该日期之后上月薪酬数据将固定，不再发生变化，后续时间变更以及规则变更都不会影响历史已经生成的薪酬数据。未配置薪酬生成时间时，默认每月5号为薪酬生成日期。</div>
     <div class="section-title">绩效</div>
     ${row('绩效基数', `${numIn('basic.perfBase', b.perfBase, 'min="0" step="0.01" placeholder="请输入绩效基数"')}<span>元</span>`)}
-    <div class="tip-text">未配置绩效基数时，默认绩效基数为0</div>
+    <div class="tip-text">绩效 = 绩效基数 × 出勤率（实际出勤 ÷ 应出勤）− KPI扣款 − 质检等扣款（自定义项·绩效），结果小于 0 按 0 计；当月入职当月离职不发放；未配置绩效基数时默认为 0</div>
+    ${row('当日KPI达标', `<span>有效通话时长 ≥</span>${numIn('basic.kpiStd.minutes', b.kpiStd.minutes, 'min="0"', 'sm')}<span>分钟（必备），且 有效沟通 ≥</span>${numIn('basic.kpiStd.talks', b.kpiStd.talks, 'min="0"', 'sm')}<span>个 / 加微数 ≥</span>${numIn('basic.kpiStd.wechat', b.kpiStd.wechat, 'min="0"', 'sm')}<span>个 / 当日营收 &gt;</span>${numIn('basic.kpiStd.revenue', b.kpiStd.revenue, 'min="0"', 'md')}<span>元，任一满足</span>`)}
+    <div class="tip-text">半天出勤、法定节假日上班均需考核；半天出勤当天以上标准减半</div>
     ${row('未达标扣款', `<div style="display:flex;flex-direction:column;gap:12px">
       ${b.kpiDeds.map((t, i) => `<div class="sentence">
         <span>当月累计第</span>${numIn(`basic.kpiDeds.${i}.count`, t.count, 'min="1" step="1" placeholder="次数"', 'sm')}<span>次${i === b.kpiDeds.length - 1 ? '及以上' : ''}未达标，扣除绩效</span>${numIn(`basic.kpiDeds.${i}.amount`, t.amount, 'min="0" step="0.01" placeholder="金额"', 'md')}<span>元</span>
@@ -1459,7 +1556,7 @@ function renderBasicConfig() {
       </div>`).join('')}
       <div><button class="btn btn-sm" onclick="addKpiDed()">＋ 新增档位</button></div>
     </div>`)}
-    <div class="tip-text">按当月累计未达标次数匹配对应档位扣款（不叠加）；扣款金额填 0 表示仅警告不扣款；最后一档自动视为「及以上」</div>
+    <div class="tip-text">按当月累计未达标次数匹配对应档位扣款（不叠加）；扣款金额填 0 表示仅警告不扣款；最后一档自动视为「及以上」<br>新人入职当月不扣减；当月 GMV ÷ 当月目标 ≥ 100% 时不考核过程指标（不扣 KPI 款）</div>
     <div style="border-top:1px solid #e4e7ed;margin-top:32px;padding-top:4px"><div class="footer-buttons"><button class="btn" onclick="resetCfg('basic')">重置</button><button class="btn btn-primary" onclick="saveBasic()">保存</button></div></div>
   </div></div>`;
 }
@@ -1475,6 +1572,10 @@ function saveBasic() {
   if (list.some(t => t.count === null || t.amount === null)) { toast('请完善未达标扣款的次数和金额', 'warning'); return; }
   if (list.some(t => !Number.isInteger(t.count) || t.count < 1)) { toast('未达标次数需为正整数', 'warning'); return; }
   if (list.some((t, i) => i > 0 && t.count <= list[i - 1].count)) { toast('未达标次数需从小到大递增且不重复', 'warning'); return; }
+  const b = state.cfg.basic;
+  if (b.newMonths === null || b.oldMonths === null) { toast('请完善员工定义', 'warning'); return; }
+  if (b.oldMonths <= b.newMonths) { toast('老员工起始完整月需大于新人保护期的完整月数', 'warning'); return; }
+  if (Object.values(b.kpiStd).some(v => v === null)) { toast('请完善当日KPI达标标准', 'warning'); return; }
   saveCfg('basic');
 }
 
@@ -1540,6 +1641,7 @@ function searchKpi(fromDom = true) {
   if (fromDom) {
     const start = val('kpiStart') || TODAY, end = val('kpiEnd') || TODAY;
     if (start > end) { toast('开始日期不能晚于结束日期', 'warning'); return; }
+    if (start.slice(0, 7) !== end.slice(0, 7)) { toast('不支持跨月查询，最多查询一个自然月', 'warning'); return; }
     Object.assign(k, { start, end });
     if (state.role === 'leader') k.org = val('kpiOrg');
     if (state.role !== 'member') k.worker = val('kpiWorker');
@@ -1902,7 +2004,7 @@ function goalInit(ym) {
   const members = {}, groups = {};
   GROUPS.forEach(g => {
     let sum = 0;
-    AGENTS.filter(a => a.groupId === g.id && inMonth(a, ym)).forEach(a => {
+    AGENTS.filter(a => a.groupId === g.id && inMonth(a, ym) && monthsSinceJoin(a, ym) > 0).forEach(a => {
       const v = (30 + Math.floor(rng('goal' + a.id + ym)() * 50)) * 1000;
       members[a.id] = v; sum += v;
     });
