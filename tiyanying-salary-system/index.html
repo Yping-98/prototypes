@@ -1308,7 +1308,7 @@ function renderCommission() {
     { title: '业绩不达标', minWidth: 150, render: r => r.no + '%' },
     { title: '操作', width: 150, fixed: 'right', render: (r, i) => `<button class="link" onclick="openRangeDialog('comm',${i})">编辑</button><button class="link danger" onclick="delRange('comm',${i})">删除</button>` }
   ];
-  return subCard('提成档位分布', '提成 = 当月GMV × 对应档位提点',
+  return subCard('提成档位分布', '提成 = 当月GMV × 对应档位提点 + 上月提成差值',
     `<div class="tip-text" style="margin:0 0 12px">当月GMV = 净GMV（当月营收 − 当月退款）+ 双算业绩；订单实付金额超过 49 元才计入营收；订单归属在坐席名下即计入<br>业绩达标：当月GMV ÷ 当月目标 ≥ 100%<br>退款、申诉、上月提成差值规则与电销一致：以薪酬核算日为界，核算日后发生的上月订单退款/申诉计入「上月订单本月退款/申诉」，上月提成差值 =（上月业绩 + 上月申诉 − 上月退款）× 新提点 − 上月业绩 × 原提点</div>
      <div class="flex-end"><button class="btn btn-primary" onclick="openRangeDialog('comm')">＋ 新增</button></div>${table(cols, c.gears)}`, '', 'tgtCommGears')
     + subCard('特殊规则', '', `

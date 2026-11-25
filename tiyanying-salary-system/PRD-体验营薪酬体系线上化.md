@@ -77,7 +77,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     A[坐席点击发起申报] --> B[填写申报日期 加微数 上传图片]
-    B --> C{加微数大于等于6且已上传图片}
+    B --> C{加微数大于等于3且已上传图片}
     C -->|否| D[提交按钮置灰]
     C -->|是| E{同一天已有通过或待审核申报}
     E -->|是| F[提示不可重复申报]
@@ -193,7 +193,7 @@ flowchart TD
 
 #### 7.1.4 提成
 
-**提成 = 当月GMV × 对应档位提点** 
+**提成 = 当月GMV × 对应档位提点 + 上月提成差值**
 
 **提成档位**（按当月GMV所在区间匹配，可配置）
 
@@ -360,7 +360,7 @@ flowchart TD
 
 **【新增】新增双算业绩录入（双算业绩 Tab）**
 
-<table><colgroup><col/><col/></colgroup><thead><tr><th vertical-align="top">区域</th><th vertical-align="top">说明</th></tr></thead><tbody><tr><td vertical-align="top">筛选</td><td vertical-align="top">手机号、订单编号、支付月份、薪资归属月份、坐席；字段说明见下方「筛选字段说明」</td></tr><tr><td vertical-align="top">按钮</td><td vertical-align="top">批量删除、批量上传（下载模板 → 上传 Excel）、新增<br/>批量上传模版<cite doc-id="VPJuwGHmni4M6ykTMXScxbRmn1b" file-type="wiki" title="体验营双算业绩上传模版" type="doc"></cite></td></tr><tr><td vertical-align="top">列表字段</td><td vertical-align="top">序号、用户手机号（可复制）、订单编号、支付月份、薪资归属月份、订单金额、归属坐席、所属小组、更新人、更新时间、操作（编辑 / 删除）</td></tr><tr><td vertical-align="top">新增 / 编辑</td><td vertical-align="top">用户手机号、订单编号、支付月份、薪资归属月份、订单金额、归属坐席，均必填；字段说明与限制见下方「新增 / 编辑字段说明」</td></tr><tr><td vertical-align="top">计算</td><td vertical-align="top">按薪资归属月份计入坐席当月GMV</td></tr></tbody></table>
+<table><colgroup><col/><col/></colgroup><thead><tr><th vertical-align="top">区域</th><th vertical-align="top">说明</th></tr></thead><tbody><tr><td vertical-align="top">筛选</td><td vertical-align="top">手机号、订单编号、支付月份、薪资归属月份、坐席；字段说明见下方「筛选字段说明」</td></tr><tr><td vertical-align="top">按钮</td><td vertical-align="top">批量删除、批量上传（下载模板 → 上传 Excel）、新增<br/>批量上传模版<cite doc-id="VPJuwGHmni4M6ykTMXScxbRmn1b" file-type="wiki" title="体验营双算业绩上传模版" type="doc"></cite></td></tr><tr><td vertical-align="top">列表字段</td><td vertical-align="top">序号、用户手机号（可复制）、订单编号、支付月份、薪资归属月份、订单金额、归属坐席、所属小组、更新人、更新时间、操作（编辑 / 删除）</td></tr><tr><td vertical-align="top">新增 / 编辑</td><td vertical-align="top">用户手机号、支付月份、薪资归属月份、订单金额、归属坐席必填，订单编号选填；字段说明与限制见下方「新增 / 编辑字段说明」</td></tr><tr><td vertical-align="top">计算</td><td vertical-align="top">按薪资归属月份计入坐席当月GMV</td></tr></tbody></table>
 
 **筛选字段说明**
 
@@ -681,5 +681,5 @@ flowchart TD
 |-|-|
 | 页面权限 | 坐席查询、实际出勤、坐席薪酬配置、KPI看板、加微数申报、月度目标配置分别配置页面访问权限 |
 | 数据权限（KPI看板、加微数申报） | 按「架构管理」身份字段判断：组员看自己，主管看本组，团长看全部 |
-| 加微数申报 → 审核按钮 | 单独配置审核权限；拥有权限的主管可审核本组、团长可审核全部，均不能审核本人申报 |
+| 加微数申报 → 审核按钮 | 单独配置审核权限；拥有权限的主管可审核本组、团长可审核全部 |
 | 月度目标配置 | 团长看全部、可改小组目标 / 人员目标（团队目标自动累计）；主管只看本组、只改人员目标；组员无权限 |
