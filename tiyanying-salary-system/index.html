@@ -288,6 +288,13 @@
   @keyframes tin { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
 
   /* ===== 需求说明面板 ===== */
+  .org-tree { width: 200px; flex-shrink: 0; border-right: 1px solid #e4e7ed; padding-right: 8px; font-size: 14px; color: #606266; }
+  .org-node { height: 30px; line-height: 30px; cursor: pointer; border-radius: 3px; white-space: nowrap; }
+  .org-node:hover { background: #f5f7fa; }
+  .org-node.on { background: #409eff33; color: #303133; }
+  .tpl-table { border-collapse: collapse; font-size: 13px; }
+  .tpl-table th, .tpl-table td { border: 1px solid #dcdfe6; padding: 4px 14px; text-align: left; }
+  .tpl-table th { background: #f5f7fa; color: #303133; font-weight: 500; }
   #diffSpacer { display: none !important; }
   body:has(#diffRail:not(.collapsed)) .layout { padding-right: 360px; }
   .note-btn { position: fixed; right: 24px; bottom: 24px; z-index: 90; background: #722ed1; color: #fff; border: none; border-radius: 20px; padding: 10px 18px; font-size: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(114,46,209,.35); }
@@ -386,7 +393,8 @@ const PAGES = {
   kpiBoard: 'KPI看板',
   wechatDeclare: '加微数申报',
   monthGoal: '月度目标配置',
-  leadPlan: '线索投放计划'
+  leadPlan: '线索投放计划',
+  orgManage: '架构管理'
 };
 const state = {
   page: 'agentSalary',
@@ -514,7 +522,7 @@ function inRange(x, g) {
 }
 
 function salaryRow(a, ym) {
-  if (!inMonth(a, ym)) return null;
+  if (!inMonth(a, ym) || !isSales(a)) return null;
   const cfg = state.cfgSaved;
   const r = rng(a.id + ym);
   r();
@@ -591,7 +599,7 @@ function empStage(a, ym) {
 }
 const STAGE_TEXT = { join: '新人（入职当月）', protect: '新人保护期', normal: '正式员工', old: '老员工' };
 function gmvRankOf(a, ym) {
-  const peers = AGENTS.filter(x => inMonth(x, ym) && targetOf(x, ym) > 0);
+  const peers = AGENTS.filter(x => isSales(x) && inMonth(x, ym) && targetOf(x, ym) > 0);
   if (!peers.some(x => x.id === a.id)) return null;
   const perf = perfOf(a, ym);
   const rank = peers.filter(x => perfOf(x, ym) > perf).length + 1;
@@ -601,7 +609,7 @@ function newKingAwarded(ym, depth = 0) {
   const nk = state.cfgSaved.bonus.newKing;
   if (nk.gmv === null || nk.bonus === null) return [];
   const prev = depth < 1 ? newKingAwarded(prevYmOf(ym), depth + 1) : [];
-  const pool = AGENTS.filter(a => inMonth(a, ym) && newKingEligible(a, ym) && !prev.includes(a.id));
+  const pool = AGENTS.filter(a => isSales(a) && inMonth(a, ym) && newKingEligible(a, ym) && !prev.includes(a.id));
   if (!pool.length) return [];
   const best = Math.max(...pool.map(a => perfOf(a, ym)));
   return best >= nk.gmv ? pool.filter(a => perfOf(a, ym) === best).map(a => a.id) : [];
@@ -629,7 +637,7 @@ function convStatOf(a, p) {
 function convBonusOf(a, ym) {
   const cfg = state.cfgSaved.bonus;
   if (!GRADES.includes(a.grade) || !(targetOf(a, ym) > 0)) return { total: 0, items: [] };
-  const peersOf = () => AGENTS.filter(x => x.grade === a.grade && inMonth(x, ym) && targetOf(x, ym) > 0);
+  const peersOf = () => AGENTS.filter(x => isSales(x) && x.grade === a.grade && inMonth(x, ym) && targetOf(x, ym) > 0);
   const qualified = s => s.rate >= cfg.convRate && s.orders >= cfg.convOrders;
   const items = periodsOf(ym).map(p => {
     const stats = peersOf().map(x => ({ id: x.id, ...convStatOf(x, p) }));
@@ -783,7 +791,7 @@ const MENU = [
   { t: '运营工具', c: ['人群排除包', '信息流线索订单查询', '兑换码补充', '数据库外呼状态', '灰产账号处理', '会场链接配置', 'H5投放灰产账号处理', '质检坐席设置'] },
   { t: '订单管理', c: ['坐席订单', '其他订单', '订单申诉'] },
   { t: '数据统计', c: ['公司个人业绩排行榜', '当期线索转化', '当期过程数据', 'SOP流程监控', '各渠道线索转化', '跟进任务数据看板', '公海线索转化', '公海线索分配', '当期线索质量', '月度转化', '月度gmv', '营收', '外呼数据统计', '线索分配结果', '月度线索分配统计', '往期线索转化', '转介绍线索转化', '转介绍业绩看板'] },
-  { t: '坐席管理', c: ['架构管理', '外呼工号配置'] },
+  { t: '坐席管理', c: [{ t: '架构管理', page: 'orgManage' }, '外呼工号配置'] },
   { t: '薪酬体系', isNew: true, c: [{ t: '坐席查询', page: 'agentSalary' }, { t: '实际出勤', page: 'actualAttendance' }, { t: '坐席薪酬配置', page: 'agentSalarySetting' }, { t: 'KPI看板', page: 'kpiBoard' }, { t: '加微数申报', page: 'wechatDeclare' }, { t: '月度目标配置', page: 'monthGoal' }] },
   { t: '小程序' }, { t: '企业微信直播' },
   { t: '配置', c: ['配置投放渠道信息', { t: '线索投放计划', page: 'leadPlan' }, '信息流测试账号', '信息流承接配置', '加微工具配置', '月度线索目标配置', '渠道获客二维码/链接', '新销售每天可领取公海线索数', '发放公海客户的销售人员配置', 'H5投放页面配置'] }
@@ -817,14 +825,15 @@ function closeTab(p, e) {
   render();
 }
 function renderChrome() {
-  if (state.page === 'leadPlan') state.openMenus.add('配置');
+  const parentMenu = { leadPlan: '配置', orgManage: '坐席管理' }[state.page];
+  if (parentMenu) state.openMenus.add(parentMenu);
   renderMenu();
-  $('breadcrumb').innerHTML = `${state.page === 'leadPlan' ? '配置' : '薪酬体系'} &nbsp;/&nbsp; <b>${PAGES[state.page]}</b>`;
+  $('breadcrumb').innerHTML = `${parentMenu || '薪酬体系'} &nbsp;/&nbsp; <b>${PAGES[state.page]}</b>`;
   $('routerTabs').innerHTML = state.openedTabs.map(p => `<div class="r-tab ${p === state.page ? 'active' : ''}" onclick="goPage('${p}')">${PAGES[p]}<span class="x" onclick="closeTab('${p}',event)">✕</span></div>`).join('');
 }
 function render() {
   renderChrome();
-  const fn = { agentSalary: renderAgentSalary, actualAttendance: renderAttendance, agentSalarySetting: renderSetting, kpiBoard: renderKpi, wechatDeclare: renderDeclare, monthGoal: renderMonthGoal, leadPlan: renderLeadPlan }[state.page];
+  const fn = { agentSalary: renderAgentSalary, actualAttendance: renderAttendance, agentSalarySetting: renderSetting, kpiBoard: renderKpi, wechatDeclare: renderDeclare, monthGoal: renderMonthGoal, leadPlan: renderLeadPlan, orgManage: renderOrg }[state.page];
   $('appMain').innerHTML = fn();
   if (window.__diffRemeasure) setTimeout(window.__diffRemeasure, 0);
 }
@@ -1758,6 +1767,7 @@ function declInScope(r) {
   if (state.role === 'supervisor') return r.submitter.groupId === R.groupId;
   return true;
 }
+const isSales = a => a.post === '销售';
 const isOwnDecl = r => r.submitter.name === ROLES[state.role].name;
 function canAudit(r) {
   if (!state.decl.auditPerm || state.role === 'member' || r.status !== 'pending' || isOwnDecl(r)) return false;
@@ -2132,6 +2142,176 @@ function savePlan() {
   const data = { p, start: new Date(PF.start), end: new Date(PF.end), close: new Date(cy, cm - 1, cd, 23, 59, 59), expects: Number(PF.expects), openType: PF.openType, levels: [...PF.levels] };
   if (PF.editP !== null) Object.assign(LEAD_PLANS.find(x => x.p === PF.editP), data); else LEAD_PLANS.push(data);
   closeDialog('planForm'); if (state.sal.list.length) searchSalary(false); toast('保存成功'); render();
+}
+
+/* ==================== 坐席管理 → 架构管理 ==================== */
+const POSTS = ['销售', '主管', '团长', '其他'];
+AGENTS.forEach(a => Object.assign(a, {
+  post: '销售', email: `seat${a.id}@guanghe.tv`, phone: '+86' + (15500000000 + (a.id * 7919) % 99999999), qw: 'Seat' + a.id, roles: [],
+  feishuLeaveAt: a.leaveAt, createdAt: new Date(a.joinAt.getTime() + 30 * 3600000), updatedAt: new Date(a.joinAt.getTime() + 30 * 3600000)
+}));
+const ORG_EXTRA = [
+  { id: 9001, name: '周敏', empNo: 'YC20001', groupId: 11, post: '主管', roles: ['主管'], joinAt: new Date(2023, 5, 1, 9), leaveAt: null },
+  { id: 9002, name: '刘洋', empNo: 'YC20002', groupId: 21, post: '团长', roles: ['团长', '主管'], joinAt: new Date(2022, 2, 7, 9), leaveAt: null },
+  { id: 9003, name: '王琳', empNo: 'YC20003', groupId: 22, post: '其他', roles: [], joinAt: new Date(2025, 7, 18, 9), leaveAt: null }
+].map(x => ({ ...x, email: `staff${x.id}@guanghe.tv`, phone: '+86' + (18600000000 + x.id), qw: 'Staff' + x.id, feishuLeaveAt: null, createdAt: new Date(x.joinAt.getTime() + 30 * 3600000), updatedAt: new Date(x.joinAt.getTime() + 30 * 3600000) }));
+const orgMembers = () => [...AGENTS, ...ORG_EXTRA];
+state.org = { node: '', name: '', leave: '0', page: 1 };
+const dOnly = d => d ? fmtD(d) : '-';
+function orgFiltered() {
+  const o = state.org;
+  return orgMembers().filter(m => {
+    if (o.node && !(o.node[0] === 'd' ? GROUP_MAP[m.groupId].deptId === +o.node.slice(1) : m.groupId === +o.node.slice(1))) return false;
+    if (o.name && !m.name.includes(o.name)) return false;
+    if (o.leave === '0' && m.leaveAt && m.leaveAt <= NOW) return false;
+    return true;
+  });
+}
+function orgNode(n) { state.org.node = n; state.org.page = 1; render(); }
+function searchOrg() { Object.assign(state.org, { name: val('orgName'), leave: val('orgLeave'), page: 1 }); render(); }
+function orgPage(p) { state.org.page = p; render(); }
+function renderOrg() {
+  const o = state.org, all = orgFiltered(), rows = all.slice((o.page - 1) * 10, o.page * 10);
+  const node = (key, label, pad2) => `<div class="org-node ${o.node === key ? 'on' : ''}" style="padding-left:${pad2}px" onclick="orgNode('${key}')">${label}</div>`;
+  const tree = node('', '体验营', 8) + DEPTS.map(d => node('d' + d.id, d.name, 22) + d.children.map(g => node('g' + g.id, g.name, 38)).join('')).join('');
+  const cols = [
+    { title: '坐席名称', minWidth: 80, field: 'name' },
+    { title: '体验营工号', minWidth: 90, field: 'empNo' },
+    { title: '邮箱地址', minWidth: 170, field: 'email' },
+    { title: '手机号', minWidth: 130, field: 'phone' },
+    { title: 'qwuserid', minWidth: 90, field: 'qw' },
+    { title: '职级', minWidth: 110, render: m => m.roles.length ? m.roles.join('/') + '/组员' : '组员' },
+    { title: '<span id="tgtOrgPostCol">岗位</span>', minWidth: 70, render: m => m.post },
+    { title: '入职时间', minWidth: 100, render: m => dOnly(m.joinAt) },
+    { title: '离职时间', minWidth: 100, render: m => dOnly(m.leaveAt) },
+    { title: '操作离职时间', minWidth: 100, render: () => '-' },
+    { title: '飞书离职时间', minWidth: 100, render: m => dOnly(m.feishuLeaveAt) },
+    { title: '创建时间', minWidth: 160, render: m => fmtDT(m.createdAt) },
+    { title: '修改时间', minWidth: 160, render: m => fmtDT(m.updatedAt) },
+    { title: '操作', width: 170, fixed: 'right', render: m => `<button class="link" onclick="openOrgMember(${m.id})">编辑</button><button class="link" onclick="toast('原型不演示认证企微','info')">认证企微</button>${m.leaveAt && m.leaveAt <= NOW ? '' : `<button class="link" onclick="toast('原型不演示离职操作','info')">离职</button>`}` }
+  ];
+  return `<div class="page"><div class="card">
+    <div style="text-align:right;margin-bottom:12px">
+      <button class="btn btn-primary" onclick="toast('原型不演示批量修改邮箱','info')">批量修改邮箱</button>
+      <button class="btn btn-primary" onclick="toast('原型不演示批量添加坐席','info')">批量添加坐席</button>
+      <button class="btn btn-primary" id="tgtOrgImportBtn" onclick="openOrgImport()">批量导入离职时间</button>
+      <button class="btn btn-primary" onclick="openOrgMember()">单个添加坐席</button>
+      <button class="btn btn-primary" onclick="toast('原型不演示编辑架构','info')">编辑架构</button>
+    </div>
+    <div style="display:flex;gap:12px">
+      <div class="org-tree">${tree}</div>
+      <div style="flex:1;min-width:0">
+        <div class="form-inline">
+          <div class="form-item"><input class="el-input" id="orgName" style="width:260px" placeholder="请输入坐席名字" value="${o.name}"></div>
+          <div class="form-item"><select class="el-input" id="orgLeave" style="width:110px"><option value="" ${o.leave === '' ? 'selected' : ''}>全部坐席</option><option value="0" ${o.leave === '0' ? 'selected' : ''}>在职坐席</option></select></div>
+          <div class="form-item"><button class="btn btn-primary" onclick="searchOrg()">查询</button></div>
+        </div>
+        <div id="tgtOrgTable">${table(cols, rows).replace('class="tbl-wrap"', 'class="tbl-wrap table-wrap"')}</div>
+        ${pager(all.length, o.page, 'orgPage')}
+      </div>
+    </div>
+  </div></div>`;
+}
+let OM = null;
+function openOrgMember(id) {
+  const m = id ? orgMembers().find(x => x.id === id) : null;
+  OM = { id: id || null, email: m ? m.email : '', groupId: m ? String(m.groupId) : '', roles: m ? [...m.roles] : [], post: m ? m.post : '', leave: m && m.leaveAt ? fmtD(m.leaveAt) : '', join: m ? m.joinAt : null };
+  openDialog({
+    key: 'orgMember', title: id ? '编辑坐席' : '新增坐席', width: 560,
+    body: () => `
+      <div class="f-row"><div class="f-label req">飞书邮箱地址</div><div class="f-ctrl"><input class="el-input full" value="${OM.email}" oninput="OM.email=this.value.trim()"></div></div>
+      <div class="f-row"><div class="f-label req">组织架构</div><div class="f-ctrl"><select class="el-input full" onchange="OM.groupId=this.value"><option value="">请选择</option>${DEPTS.map(d => d.children.map(g => `<option value="${g.id}" ${OM.groupId === String(g.id) ? 'selected' : ''}>体验营 / ${d.name} / ${g.name}</option>`).join('')).join('')}</select></div></div>
+      <div class="f-row"><div class="f-label">角色选择</div><div class="f-ctrl"><div class="check-grid">${['主管', '团长'].map(r => `<label><input type="checkbox" ${OM.roles.includes(r) ? 'checked' : ''} onchange="this.checked?OM.roles.push('${r}'):OM.roles.splice(OM.roles.indexOf('${r}'),1)">${r}</label>`).join('')}</div></div></div>
+      <div class="f-row" id="tgtOrgPost"><div class="f-label req">岗位</div><div class="f-ctrl"><select class="el-input full" onchange="OM.post=this.value"><option value="">请选择岗位</option>${POSTS.map(p => `<option ${OM.post === p ? 'selected' : ''}>${p}</option>`).join('')}</select><div class="f-hint">销售薪酬核算只统计岗位为「销售」的人员</div></div></div>
+      ${OM.id ? `<div class="f-row" id="tgtOrgLeave"><div class="f-label">离职时间</div><div class="f-ctrl"><input type="date" class="el-input" style="width:220px" value="${OM.leave}" onchange="OM.leave=this.value"><div class="f-hint">默认带出飞书离职时间，可修改；薪酬核算以此离职时间为准</div></div></div>` : ''}`,
+    footer: () => `<button class="btn" onclick="closeDialog('orgMember')">取消</button><button class="btn btn-primary" onclick="saveOrgMember()">提交</button>`
+  });
+}
+function saveOrgMember() {
+  if (!OM.email) { toast('请输入飞书邮箱地址', 'warning'); return; }
+  if (!/^[\w.-]+@[\w.-]+\.\w+$/.test(OM.email)) { toast('请输入正确的邮箱地址', 'warning'); return; }
+  if (!OM.groupId) { toast('请选择组织架构', 'warning'); return; }
+  if (!OM.post) { toast('请选择岗位', 'warning'); return; }
+  if (orgMembers().some(x => x.email === OM.email && x.id !== OM.id)) { toast('该坐席邮箱已在组织架构中', 'warning'); return; }
+  if (OM.leave && OM.join && OM.leave < fmtD(OM.join)) { toast('离职时间不能早于入职时间', 'warning'); return; }
+  const now = clock();
+  if (OM.id) {
+    const m = orgMembers().find(x => x.id === OM.id);
+    const [y, mo, d] = OM.leave ? OM.leave.split('-').map(Number) : [];
+    Object.assign(m, { email: OM.email, groupId: Number(OM.groupId), roles: [...OM.roles], post: OM.post, leaveAt: OM.leave ? new Date(y, mo - 1, d, 23, 59, 59) : null, updatedAt: now });
+  } else {
+    ORG_EXTRA.push({ id: 9100 + ORG_EXTRA.length, name: OM.email.split('@')[0], empNo: 'YC2' + String(9000 + ORG_EXTRA.length), groupId: Number(OM.groupId), post: OM.post, roles: [...OM.roles], email: OM.email, phone: '-', qw: '-', joinAt: now, leaveAt: null, feishuLeaveAt: null, createdAt: now, updatedAt: now });
+  }
+  closeDialog('orgMember'); searchSalary(false); toast('操作成功'); render();
+}
+let ORG_IMPORT = null;
+function openOrgImport() {
+  ORG_IMPORT = { file: null, name: '' };
+  openDialog({
+    key: 'orgImport', title: '批量导入离职时间', width: 640,
+    body: () => `
+      <div class="f-row" id="tgtOrgImport"><div class="f-label req">导入离职时间</div><div class="f-ctrl">
+        <button class="btn btn-primary" onclick="document.getElementById('orgFile').click()">上传导入文件</button>
+        <button class="link" onclick="downloadLeaveTpl()">下载导入模版</button>
+        <input type="file" id="orgFile" accept=".csv,.xls,.xlsx" style="display:none" onchange="pickOrgFile(this)">
+        ${ORG_IMPORT.name ? `<div class="f-hint" style="color:#409eff">${ORG_IMPORT.name}</div>` : ''}
+      </div></div>
+      <div class="f-row"><div class="f-label">模版示例</div><div class="f-ctrl">
+        <table class="tpl-table"><tr><th>邮箱</th><th>离职时间</th></tr><tr><td>xiaozhen_it@guanghe.tv</td><td>2025-12-12</td></tr></table>
+      </div></div>
+      <div class="f-row"><div class="f-label">导入说明</div><div class="f-ctrl" style="line-height:1.7;display:block">
+        按邮箱匹配架构中的坐席，导入成功后更新其离职时间。以下情况无法导入成功：<br>1、邮箱不在组织架构中<br>2、离职时间为空或格式不是「年-月-日」<br>3、离职时间早于入职时间
+      </div></div>`,
+    footer: () => `<button class="btn" onclick="closeDialog('orgImport')">取消</button><button class="btn btn-primary" onclick="submitOrgImport()">提交</button>`
+  });
+}
+function downloadLeaveTpl() {
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob(['\ufeff邮箱,离职时间\r\nxiaozhen_it@guanghe.tv,2025-12-12\r\n'], { type: 'text/csv;charset=utf-8' }));
+  link.download = '批量导入离职时间模版.csv'; link.click(); URL.revokeObjectURL(link.href);
+}
+function downloadOrgFail() {
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([ORG_IMPORT.failCsv], { type: 'text/csv;charset=utf-8' }));
+  link.download = '导入失败信息.csv'; link.click(); URL.revokeObjectURL(link.href);
+}
+function pickOrgFile(input) { ORG_IMPORT.file = input.files[0] || null; ORG_IMPORT.name = ORG_IMPORT.file ? ORG_IMPORT.file.name : ''; refreshDialog('orgImport'); }
+function applyLeaveRows(lines) {
+  const ok = [], fail = [];
+  lines.forEach(([email, date]) => {
+    const m = orgMembers().find(x => x.email === (email || '').trim());
+    const ds = (date || '').trim();
+    if (!m) { fail.push([email, ds, '邮箱不在组织架构中']); return; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(ds)) { fail.push([email, ds, '离职时间为空或格式错误']); return; }
+    if (ds < fmtD(m.joinAt)) { fail.push([email, ds, '离职时间早于入职时间']); return; }
+    const [y, mo, d] = ds.split('-').map(Number);
+    Object.assign(m, { leaveAt: new Date(y, mo - 1, d, 23, 59, 59), updatedAt: clock() }); ok.push(email);
+  });
+  return { ok, fail };
+}
+function submitOrgImport() {
+  if (!ORG_IMPORT.file) { toast('请上传文件', 'warning'); return; }
+  const done = res => {
+    closeDialog('orgImport'); searchSalary(false); render();
+    ORG_IMPORT.failCsv = res.fail.length ? '\ufeff邮箱,离职时间,失败原因\r\n' + res.fail.map(r => r.join(',')).join('\r\n') : '';
+    openDialog({
+      key: 'orgImportResult', title: '导入结果', width: 520,
+      body: () => `<div style="text-align:center;padding:24px 0">${res.ok.length}条导入成功，${res.fail.length}条导入失败${res.demo ? '<div class="f-hint" style="margin-top:8px">原型仅解析 CSV 文件，Excel 文件为模拟结果</div>' : ''}</div>`,
+      footer: () => res.fail.length
+        ? `<button class="btn btn-primary" onclick="downloadOrgFail()">下载导入失败信息</button>`
+        : `<button class="btn btn-primary" onclick="closeDialog('orgImportResult')">我知道了</button>`
+    });
+  };
+  if (/\.csv$/i.test(ORG_IMPORT.name)) {
+    const fr = new FileReader();
+    fr.onload = () => {
+      const lines = String(fr.result).replace(/^\ufeff/, '').split(/\r?\n/).filter(l => l.trim()).slice(1).map(l => l.split(','));
+      done(applyLeaveRows(lines));
+    };
+    fr.readAsText(ORG_IMPORT.file);
+  } else {
+    done({ ok: ['demo'], fail: [], demo: true });
+  }
 }
 
 /* ==================== 启动 ==================== */
@@ -2681,6 +2861,70 @@ window.DIFF_CHANGESET = {
         "section": "7.2.8 线索投放计划",
         "blockId": "doxcnjWfoRQi2T0rv5Dc2lfd5cf"
       }
+    },
+    {
+      "id": "chg-26",
+      "page": "架构管理",
+      "module": "岗位与离职时间",
+      "target": "#tgtOrgPostCol",
+      "view": {
+        "page": "orgManage"
+      },
+      "level": "field",
+      "type": "new",
+      "title": "列表新增「岗位」「离职时间」",
+      "desc": "「坐席管理 → 架构管理」列表在职级后新增「岗位」（销售 / 主管 / 团长 / 其他），在入职时间后新增「离职时间」；销售薪酬核算只统计岗位为「销售」的人员，离职时间以该字段为准。",
+      "before": "无此字段；薪酬核算范围不区分岗位",
+      "after": "按岗位圈定薪酬核算人员，离职时间可维护",
+      "examples": [
+        "岗位改为「其他」：该人员不出现在坐席查询薪酬列表，也不参与GMV排名、新人王、转化率排名"
+      ],
+      "prd": {
+        "section": "7.2.9 架构管理",
+        "blockId": "doxcnCi04eYx6NFV5QTFS8Rxbfe"
+      }
+    },
+    {
+      "id": "chg-27",
+      "page": "架构管理",
+      "module": "新增 / 编辑坐席",
+      "target": "#tgtOrgPost",
+      "view": {
+        "page": "orgManage",
+        "dialog": "orgMember"
+      },
+      "level": "field",
+      "type": "new",
+      "title": "新增/编辑坐席增加岗位与离职时间",
+      "desc": "新增坐席时必须选择岗位（销售、主管、团长、其他）；编辑坐席时可修改岗位，并可编辑离职时间（默认带出飞书离职时间，不能早于入职时间）。",
+      "before": "弹窗只有飞书邮箱地址、组织架构、角色选择",
+      "after": "新增岗位必选项；编辑时可改离职时间",
+      "prd": {
+        "section": "7.2.9 架构管理",
+        "blockId": "doxcnCi04eYx6NFV5QTFS8Rxbfe"
+      }
+    },
+    {
+      "id": "chg-28",
+      "page": "架构管理",
+      "module": "批量导入离职时间",
+      "target": "#tgtOrgImportBtn",
+      "view": {
+        "page": "orgManage"
+      },
+      "level": "module",
+      "type": "new",
+      "title": "新增批量导入离职时间",
+      "desc": "新增「批量导入离职时间」按钮，点击弹出上传弹窗，可下载模版（邮箱、离职时间两列）并上传；按邮箱匹配坐席更新离职时间，展示成功与失败条数，失败明细可下载。",
+      "before": "无此功能",
+      "after": "支持批量维护离职时间",
+      "examples": [
+        "邮箱不在组织架构中、离职时间为空或格式错误、早于入职时间：导入失败"
+      ],
+      "prd": {
+        "section": "7.2.9 架构管理",
+        "blockId": "doxcnCi04eYx6NFV5QTFS8Rxbfe"
+      }
     }
   ]
 };
@@ -2698,9 +2942,15 @@ window.DIFF_HOOKS = {
       salDetail: function () { if (state.sal.list.length) openSalaryDetail(state.sal.list[0].workerId); },
       declForm: function () { openDeclForm(); },
       audit: function () { var r = DECL_LIST.filter(declInScope).filter(canAudit)[0]; if (r) openAudit(r.id); },
-      planForm: function () { openPlanForm(LEAD_PLANS[0].p); }
+      planForm: function () { openPlanForm(LEAD_PLANS[0].p); },
+      orgMember: function () { openOrgMember(AGENTS[0].id); }
     };
     if (v.dialog && dialogs[v.dialog]) dialogs[v.dialog]();
+    setTimeout(function () {
+      var el = document.querySelector(change.target);
+      var wrap = el && el.closest('.tbl-wrap');
+      if (wrap) { var cell = el.closest('th,td') || el; wrap.scrollLeft = Math.max(0, cell.offsetLeft - 240); }
+    }, 0);
   },
   setDemoState: function () {}
 };
