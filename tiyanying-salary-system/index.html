@@ -188,7 +188,6 @@
   .goal-summary .gs-value { font-size: 22px; font-weight: 700; color: #fff; }
   .goal-summary .gs-value.lg { font-size: 30px; }
   .goal-summary .gs-unit { font-size: 14px; font-weight: 400; margin-left: 2px; }
-  .goal-summary .gs-input { width: 170px; height: 38px; font-size: 20px; font-weight: 700; color: #1677ff; border: 1px solid rgba(255,255,255,.9); }
   .goal-summary .gs-warn { font-size: 12px; color: #fff; background: rgba(245,108,108,.85); border-radius: 3px; padding: 1px 6px; margin-top: 4px; }
   .goal-summary .gs-ok { font-size: 12px; color: #fff; background: rgba(103,194,58,.85); border-radius: 3px; padding: 1px 6px; margin-top: 4px; }
   .goal-sup-info { display: flex; align-items: center; gap: 24px; padding: 12px 16px; margin-bottom: 16px; background: #f4f8ff; border: 1px solid #d9ecff; border-radius: 4px; font-size: 14px; color: #606266; }
@@ -2069,7 +2068,7 @@ function goalGroups() {
 function changeGoalYm(v) { if (v) { state.goal.ym = v; render(); } }
 function setGoal(kind, id, v) {
   const d = state.goal.data[state.goal.ym], n = Math.max(0, Math.round(Number(v) || 0));
-  if (kind === 'team') d.team = n; else d[kind][id] = n;
+  d[kind][id] = n;
   render();
 }
 function toggleGoalGroup(id) { const e = state.goal.expanded; e[id] = !(e[id] ?? state.role !== 'leader'); render(); }
@@ -2083,8 +2082,7 @@ function saveGoal() {
   const low = groups.filter(x => x.sum < x.target);
   if (low.length) { toast(`组内人员目标之和需大于等于小组目标：${low.map(x => `${x.name}还差 ${fmtNum(x.target - x.sum)} 元`).join('；')}`, 'warning'); return; }
   if (state.role === 'leader') {
-    const total = groups.reduce((s, x) => s + x.target, 0);
-    if (total !== d.team) { toast(`小组目标之和（${fmtNum(total)} 元）需等于团队总目标（${fmtNum(d.team)} 元）`, 'warning'); return; }
+    d.team = groups.reduce((s, x) => s + x.target, 0);
     g.saved[g.ym] = clone(d);
   } else {
     groups.forEach(x => x.ms.forEach(a => { g.saved[g.ym].members[a.id] = d.members[a.id]; }));
@@ -2103,11 +2101,7 @@ function renderMonthGoal() {
   const numIn2 = (kind, id, v) => `<input type="number" class="el-input goal-in" min="0" step="1000" value="${v}" onclick="event.stopPropagation()" onchange="setGoal('${kind}',${id},this.value)">`;
 
   const summary = isLeader ? `<div class="goal-summary" id="tgtGoalSummary">
-      <div class="gs-item"><span class="gs-label">团队目标总计</span>${editable
-        ? `<span><input type="number" class="el-input gs-input" min="0" step="10000" value="${d.team}" onchange="setGoal('team',null,this.value)"><span class="gs-unit" style="color:#fff">元</span></span>`
-        : `<span class="gs-value lg">${fmtNum(d.team)}<span class="gs-unit">元</span></span>`}</div>
-      <div class="gs-item"><span class="gs-label">小组目标合计</span><span class="gs-value">${fmtNum(groupTotal)}<span class="gs-unit">元</span></span>
-        ${groupTotal === d.team ? '<span class="gs-ok">与团队总目标一致</span>' : `<span class="gs-warn">与团队总目标相差 ${fmtNum(Math.abs(d.team - groupTotal))} 元</span>`}</div>
+      <div class="gs-item"><span class="gs-label">团队目标总计</span><span class="gs-value lg">${fmtNum(groupTotal)}<span class="gs-unit">元</span></span></div>
       <div class="gs-item"><span class="gs-label">小组数量</span><span class="gs-value">${groups.length}<span class="gs-unit">个</span></span></div>
       <div class="gs-item"><span class="gs-label">在职人数</span><span class="gs-value">${headcount}<span class="gs-unit">人</span></span></div>
     </div>`
@@ -2874,10 +2868,10 @@ window.DIFF_CHANGESET = {
       },
       "level": "module",
       "type": "logic",
-      "title": "团长可设置团队总目标与小组目标",
-      "desc": "团长看全部小组并展示团队目标总计面板，可修改团队总目标、小组目标和组内人员目标；保存时校验小组目标之和等于团队总目标、每组人员目标之和不低于小组目标。",
+      "title": "团长可设置小组目标，团队目标自动累计",
+      "desc": "团长看全部小组并展示团队目标总计面板，团队目标总计 = 各小组目标之和，自动累计、不可手动输入；团长可修改小组目标和组内人员目标，保存时校验每组人员目标之和不低于小组目标。",
       "before": "团队目标总计与小组目标均由人员目标自动加总",
-      "after": "团队总目标、小组目标单独设置并校验",
+      "after": "小组目标单独设置，团队目标按小组目标自动累计",
       "prd": {
         "section": "7.2.7 月度目标配置",
         "blockId": "doxcnas6IAJf795W0cp5lZBrgRe"
