@@ -283,6 +283,8 @@
   @keyframes tin { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
 
   /* ===== 需求说明面板 ===== */
+  #diffSpacer { display: none !important; }
+  body:has(#diffRail:not(.collapsed)) .layout { padding-right: 360px; }
   .note-btn { position: fixed; right: 24px; bottom: 24px; z-index: 90; background: #722ed1; color: #fff; border: none; border-radius: 20px; padding: 10px 18px; font-size: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(114,46,209,.35); }
   .note-panel { position: fixed; right: 24px; bottom: 76px; width: 420px; max-height: 70vh; overflow: auto; background: #fff; border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,.18); z-index: 90; padding: 18px 20px; font-size: 13px; line-height: 1.8; color: #606266; display: none; }
   .note-panel.show { display: block; }
@@ -293,7 +295,7 @@
 </style>
 </head>
 <body>
-<div class="layout">
+<div class="layout" id="diffPage">
   <aside class="sidebar">
     <div class="side-title">体验营<span class="fold">☰</span></div>
     <div class="side-menu" id="sideMenu"></div>
@@ -311,82 +313,6 @@
 </div>
 <div id="dialogs"></div>
 <div id="toasts"></div>
-<button class="note-btn" onclick="document.getElementById('notePanel').classList.toggle('show')">需求说明</button>
-<div class="note-panel" id="notePanel">
-  <h4>本次变更</h4>
-  <ul>
-    <li>体验营CRM左侧菜单新增一级菜单「薪酬体系」，放在「坐席管理」之后。</li>
-    <li>二级菜单：坐席查询、实际出勤、坐席薪酬配置。</li>
-    <li>三个页面的布局、字段、按钮、弹窗均复刻电销CRM「薪酬体系」下的同名页面（电销侧菜单名为「坐席薪酬设置」，体验营侧按需求命名为「坐席薪酬配置」）。</li>
-  </ul>
-  <h4>页面对照（电销CRM源码）</h4>
-  <ul>
-    <li>坐席查询：<code>salarySystem/agentSalary</code>，保留 薪酬 / 双算业绩 两个 Tab（电销侧的「系统外业绩」在体验营用于录入双算业绩；「微信加成核算」Tab 体验营不需要，已去除）</li>
-    <li>实际出勤：<code>salarySystem/actualAttendance</code></li>
-    <li>坐席薪酬配置：<code>salarySystem/agentSalarySetting</code>，含 底薪 / 提成 / 奖金 / 自定义项 / 基础配置 五个 Tab。按体验营规则调整：「底薪」改为基本薪资基数 + GMV排名薪资；「提成」按体验营档位表，特殊规则含新人入职当月、老员工两条；「奖金」改为新人王奖励 + 当期转化率奖金（按期次排名）；「基础配置」含新人保护期、老员工定义（按飞书入职时间，次月为第一个完整月）、当日KPI达标标准与累计未达标扣款档位</li>
-  </ul>
-  <h4>原型约定</h4>
-  <ul>
-    <li>系统当前日期按 2026-11-20 模拟；薪酬每月 5 号生成，10 月及以前月份已生成，相关数据不可编辑（与电销一致）。</li>
-    <li>实际出勤默认展示上月（10 月，已锁定，不显示编辑列），切到 11 月可体验编辑和批量编辑。</li>
-    <li>坐席、小组、金额均为模拟数据。</li>
-  </ul>
-  <h4>KPI看板（新增页面）</h4>
-  <ul>
-    <li>位于「薪酬体系」下第四个二级菜单。</li>
-    <li>字段：有效通话时长、有效通话次数、有效通话人数、订单金额、加微数、达标情况（达标/考核，展示为「达标天数/绩效考核天数」，如 12/15）、坐席、所在小组；默认按订单金额倒序。</li>
-    <li>列表最后一行固定展示前五个指标的总计与均值（均值 = 总计 ÷ 列表坐席数）。</li>
-    <li>有效通话时长展示为「x天x小时x分x秒」，省略前面为 0 的单位（如 14分21秒）。</li>
-    <li>筛选：坐席、小组、时间范围（默认当天）；支持导出，导出字段与列表字段一致（含末尾总计、均值两行），导出范围与当前筛选及角色权限一致。</li>
-    <li>数据范围按角色控制：组员只看自己，主管看本组，团长看全部。页面顶部紫色条为原型演示用的角色切换，线上按登录账号角色自动判断，不展示该条。</li>
-    <li>原型中「绩效考核天数」按「实际出勤」里的 班 / 半 / 法 / 0.5法 天数模拟。</li>
-    <li>有效通话次数 / 有效通话时长 = 「数据统计 → 外呼数据统计」个人面板的「合计有效通话次数 / 合计有效通话时长」：数据源为逐通通话明细，通话方式含企微和 CRM，单通时长 ≥ 10 秒记为有效通话，时长只累计有效通话，不含私人电话。</li>
-    <li>有效通话人数 = 同一数据源中有效通话的客户数（按客户手机号去重），外呼数据统计页暂无该字段，需新增统计。</li>
-    <li>加微数 = 当天审核通过的「加微数申报」数量（不取系统统计数）。</li>
-    <li>每日达标按「基础配置 → 当日KPI达标」判定，薪酬中的 KPI 未达标次数直接取 KPI 看板每日的达标结果。</li>
-  </ul>
-  <h4>加微数申报（新增页面）</h4>
-  <ul>
-    <li>位于「薪酬体系」下第五个二级菜单。列表字段：申报日期（原型补充，便于区分申报的是哪一天）、加微数、图片、提报人、提报时间、审核状态、审核人、审核时间、操作；按提报时间倒序。</li>
-    <li>操作随状态变化：待审核 — 查看详情、审核；审核拒绝 — 查看详情、重新提交（仅提报人本人可见）；审核通过 — 查看详情。</li>
-    <li>「审核」按钮单独受权限控制，且只能审核所在组（主管）/ 所在团（团长）的数据，不能审核本人提交的数据。原型中可在紫色条里勾选/取消审核权限进行演示。</li>
-    <li>发起申报：申报日期默认当天、可选过去；加微数仅可输入 ≥6 的正整数；图片最多 5 张；加微数和图片都填写后「提交」按钮才可点击。</li>
-    <li>同一提报人同一申报日期：已有审核通过的不可再申报；已有待审核的也不可重复提交；被拒绝后可重新提交。</li>
-    <li>薪酬核算日（基础配置中的薪酬生成日）之后，不可再提交上月及之前日期的加微数。</li>
-    <li>审核通过后，加微数补充到提报人申报日期当天的 KPI 看板加微数中；拒绝时需填写拒绝原因。</li>
-    <li>数据权限按提报人控制：组员看自己，主管看本组，团长看全部。</li>
-  </ul>
-  <h4>月度目标配置（从「配置」菜单移入）</h4>
-  <ul>
-    <li>原「配置 → 月度目标配置」页面移到「薪酬体系」下第六个二级菜单，「配置」菜单中不再展示。</li>
-    <li>数据权限：团长看全部小组；主管只看本组；组员无该页面权限。</li>
-    <li>团长：展示「团队目标总计」统计面板，可修改团队总目标、小组目标和组内人员目标；保存时校验「小组目标之和 = 团队总目标」，且每个小组「组内人员目标之和 ≥ 小组目标」。</li>
-    <li>主管：不展示统计面板；小组目标只读（由团长设定），只能修改本组人员目标；保存时校验「组内人员目标之和 ≥ 小组目标」。</li>
-    <li>小组目标改为单独设置（原逻辑为组内人员目标自动加总），列表新增「组内人员目标合计」列，低于小组目标时标红提示差额。</li>
-    <li>历史月份仅可查看，不可修改（沿用原逻辑）。</li>
-  </ul>
-  <h4>已确认的薪酬口径（11/25）</h4>
-  <ul>
-    <li>月薪 = 基本薪资 + 月度绩效 + 个人提成 + 奖金（新人王 + 当期转化率）+ 自定义项；只核算一线销售，不含主管。</li>
-    <li>GMV = 净GMV（营收 − 退款）+ 双算业绩；订单实付超过 49 元计入营收，订单归属在坐席名下即计入；退款、申诉、上月提成差值与电销一致。</li>
-    <li>基本薪资：4000 ÷ 应出勤 × 实际出勤 + 法定节假日上班薪资（4000 ÷ 21.75 × 3 × 天数）+ GMV排名薪资；带薪假期不计；排名薪资不按出勤折算；当月填写了目标即参与排名，不区分学段。</li>
-    <li>绩效：1000 × 出勤率 − KPI扣款 − 质检等扣款，小于 0 按 0；新人入职当月不扣 KPI；当月 GMV ÷ 目标 ≥ 100% 不考核过程指标；半天出勤、法定节假日上班均需考核，半天出勤当天 KPI 达标标准减半（如通时 25 分钟）。</li>
-    <li>当日 KPI 达标：有效通话时长 ≥ 50 分钟为必备，且有效通话人数 ≥ 15 / 加微数 ≥ 6 / 当日营收 &gt; 2000 任一满足；有效通话次数、时长按「外呼数据统计」的合计有效通话次数、合计有效通话时长统计（企微 + CRM，不看私人电话）；有效通话门槛为单通时长大于等于 10 秒（与外呼数据统计现有逻辑一致）；有效通话人数 = 有效通话客户数（去重）；加微数只取审核通过的申报数。</li>
-    <li>提成：业绩达标 = 当月GMV ÷ 当月目标 ≥ 100%；新人保护期 = 入职当月 + 两个完整月；入职当月业绩超过 2 万按达标比例；老员工（入职第 4 个月起）业绩低于 4 万且完成率 ≤ 50% 无提成，该规则只对老员工生效。</li>
-    <li>离职：提成延后一个月发，奖金正常发；核算后退费不追扣奖金。</li>
-    <li>新人王：GMV = 净GMV + 双算业绩，并列第一都发。</li>
-    <li>当期转化率奖金：每个期次单独排名，同月多个期次奖金累加；转化率相同按当期线索转化订单金额排序；只有初中、小学两个学段参与。</li>
-  </ul>
-  <h4>待确认</h4>
-  <ul>
-    <li>数据来源：坐席承接期次的关系、坐席学段（含历史学段）从架构管理新增字段取；双算业绩走「坐席查询 → 双算业绩」导入；质检扣款走「自定义项（归属绩效）」；飞书入离职时间需人工导入入口。</li>
-    <li>KPI看板：主管带多个小组时是否看全部所带小组。</li>
-    <li>加微数申报：主管/团长本人是否也需要申报；薪酬核算日之后，上月待审核的申报是否还能审核通过；图片格式与大小限制。</li>
-    <li>月度目标配置：团长调高小组目标后组内人员目标不足时，是否允许团长先保存（原型为不允许）；原页面中组员可修改本人目标的逻辑是否取消。</li>
-    <li>权限点命名，建议：<code>space_training_camp_agent_salary</code>、<code>space_training_camp_actual_attendance</code>、<code>space_training_camp_agent_salary_setting</code>。</li>
-  </ul>
-</div>
-
 <script>
 /* ==================== 基础工具 ==================== */
 const NOW = new Date(2026, 10, 20, 11, 30, 0);
@@ -815,6 +741,7 @@ function renderDialogs() {
         ${d.footer ? `<div class="dlg-f">${d.footer()}</div>` : ''}
       </div>
     </div>`).join('');
+  if (window.__diffRemeasure) setTimeout(window.__diffRemeasure, 0);
 }
 function refreshDialog(key) {
   const d = DIALOGS.find(x => x.key === key); if (!d) return;
@@ -856,7 +783,8 @@ function renderMenu() {
         ? `<div class="m-row ${state.page === item.page ? 'active' : ''}" onclick="goPage('${item.page}')">${item.t}</div>`
         : `<div class="m-row" onclick="toast('原型仅演示「薪酬体系」菜单','info')">${item.t}</div>`;
     }).join('')}</div>` : '';
-    return `<div class="m-row ${open ? 'open' : ''} ${m.isNew ? 'is-new-parent' : ''}" onclick="toggleMenu('${m.t}')"><span>${m.t}${m.isNew ? '<span class="new-badge">新增</span>' : ''}</span><span class="arrow">▾</span></div>${kids}`;
+    const tid = m.isNew ? 'id="tgtMenu"' : m.t === '配置' ? 'id="tgtMenuConfig"' : '';
+    return `<div class="m-row ${open ? 'open' : ''} ${m.isNew ? 'is-new-parent' : ''}" ${tid} onclick="toggleMenu('${m.t}')"><span>${m.t}${m.isNew ? '<span class="new-badge">新增</span>' : ''}</span><span class="arrow">▾</span></div>${kids}`;
   }).join('');
 }
 function toggleMenu(t) { state.openMenus.has(t) ? state.openMenus.delete(t) : state.openMenus.add(t); renderMenu(); }
@@ -882,6 +810,7 @@ function render() {
   renderChrome();
   const fn = { agentSalary: renderAgentSalary, actualAttendance: renderAttendance, agentSalarySetting: renderSetting, kpiBoard: renderKpi, wechatDeclare: renderDeclare, monthGoal: renderMonthGoal }[state.page];
   $('appMain').innerHTML = fn();
+  if (window.__diffRemeasure) setTimeout(window.__diffRemeasure, 0);
 }
 
 /* ==================== 页面一：坐席查询 ==================== */
@@ -934,7 +863,7 @@ function renderSalaryTab() {
       ${[['提成/元', 'commission'], ['绩效/元', 'performance'], ['基础薪资/元', 'salary'], ['奖金/元', 'bonus']].map(([l, k]) => `<div><span class="title-name">${l}：</span><span class="text-name">${money(sum[k])}</span></div>`).join('')}
     </div>
     <div class="cutoff">数据截止时间：${s.searchedYm === CUR_YM ? fmtDT(new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate(), 10, 0, 0)) : fmtDT(new Date(+s.searchedYm.slice(0, 4), +s.searchedYm.slice(5), state.cfgSaved.basic.genDay, 0, 0, 0))}</div>
-    ${table(cols, list, { maxHeight: 520 })}`;
+    <div id="tgtSalaryTable">${table(cols, list, { maxHeight: 520 })}</div>`;
 }
 function openSalaryDetail(id) {
   const row = salaryRow(AGENT_MAP[id], state.sal.searchedYm);
@@ -947,7 +876,7 @@ function salaryDetailHtml(row) {
   const unpassedText = `${d.unpassed.length} 次${d.unpassed.length ? `（ ${d.unpassed.map(x => `${y}/${m}/${x}`).join('、')} ）` : ''}`;
   const kpiText = d.kpiExempt ? `0元（${d.kpiExempt}）` : d.unpassed.length ? (d.kpiDeduct ? `${d.kpiDeduct}元（当月累计${d.unpassed.length}次未达标）` : `0元（当月累计${d.unpassed.length}次未达标，仅警告）`) : '0元';
   return `
-    <div class="ds-title">底薪 <span style="font-size:12px;font-weight:400;color:#909399">员工阶段：${STAGE_TEXT[d.stage]}</span></div>
+    <div class="ds-title" id="tgtSalaryDetail">底薪 <span style="font-size:12px;font-weight:400;color:#909399">员工阶段：${STAGE_TEXT[d.stage]}</span></div>
     <div class="ds-grid">
       ${di('基础薪资：', money(row.baseSalary) + '元', 3)}
       ${di('基本薪资基数：', d.baseAmount + '元')}
@@ -1058,7 +987,7 @@ function renderExternalTab() {
     { title: '操作', width: 130, fixed: 'right', render: r => { const lk = isLocked(r.attrYm); return `<button class="link" ${lk ? 'disabled' : ''} onclick="openExtForm(${r.id})">编辑</button><button class="link" ${lk ? 'disabled' : ''} onclick="delExt(${r.id})">删除</button>`; } }
   ];
   return `
-    <div class="form-inline">
+    <div class="form-inline" id="tgtDs">
       <div class="form-item"><input class="el-input" id="extPhone" placeholder="请输入手机号" value="${e.phone}" onkeyup="event.key==='Enter'&&searchExt()"></div>
       <div class="form-item"><input class="el-input" id="extOrder" placeholder="请输入订单编号" value="${e.orderNo}" onkeyup="event.key==='Enter'&&searchExt()"></div>
       <div class="form-item">${monthInput('extPay', e.payYm, '请选择支付月份')}</div>
@@ -1189,7 +1118,7 @@ function renderAttendance() {
         <span style="padding:0 6px">~</span>
         <input type="number" class="el-input sm" id="attMax" placeholder="最大值" min="0" max="31" step="0.5" value="${t.max}">
       </div>
-      <div class="form-item">
+      <div class="form-item" id="tgtAttOps">
         <button class="btn btn-primary" onclick="searchAtt()">🔍 搜索</button>
         <button class="btn btn-success" onclick="toast('导出成功：出勤数据_${ym}.xlsx（原型演示）')">导出</button>
         <button class="btn btn-warning" onclick="openLegalHoliday()">特殊设置</button>
@@ -1201,7 +1130,7 @@ function renderAttendance() {
       </div>` : ''}
     </div>
     ${canOp ? '' : `<div class="lock-tip">${ym} 薪酬已生成，出勤数据不可编辑（原型提示，线上为直接隐藏编辑列与批量编辑）</div>`}
-    ${table(cols, t.list, { maxHeight: 560 })}
+    <div id="tgtAttTable">${table(cols, t.list, { maxHeight: 560 })}</div>
   </div></div>`;
 }
 let SV = null;
@@ -1311,7 +1240,7 @@ function resetCfg(part) {
 }
 function saveCfg(part) { state.cfgSaved[part] = clone(state.cfg[part]); toast('保存成功'); if (state.sal.list.length) searchSalary(false); render(); }
 function footerBtns(part) { return `<div class="footer-buttons"><button class="btn" onclick="resetCfg('${part}')">重置</button><button class="btn btn-primary" onclick="saveCfg('${part}')">保存</button></div>`; }
-const subCard = (title, desc, body, extra = '') => `<div class="sub-card"><div class="sub-card-h"><div><span class="sub-card-t">${title}</span>${desc ? `<span class="sub-card-d">${desc}</span>` : ''}</div>${extra}</div><div class="sub-card-b">${body}</div></div>`;
+const subCard = (title, desc, body, extra = '', id = '') => `<div class="sub-card" ${id ? `id="${id}"` : ''}><div class="sub-card-h"><div><span class="sub-card-t">${title}</span>${desc ? `<span class="sub-card-d">${desc}</span>` : ''}</div>${extra}</div><div class="sub-card-b">${body}</div></div>`;
 const numIn = (path, v, attrs = '', cls = 'num') => `<input type="number" class="el-input ${cls}" value="${v ?? ''}" ${attrs} onchange="setCfg('${path}',this.value)">`;
 function setCfg(path, v) {
   const keys = path.split('.'); let o = state.cfg;
@@ -1329,10 +1258,10 @@ function renderBaseSalary() {
   ];
   return subCard('基本薪资基数', '按出勤折算；新老员工一致',
       `<div class="sentence"><span>基本薪资基数</span>${numIn('base.baseAmount', c.baseAmount, 'min="0" placeholder="请输入"')}<span>元</span></div>
-       <div class="tip-text" style="margin:12px 0 0">基本薪资 = 基数 ÷ 应出勤天数 × 实际出勤天数；法定节假日上班薪资 = 基数 ÷ 21.75 × 3 × 法定节假日上班天数（同电销，只按基数计算，不含排名薪资）；带薪假期不计入</div>`)
+       <div class="tip-text" style="margin:12px 0 0">基本薪资 = 基数 ÷ 应出勤天数 × 实际出勤天数；法定节假日上班薪资 = 基数 ÷ 21.75 × 3 × 法定节假日上班天数（同电销，只按基数计算，不含排名薪资）；带薪假期不计入</div>`, '', 'tgtBaseAmount')
     + subCard('GMV排名薪资', '不按出勤折算',
       `<div class="tip-text" style="margin:0 0 12px">参与排名：当月填写了目标的坐席，新老员工统一排名、不区分学段；未填写目标的坐席无排名薪资<br>排名分位 = 当月GMV排名 ÷ 参与排名人数 × 100%；GMV = 净GMV（营收 − 退款）+ 双算业绩；GMV相同名次并列</div>
-       <div class="flex-end"><button class="btn btn-primary" onclick="openRangeDialog('base')">＋ 新增</button></div>${table(cols, c.rules)}${footerBtns('base')}`);
+       <div class="flex-end"><button class="btn btn-primary" onclick="openRangeDialog('base')">＋ 新增</button></div>${table(cols, c.rules)}${footerBtns('base')}`, '', 'tgtRankSalary');
 }
 /* --- 提成 --- */
 function renderCommission() {
@@ -1345,12 +1274,12 @@ function renderCommission() {
   ];
   return subCard('提成档位分布', '提成 = 当月GMV × 对应档位提点 + 上月提成差值',
     `<div class="tip-text" style="margin:0 0 12px">当月GMV = 净GMV（当月营收 − 当月退款）+ 双算业绩；订单实付金额超过 49 元才计入营收；订单归属在坐席名下即计入<br>业绩达标：当月GMV ÷ 当月目标 ≥ 100%<br>退款、申诉、上月提成差值规则与电销一致：以薪酬核算日为界，核算日后发生的上月订单退款/申诉计入「上月订单本月退款/申诉」，上月提成差值 =（上月业绩 + 上月申诉 − 上月退款）× 新提点 − 上月业绩 × 原提点</div>
-     <div class="flex-end"><button class="btn btn-primary" onclick="openRangeDialog('comm')">＋ 新增</button></div>${table(cols, c.gears)}`)
+     <div class="flex-end"><button class="btn btn-primary" onclick="openRangeDialog('comm')">＋ 新增</button></div>${table(cols, c.gears)}`, '', 'tgtCommGears')
     + subCard('特殊规则', '', `
       <div class="sentence"><span>新人入职当月，业绩超过（不含）</span>${numIn('comm.newPerf', c.newPerf, 'min="0" step="0.01" placeholder="请输入"')}<span>元时，按对应档位的「业绩达标」比例计算提成</span></div>
       <div class="sentence" style="margin-top:16px"><span>老员工业绩低于（不含）</span>${numIn('comm.threshold', c.threshold, 'min="0"')}<span>时，若业绩完成率高于（不含）</span>${numIn('comm.rate', c.rate, 'min="0" max="100" step="0.01"', 'md')}<span><b>%</b> 则正常按区间档位提成，否则无提成</span></div>
       <div class="tip-text" style="margin:14px 0 0">新人保护期（入职当月 + 两个完整月）内按档位表正常提成，老员工规则不对保护期生效；员工阶段按「基础配置 → 员工定义」判断<br>员工当月离职：提成延后一个月发放，奖金正常发放；核算后发生的退费不追扣奖金</div>
-      ${footerBtns('comm')}`);
+      ${footerBtns('comm')}`, '', 'tgtCommRules');
 }
 function delRange(kind, i) {
   confirmBox(kind === 'base' ? '确定要删除该配置吗？' : '确认删除该档位吗？', () => {
@@ -1401,12 +1330,12 @@ function renderBonus() {
   const levelBox = ['S', 'A', 'B', 'C', 'D', 'E', 'I'].map(l => `<label><input type="checkbox" ${c.convLevels.includes(l) ? 'checked' : ''} onchange="toggleConvLevel('${l}',this.checked)">${l}</label>`).join('');
   return subCard('新人王奖励', '入职当月及第一个完整月，GMV排名第一且达到门槛的坐席发放',
     `<div class="sentence"><span>入职当月及第一个完整月，GMV排名第一，且当月GMV ≥</span>${numIn('bonus.newKing.gmv', nk.gmv, 'min="0" step="0.01" placeholder="请输入，如10000"')}<span>元，奖金</span>${numIn('bonus.newKing.bonus', nk.bonus, 'min="0" step="0.01" placeholder="请输入，如600"')}<span>元</span></div>
-     <div class="tip-text" style="margin:12px 0 0">GMV = 净GMV + 双算业绩；GMV 并列第一均发放；每人仅可获得一次，获得后下个月不再参与排名<br>GMV门槛与奖金需同时填写；均不填写时不发放新人王奖励</div>`)
+     <div class="tip-text" style="margin:12px 0 0">GMV = 净GMV + 双算业绩；GMV 并列第一均发放；每人仅可获得一次，获得后下个月不再参与排名<br>GMV门槛与奖金需同时填写；均不填写时不发放新人王奖励</div>`, '', 'tgtNewKing')
     + subCard('当期转化率奖金', '每个期次单独排名，同月多个期次奖金累加',
       `<div class="sentence"><span>参与门槛：当月已填写目标，且期次当期转化率 ≥</span>${numIn('bonus.convRate', c.convRate, 'min="0" max="100" step="0.01"', 'sm')}<span>% 且转化订单数 ≥</span>${numIn('bonus.convOrders', c.convOrders, 'min="0" step="1"', 'sm')}<span>单</span></div>
        <div class="sentence" style="margin-top:14px"><span>统计线索等级：</span><span class="check-grid">${levelBox}</span></div>
        <div class="tip-text" style="margin:12px 0 12px">结营时间落在薪酬核算月份的期次参与计算；当期转化率 = 结营组合品净付费人数 ÷ 所选等级线索数 × 100%<br>按学段（初中 / 小学）分开排名，学段以期次结营最后一天所在学段为准；转化率相同按当期线索转化订单金额排序；其他学段不参与</div>
-       <div class="flex-end"><button class="btn btn-primary" onclick="openConv()">＋ 新增</button></div>${table(ccols, rows)}`)
+       <div class="flex-end"><button class="btn btn-primary" onclick="openConv()">＋ 新增</button></div>${table(ccols, rows)}`, '', 'tgtConv')
     + `<div class="footer-buttons"><button class="btn" onclick="resetCfg('bonus')">重置</button><button class="btn btn-primary" onclick="saveBonus()">保存</button></div>`;
 }
 function toggleConvLevel(l, on) {
@@ -1483,7 +1412,7 @@ function renderCustomItem() {
     { title: '操作', width: 130, fixed: 'right', render: r => { const lk = isLocked(r.ym); return `<button class="link" ${lk ? 'disabled' : ''} onclick="openCustForm(${r.id})">编辑</button><button class="link" ${lk ? 'disabled' : ''} onclick="delCust(${r.id})">删除</button>`; } }
   ];
   return `
-    <div class="flex-between">
+    <div class="flex-between" id="tgtCustom">
       <div class="form-inline">
         <div class="form-item">${orgSelect('cuOrg', c.org, '请选择团队', 200)}</div>
         <div class="form-item">${agentSelect('cuWorker', c.worker, '请选择坐席', 200)}</div>
@@ -1532,9 +1461,9 @@ function saveCust(id) {
 /* --- 基础配置 --- */
 function renderBasicConfig() {
   const b = state.cfg.basic;
-  const row = (label, ctrl) => `<div class="bc-row"><div class="bc-label">${label}</div><div class="bc-ctrl">${ctrl}</div></div>`;
+  const row = (label, ctrl, id = '') => `<div class="bc-row" ${id ? `id="${id}"` : ''}><div class="bc-label">${label}</div><div class="bc-ctrl">${ctrl}</div></div>`;
   return `<div class="sub-card"><div class="sub-card-b">
-    <div class="section-title">员工定义</div>
+    <div class="section-title" id="tgtEmpDef">员工定义</div>
     ${row('新人保护期', `<span>入职当月 +</span>${numIn('basic.newMonths', b.newMonths, 'min="0" placeholder="请输入月数"', 'sm')}<span>个完整月为新人保护期</span>`)}
     ${row('老员工', `<span>自入职时间起第</span>${numIn('basic.oldMonths', b.oldMonths, 'min="1" placeholder="请输入月数"', 'sm')}<span>个完整月在职的员工，即为老员工</span>`)}
     <div class="tip-text">
@@ -1548,7 +1477,7 @@ function renderBasicConfig() {
     <div class="section-title">绩效</div>
     ${row('绩效基数', `${numIn('basic.perfBase', b.perfBase, 'min="0" step="0.01" placeholder="请输入绩效基数"')}<span>元</span>`)}
     <div class="tip-text">绩效 = 绩效基数 × 出勤率（实际出勤 ÷ 应出勤）− KPI扣款 − 质检等扣款（自定义项·绩效），结果小于 0 按 0 计；当月入职当月离职不发放；未配置绩效基数时默认为 0</div>
-    ${row('当日KPI达标', `<span>有效通话时长 ≥</span>${numIn('basic.kpiStd.minutes', b.kpiStd.minutes, 'min="0"', 'sm')}<span>分钟（必备），且 有效通话人数 ≥</span>${numIn('basic.kpiStd.talks', b.kpiStd.talks, 'min="0"', 'sm')}<span>个 / 加微数 ≥</span>${numIn('basic.kpiStd.wechat', b.kpiStd.wechat, 'min="0"', 'sm')}<span>个 / 当日营收 &gt;</span>${numIn('basic.kpiStd.revenue', b.kpiStd.revenue, 'min="0"', 'md')}<span>元，任一满足</span>`)}
+    ${row('当日KPI达标', `<span>有效通话时长 ≥</span>${numIn('basic.kpiStd.minutes', b.kpiStd.minutes, 'min="0"', 'sm')}<span>分钟（必备），且 有效通话人数 ≥</span>${numIn('basic.kpiStd.talks', b.kpiStd.talks, 'min="0"', 'sm')}<span>个 / 加微数 ≥</span>${numIn('basic.kpiStd.wechat', b.kpiStd.wechat, 'min="0"', 'sm')}<span>个 / 当日营收 &gt;</span>${numIn('basic.kpiStd.revenue', b.kpiStd.revenue, 'min="0"', 'md')}<span>元，任一满足</span>`, 'tgtKpiStd')}
     <div class="tip-text">有效通话时长取「外呼数据统计」的「合计有效通话时长」（企微 + CRM 通话中单通 ≥ 10 秒的时长之和，不含私人电话）；有效通话人数 = 同一数据源中有效通话的客户数（去重）；加微数 = 当日审核通过的「加微数申报」数量<br>半天出勤、法定节假日上班均需考核；半天出勤当天以上标准减半（如通话时长 25 分钟即满足）</div>
     ${row('未达标扣款', `<div style="display:flex;flex-direction:column;gap:12px">
       ${b.kpiDeds.map((t, i) => `<div class="sentence">
@@ -1556,7 +1485,7 @@ function renderBasicConfig() {
         <button class="link danger" onclick="delKpiDed(${i})">删除</button>
       </div>`).join('')}
       <div><button class="btn btn-sm" onclick="addKpiDed()">＋ 新增档位</button></div>
-    </div>`)}
+    </div>`, 'tgtKpiDed')}
     <div class="tip-text">按当月累计未达标次数匹配对应档位扣款（不叠加）；扣款金额填 0 表示仅警告不扣款；最后一档自动视为「及以上」<br>新人入职当月不扣减；当月 GMV ÷ 当月目标 ≥ 100% 时不考核过程指标（不扣 KPI 款）</div>
     <div style="border-top:1px solid #e4e7ed;margin-top:32px;padding-top:4px"><div class="footer-buttons"><button class="btn" onclick="resetCfg('basic')">重置</button><button class="btn btn-primary" onclick="saveBasic()">保存</button></div></div>
   </div></div>`;
@@ -1728,7 +1657,7 @@ function renderKpi() {
 
   return `<div class="page"><div class="card">
     ${roleBar()}
-    <div class="form-inline">
+    <div class="form-inline" id="tgtKpiFilter">
       <div class="form-item">${workerCtrl}</div>
       <div class="form-item">${orgCtrl}</div>
       <div class="form-item"><label>时间范围</label>
@@ -1740,7 +1669,7 @@ function renderKpi() {
     </div>
     <div class="tbl-meta">统计周期：${k.start === k.end ? k.start : `${k.start} 至 ${k.end}`}，共 ${n} 名坐席；默认按订单金额倒序，点击指标列表头可切换排序</div>
     <div class="tbl-meta" style="margin-top:-6px">有效通话次数、有效通话时长取「数据统计 → 外呼数据统计」个人面板的「合计有效通话次数」「合计有效通话时长」（企微 + CRM，单通 ≥ 10 秒为有效，不含私人电话）；有效通话人数 = 同一数据源中有效通话的客户数（去重）；加微数 = 当日审核通过的加微数申报；达标情况按「基础配置 → 当日KPI达标」判定</div>
-    ${table(cols, list, { maxHeight: 560, foot })}
+    <div id="tgtKpiTable">${table(cols, list, { maxHeight: 560, foot })}</div>
   </div></div>`;
 }
 
@@ -1891,7 +1820,7 @@ function renderDeclare() {
       <div class="form-item"><button class="btn btn-primary" onclick="searchDecl()">🔍 搜索</button><button class="btn" onclick="resetDecl()">重置</button></div>
       <div class="form-item right"><button class="btn btn-primary" onclick="openDeclForm()">发起申报</button></div>
     </div>
-    ${table(cols, rows)}
+    <div id="tgtDeclTable">${table(cols, rows)}</div>
     ${pager(all.length, f.page, 'declPage')}
   </div></div>`;
 }
@@ -1907,7 +1836,7 @@ function openDeclForm(id) {
       const min = minDeclDate(); const genDay = state.cfgSaved.basic.genDay;
       return `
       ${src ? `<div class="reject-tip">上次审核拒绝原因：${src.reason}</div>` : ''}
-      <div class="f-row"><div class="f-label req">申报日期</div><div class="f-ctrl">
+      <div class="f-row" id="tgtDeclForm"><div class="f-label req">申报日期</div><div class="f-ctrl">
         <input type="date" class="el-input" style="width:220px" value="${DF.date}" min="${min}" max="${TODAY}" onchange="DF.date=this.value;declValidate()">
         <div class="f-hint">默认当天，可选择过去日期；薪酬核算日（每月${genDay}号）后不可提交上月及之前日期的加微数</div>
       </div></div>
@@ -1994,7 +1923,7 @@ function openAudit(id) {
   openDialog({
     key: 'audit', title: '审核', width: 640,
     body: () => `${declInfoHtml(r)}
-      <div class="f-row" style="margin-top:18px"><div class="f-label req">审核结果</div><div class="f-ctrl"><div class="radio-group">
+      <div class="f-row" id="tgtAudit" style="margin-top:18px"><div class="f-label req">审核结果</div><div class="f-ctrl"><div class="radio-group">
         <label><input type="radio" name="auditRes" ${AUDIT.result === 'approved' ? 'checked' : ''} onchange="AUDIT.result='approved';refreshDialog('audit')">通过</label>
         <label><input type="radio" name="auditRes" ${AUDIT.result === 'rejected' ? 'checked' : ''} onchange="AUDIT.result='rejected';refreshDialog('audit')">拒绝</label>
       </div></div></div>
@@ -2095,7 +2024,7 @@ function renderMonthGoal() {
   const headcount = groups.reduce((s, x) => s + x.ms.length, 0);
   const numIn2 = (kind, id, v) => `<input type="number" class="el-input goal-in" min="0" step="1000" value="${v}" onclick="event.stopPropagation()" onchange="setGoal('${kind}',${id},this.value)">`;
 
-  const summary = isLeader ? `<div class="goal-summary">
+  const summary = isLeader ? `<div class="goal-summary" id="tgtGoalSummary">
       <div class="gs-item"><span class="gs-label">团队目标总计</span>${editable
         ? `<span><input type="number" class="el-input gs-input" min="0" step="10000" value="${d.team}" onchange="setGoal('team',null,this.value)"><span class="gs-unit" style="color:#fff">元</span></span>`
         : `<span class="gs-value lg">${fmtNum(d.team)}<span class="gs-unit">元</span></span>`}</div>
@@ -2104,7 +2033,7 @@ function renderMonthGoal() {
       <div class="gs-item"><span class="gs-label">小组数量</span><span class="gs-value">${groups.length}<span class="gs-unit">个</span></span></div>
       <div class="gs-item"><span class="gs-label">在职人数</span><span class="gs-value">${headcount}<span class="gs-unit">人</span></span></div>
     </div>`
-    : (() => { const x = groups[0]; return `<div class="goal-sup-info"><span>小组目标：<b>${fmtNum(x.target)}</b> 元（由团长设定）</span><span>组内人员目标合计：<b class="${x.sum < x.target ? 'sum-low' : ''}">${fmtNum(x.sum)}</b> 元</span>${x.sum < x.target ? `<span class="sum-low">还差 ${fmtNum(x.target - x.sum)} 元，需大于等于小组目标</span>` : '<span style="color:#67c23a">已满足小组目标</span>'}</div>`; })();
+    : (() => { const x = groups[0]; return `<div class="goal-sup-info" id="tgtGoalSup"><span>小组目标：<b>${fmtNum(x.target)}</b> 元（由团长设定）</span><span>组内人员目标合计：<b class="${x.sum < x.target ? 'sum-low' : ''}">${fmtNum(x.sum)}</b> 元</span>${x.sum < x.target ? `<span class="sum-low">还差 ${fmtNum(x.target - x.sum)} 元，需大于等于小组目标</span>` : '<span style="color:#67c23a">已满足小组目标</span>'}</div>`; })();
 
   const body = groups.map(x => {
     const open = g.expanded[x.id] ?? !isLeader;
@@ -2140,6 +2069,896 @@ searchSalary(false);
 searchAtt(false);
 searchKpi(false);
 render();
+</script>
+<script>
+window.DIFF_CHANGESET = {
+  "meta": {
+    "slug": "tiyanying-salary-system",
+    "prdUrl": "https://guanghe.feishu.cn/docx/EoBKdQrleoSgqFxY0hic9wzDns6",
+    "demoControls": []
+  },
+  "changes": [
+    {
+      "id": "chg-1",
+      "page": "菜单",
+      "module": "薪酬体系菜单",
+      "target": "#tgtMenu",
+      "view": {
+        "page": "agentSalary"
+      },
+      "level": "page",
+      "type": "new",
+      "title": "新增一级菜单「薪酬体系」",
+      "desc": "体验营CRM左侧菜单在「坐席管理」之后新增「薪酬体系」，下设坐席查询、实际出勤、坐席薪酬配置、KPI看板、加微数申报、月度目标配置六个二级菜单。",
+      "before": "无此菜单",
+      "after": "新增「薪酬体系」及六个二级菜单",
+      "prd": {
+        "section": "7.2.1 菜单入口",
+        "blockId": "doxcna4orUYiEzspar2lRgGwjac"
+      }
+    },
+    {
+      "id": "chg-2",
+      "page": "菜单",
+      "module": "月度目标配置迁移",
+      "target": "#tgtMenuConfig",
+      "view": {
+        "page": "agentSalary"
+      },
+      "level": "module",
+      "type": "delete",
+      "title": "「配置」菜单移除月度目标配置",
+      "desc": "月度目标配置从「配置」菜单移到「薪酬体系」菜单下，「配置」中不再展示。",
+      "before": "配置 → 月度目标配置",
+      "after": "薪酬体系 → 月度目标配置",
+      "prd": {
+        "section": "7.2.1 菜单入口",
+        "blockId": "doxcna4orUYiEzspar2lRgGwjac"
+      }
+    },
+    {
+      "id": "chg-3",
+      "page": "坐席查询",
+      "module": "薪酬列表",
+      "target": "#tgtSalaryTable",
+      "view": {
+        "page": "agentSalary",
+        "tab": "salary"
+      },
+      "level": "module",
+      "type": "new",
+      "title": "新增坐席薪酬列表",
+      "desc": "按月展示每位坐席的提成、绩效、基础薪资、奖金、其他类别、应发薪资、实发薪资，支持按小组、坐席、月份筛选和导出，顶部汇总提成、绩效、基础薪资、奖金合计。",
+      "before": "无此功能",
+      "after": "按月查看坐席薪酬及汇总，可导出",
+      "examples": [
+        "当月离职坐席：实发薪资 = 应发薪资 − 当月提成（提成延后一个月发放）"
+      ],
+      "prd": {
+        "section": "7.2.2 坐席查询",
+        "blockId": "doxcn3D9d5n8viEOwZE56dAY02f"
+      }
+    },
+    {
+      "id": "chg-4",
+      "page": "坐席查询",
+      "module": "查看明细",
+      "target": "#tgtSalaryDetail",
+      "view": {
+        "page": "agentSalary",
+        "tab": "salary",
+        "dialog": "salDetail"
+      },
+      "level": "module",
+      "type": "logic",
+      "title": "新增薪酬明细弹窗",
+      "desc": "点击「查看明细」按底薪、绩效、提成、奖金、其他五部分展示每一项的取值与计算过程，退款、上月退款、上月申诉可下钻查看订单明细。",
+      "before": "无此功能",
+      "after": "可逐项核对薪酬计算过程",
+      "examples": [
+        "新人入职当月：KPI扣款显示 0 元（新人入职当月不扣减）",
+        "当月完成目标：KPI扣款显示 0 元（当月已完成目标，不考核过程指标）"
+      ],
+      "prd": {
+        "section": "7.2.2 坐席查询",
+        "blockId": "doxcn3D9d5n8viEOwZE56dAY02f"
+      }
+    },
+    {
+      "id": "chg-5",
+      "page": "坐席查询",
+      "module": "双算业绩",
+      "target": "#tgtDs",
+      "view": {
+        "page": "agentSalary",
+        "tab": "external"
+      },
+      "level": "module",
+      "type": "new",
+      "title": "新增双算业绩录入",
+      "desc": "支持新增、批量上传、编辑、删除双算业绩订单，按薪资归属月份计入坐席当月GMV；已生成薪酬的月份不可编辑或删除。",
+      "before": "无此功能",
+      "after": "双算业绩线上录入并参与薪酬计算",
+      "prd": {
+        "section": "7.2.2 坐席查询",
+        "blockId": "doxcn3D9d5n8viEOwZE56dAY02f"
+      }
+    },
+    {
+      "id": "chg-6",
+      "page": "实际出勤",
+      "module": "出勤列表",
+      "target": "#tgtAttTable",
+      "view": {
+        "page": "actualAttendance",
+        "ym": "2026-11"
+      },
+      "level": "module",
+      "type": "new",
+      "title": "新增实际出勤列表",
+      "desc": "按月展示坐席每日出勤状态（休、班、半、法、薪、0.5法）及应出勤天数、所属小组、入离职时间，规则与电销一致。",
+      "before": "无此功能",
+      "after": "按月查看坐席出勤，作为基础薪资与绩效的出勤依据",
+      "prd": {
+        "section": "7.2.3 实际出勤",
+        "blockId": "doxcnbIweNXCgHCDtCmvgYMdDEf"
+      }
+    },
+    {
+      "id": "chg-7",
+      "page": "实际出勤",
+      "module": "出勤编辑",
+      "target": "#tgtAttOps",
+      "view": {
+        "page": "actualAttendance",
+        "ym": "2026-11"
+      },
+      "level": "module",
+      "type": "new",
+      "title": "新增出勤编辑、批量编辑与特殊设置",
+      "desc": "支持单人编辑每日出勤和应出勤天数、勾选多人批量修改应出勤天数、设置法定节假日、查看出勤说明；已生成薪酬的月份隐藏编辑入口。",
+      "before": "无此功能",
+      "after": "可手动修正出勤数据",
+      "prd": {
+        "section": "7.2.3 实际出勤",
+        "blockId": "doxcnbIweNXCgHCDtCmvgYMdDEf"
+      }
+    },
+    {
+      "id": "chg-8",
+      "page": "坐席薪酬配置",
+      "module": "底薪",
+      "target": "#tgtBaseAmount",
+      "view": {
+        "page": "agentSalarySetting",
+        "setting": "baseSalary"
+      },
+      "level": "module",
+      "type": "logic",
+      "title": "新增基本薪资基数配置",
+      "desc": "基本薪资基数默认 4000 元，按出勤折算；法定节假日上班薪资按基数 ÷ 21.75 × 3 × 上班天数计算；新老员工一致，带薪假期不计入。",
+      "before": "无此功能",
+      "after": "基数可配置，按出勤折算",
+      "prd": {
+        "section": "7.2.4 坐席薪酬配置",
+        "blockId": "doxcn5hStx421XEm52RB8LDtt7e"
+      }
+    },
+    {
+      "id": "chg-9",
+      "page": "坐席薪酬配置",
+      "module": "底薪",
+      "target": "#tgtRankSalary",
+      "view": {
+        "page": "agentSalarySetting",
+        "setting": "baseSalary"
+      },
+      "level": "module",
+      "type": "logic",
+      "title": "新增GMV排名薪资配置",
+      "desc": "当月填写了目标的坐席统一按GMV排名，按排名分位匹配排名薪资（前0~10% 2500元 … 前50~100% 0元），不按出勤折算，未填写目标无排名薪资。",
+      "before": "无此功能",
+      "after": "排名分位与排名薪资可配置",
+      "examples": [
+        "第3名 / 共21人：排名分位 14.29%，排名薪资 2000 元"
+      ],
+      "prd": {
+        "section": "7.2.4 坐席薪酬配置",
+        "blockId": "doxcn5hStx421XEm52RB8LDtt7e"
+      }
+    },
+    {
+      "id": "chg-10",
+      "page": "坐席薪酬配置",
+      "module": "提成",
+      "target": "#tgtCommGears",
+      "view": {
+        "page": "agentSalarySetting",
+        "setting": "commission"
+      },
+      "level": "module",
+      "type": "logic",
+      "title": "新增提成档位配置",
+      "desc": "按当月GMV所在区间匹配提点，业绩达标（当月GMV ÷ 当月目标 ≥ 100%）与不达标分别配置；默认档位：2万以下0%，2~4万5%/4% … 20万及以上15%/14%。",
+      "before": "无此功能",
+      "after": "提成档位可配置",
+      "prd": {
+        "section": "7.2.4 坐席薪酬配置",
+        "blockId": "doxcn5hStx421XEm52RB8LDtt7e"
+      }
+    },
+    {
+      "id": "chg-11",
+      "page": "坐席薪酬配置",
+      "module": "提成",
+      "target": "#tgtCommRules",
+      "view": {
+        "page": "agentSalarySetting",
+        "setting": "commission"
+      },
+      "level": "module",
+      "type": "logic",
+      "title": "新增提成特殊规则",
+      "desc": "新人入职当月业绩超过 2 万元按「业绩达标」提点计算；老员工业绩低于 4 万元且完成率未高于 50% 时无提成，该规则仅对老员工生效。",
+      "before": "无此功能",
+      "after": "两条特殊规则阈值可配置",
+      "examples": [
+        "新人入职当月 GMV 100799 元、未填目标：按达标提点 9% 计算"
+      ],
+      "prd": {
+        "section": "7.2.4 坐席薪酬配置",
+        "blockId": "doxcn5hStx421XEm52RB8LDtt7e"
+      }
+    },
+    {
+      "id": "chg-12",
+      "page": "坐席薪酬配置",
+      "module": "奖金",
+      "target": "#tgtNewKing",
+      "view": {
+        "page": "agentSalarySetting",
+        "setting": "bonus"
+      },
+      "level": "module",
+      "type": "logic",
+      "title": "新增新人王奖励配置",
+      "desc": "入职当月及第一个完整月的新人中GMV排名第一且当月GMV达到门槛的发放奖金；GMV门槛与奖金留空自主配置，并列第一均发放，每人仅可获得一次。",
+      "before": "无此功能",
+      "after": "GMV门槛与奖金可配置",
+      "prd": {
+        "section": "7.2.4 坐席薪酬配置",
+        "blockId": "doxcn5hStx421XEm52RB8LDtt7e"
+      }
+    },
+    {
+      "id": "chg-13",
+      "page": "坐席薪酬配置",
+      "module": "奖金",
+      "target": "#tgtConv",
+      "view": {
+        "page": "agentSalarySetting",
+        "setting": "bonus"
+      },
+      "level": "module",
+      "type": "logic",
+      "title": "新增当期转化率奖金配置",
+      "desc": "结营在薪酬月份内的每个期次单独排名，初中、小学分开排名，满足转化率与订单数门槛才参与；不同学段不同名次奖金可配置，同月多个期次奖金累加。",
+      "before": "无此功能",
+      "after": "参与门槛、统计线索等级、学段名次奖金可配置",
+      "examples": [
+        "小学某坐席：2610-1期 转化率 26.32%（5单）第1名 800 元；2610-3期 转化率 5.56% 未达门槛"
+      ],
+      "prd": {
+        "section": "7.2.4 坐席薪酬配置",
+        "blockId": "doxcn5hStx421XEm52RB8LDtt7e"
+      }
+    },
+    {
+      "id": "chg-14",
+      "page": "坐席薪酬配置",
+      "module": "自定义项",
+      "target": "#tgtCustom",
+      "view": {
+        "page": "agentSalarySetting",
+        "setting": "customItem"
+      },
+      "level": "module",
+      "type": "new",
+      "title": "新增自定义项",
+      "desc": "按小组和月份配置奖励或惩罚项，归属类别分为绩效、奖金、其他，分别计入对应薪酬模块；质检扣款、活动现金激励通过自定义项录入。",
+      "before": "无此功能",
+      "after": "可新增、批量上传、编辑、删除自定义项",
+      "prd": {
+        "section": "7.2.4 坐席薪酬配置",
+        "blockId": "doxcn5hStx421XEm52RB8LDtt7e"
+      }
+    },
+    {
+      "id": "chg-15",
+      "page": "坐席薪酬配置",
+      "module": "基础配置",
+      "target": "#tgtEmpDef",
+      "view": {
+        "page": "agentSalarySetting",
+        "setting": "basicConfig"
+      },
+      "level": "module",
+      "type": "logic",
+      "title": "新增员工定义与薪酬生成时间",
+      "desc": "新人保护期 = 入职当月 + 2 个完整月，入职第 3 个完整月起为老员工，入职时间取飞书入职时间、次月为第一个完整月；薪酬每月 5 号生成，生成后上月数据不再变化。",
+      "before": "无此功能",
+      "after": "员工阶段与薪酬生成日可配置",
+      "prd": {
+        "section": "7.2.4 坐席薪酬配置",
+        "blockId": "doxcn5hStx421XEm52RB8LDtt7e"
+      }
+    },
+    {
+      "id": "chg-16",
+      "page": "坐席薪酬配置",
+      "module": "基础配置",
+      "target": "#tgtKpiStd",
+      "view": {
+        "page": "agentSalarySetting",
+        "setting": "basicConfig"
+      },
+      "level": "module",
+      "type": "logic",
+      "title": "新增当日KPI达标标准",
+      "desc": "有效通话时长 ≥ 50 分钟为必备，且有效通话人数 ≥ 15、加微数 ≥ 6、当日营收 > 2000 元任一满足即当日达标；半天出勤当天标准减半。",
+      "before": "无此功能",
+      "after": "四项达标阈值可配置",
+      "examples": [
+        "半天出勤：营收 1498 元超过减半后的 1000 元，判定达标"
+      ],
+      "prd": {
+        "section": "7.2.4 坐席薪酬配置",
+        "blockId": "doxcn5hStx421XEm52RB8LDtt7e"
+      }
+    },
+    {
+      "id": "chg-17",
+      "page": "坐席薪酬配置",
+      "module": "基础配置",
+      "target": "#tgtKpiDed",
+      "view": {
+        "page": "agentSalarySetting",
+        "setting": "basicConfig"
+      },
+      "level": "module",
+      "type": "logic",
+      "title": "新增绩效基数与未达标扣款档位",
+      "desc": "绩效基数 1000 元按出勤折算；按当月累计未达标次数匹配扣款档位（1次警告、2次100元、3次200元、4次300元、5次及以上500元），档位可增删。",
+      "before": "无此功能",
+      "after": "绩效基数与扣款档位可配置",
+      "prd": {
+        "section": "7.2.4 坐席薪酬配置",
+        "blockId": "doxcn5hStx421XEm52RB8LDtt7e"
+      }
+    },
+    {
+      "id": "chg-18",
+      "page": "KPI看板",
+      "module": "指标列表",
+      "target": "#tgtKpiTable",
+      "view": {
+        "page": "kpiBoard",
+        "role": "leader"
+      },
+      "level": "module",
+      "type": "new",
+      "title": "新增KPI看板列表",
+      "desc": "展示有效通话时长、有效通话次数、有效通话人数、订单金额、加微数、达标情况（达标/考核）、坐席、所在小组，默认按订单金额倒序，最后一行展示前五项的总计与均值。",
+      "before": "无此功能",
+      "after": "按坐席查看KPI过程数据与达标天数",
+      "examples": [
+        "达标情况展示为「达标天数/考核天数」，如 11/15"
+      ],
+      "prd": {
+        "section": "7.2.5 KPI看板",
+        "blockId": "doxcnSU6IFieTvmAWOkSjDT6z2b"
+      }
+    },
+    {
+      "id": "chg-19",
+      "page": "KPI看板",
+      "module": "筛选与导出",
+      "target": "#tgtKpiFilter",
+      "view": {
+        "page": "kpiBoard",
+        "role": "leader"
+      },
+      "level": "module",
+      "type": "new",
+      "title": "新增KPI看板筛选、导出与数据权限",
+      "desc": "支持按坐席、小组、时间范围筛选，时间默认当天、不支持跨月；导出字段与列表一致；组员看自己，主管看本组，团长看全部。",
+      "before": "无此功能",
+      "after": "按角色查看与导出KPI数据",
+      "prd": {
+        "section": "7.2.5 KPI看板",
+        "blockId": "doxcnSU6IFieTvmAWOkSjDT6z2b"
+      }
+    },
+    {
+      "id": "chg-20",
+      "page": "加微数申报",
+      "module": "申报列表",
+      "target": "#tgtDeclTable",
+      "view": {
+        "page": "wechatDeclare",
+        "role": "leader"
+      },
+      "level": "module",
+      "type": "new",
+      "title": "新增加微数申报列表",
+      "desc": "展示申报日期、加微数、图片、提报人、提报时间、审核状态、审核人、审核时间及操作，按提报时间倒序；操作随状态变化，按提报人控制数据权限。",
+      "before": "无此功能",
+      "after": "查看与处理加微数申报",
+      "examples": [
+        "待审核：查看详情、审核",
+        "审核拒绝：查看详情、重新提交",
+        "审核通过：查看详情"
+      ],
+      "prd": {
+        "section": "7.2.6 加微数申报",
+        "blockId": "doxcnDlcwzWxK48wve5CcsoHO2c"
+      }
+    },
+    {
+      "id": "chg-21",
+      "page": "加微数申报",
+      "module": "发起申报",
+      "target": "#tgtDeclForm",
+      "view": {
+        "page": "wechatDeclare",
+        "role": "member",
+        "dialog": "declForm"
+      },
+      "level": "module",
+      "type": "flow",
+      "title": "新增发起申报弹窗",
+      "desc": "填写申报日期（默认当天、可选过去）、加微数（≥6 的正整数）、上传图片（最多5张），加微数和图片都填写后才可提交；同一天已有通过或待审核的申报不可重复提交，薪酬核算日后不可提交上月及之前日期。",
+      "before": "无此功能",
+      "after": "坐席线上提报加微数",
+      "prd": {
+        "section": "7.2.6 加微数申报",
+        "blockId": "doxcnDlcwzWxK48wve5CcsoHO2c"
+      }
+    },
+    {
+      "id": "chg-22",
+      "page": "加微数申报",
+      "module": "审核",
+      "target": "#tgtAudit",
+      "view": {
+        "page": "wechatDeclare",
+        "role": "supervisor",
+        "dialog": "audit"
+      },
+      "level": "module",
+      "type": "flow",
+      "title": "新增申报审核",
+      "desc": "所在组主管或团长审核，选择通过或拒绝，拒绝需填写原因；审核通过后加微数计入提报人申报日期当天的KPI看板；审核按钮单独受权限控制，不能审核本人的申报。",
+      "before": "无此功能",
+      "after": "主管/团长线上审核加微数",
+      "prd": {
+        "section": "7.2.6 加微数申报",
+        "blockId": "doxcnDlcwzWxK48wve5CcsoHO2c"
+      }
+    },
+    {
+      "id": "chg-23",
+      "page": "月度目标配置",
+      "module": "团长视图",
+      "target": "#tgtGoalSummary",
+      "view": {
+        "page": "monthGoal",
+        "role": "leader"
+      },
+      "level": "module",
+      "type": "logic",
+      "title": "团长可设置团队总目标与小组目标",
+      "desc": "团长看全部小组并展示团队目标总计面板，可修改团队总目标、小组目标和组内人员目标；保存时校验小组目标之和等于团队总目标、每组人员目标之和不低于小组目标。",
+      "before": "团队目标总计与小组目标均由人员目标自动加总",
+      "after": "团队总目标、小组目标单独设置并校验",
+      "prd": {
+        "section": "7.2.7 月度目标配置",
+        "blockId": "doxcnas6IAJf795W0cp5lZBrgRe"
+      }
+    },
+    {
+      "id": "chg-24",
+      "page": "月度目标配置",
+      "module": "主管视图",
+      "target": "#tgtGoalSup",
+      "view": {
+        "page": "monthGoal",
+        "role": "supervisor"
+      },
+      "level": "module",
+      "type": "logic",
+      "title": "主管仅可修改本组人员目标",
+      "desc": "主管只看本组，不展示团队目标总计面板，小组目标只读，只能修改组内人员目标，保存时校验组内人员目标之和不低于小组目标。",
+      "before": "所有可访问人员看到全部小组与统计面板",
+      "after": "主管只看本组、只改人员目标",
+      "examples": [
+        "人员目标合计 271,000 元、小组目标 300,000 元：提示还差 29,000 元，不可保存"
+      ],
+      "prd": {
+        "section": "7.2.7 月度目标配置",
+        "blockId": "doxcnas6IAJf795W0cp5lZBrgRe"
+      }
+    }
+  ]
+};
+window.DIFF_HOOKS = {
+  locate: function (change) {
+    var v = change.view || {};
+    DIALOGS = []; renderDialogs();
+    if (v.role && state.role !== v.role) setRole(v.role);
+    if (v.page) { state.page = v.page; if (state.openedTabs.indexOf(v.page) < 0) state.openedTabs.push(v.page); }
+    if (v.tab) state.salaryTab = v.tab;
+    if (v.setting) state.settingTab = v.setting;
+    if (v.page === 'actualAttendance' && v.ym) { state.att.ym = v.ym; searchAtt(false); }
+    render();
+    var dialogs = {
+      salDetail: function () { if (state.sal.list.length) openSalaryDetail(state.sal.list[0].workerId); },
+      declForm: function () { openDeclForm(); },
+      audit: function () { var r = DECL_LIST.filter(declInScope).filter(canAudit)[0]; if (r) openAudit(r.id); }
+    };
+    if (v.dialog && dialogs[v.dialog]) dialogs[v.dialog]();
+  },
+  setDemoState: function () {}
+};
+(function () {
+  var queued = false;
+  document.addEventListener('scroll', function () {
+    if (queued || !window.__diffRemeasure) return;
+    queued = true;
+    requestAnimationFrame(function () { queued = false; window.__diffRemeasure(); });
+  }, true);
+})();
+</script>
+<script>
+(function () {
+  var data = window.DIFF_CHANGESET || { meta: {}, changes: [] };
+  var meta = data.meta || {};
+  var CHANGES = data.changes || [];
+  var TYPE = { logic: "逻辑", "new": "新增", copy: "文案", enum: "枚举口径", flow: "流程", "delete": "删除" };
+  var LEVEL = { page: "页面", module: "模块", field: "字段" };
+  var slug = meta.slug || "prd";
+  var LS_KEY = "proto-note:" + slug + ":modules:v1";
+  var LS_RAIL = "proto-note:" + slug + ":rail:v1";
+
+  var style = document.createElement("style");
+  style.textContent = [
+    "#diffPage, .page { position: relative; }",
+    "#diffRail { position: fixed; top: 0; right: 0; width: 360px; height: 100%; z-index: 9100; background: #0c2340; color: #d7e4f2; display: flex; flex-direction: column; box-shadow: -8px 0 28px rgba(0,0,0,.28); font-size: 13px; }",
+    "#diffRail.collapsed { display: none; }",
+    "#diffFab { position: fixed; right: 18px; bottom: 18px; z-index: 9100; display: none; background: #0c2340; color: #fff; border: 0; border-radius: 18px; height: 36px; padding: 0 14px; box-shadow: 0 6px 18px rgba(0,0,0,.25); }",
+    "#diffFab.show { display: inline-flex; align-items: center; }",
+    ".diff-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 14px 8px; }",
+    ".diff-head b { font-size: 15px; color: #fff; font-weight: 600; }",
+    ".diff-icon { width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: #9fc0de; cursor: pointer; }",
+    ".diff-icon:hover { background: rgba(255,255,255,.08); color: #fff; }",
+    ".diff-demo { display: flex; gap: 4px; padding: 0 12px 10px; }",
+    ".diff-demo button { flex: 1; height: 28px; border: 0; border-radius: 6px; background: #16365a; color: #b7cbe0; padding: 0 4px; font-size: 12px; cursor: pointer; }",
+    ".diff-demo button.on { background: #1f6feb; color: #fff; }",
+    ".diff-mods { padding: 0 12px 8px; display: flex; flex-direction: column; gap: 8px; }",
+    ".diff-group { background: #102c4c; border-radius: 8px; padding: 8px 10px; }",
+    ".diff-group .name { color: #8fb4d6; font-size: 12px; margin-bottom: 4px; }",
+    ".diff-check { display: flex; align-items: center; gap: 8px; padding: 4px 0; color: #e7f0f8; cursor: pointer; }",
+    ".diff-check input { accent-color: #3b82f6; }",
+    "#diffCards { flex: 1; overflow: auto; padding: 4px 12px 20px; }",
+    ".diff-card { background: #14365c; border: 1px solid transparent; border-radius: 10px; padding: 12px; margin-bottom: 10px; cursor: pointer; }",
+    ".diff-card:hover, .diff-card.pin { border-color: #f0b429; }",
+    ".diff-no { display: inline-flex; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: #f0b429; color: #1a1a1a; font-weight: 700; font-size: 12px; align-items: center; justify-content: center; }",
+    ".diff-card h4 { margin: 8px 0 4px; font-size: 14px; color: #fff; font-weight: 600; }",
+    ".diff-meta { color: #8fb4d6; font-size: 12px; }",
+    ".diff-card p { margin: 8px 0; line-height: 1.55; color: #d7e4f2; }",
+    ".diff-ba { display: flex; gap: 8px; margin-top: 6px; line-height: 1.5; }",
+    ".diff-ba span { flex: none; width: 20px; height: 20px; border-radius: 4px; background: #0c2340; color: #f0b429; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }",
+    ".diff-ba div { min-width: 0; }",
+    ".diff-ex { margin: 8px 0 0; padding-left: 18px; color: #c5d7ea; }",
+    ".diff-ex li { margin: 2px 0; }",
+    ".diff-link { display: inline-block; margin-top: 8px; color: #7cc4ff; text-decoration: none; }",
+    ".diff-link:hover { text-decoration: underline; }",
+    ".diff-anchor { position: absolute; z-index: 9000; width: 22px; height: 22px; border: 0; border-radius: 11px; background: #f0b429; color: #1a1a1a; font-weight: 700; font-size: 12px; padding: 0; transform: translate(-2px, -2px); box-shadow: 0 2px 8px rgba(0,0,0,.25); cursor: pointer; }",
+    ".diff-anchor.pin { outline: 2px solid #fff; }",
+    ".diff-pulse { animation: diffPulse 1.1s ease 2; }",
+    "@keyframes diffPulse { 0% { box-shadow: 0 0 0 0 rgba(240,180,41,.7); } 100% { box-shadow: 0 0 0 8px rgba(240,180,41,0); } }",
+    "#diffCanvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 8900; pointer-events: none; }"
+  ].join("\n");
+  document.head.appendChild(style);
+
+  var rail = document.createElement("div");
+  rail.id = "diffRail";
+  rail.innerHTML = '<div class="diff-head"><b>变更批注</b><button class="diff-icon" id="diffCollapse" type="button" aria-label="收起批注栏">›</button></div><div class="diff-demo" id="diffDemo"></div><div class="diff-mods" id="diffMods"></div><div id="diffCards"></div>';
+  var fab = document.createElement("button");
+  fab.id = "diffFab";
+  fab.type = "button";
+  fab.textContent = "变更批注";
+  var canvas = document.createElement("canvas");
+  canvas.id = "diffCanvas";
+  document.body.appendChild(rail);
+  document.body.appendChild(fab);
+  document.body.appendChild(canvas);
+  var ctx = canvas.getContext("2d");
+
+  function esc(text) {
+    return String(text == null ? "" : text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function pageEl() {
+    return document.getElementById("diffPage") || document.querySelector(".page") || document.body;
+  }
+  function prdHref(item) {
+    var base = String(meta.prdUrl || "").replace(/#.*$/, "");
+    var blockId = item.prd && item.prd.blockId;
+    if (!base) return "";
+    return base + (blockId ? "#" + blockId : "");
+  }
+
+  var modules = [];
+  CHANGES.forEach(function (item) {
+    var key = item.page + "::" + item.module;
+    if (modules.indexOf(key) < 0) modules.push(key);
+  });
+  var stored = null;
+  try { stored = JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch (e) { stored = null; }
+  var checked = {};
+  modules.forEach(function (key) {
+    if (!stored) checked[key] = true;
+    else checked[key] = stored[key] === undefined ? true : !!stored[key];
+  });
+  var railOpen = localStorage.getItem(LS_RAIL) !== "0";
+  var pinId = null;
+  var hoverId = null;
+  var demo = (meta.demoControls && meta.demoControls[0] && meta.demoControls[0].id) || "";
+
+  function scrollTo(el) {
+    if (!el) return;
+    try { el.scrollIntoView({ behavior: "instant", block: "center", inline: "nearest" }); }
+    catch (e) { el.scrollIntoView(); }
+    var railW = rail.classList.contains("collapsed") ? 0 : 360;
+    var rect = el.getBoundingClientRect();
+    var limit = window.innerWidth - railW - 28;
+    if (rect.left > limit - 24) {
+      var scroller = el.closest(".table-wrap") || pageEl();
+      scroller.scrollLeft += rect.right - limit;
+    }
+  }
+  function pulse(el) {
+    if (!el) return;
+    el.classList.remove("diff-pulse");
+    void el.offsetWidth;
+    el.classList.add("diff-pulse");
+  }
+  function visibleChanges() {
+    return CHANGES.filter(function (item) { return checked[item.page + "::" + item.module]; });
+  }
+  function saveChecked() {
+    localStorage.setItem(LS_KEY, JSON.stringify(checked));
+  }
+  function focusChange(change) {
+    if (window.DIFF_HOOKS && typeof DIFF_HOOKS.locate === "function") DIFF_HOOKS.locate(change);
+    setTimeout(function () {
+      var el = document.querySelector(change.target);
+      scrollTo(el);
+      pulse(el);
+      measure();
+    }, 30);
+  }
+
+  function paintDemo() {
+    var box = document.getElementById("diffDemo");
+    var controls = meta.demoControls || [];
+    box.innerHTML = "";
+    if (!controls.length) {
+      box.style.display = "none";
+      return;
+    }
+    box.style.display = "";
+    controls.forEach(function (pair) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = pair.label;
+      btn.className = demo === pair.id ? "on" : "";
+      btn.onclick = function () {
+        demo = pair.id;
+        if (window.DIFF_HOOKS && typeof DIFF_HOOKS.setDemoState === "function") DIFF_HOOKS.setDemoState(pair.id);
+        paintDemo();
+        measure();
+      };
+      box.appendChild(btn);
+    });
+  }
+  function paintMods() {
+    var box = document.getElementById("diffMods");
+    box.innerHTML = "";
+    var pages = [];
+    modules.forEach(function (key) {
+      var page = key.split("::")[0];
+      if (pages.indexOf(page) < 0) pages.push(page);
+    });
+    pages.forEach(function (page) {
+      var group = document.createElement("div");
+      group.className = "diff-group";
+      var name = document.createElement("div");
+      name.className = "name";
+      name.textContent = page;
+      group.appendChild(name);
+      modules.forEach(function (key) {
+        if (key.split("::")[0] !== page) return;
+        var label = document.createElement("label");
+        label.className = "diff-check";
+        var input = document.createElement("input");
+        input.type = "checkbox";
+        input.checked = !!checked[key];
+        input.onchange = function () {
+          checked[key] = input.checked;
+          saveChecked();
+          if (input.checked) {
+            var first = CHANGES.filter(function (item) { return item.page + "::" + item.module === key; })[0];
+            pinId = first.id;
+            paintCards();
+            focusChange(first);
+          } else {
+            if (pinId && !visibleChanges().some(function (item) { return item.id === pinId; })) pinId = null;
+            paintCards();
+            measure();
+          }
+        };
+        var text = document.createElement("span");
+        text.textContent = key.split("::")[1];
+        label.appendChild(input);
+        label.appendChild(text);
+        group.appendChild(label);
+      });
+      box.appendChild(group);
+    });
+  }
+  function paintCards() {
+    var box = document.getElementById("diffCards");
+    box.innerHTML = "";
+    visibleChanges().forEach(function (item) {
+      var index = CHANGES.indexOf(item) + 1;
+      var no = (index < 10 ? "0" : "") + index;
+      var card = document.createElement("article");
+      card.className = "diff-card" + (pinId === item.id ? " pin" : "");
+      card.setAttribute("data-id", item.id);
+      var examples = (item.examples || []).map(function (line) { return "<li>" + esc(line) + "</li>"; }).join("");
+      var href = prdHref(item);
+      var section = item.prd && item.prd.section;
+      card.innerHTML =
+        '<span class="diff-no">' + no + '</span>' +
+        '<h4>' + esc(item.title) + '</h4>' +
+        '<div class="diff-meta">' + esc(TYPE[item.type] || item.type) + " · " + esc(LEVEL[item.level] || item.level) + '</div>' +
+        '<p>' + esc(item.desc) + '</p>' +
+        '<div class="diff-ba"><span>前</span><div>' + esc(item.before) + '</div></div>' +
+        '<div class="diff-ba"><span>后</span><div>' + esc(item.after) + '</div></div>' +
+        (examples ? '<ul class="diff-ex">' + examples + '</ul>' : '') +
+        (href && section ? '<a class="diff-link" target="_blank" rel="noopener" href="' + esc(href) + '">PRD · ' + esc(section) + '</a>' : '');
+      card.onmouseenter = function () { hoverId = item.id; draw(); };
+      card.onmouseleave = function () { if (hoverId === item.id) hoverId = null; draw(); };
+      card.onclick = function (e) {
+        if (e.target.closest("a")) return;
+        pinId = item.id;
+        paintCards();
+        var active = document.querySelector('.diff-card[data-id="' + item.id + '"]');
+        if (active) active.scrollIntoView({ block: "nearest" });
+        focusChange(item);
+      };
+      box.appendChild(card);
+    });
+  }
+  function syncRail() {
+    rail.classList.toggle("collapsed", !railOpen);
+    fab.classList.toggle("show", !railOpen);
+    localStorage.setItem(LS_RAIL, railOpen ? "1" : "0");
+    var page = pageEl();
+    var spacer = document.getElementById("diffSpacer");
+    if (railOpen) {
+      if (!spacer) {
+        spacer = document.createElement("div");
+        spacer.id = "diffSpacer";
+        spacer.style.cssText = "width:calc(100% + 360px);height:1px;pointer-events:none;";
+        page.appendChild(spacer);
+      }
+    } else if (spacer) {
+      spacer.remove();
+    }
+  }
+  function shown(el) {
+    return !!(el && el.getClientRects().length);
+  }
+  function measure() {
+    document.querySelectorAll(".diff-anchor").forEach(function (node) { node.remove(); });
+    var page = pageEl();
+    var pageRect = page.getBoundingClientRect();
+    visibleChanges().forEach(function (item) {
+      var el = document.querySelector(item.target);
+      if (!shown(el)) return;
+      var rect = el.getBoundingClientRect();
+      var anchor = document.createElement("button");
+      anchor.type = "button";
+      anchor.className = "diff-anchor" + (pinId === item.id ? " pin" : "");
+      anchor.setAttribute("data-id", item.id);
+      var index = CHANGES.indexOf(item) + 1;
+      anchor.textContent = (index < 10 ? "0" : "") + index;
+      anchor.style.left = (rect.left - pageRect.left + page.scrollLeft) + "px";
+      anchor.style.top = (rect.top - pageRect.top + page.scrollTop) + "px";
+      anchor.onclick = function (e) {
+        e.stopPropagation();
+        pinId = item.id;
+        hoverId = null;
+        if (!railOpen) {
+          railOpen = true;
+          syncRail();
+        }
+        paintCards();
+        var card = document.querySelector('.diff-card[data-id="' + item.id + '"]');
+        if (card) card.scrollIntoView({ block: "nearest" });
+        pulse(el);
+        measure();
+      };
+      anchor.onmouseenter = function () { hoverId = item.id; draw(); };
+      anchor.onmouseleave = function () { if (hoverId === item.id) hoverId = null; draw(); };
+      page.appendChild(anchor);
+      anchor.style.visibility = "hidden";
+      var top = document.elementFromPoint(rect.left + 11, rect.top + 11);
+      anchor.style.visibility = "";
+      if (top && top.closest && top.closest("#diffRail")) anchor.style.display = "none";
+    });
+    draw();
+  }
+  window.__diffRemeasure = function () { measure(); };
+  function resizeCanvas() {
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.floor(window.innerWidth * dpr);
+    canvas.height = Math.floor(window.innerHeight * dpr);
+    canvas.style.width = window.innerWidth + "px";
+    canvas.style.height = window.innerHeight + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+  function draw() {
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    if (!railOpen) return;
+    var id = pinId || hoverId;
+    if (!id) return;
+    var card = document.querySelector('.diff-card[data-id="' + id + '"]');
+    var anchor = document.querySelector('.diff-anchor[data-id="' + id + '"]');
+    if (!card || !anchor || anchor.style.display === "none") return;
+    var a = card.getBoundingClientRect();
+    var b = anchor.getBoundingClientRect();
+    var page = pageEl().getBoundingClientRect();
+    if (b.bottom < page.top || b.top > page.bottom || b.right < page.left || b.left > page.right) return;
+    var x1 = a.left;
+    var y1 = Math.min(Math.max(a.top + a.height / 2, 8), window.innerHeight - 8);
+    var x2 = b.left + b.width / 2;
+    var y2 = b.top + b.height / 2;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.bezierCurveTo((x1 + x2) / 2, y1, (x1 + x2) / 2, y2, x2, y2);
+    ctx.strokeStyle = "#f0b429";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  document.getElementById("diffCollapse").onclick = function () { railOpen = false; syncRail(); measure(); };
+  fab.onclick = function () { railOpen = true; syncRail(); measure(); };
+  rail.addEventListener("click", function (e) { e.stopPropagation(); });
+  pageEl().addEventListener("scroll", measure);
+  window.addEventListener("resize", function () { resizeCanvas(); measure(); });
+  document.querySelectorAll(".table-wrap").forEach(function (node) { node.addEventListener("scroll", measure); });
+  paintDemo();
+  paintMods();
+  paintCards();
+  syncRail();
+  resizeCanvas();
+  measure();
+})();
+
 </script>
 </body>
 </html>
