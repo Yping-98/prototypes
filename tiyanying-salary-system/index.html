@@ -137,8 +137,6 @@
   .role-tag { background: #722ed1; color: #fff; border-radius: 3px; padding: 1px 6px; font-size: 12px; }
   .role-desc { color: #722ed1; margin-left: 6px; }
   .range-sep { padding: 0 8px; color: #606266; }
-  .shortcut { margin-left: 8px; }
-  .shortcut .link { font-size: 13px; }
   .tbl-meta { font-size: 13px; color: #909399; margin-bottom: 10px; }
   .sortable { cursor: pointer; user-select: none; display: inline-flex; align-items: center; gap: 4px; }
   .caret { display: inline-flex; flex-direction: column; font-size: 8px; line-height: 7px; color: #c0c4cc; }
@@ -283,7 +281,8 @@
     <li>位于「薪酬体系」下第四个二级菜单。</li>
     <li>字段：有效通话时长、有效通话次数、有效通话人数、订单金额、加微数、达标情况（达标/考核，展示为「达标天数/绩效考核天数」，如 12/15）、坐席、所在小组；默认按订单金额倒序。</li>
     <li>列表最后一行固定展示前五个指标的总计与均值（均值 = 总计 ÷ 列表坐席数）。</li>
-    <li>筛选：坐席、小组、时间范围（默认当天，含今天/昨天/近7天/本月快捷项）；支持导出，导出范围与当前筛选及角色权限一致。</li>
+    <li>有效通话时长展示为「x天x小时x分x秒」，省略前面为 0 的单位（如 14分21秒）。</li>
+    <li>筛选：坐席、小组、时间范围（默认当天）；支持导出，导出字段与列表字段一致（含末尾总计、均值两行），导出范围与当前筛选及角色权限一致。</li>
     <li>数据范围按角色控制：组员只看自己，主管看本组，团长看全部。页面顶部紫色条为原型演示用的角色切换，线上按登录账号角色自动判断，不展示该条。</li>
     <li>原型中「绩效考核天数」按「实际出勤」里的 班 / 半 / 法 / 0.5法 天数模拟。</li>
   </ul>
@@ -1454,42 +1453,57 @@ function searchKpi(fromDom = true) {
   if (fromDom) render();
 }
 function resetKpi() { Object.assign(state.kpi, { org: '', worker: '', start: TODAY, end: TODAY }); searchKpi(false); render(); }
-function kpiShortcut(type) {
-  const d = new Date(NOW); let s = TODAY, e = TODAY;
-  if (type === 'yesterday') { d.setDate(d.getDate() - 1); s = e = fmtD(d); }
-  if (type === 'week') { d.setDate(d.getDate() - 6); s = fmtD(d); }
-  if (type === 'month') s = TODAY.slice(0, 8) + '01';
-  $('kpiStart').value = s; $('kpiEnd').value = e;
-  searchKpi();
-}
 function setKpiRole(r) { Object.assign(state.kpi, { role: r, org: '', worker: '' }); searchKpi(false); render(); }
 function sortKpi(f) { const s = state.kpi.sort; if (s.f === f) s.d = -s.d; else { s.f = f; s.d = -1; } render(); }
-function fmtDur(sec) { sec = Math.round(sec); return `${pad(Math.floor(sec / 3600))}:${pad(Math.floor(sec % 3600 / 60))}:${pad(sec % 60)}`; }
+function fmtDur(sec) {
+  sec = Math.round(sec);
+  const parts = [[Math.floor(sec / 86400), '天'], [Math.floor(sec % 86400 / 3600), '小时'], [Math.floor(sec % 3600 / 60), '分'], [sec % 60, '秒']];
+  const first = parts.findIndex(([v]) => v > 0);
+  return first === -1 ? '0秒' : parts.slice(first).map(([v, u]) => v + u).join('');
+}
+const KPI_METRICS = [
+  ['dur', '有效通话时长', fmtDur, fmtDur],
+  ['calls', '有效通话次数', v => v, v => v.toFixed(1)],
+  ['people', '有效通话人数', v => v, v => v.toFixed(1)],
+  ['order', '订单金额/元', money, money],
+  ['wechat', '加微数', v => v, v => v.toFixed(1)]
+];
+const KPI_TAIL = [
+  ['达标情况（达标/考核）', r => `${r.pass}/${r.assess}`],
+  ['坐席', r => r.a.name],
+  ['所在小组', r => groupName(r.a)]
+];
+function kpiSorted() { const k = state.kpi; return [...k.list].sort((x, y) => (x[k.sort.f] - y[k.sort.f]) * k.sort.d); }
 function exportKpi() {
-  const k = state.kpi;
-  toast(`导出成功：KPI看板_${k.start}至${k.end}.xlsx（${k.list.length} 名坐席，按当前筛选条件与角色数据范围导出）`);
+  const k = state.kpi, list = kpiSorted(), n = list.length;
+  if (!n) { toast('暂无可导出的数据', 'warning'); return; }
+  const sum = f => list.reduce((s, x) => s + x[f], 0);
+  const rows = [
+    ['序号', ...KPI_METRICS.map(m => m[1]), ...KPI_TAIL.map(t => t[0])],
+    ...list.map((r, i) => [i + 1, ...KPI_METRICS.map(([f, , fmt]) => fmt(r[f])), ...KPI_TAIL.map(t => t[1](r))]),
+    ['总计', ...KPI_METRICS.map(([f, , fmt]) => fmt(sum(f))), '', '', ''],
+    ['均值', ...KPI_METRICS.map(([f, , , avgFmt]) => avgFmt(sum(f) / n)), '', '', '']
+  ];
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+  link.download = `KPI看板_${k.start}至${k.end}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+  toast(`导出成功，共 ${n} 名坐席`);
 }
 function renderKpi() {
   const k = state.kpi, R = KPI_ROLES[k.role];
-  const list = [...k.list].sort((x, y) => (x[k.sort.f] - y[k.sort.f]) * k.sort.d);
+  const list = kpiSorted();
   const n = list.length;
   const sum = f => list.reduce((s, x) => s + x[f], 0);
   const sortTitle = (f, t) => () => `<span class="sortable" onclick="sortKpi('${f}')">${t}<span class="caret"><span class="${k.sort.f === f && k.sort.d === 1 ? 'on' : ''}">▲</span><span class="${k.sort.f === f && k.sort.d === -1 ? 'on' : ''}">▼</span></span></span>`;
-  const metrics = [
-    ['dur', '有效通话时长', fmtDur, fmtDur],
-    ['calls', '有效通话次数', v => v, v => v.toFixed(1)],
-    ['people', '有效通话人数', v => v, v => v.toFixed(1)],
-    ['order', '订单金额/元', money, money],
-    ['wechat', '加微数', v => v, v => v.toFixed(1)]
-  ];
   const cols = [
     { title: '序号', width: 90, align: 'center', render: (r, i) => i + 1 },
-    ...metrics.map(([f, t, fmt]) => ({ title: sortTitle(f, t), minWidth: 140, render: r => fmt(r[f]) })),
-    { title: '达标情况（达标/考核）', minWidth: 170, render: r => `${r.pass}/${r.assess}` },
-    { title: '坐席', minWidth: 100, render: r => r.a.name },
-    { title: '所在小组', minWidth: 120, render: r => groupName(r.a) }
+    ...KPI_METRICS.map(([f, t, fmt]) => ({ title: sortTitle(f, t), minWidth: f === 'dur' ? 170 : 130, render: r => fmt(r[f]) })),
+    ...KPI_TAIL.map(([t, fn], i) => ({ title: t, minWidth: [170, 100, 120][i], render: fn }))
   ];
-  const foot = n ? ['总计/均值', ...metrics.map(([f, , fmt, avgFmt]) => `<div>总计：${fmt(sum(f))}</div><div class="avg">均值：${avgFmt(sum(f) / n)}</div>`), '', '', ''] : null;
+  const foot = n ? ['总计/均值', ...KPI_METRICS.map(([f, , fmt, avgFmt]) => `<div>总计：${fmt(sum(f))}</div><div class="avg">均值：${avgFmt(sum(f) / n)}</div>`), '', '', ''] : null;
 
   const scopeAgents = kpiScopeAgents();
   const orgCtrl = k.role === 'leader'
@@ -1510,9 +1524,7 @@ function renderKpi() {
       <div class="form-item"><label>时间范围</label>
         <input type="date" class="el-input" id="kpiStart" value="${k.start}" max="${TODAY}" style="width:150px">
         <span class="range-sep">至</span>
-        <input type="date" class="el-input" id="kpiEnd" value="${k.end}" max="${TODAY}" style="width:150px">
-        <span class="shortcut"><button class="link" onclick="kpiShortcut('today')">今天</button><button class="link" onclick="kpiShortcut('yesterday')">昨天</button><button class="link" onclick="kpiShortcut('week')">近7天</button><button class="link" onclick="kpiShortcut('month')">本月</button></span>
-      </div>
+        <input type="date" class="el-input" id="kpiEnd" value="${k.end}" max="${TODAY}" style="width:150px">      </div>
       <div class="form-item"><button class="btn btn-primary" onclick="searchKpi()">🔍 搜索</button><button class="btn" onclick="resetKpi()">重置</button></div>
       <div class="form-item right"><button class="btn btn-primary" onclick="exportKpi()">导出</button></div>
     </div>
