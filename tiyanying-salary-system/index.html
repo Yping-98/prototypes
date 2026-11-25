@@ -605,6 +605,7 @@ function gmvRankOf(a, ym) {
   const rank = peers.filter(x => perfOf(x, ym) > perf).length + 1;
   return { rank, total: peers.length, pct: Math.round(rank / peers.length * 10000) / 100 };
 }
+function reachDayOf(a, ym) { return 1 + Math.floor(rng('reach' + a.id + ym)() * 28); }
 function newKingAwarded(ym, depth = 0) {
   const nk = state.cfgSaved.bonus.newKing;
   if (nk.gmv === null || nk.bonus === null) return [];
@@ -612,7 +613,9 @@ function newKingAwarded(ym, depth = 0) {
   const pool = AGENTS.filter(a => isSales(a) && inMonth(a, ym) && newKingEligible(a, ym) && !prev.includes(a.id));
   if (!pool.length) return [];
   const best = Math.max(...pool.map(a => perfOf(a, ym)));
-  return best >= nk.gmv ? pool.filter(a => perfOf(a, ym) === best).map(a => a.id) : [];
+  if (best < nk.gmv) return [];
+  const tied = pool.filter(a => perfOf(a, ym) === best).sort((x, y) => reachDayOf(x, ym) - reachDayOf(y, ym) || x.id - y.id);
+  return [tied[0].id];
 }
 const LEAD_GRADES = ['S', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
 const LEAD_PLANS = Array.from({ length: 14 }, (_, i) => {
@@ -1259,7 +1262,16 @@ function renderSetting() {
 function resetCfg(part) {
   confirmBox('确定要重置为上次保存的结果吗？', () => { state.cfg[part] = clone(state.cfgSaved[part]); toast('重置成功'); render(); }, '重置确认');
 }
-function saveCfg(part) { state.cfgSaved[part] = clone(state.cfg[part]); toast('保存成功'); if (state.sal.list.length) searchSalary(false); render(); }
+const isNum2 = v => /^\d+(\.\d{1,2})?$/.test(String(v ?? ''));
+const isPosInt = v => /^[1-9]\d*$/.test(String(v ?? ''));
+function checkComm() {
+  const c = state.cfg.comm;
+  if (c.newPerf !== null && !isPosInt(c.newPerf)) { toast('新人入职当月业绩金额只能输入正整数', 'warning'); return false; }
+  if (!isPosInt(c.threshold)) { toast('老员工业绩金额只能输入正整数', 'warning'); return false; }
+  if (!isNum2(c.rate) || c.rate > 100) { toast('业绩完成率只能输入 0~100 的数，最多两位小数', 'warning'); return false; }
+  return true;
+}
+function saveCfg(part) { if (part === 'comm' && !checkComm()) return; state.cfgSaved[part] = clone(state.cfg[part]); toast('保存成功'); if (state.sal.list.length) searchSalary(false); render(); }
 function footerBtns(part) { return `<div class="footer-buttons"><button class="btn" onclick="resetCfg('${part}')">重置</button><button class="btn btn-primary" onclick="saveCfg('${part}')">保存</button></div>`; }
 const subCard = (title, desc, body, extra = '', id = '') => `<div class="sub-card" ${id ? `id="${id}"` : ''}><div class="sub-card-h"><div><span class="sub-card-t">${title}</span>${desc ? `<span class="sub-card-d">${desc}</span>` : ''}</div>${extra}</div><div class="sub-card-b">${body}</div></div>`;
 const numIn = (path, v, attrs = '', cls = 'num') => `<input type="number" class="el-input ${cls}" value="${v ?? ''}" ${attrs} onchange="setCfg('${path}',this.value)">`;
@@ -1297,7 +1309,7 @@ function renderCommission() {
     `<div class="tip-text" style="margin:0 0 12px">当月GMV = 净GMV（当月营收 − 当月退款）+ 双算业绩；订单实付金额超过 49 元才计入营收；订单归属在坐席名下即计入<br>业绩达标：当月GMV ÷ 当月目标 ≥ 100%<br>退款、申诉、上月提成差值规则与电销一致：以薪酬核算日为界，核算日后发生的上月订单退款/申诉计入「上月订单本月退款/申诉」，上月提成差值 =（上月业绩 + 上月申诉 − 上月退款）× 新提点 − 上月业绩 × 原提点</div>
      <div class="flex-end"><button class="btn btn-primary" onclick="openRangeDialog('comm')">＋ 新增</button></div>${table(cols, c.gears)}`, '', 'tgtCommGears')
     + subCard('特殊规则', '', `
-      <div class="sentence"><span>新人入职当月，业绩超过（不含）</span>${numIn('comm.newPerf', c.newPerf, 'min="0" step="0.01" placeholder="请输入"')}<span>元时，按对应档位的「业绩达标」比例计算提成</span></div>
+      <div class="sentence"><span>新人入职当月，业绩超过（不含）</span>${numIn('comm.newPerf', c.newPerf, 'min="0" step="0.01" placeholder="请输入"')}<span>元时，按对应档位的「业绩达标」比例计算提成；除当月外的新人保护期，按照上述档位核算提成</span></div>
       <div class="sentence" style="margin-top:16px"><span>老员工业绩低于（不含）</span>${numIn('comm.threshold', c.threshold, 'min="0"')}<span>时，若业绩完成率高于（不含）</span>${numIn('comm.rate', c.rate, 'min="0" max="100" step="0.01"', 'md')}<span><b>%</b> 则正常按区间档位提成，否则无提成</span></div>
       <div class="tip-text" style="margin:14px 0 0">新人保护期（入职当月 + 两个完整月）内按档位表正常提成，老员工规则不对保护期生效；员工阶段按「基础配置 → 员工定义」判断<br>员工当月离职：提成延后一个月发放，奖金正常发放；核算后发生的退费不追扣奖金</div>
       ${footerBtns('comm')}`, '', 'tgtCommRules');
@@ -1331,6 +1343,14 @@ function saveRange(kind, i) {
   if (!hasMin && !hasMax) { toast('请至少填写一个完整的区间条件', 'warning'); return; }
   if ((minOp && min === '') || (!minOp && min !== '') || (maxOp && max === '') || (!maxOp && max !== '')) { toast('区间运算符与数值需同时填写', 'warning'); return; }
   if (a === '' || (kind !== 'base' && b === '')) { toast('请完善必填项', 'warning'); return; }
+  if (kind === 'base') {
+    if ([min, max].some(v => v !== '' && (!isNum2(v) || Number(v) > 100))) { toast('区间数值只能输入 0~100 的数，最多两位小数', 'warning'); return; }
+    if (!/^\d+$/.test(a)) { toast('排名薪资只能输入大于等于 0 的整数', 'warning'); return; }
+  } else {
+    if ([min, max].some(v => v !== '' && !/^\d+$/.test(v))) { toast('区间金额只能输入大于等于 0 的整数', 'warning'); return; }
+    if ([a, b].some(v => !isNum2(v) || Number(v) > 100)) { toast('提成比例只能输入 0~100 的数，最多两位小数', 'warning'); return; }
+  }
+  if (hasMin && hasMax && Number(max) <= Number(min)) { toast('区间上限需大于区间下限', 'warning'); return; }
   const rng_ = { minOp: hasMin ? minOp : '', min: hasMin ? Number(min) : null, maxOp: hasMax ? maxOp : '', max: hasMax ? Number(max) : null };
   const item = kind === 'base' ? { ...rng_, salary: Number(a) } : { ...rng_, ok: Number(a), no: Number(b) };
   const list = kind === 'base' ? state.cfg.base.rules : state.cfg.comm.gears;
@@ -1350,7 +1370,7 @@ function renderBonus() {
   const nk = c.newKing;
   return subCard('新人王奖励', '入职当月及第一个完整月，GMV排名第一且达到门槛的坐席发放',
     `<div class="sentence"><span>入职当月及第一个完整月，GMV排名第一，且当月GMV ≥</span>${numIn('bonus.newKing.gmv', nk.gmv, 'min="0" step="0.01" placeholder="请输入，如10000"')}<span>元，奖金</span>${numIn('bonus.newKing.bonus', nk.bonus, 'min="0" step="0.01" placeholder="请输入，如600"')}<span>元</span></div>
-     <div class="tip-text" style="margin:12px 0 0">GMV = 净GMV + 双算业绩；GMV 并列第一均发放；每人仅可获得一次，获得后下个月不再参与排名<br>GMV门槛与奖金需同时填写；均不填写时不发放新人王奖励</div>`, '', 'tgtNewKing')
+     <div class="tip-text" style="margin:12px 0 0">GMV = 净GMV + 双算业绩；GMV 并列第一时，发给优先达到门槛的坐席；每人仅可获得一次，获得后下个月不再参与排名<br>GMV门槛与奖金需同时填写；均不填写时不发放新人王奖励</div>`, '', 'tgtNewKing')
     + subCard('当期转化率奖金', '每个期次单独排名，同月多个期次奖金累加',
       `<div class="sentence"><span>参与门槛：当月已填写目标，且期次当期转化率 ≥</span>${numIn('bonus.convRate', c.convRate, 'min="0" max="100" step="0.01"', 'sm')}<span>% 且转化订单数 ≥</span>${numIn('bonus.convOrders', c.convOrders, 'min="0" step="1"', 'sm')}<span>单</span></div>
        <div class="tip-text" style="margin:12px 0 12px">结营时间落在薪酬核算月份的期次参与计算；当期转化率 = 结营组合品净付费人数 ÷ 该期次「当期转化考核等级」范围内的线索数 × 100%；考核等级在「配置 → 线索投放计划」中按期次配置<br>按学段（初中 / 小学）分开排名，学段以期次结营最后一天所在学段为准；转化率相同按当期线索转化订单金额排序；其他学段不参与</div>
@@ -1360,6 +1380,11 @@ function renderBonus() {
 function saveBonus() {
   const nk = state.cfg.bonus.newKing;
   if ((nk.gmv === null) !== (nk.bonus === null)) { toast(nk.gmv === null ? '请填写新人王奖励的GMV门槛' : '请填写新人王奖励的奖金', 'warning'); return; }
+  if (nk.gmv !== null && (!isNum2(nk.gmv) || nk.gmv <= 0)) { toast('GMV门槛只能输入正数，最多两位小数', 'warning'); return; }
+  if (nk.bonus !== null && (!isNum2(nk.bonus) || nk.bonus <= 0)) { toast('新人王奖金只能输入正数，最多两位小数', 'warning'); return; }
+  const cb = state.cfg.bonus;
+  if (!isNum2(cb.convRate) || cb.convRate > 100) { toast('转化率只能输入 0~100 的数，最多两位小数', 'warning'); return; }
+  if (!isPosInt(cb.convOrders)) { toast('转化订单数只能输入正整数', 'warning'); return; }
   saveCfg('bonus');
 }
 function delConv(i) { confirmBox('确认删除该配置吗？', () => { state.cfg.bonus.conv.splice(i, 1); toast('删除成功'); render(); }); }
@@ -1392,6 +1417,7 @@ function saveConv() {
   if (!r.grade) { toast('请选择学段', 'warning'); return; }
   if (!r.ranks.length) { toast('请选择名次', 'warning'); return; }
   if (r.bonus === '' || r.bonus === null) { toast('请输入奖金', 'warning'); return; }
+  if (!isNum2(r.bonus) || Number(r.bonus) <= 0) { toast('奖金只能输入正数，最多两位小数', 'warning'); return; }
   const item = { grade: r.grade, ranks: [...r.ranks], bonus: Number(r.bonus) };
   i !== undefined ? state.cfg.bonus.conv[i] = item : state.cfg.bonus.conv.push(item);
   closeDialog('conv'); toast(i !== undefined ? '编辑成功' : '新增成功'); render();
@@ -1451,11 +1477,11 @@ function openCustForm(id) {
   openDialog({
     key: 'custForm', title: id ? '编辑自定义项' : '新增自定义项', width: 600,
     body: () => `
-      <div class="f-row"><div class="f-label req">名称</div><div class="f-ctrl"><input class="el-input full" id="cf_name" placeholder="请输入名称" value="${r.name}"></div></div>
+      <div class="f-row"><div class="f-label req">名称</div><div class="f-ctrl"><input class="el-input full" id="cf_name" maxlength="20" placeholder="请输入名称，最多 20 个字" value="${r.name}"></div></div>
       <div class="f-row"><div class="f-label req">类型</div><div class="f-ctrl"><select class="el-input full" id="cf_type"><option value="">请选择类型</option>${TYPE_LIST.map(([k, l]) => `<option value="${k}" ${r.type === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div></div>
       <div class="f-row"><div class="f-label req">金额</div><div class="f-ctrl"><input type="number" class="el-input full" id="cf_amount" placeholder="请输入金额" value="${r.amount === '' ? '' : Math.abs(r.amount)}"></div></div>
       <div class="f-row"><div class="f-label req">归属类别</div><div class="f-ctrl"><select class="el-input full" id="cf_cat"><option value="">请选择归属类别</option>${CATEGORY_LIST.map(([k, l]) => `<option value="${k}" ${r.category === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div></div>
-      <div class="f-row"><div class="f-label">说明</div><div class="f-ctrl"><textarea class="el-input full" id="cf_desc" rows="3" placeholder="请输入说明">${r.description}</textarea></div></div>
+      <div class="f-row"><div class="f-label">说明</div><div class="f-ctrl"><textarea class="el-input full" id="cf_desc" rows="3" maxlength="200" placeholder="请输入说明，最多 200 字">${r.description}</textarea></div></div>
       <div class="f-row"><div class="f-label req">适用对象</div><div class="f-ctrl"><div class="check-grid" id="cf_targets">${DEPTS.map(d => `<div style="width:100%;color:#909399;font-size:12px">${d.name}</div>${d.children.map(g => `<label><input type="checkbox" value="${g.id}" ${r.targets.includes(g.id) ? 'checked' : ''}>${g.name}</label>`).join('')}`).join('')}</div></div></div>
       <div class="f-row"><div class="f-label req">适用时间</div><div class="f-ctrl">${monthInput('cf_ym', r.ym, '请选择适用时间', { w: 440 })}</div></div>`,
     footer: () => `<button class="btn" onclick="closeDialog('custForm')">取消</button><button class="btn btn-primary" onclick="saveCust(${id || 0})">确定</button>`
@@ -1465,6 +1491,9 @@ function saveCust(id) {
   const name = val('cf_name'), type = Number(val('cf_type')), amount = val('cf_amount'), category = Number(val('cf_cat')), description = val('cf_desc'), ym = val('cf_ym');
   const targets = [...document.querySelectorAll('#cf_targets input:checked')].map(x => Number(x.value));
   if (!name || !type || amount === '' || !category || !targets.length || !ym) { toast('请完善必填项', 'warning'); return; }
+  if (name.length > 20) { toast('名称最多 20 个字', 'warning'); return; }
+  if (!isNum2(amount) || Number(amount) <= 0) { toast('金额只能输入大于 0 的数，最多两位小数', 'warning'); return; }
+  if (description.length > 200) { toast('说明最多 200 字', 'warning'); return; }
   if (isLocked(ym)) { toast('该月份薪酬已生成，不可新增/编辑', 'warning'); return; }
   const amt = Math.abs(Number(amount)) * (type === 1 ? -1 : 1);
   const data = { name, type, amount: amt, category, description, targets, ym, updaterName: '管理员', updatedAt: new Date(NOW) };
@@ -1477,8 +1506,8 @@ function renderBasicConfig() {
   const row = (label, ctrl, id = '') => `<div class="bc-row" ${id ? `id="${id}"` : ''}><div class="bc-label">${label}</div><div class="bc-ctrl">${ctrl}</div></div>`;
   return `<div class="sub-card"><div class="sub-card-b">
     <div class="section-title" id="tgtEmpDef">员工定义</div>
-    ${row('新人保护期', `<span>入职当月 +</span>${numIn('basic.newMonths', b.newMonths, 'min="0" placeholder="请输入月数"', 'sm')}<span>个完整月为新人保护期</span>`)}
-    ${row('老员工', `<span>自入职时间起第</span>${numIn('basic.oldMonths', b.oldMonths, 'min="1" placeholder="请输入月数"', 'sm')}<span>个完整月在职的员工，即为老员工</span>`)}
+    ${row('新人保护期', `<span>入职当月 +</span><input type="number" class="el-input sm" min="1" step="1" placeholder="月数" value="${b.newMonths ?? ''}" onchange="setCfg('basic.newMonths',this.value);state.cfg.basic.oldMonths=isPosInt(state.cfg.basic.newMonths)?state.cfg.basic.newMonths+1:null;render()"><span>个完整月为新人保护期</span>`)}
+    ${row('老员工', `<span>自入职时间起第 <b>${isPosInt(b.newMonths) ? b.newMonths + 1 : '-'}</b> 个完整月在职的员工，即为老员工</span><span class="lock-badge">= 新人保护期 + 1，自动计算</span>`)}
     <div class="tip-text">
       <div>入职时间：飞书系统入职时间；入职时间的次月为第一个完整月</div>
       <div style="margin-left:16px">示例：4/1 或 4/13 入职，4 月为入职当月，5、6 月为两个完整月（与入职当月一起为新人保护期），7 月（第 3 个完整月，即入职第 4 个月）起为老员工</div>
@@ -1490,7 +1519,7 @@ function renderBasicConfig() {
     <div class="section-title">绩效</div>
     ${row('绩效基数', `${numIn('basic.perfBase', b.perfBase, 'min="0" step="0.01" placeholder="请输入绩效基数"')}<span>元</span>`)}
     <div class="tip-text">绩效 = 绩效基数 × 出勤率（实际出勤 ÷ 应出勤）− KPI扣款 − 质检等扣款（自定义项·绩效），结果小于 0 按 0 计；当月入职当月离职不发放；未配置绩效基数时默认为 0</div>
-    ${row('当日KPI达标', `<span>有效通话时长 ≥</span>${numIn('basic.kpiStd.minutes', b.kpiStd.minutes, 'min="0"', 'sm')}<span>分钟（必备），且 有效通话人数 ≥</span>${numIn('basic.kpiStd.talks', b.kpiStd.talks, 'min="0"', 'sm')}<span>个 / 加微数 ≥</span>${numIn('basic.kpiStd.wechat', b.kpiStd.wechat, 'min="0"', 'sm')}<span>个 / 当日营收 &gt;</span>${numIn('basic.kpiStd.revenue', b.kpiStd.revenue, 'min="0"', 'md')}<span>元，任一满足</span>`, 'tgtKpiStd')}
+    ${row('当日KPI达标', `<span>有效通话时长 ≥ ${b.kpiStd.minutes} 分钟（必备），且 有效通话人数 ≥ ${b.kpiStd.talks} 个 / 加微数 ≥ ${b.kpiStd.wechat} 个 / 当日营收 &gt; ${b.kpiStd.revenue} 元，任一满足</span><span class="lock-badge">固定标准，不可配置</span>`, 'tgtKpiStd')}
     <div class="tip-text">有效通话时长取「外呼数据统计」的「合计有效通话时长」（企微 + CRM 通话中单通 ≥ 10 秒的时长之和，不含私人电话）；有效通话人数 = 同一数据源中有效通话的客户数（去重）；加微数 = 当日审核通过的「加微数申报」数量<br>半天出勤、法定节假日上班均需考核；半天出勤当天以上标准减半（如通话时长 25 分钟即满足）</div>
     ${row('未达标扣款', `<div style="display:flex;flex-direction:column;gap:12px">
       ${b.kpiDeds.map((t, i) => `<div class="sentence">
@@ -1516,9 +1545,8 @@ function saveBasic() {
   if (list.some(t => !Number.isInteger(t.count) || t.count < 1)) { toast('未达标次数需为正整数', 'warning'); return; }
   if (list.some((t, i) => i > 0 && t.count <= list[i - 1].count)) { toast('未达标次数需从小到大递增且不重复', 'warning'); return; }
   const b = state.cfg.basic;
-  if (b.newMonths === null || b.oldMonths === null) { toast('请完善员工定义', 'warning'); return; }
-  if (b.oldMonths <= b.newMonths) { toast('老员工起始完整月需大于新人保护期的完整月数', 'warning'); return; }
-  if (Object.values(b.kpiStd).some(v => v === null)) { toast('请完善当日KPI达标标准', 'warning'); return; }
+  if (!isPosInt(b.newMonths)) { toast('新人保护期需为正整数', 'warning'); return; }
+  b.oldMonths = b.newMonths + 1;
   saveCfg('basic');
 }
 
@@ -2552,7 +2580,7 @@ window.DIFF_CHANGESET = {
       "level": "module",
       "type": "logic",
       "title": "新增提成特殊规则",
-      "desc": "新人入职当月业绩超过 2 万元按「业绩达标」提点计算；老员工业绩低于 4 万元且完成率未高于 50% 时无提成，该规则仅对老员工生效。",
+      "desc": "新人入职当月业绩超过 2 万元按「业绩达标」提点计算，除当月外的新人保护期按档位表核算提成；老员工业绩低于 4 万元且完成率未高于 50% 时无提成，该规则仅对老员工生效。",
       "before": "无此功能",
       "after": "两条特殊规则阈值可配置",
       "examples": [
@@ -2575,7 +2603,7 @@ window.DIFF_CHANGESET = {
       "level": "module",
       "type": "logic",
       "title": "新增新人王奖励配置",
-      "desc": "入职当月及第一个完整月的新人中GMV排名第一且当月GMV达到门槛的发放奖金；GMV门槛与奖金留空自主配置，并列第一均发放，每人仅可获得一次。",
+      "desc": "入职当月及第一个完整月的新人中GMV排名第一且当月GMV达到门槛的发放奖金；GMV门槛与奖金留空自主配置，并列第一时发给优先达到门槛的坐席，每人仅可获得一次。",
       "before": "无此功能",
       "after": "GMV门槛与奖金可配置",
       "prd": {
@@ -2638,7 +2666,7 @@ window.DIFF_CHANGESET = {
       "level": "module",
       "type": "logic",
       "title": "新增员工定义与薪酬生成时间",
-      "desc": "新人保护期 = 入职当月 + 2 个完整月，入职第 3 个完整月起为老员工，入职时间取飞书入职时间、次月为第一个完整月；薪酬每月 5 号生成，生成后上月数据不再变化。",
+      "desc": "新人保护期 = 入职当月 + 2 个完整月（可配置），老员工起始完整月 = 新人保护期 + 1，自动计算不可单独输入；入职时间取飞书入职时间、次月为第一个完整月；薪酬每月 5 号生成，生成后上月数据不再变化。",
       "before": "无此功能",
       "after": "员工阶段与薪酬生成日可配置",
       "prd": {
@@ -2657,10 +2685,10 @@ window.DIFF_CHANGESET = {
       },
       "level": "module",
       "type": "logic",
-      "title": "新增当日KPI达标标准",
-      "desc": "有效通话时长 ≥ 50 分钟为必备，且有效通话人数 ≥ 15、加微数 ≥ 6、当日营收 > 2000 元任一满足即当日达标；半天出勤当天标准减半。",
+      "title": "新增当日KPI达标标准（固定）",
+      "desc": "固定标准：有效通话时长 ≥ 50 分钟为必备，且有效通话人数 ≥ 15、加微数 ≥ 6、当日营收 > 2000 元任一满足即当日达标；半天出勤当天标准减半；不做成配置项。",
       "before": "无此功能",
-      "after": "四项达标阈值可配置",
+      "after": "固定展示，不可配置",
       "examples": [
         "半天出勤：营收 1498 元超过减半后的 1000 元，判定达标"
       ],
