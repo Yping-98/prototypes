@@ -966,7 +966,7 @@ function openCommDetail(type, id) {
       payTime: fmtDT(new Date(y, payMonth - 1, 1 + Math.floor(r() * 27), 10 + i, 12, 30)),
       pay: amt + [0, 400, 1000][i % 3], amt, time: fmtDT(new Date(y, m - 1, 2 + Math.floor(r() * 18), 15, 20 + i, 5))
     };
-  });
+  }).sort((a, b) => b.payTime.localeCompare(a.payTime));
   const cols = [
     { title: '序号', width: 60, render: (r, i) => i + 1 },
     { title: '手机号', minWidth: 120, field: 'phone' }, { title: '洋葱ID', minWidth: 110, field: 'onionId' },
@@ -981,7 +981,7 @@ function openCommDetail(type, id) {
 /* --- 双算业绩 Tab --- */
 function extFiltered() {
   const e = state.ext;
-  return EXT_LIST.filter(x => (!e.phone || x.phone.includes(e.phone)) && (!e.orderNo || x.orderNo.includes(e.orderNo)) && (!e.payYm || x.payYm === e.payYm) && (!e.attrYm || x.attrYm === e.attrYm) && (!e.worker || String(x.workerId) === e.worker));
+  return EXT_LIST.filter(x => (!e.phone || x.phone === e.phone) && (!e.orderNo || x.orderNo === e.orderNo) && (!e.payYm || x.payYm === e.payYm) && (!e.attrYm || x.attrYm === e.attrYm) && (!e.worker || String(x.workerId) === e.worker));
 }
 function searchExt() {
   Object.assign(state.ext, { phone: val('extPhone'), orderNo: val('extOrder'), payYm: val('extPay'), attrYm: val('extAttr'), worker: val('extWorker'), page: 1 });
@@ -1000,7 +1000,7 @@ function renderExternalTab() {
     { title: `<input type="checkbox" ${allChecked ? 'checked' : ''} onchange="toggleExtAll(this.checked,[${ids}])">`, width: 46, align: 'center', render: r => `<input type="checkbox" ${e.selected.has(r.id) ? 'checked' : ''} onchange="toggleExt(${r.id},this.checked)">` },
     { title: '序号', minWidth: 80, render: (r, i) => (e.page - 1) * 10 + i + 1 },
     { title: '用户手机号', minWidth: 140, render: r => `${r.phone}<span class="copy-ic" onclick="copyText('${r.phone}')">⧉</span>` },
-    { title: '订单编号', minWidth: 150, field: 'orderNo' },
+    { title: '订单编号', minWidth: 150, render: r => r.orderNo || '-' },
     { title: '支付月份', minWidth: 100, render: r => r.payYm.replace('-', '') },
     { title: '薪资归属月份', minWidth: 110, render: r => r.attrYm.replace('-', '') },
     { title: '订单金额', minWidth: 100, render: r => money(r.amount) },
@@ -1048,7 +1048,7 @@ function openExtForm(id) {
     key: 'extForm', title: id ? '编辑' : '新增', width: 520,
     body: () => `
       <div class="f-row"><div class="f-label req">用户手机号</div><div class="f-ctrl"><input class="el-input full" id="ef_phone" placeholder="请输入用户手机号" value="${r.phone}"></div></div>
-      <div class="f-row"><div class="f-label req">订单编号</div><div class="f-ctrl"><input class="el-input full" id="ef_order" placeholder="请输入订单编号" value="${r.orderNo}"></div></div>
+      <div class="f-row"><div class="f-label">订单编号</div><div class="f-ctrl"><input class="el-input full" id="ef_order" placeholder="请输入订单编号（选填）" value="${r.orderNo}"></div></div>
       <div class="f-row"><div class="f-label req">支付月份</div><div class="f-ctrl">${monthInput('ef_pay', r.payYm, '请选择支付月份', { w: 340, max: CUR_YM })}</div></div>
       <div class="f-row"><div class="f-label req">薪资归属月份</div><div class="f-ctrl">${monthInput('ef_attr', r.attrYm, '请选择薪资归属月份', { w: 340, max: CUR_YM })}</div></div>
       <div class="f-row"><div class="f-label req">订单金额</div><div class="f-ctrl"><input type="number" class="el-input full" id="ef_amount" placeholder="请输入订单金额" value="${r.amount}"></div></div>
@@ -1058,10 +1058,10 @@ function openExtForm(id) {
 }
 function saveExt(id) {
   const f = { phone: val('ef_phone'), orderNo: val('ef_order'), payYm: val('ef_pay'), attrYm: val('ef_attr'), amount: val('ef_amount'), workerId: val('ef_worker') };
-  const miss = Object.entries(f).find(([, v]) => !v);
+  const miss = Object.entries(f).find(([k, v]) => k !== 'orderNo' && !v);
   if (miss) { toast('请完善必填项', 'warning'); return; }
   if (!/^1\d{10}$/.test(f.phone)) { toast('请输入正确的手机号', 'warning'); return; }
-  if (EXT_LIST.some(x => x.orderNo === f.orderNo && x.id !== id)) { toast('该订单编号已录入，不可重复添加', 'warning'); return; }
+  if (f.orderNo && EXT_LIST.some(x => x.orderNo === f.orderNo && x.id !== id)) { toast('该订单编号已录入，不可重复添加', 'warning'); return; }
   if (f.payYm > CUR_YM || f.attrYm > CUR_YM) { toast('支付月份、薪资归属月份不能晚于当前月份', 'warning'); return; }
   if (!/^\d+(\.\d{1,2})?$/.test(f.amount) || Number(f.amount) <= 0) { toast('订单金额需大于 0，最多两位小数', 'warning'); return; }
   if (isLocked(f.attrYm)) { toast('该薪资归属月份薪酬已生成，不可新增/编辑', 'warning'); return; }
@@ -1147,7 +1147,7 @@ function renderAttendance() {
       </div>
       <div class="form-item" id="tgtAttOps">
         <button class="btn btn-primary" onclick="searchAtt()">🔍 搜索</button>
-        <button class="btn btn-success" onclick="toast('导出成功：出勤数据_${ym}.xlsx（原型演示）')">导出</button>
+        <button class="btn btn-success" onclick="toast('导出成功：出勤数据_${ym}.xlsx（列表字段 + 邮箱，原型演示）')">导出</button>
         <button class="btn btn-warning" onclick="openLegalHoliday()">特殊设置</button>
         <button class="btn" onclick="openAttRule()">说明</button>
       </div>
@@ -1308,7 +1308,7 @@ function renderCommission() {
     { title: '业绩不达标', minWidth: 150, render: r => r.no + '%' },
     { title: '操作', width: 150, fixed: 'right', render: (r, i) => `<button class="link" onclick="openRangeDialog('comm',${i})">编辑</button><button class="link danger" onclick="delRange('comm',${i})">删除</button>` }
   ];
-  return subCard('提成档位分布', '提成 = 当月GMV × 对应档位提点 + 上月提成差值',
+  return subCard('提成档位分布', '提成 = 当月GMV × 对应档位提点',
     `<div class="tip-text" style="margin:0 0 12px">当月GMV = 净GMV（当月营收 − 当月退款）+ 双算业绩；订单实付金额超过 49 元才计入营收；订单归属在坐席名下即计入<br>业绩达标：当月GMV ÷ 当月目标 ≥ 100%<br>退款、申诉、上月提成差值规则与电销一致：以薪酬核算日为界，核算日后发生的上月订单退款/申诉计入「上月订单本月退款/申诉」，上月提成差值 =（上月业绩 + 上月申诉 − 上月退款）× 新提点 − 上月业绩 × 原提点</div>
      <div class="flex-end"><button class="btn btn-primary" onclick="openRangeDialog('comm')">＋ 新增</button></div>${table(cols, c.gears)}`, '', 'tgtCommGears')
     + subCard('特殊规则', '', `
@@ -1376,7 +1376,7 @@ function renderBonus() {
      <div class="tip-text" style="margin:12px 0 0">GMV = 净GMV + 双算业绩；GMV 并列第一时，发给优先达到门槛的坐席；每人仅可获得一次，获得后下个月不再参与排名<br>GMV门槛与奖金需同时填写；均不填写时不发放新人王奖励</div>`, '', 'tgtNewKing')
     + subCard('当期转化率奖金', '每个期次单独排名，同月多个期次奖金累加',
       `<div class="sentence"><span>参与门槛：当月已填写目标，且期次当期转化率 ≥</span>${numIn('bonus.convRate', c.convRate, 'min="0" max="100" step="0.01"', 'sm')}<span>% 且转化订单数 ≥</span>${numIn('bonus.convOrders', c.convOrders, 'min="0" step="1"', 'sm')}<span>单</span></div>
-       <div class="tip-text" style="margin:12px 0 12px">结营时间落在薪酬核算月份的期次参与计算；当期转化率 = 结营组合品净付费人数 ÷ 该期次「当期转化考核等级」范围内的线索数 × 100%；考核等级在「配置 → 线索投放计划」中按期次配置<br>按学段（初中 / 小学）分开排名，学段以期次结营最后一天所在学段为准；转化率相同按当期线索转化订单金额排序；其他学段不参与</div>
+       <div class="tip-text" style="margin:12px 0 12px">结营时间落在薪酬核算月份的期次参与计算；当期转化率 = 当期结营组合品净付费人数 ÷ 当期所选等级线索数 × 100%<br>当期所选等级线索：该期次「当期转化考核等级」范围内、归属在销售名下的线索；考核等级在「配置 → 线索投放计划」中按期次配置<br>当期结营组合品净付费人数：上述线索在结营前购买商品二级类目为升单商品、毕业年级到期品、组合商品的线索数，订单归属与坐席归属为同一人才计算，订单全额退款不计算；取值等同「当期线索转化 → 结营组合品净付费人数」<br>按学段（初中 / 小学）分开排名，学段以期次结营最后一天所在学段为准；转化率相同按当期线索转化订单金额排序</div>
        <div class="flex-end"><button class="btn btn-primary" onclick="openConv()">＋ 新增</button></div>${table(ccols, rows)}`, '', 'tgtConv')
     + `<div class="footer-buttons"><button class="btn" onclick="resetCfg('bonus')">重置</button><button class="btn btn-primary" onclick="saveBonus()">保存</button></div>`;
 }
@@ -1662,7 +1662,7 @@ function searchKpi(fromDom = true) {
   }
   k.list = kpiScopeAgents()
     .filter(a => matchOrg(a, k.org) && (!k.worker || String(a.id) === k.worker) && rangeActive(a, k.start, k.end))
-    .map(a => ({ a, ...kpiOf(a, k.start, k.end) }));
+    .map(a => { const ym = k.start.slice(0, 7), mon = kpiOf(a, ym + '-01', `${ym}-${pad(daysIn(ym))}`); return { a, ...kpiOf(a, k.start, k.end), pass: mon.pass, assess: mon.assess }; });
   if (fromDom) render();
 }
 function resetKpi() { Object.assign(state.kpi, { org: '', worker: '', start: TODAY, end: TODAY }); searchKpi(false); render(); }
@@ -1681,7 +1681,7 @@ const KPI_METRICS = [
   ['wechat', '加微数', v => v, v => v.toFixed(1)]
 ];
 const KPI_TAIL = [
-  ['达标情况（达标/考核）', r => `${r.pass}/${r.assess}`],
+  ['当月达标情况（达标/考核）', r => `${r.pass}/${r.assess}`],
   ['坐席', r => r.a.name],
   ['所在小组', r => groupName(r.a)]
 ];
@@ -1691,10 +1691,10 @@ function exportKpi() {
   if (!n) { toast('暂无可导出的数据', 'warning'); return; }
   const sum = f => list.reduce((s, x) => s + x[f], 0);
   const rows = [
-    ['序号', ...KPI_METRICS.map(m => m[1]), ...KPI_TAIL.map(t => t[0])],
-    ...list.map((r, i) => [i + 1, ...KPI_METRICS.map(([f, , fmt]) => fmt(r[f])), ...KPI_TAIL.map(t => t[1](r))]),
-    ['总计', ...KPI_METRICS.map(([f, , fmt]) => fmt(sum(f))), '', '', ''],
-    ['均值', ...KPI_METRICS.map(([f, , , avgFmt]) => avgFmt(sum(f) / n)), '', '', '']
+    ['序号', ...KPI_METRICS.map(m => m[1]), ...KPI_TAIL.map(t => t[0]), '邮箱'],
+    ...list.map((r, i) => [i + 1, ...KPI_METRICS.map(([f, , fmt]) => fmt(r[f])), ...KPI_TAIL.map(t => t[1](r)), r.a.email]),
+    ['总计', ...KPI_METRICS.map(([f, , fmt]) => fmt(sum(f))), '', '', '', ''],
+    ['均值', ...KPI_METRICS.map(([f, , , avgFmt]) => avgFmt(sum(f) / n)), '', '', '', '']
   ];
   const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\r\n');
   const link = document.createElement('a');
@@ -1738,7 +1738,7 @@ function renderKpi() {
       <div class="form-item right"><button class="btn btn-primary" onclick="exportKpi()">导出</button></div>
     </div>
     <div class="tbl-meta">统计周期：${k.start === k.end ? k.start : `${k.start} 至 ${k.end}`}，共 ${n} 名坐席；默认按订单金额倒序，点击指标列表头可切换排序</div>
-    <div class="tbl-meta" style="margin-top:-6px">有效通话次数、有效通话时长取「数据统计 → 外呼数据统计」个人面板的「合计有效通话次数」「合计有效通话时长」（企微 + CRM，单通 ≥ 10 秒为有效，不含私人电话）；有效通话人数 = 同一数据源中有效通话的客户数（去重）；加微数 = 当日审核通过的加微数申报；达标情况按「基础配置 → 当日KPI达标」判定</div>
+    <div class="tbl-meta" style="margin-top:-6px">有效通话次数、有效通话时长取「数据统计 → 外呼数据统计」个人面板的「合计有效通话次数」「合计有效通话时长」（企微 + CRM，单通 ≥ 10 秒为有效，不含私人电话）；有效通话人数 = 同一数据源中有效通话的客户数（去重）；订单金额 = 当日成交订单金额累计，含申诉通过订单和双算业绩；加微数 = 当日审核通过的加微数申报；当月达标情况统计所选时间所在自然月：考核天数 = 当月实际出勤状态为班、半、法、0.5法的天数，达标天数 = 当月按「基础配置 → 当日KPI达标」判定达标的天数</div>
     <div id="tgtKpiTable">${table(cols, list, { maxHeight: 560, foot })}</div>
   </div></div>`;
 }
@@ -1830,7 +1830,7 @@ function declInScope(r) {
 const isSales = a => a.post === '销售';
 const isOwnDecl = r => r.submitter.name === ROLES[state.role].name;
 function canAudit(r) {
-  if (!state.decl.auditPerm || state.role === 'member' || r.status !== 'pending' || isOwnDecl(r)) return false;
+  if (!state.decl.auditPerm || state.role === 'member' || r.status !== 'pending') return false;
   return state.role === 'leader' || r.submitter.groupId === ROLES.supervisor.groupId;
 }
 function minDeclDate() {
@@ -1912,7 +1912,7 @@ function openDeclForm(id) {
         <div class="f-hint">默认当天，可选择过去日期；薪酬核算日（每月${genDay}号）后不可提交上月及之前日期的加微数</div>
       </div></div>
       <div class="f-row"><div class="f-label req">加微数</div><div class="f-ctrl">
-        <input type="text" inputmode="numeric" class="el-input" style="width:220px" placeholder="请输入大于等于6的正整数" value="${DF.count}" oninput="this.value=this.value.replace(/[^0-9]/g,'');DF.count=this.value;declValidate()">
+        <input type="text" inputmode="numeric" class="el-input" style="width:220px" placeholder="请输入大于等于3的正整数" value="${DF.count}" oninput="this.value=this.value.replace(/[^0-9]/g,'');DF.count=this.value;declValidate()">
         <div class="f-err" id="dfCountErr"></div>
       </div></div>
       <div class="f-row"><div class="f-label req">上传图片</div><div class="f-ctrl">
@@ -1929,8 +1929,8 @@ function openDeclForm(id) {
   declValidate();
 }
 function declValidate() {
-  const c = DF.count, okCount = /^\d+$/.test(c) && Number(c) >= 6;
-  const err = $('dfCountErr'); if (err) err.textContent = c && !okCount ? '仅可输入大于等于6的正整数' : '';
+  const c = DF.count, okCount = /^\d+$/.test(c) && Number(c) >= 3;
+  const err = $('dfCountErr'); if (err) err.textContent = c && !okCount ? '仅可输入大于等于3的正整数' : '';
   const btn = $('dfSubmit'); if (btn) btn.disabled = !(okCount && DF.images.length && DF.date);
 }
 function addDraftImgs(input) {
@@ -1947,7 +1947,7 @@ function submitDecl() {
   const sub = currentSubmitter(); const min = minDeclDate();
   if (!DF.date || DF.date > TODAY) { toast('请选择今天及之前的申报日期', 'warning'); return; }
   if (DF.date < min) { toast(`薪酬核算日（每月${state.cfgSaved.basic.genDay}号）后不可提交上月及之前日期的加微数`, 'warning'); return; }
-  if (!/^\d+$/.test(DF.count) || Number(DF.count) < 6) { toast('加微数仅可输入大于等于6的正整数', 'warning'); return; }
+  if (!/^\d+$/.test(DF.count) || Number(DF.count) < 3) { toast('加微数仅可输入大于等于3的正整数', 'warning'); return; }
   if (!DF.images.length) { toast('请上传图片', 'warning'); return; }
   const same = DECL_LIST.filter(r => r.id !== DF.id && r.submitter.name === sub.name && r.date === DF.date);
   if (same.some(r => r.status === 'approved')) { toast('该日期已有审核通过的加微数申报，不可重复申报', 'warning'); return; }
@@ -2751,11 +2751,11 @@ window.DIFF_CHANGESET = {
       "level": "module",
       "type": "new",
       "title": "新增KPI看板列表",
-      "desc": "展示有效通话时长、有效通话次数、有效通话人数、订单金额、加微数、达标情况（达标/考核）、坐席、所在小组，默认按订单金额倒序，最后一行展示前五项的总计与均值。",
+      "desc": "展示有效通话时长、有效通话次数、有效通话人数、订单金额（含申诉通过订单和双算业绩）、加微数、当月达标情况（达标/考核）、坐席、所在小组，默认按订单金额倒序，最后一行展示前五项的总计与均值。",
       "before": "无此功能",
       "after": "按坐席查看KPI过程数据与达标天数",
       "examples": [
-        "达标情况展示为「达标天数/考核天数」，如 11/15"
+        "当月达标情况展示为「达标天数/考核天数」，如 11/15；考核天数 = 当月出勤状态为班、半、法、0.5法的天数"
       ],
       "prd": {
         "section": "7.2.5 KPI看板",
@@ -2820,7 +2820,7 @@ window.DIFF_CHANGESET = {
       "level": "module",
       "type": "flow",
       "title": "新增发起申报弹窗",
-      "desc": "填写申报日期（默认当天、可选过去）、加微数（≥6 的正整数）、上传图片（最多5张），加微数和图片都填写后才可提交；同一天已有通过或待审核的申报不可重复提交，薪酬核算日后不可提交上月及之前日期。",
+      "desc": "填写申报日期（默认当天、可选过去）、加微数（≥3 的正整数）、上传图片（最多5张），加微数和图片都填写后才可提交；同一天已有通过或待审核的申报不可重复提交，薪酬核算日后不可提交上月及之前日期。",
       "before": "无此功能",
       "after": "坐席线上提报加微数",
       "prd": {
@@ -2841,7 +2841,7 @@ window.DIFF_CHANGESET = {
       "level": "module",
       "type": "flow",
       "title": "新增申报审核",
-      "desc": "所在组主管或团长审核，选择通过或拒绝，拒绝需填写原因；审核通过后加微数计入提报人申报日期当天的KPI看板；审核按钮单独受权限控制，不能审核本人的申报。",
+      "desc": "所在组主管或团长审核，选择通过或拒绝，拒绝需填写原因；审核通过后加微数计入提报人申报日期当天的KPI看板；审核按钮单独受权限控制。",
       "before": "无此功能",
       "after": "主管/团长线上审核加微数",
       "prd": {
