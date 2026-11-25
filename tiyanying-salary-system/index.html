@@ -182,6 +182,36 @@
   .preview-box img { max-width: 380px; max-height: 60vh; border: 1px solid #ebeef5; border-radius: 4px; }
   .pv-nav { width: 32px; height: 32px; border-radius: 50%; border: none; background: #f4f4f5; font-size: 20px; cursor: pointer; color: #606266; }
   .pv-nav[disabled] { opacity: .3; cursor: not-allowed; }
+  .goal-summary { display: flex; align-items: center; gap: 48px; background: linear-gradient(135deg, #56b4f9 0%, #a8dcff 60%, #d6efff 100%); border-radius: 8px; padding: 20px 32px; margin-bottom: 20px; }
+  .goal-summary .gs-item { display: flex; flex-direction: column; }
+  .goal-summary .gs-label { font-size: 13px; color: rgba(255,255,255,.85); margin-bottom: 6px; }
+  .goal-summary .gs-value { font-size: 22px; font-weight: 700; color: #fff; }
+  .goal-summary .gs-value.lg { font-size: 30px; }
+  .goal-summary .gs-unit { font-size: 14px; font-weight: 400; margin-left: 2px; }
+  .goal-summary .gs-input { width: 170px; height: 38px; font-size: 20px; font-weight: 700; color: #1677ff; border: 1px solid rgba(255,255,255,.9); }
+  .goal-summary .gs-warn { font-size: 12px; color: #fff; background: rgba(245,108,108,.85); border-radius: 3px; padding: 1px 6px; margin-top: 4px; }
+  .goal-summary .gs-ok { font-size: 12px; color: #fff; background: rgba(103,194,58,.85); border-radius: 3px; padding: 1px 6px; margin-top: 4px; }
+  .goal-sup-info { display: flex; align-items: center; gap: 24px; padding: 12px 16px; margin-bottom: 16px; background: #f4f8ff; border: 1px solid #d9ecff; border-radius: 4px; font-size: 14px; color: #606266; }
+  .goal-sup-info b { color: #303133; }
+  .goal-table { border: 1px solid #ebeef5; border-radius: 4px; overflow: hidden; }
+  .goal-toolbar { display: flex; justify-content: flex-end; gap: 16px; padding: 10px 20px; }
+  .goal-toolbar span { font-size: 13px; color: #409eff; cursor: pointer; }
+  .goal-head, .goal-group, .goal-member { display: flex; align-items: center; padding: 10px 20px; border-bottom: 1px solid #f0f2f5; }
+  .goal-head { background: #fafafa; border-bottom-color: #ebeef5; font-size: 13px; color: #909399; }
+  .goal-group { padding: 12px 20px; cursor: pointer; user-select: none; }
+  .goal-group:hover, .goal-member:hover { background: #fafbfc; }
+  .goal-member { padding-left: 48px; }
+  .gc-name { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; color: #303133; }
+  .gc-count { width: 110px; text-align: center; flex-shrink: 0; }
+  .gc-sum { width: 200px; text-align: right; flex-shrink: 0; }
+  .gc-target { width: 230px; display: flex; justify-content: flex-end; align-items: center; gap: 6px; flex-shrink: 0; }
+  .goal-group .gc-name { font-weight: 600; }
+  .goal-group .caret-ic { font-size: 12px; color: #606266; width: 12px; }
+  .gc-target .val { color: #409eff; font-weight: 500; }
+  .goal-in { width: 150px; text-align: right; }
+  .sum-low { color: #f56c6c; }
+  .sum-low small { display: block; font-size: 12px; }
+  .lock-badge { font-size: 12px; color: #909399; background: #f4f4f5; border-radius: 3px; padding: 0 6px; font-weight: 400; }
   .tag .close { cursor: pointer; font-size: 12px; opacity: .8; }
   .tag .close:hover { opacity: 1; }
   .sum-box { display: flex; flex-wrap: wrap; gap: 8px 40px; padding: 12px 16px; margin-bottom: 14px; background: #f5f7fa; border-radius: 4px; }
@@ -323,6 +353,15 @@
     <li>审核通过后，加微数补充到提报人申报日期当天的 KPI 看板加微数中；拒绝时需填写拒绝原因。</li>
     <li>数据权限按提报人控制：组员看自己，主管看本组，团长看全部。</li>
   </ul>
+  <h4>月度目标配置（从「配置」菜单移入）</h4>
+  <ul>
+    <li>原「配置 → 月度目标配置」页面移到「薪酬体系」下第六个二级菜单，「配置」菜单中不再展示。</li>
+    <li>数据权限：团长看全部小组；主管只看本组；组员无该页面权限。</li>
+    <li>团长：展示「团队目标总计」统计面板，可修改团队总目标、小组目标和组内人员目标；保存时校验「小组目标之和 = 团队总目标」，且每个小组「组内人员目标之和 ≥ 小组目标」。</li>
+    <li>主管：不展示统计面板；小组目标只读（由团长设定），只能修改本组人员目标；保存时校验「组内人员目标之和 ≥ 小组目标」。</li>
+    <li>小组目标改为单独设置（原逻辑为组内人员目标自动加总），列表新增「组内人员目标合计」列，低于小组目标时标红提示差额。</li>
+    <li>历史月份仅可查看，不可修改（沿用原逻辑）。</li>
+  </ul>
   <h4>待确认</h4>
   <ul>
     <li>KPI看板：有效通话的判定标准（如单通时长阈值）、有效通话人数是否按手机号去重、订单金额是否扣除退款、加微数取数口径。</li>
@@ -330,6 +369,7 @@
     <li>KPI看板：时间范围是否限制最大跨度；主管带多个小组时是否看全部所带小组。</li>
     <li>加微数申报：主管/团长本人是否也需要申报；薪酬核算日之后，上月待审核的申报是否还能审核通过。</li>
     <li>加微数申报：审核通过的数量是与系统统计的加微数相加，还是覆盖；图片格式与大小限制。</li>
+    <li>月度目标配置：团长修改小组目标后，若某组人员目标之和低于新小组目标，是否允许团长直接保存（原型为不允许，需先调整人员目标）；原页面中组员可修改本人目标的逻辑是否取消。</li>
   </ul>
   <ul>
     <li>体验营坐席的业绩、营收、退款口径与数据来源。</li>
@@ -408,7 +448,8 @@ const PAGES = {
   actualAttendance: '实际出勤',
   agentSalarySetting: '坐席薪酬配置',
   kpiBoard: 'KPI看板',
-  wechatDeclare: '加微数申报'
+  wechatDeclare: '加微数申报',
+  monthGoal: '月度目标配置'
 };
 const state = {
   page: 'agentSalary',
@@ -730,9 +771,9 @@ const MENU = [
   { t: '订单管理', c: ['坐席订单', '其他订单', '订单申诉'] },
   { t: '数据统计', c: ['公司个人业绩排行榜', '当期线索转化', '当期过程数据', 'SOP流程监控', '各渠道线索转化', '跟进任务数据看板', '公海线索转化', '公海线索分配', '当期线索质量', '月度转化', '月度gmv', '营收', '外呼数据统计', '线索分配结果', '月度线索分配统计', '往期线索转化', '转介绍线索转化', '转介绍业绩看板'] },
   { t: '坐席管理', c: ['架构管理', '外呼工号配置'] },
-  { t: '薪酬体系', isNew: true, c: [{ t: '坐席查询', page: 'agentSalary' }, { t: '实际出勤', page: 'actualAttendance' }, { t: '坐席薪酬配置', page: 'agentSalarySetting' }, { t: 'KPI看板', page: 'kpiBoard' }, { t: '加微数申报', page: 'wechatDeclare' }] },
+  { t: '薪酬体系', isNew: true, c: [{ t: '坐席查询', page: 'agentSalary' }, { t: '实际出勤', page: 'actualAttendance' }, { t: '坐席薪酬配置', page: 'agentSalarySetting' }, { t: 'KPI看板', page: 'kpiBoard' }, { t: '加微数申报', page: 'wechatDeclare' }, { t: '月度目标配置', page: 'monthGoal' }] },
   { t: '小程序' }, { t: '企业微信直播' },
-  { t: '配置', c: ['配置投放渠道信息', '线索投放计划', '信息流测试账号', '信息流承接配置', '加微工具配置', '月度目标配置', '月度线索目标配置', '渠道获客二维码/链接', '新销售每天可领取公海线索数', '发放公海客户的销售人员配置', 'H5投放页面配置'] }
+  { t: '配置', c: ['配置投放渠道信息', '线索投放计划', '信息流测试账号', '信息流承接配置', '加微工具配置', '月度线索目标配置', '渠道获客二维码/链接', '新销售每天可领取公海线索数', '发放公海客户的销售人员配置', 'H5投放页面配置'] }
 ];
 function renderMenu() {
   $('sideMenu').innerHTML = MENU.map(m => {
@@ -768,7 +809,7 @@ function renderChrome() {
 }
 function render() {
   renderChrome();
-  const fn = { agentSalary: renderAgentSalary, actualAttendance: renderAttendance, agentSalarySetting: renderSetting, kpiBoard: renderKpi, wechatDeclare: renderDeclare }[state.page];
+  const fn = { agentSalary: renderAgentSalary, actualAttendance: renderAttendance, agentSalarySetting: renderSetting, kpiBoard: renderKpi, wechatDeclare: renderDeclare, monthGoal: renderMonthGoal }[state.page];
   $('appMain').innerHTML = fn();
 }
 
@@ -1851,6 +1892,107 @@ function openImgPreview(imgs, i) {
       <button class="pv-nav" ${PREVIEW.i >= PREVIEW.imgs.length - 1 ? 'disabled' : ''} onclick="PREVIEW.i++;refreshDialog('imgPreview')">›</button>
     </div><div style="text-align:center;color:#909399;margin-top:8px">${PREVIEW.i + 1} / ${PREVIEW.imgs.length}</div>`
   });
+}
+
+/* ==================== 页面六：月度目标配置 ==================== */
+state.goal = { ym: CUR_YM, expanded: {}, data: {}, saved: {} };
+const fmtNum = n => String(Math.round(n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+function goalInit(ym) {
+  if (state.goal.saved[ym]) return;
+  const members = {}, groups = {};
+  GROUPS.forEach(g => {
+    let sum = 0;
+    AGENTS.filter(a => a.groupId === g.id && inMonth(a, ym)).forEach(a => {
+      const v = (30 + Math.floor(rng('goal' + a.id + ym)() * 50)) * 1000;
+      members[a.id] = v; sum += v;
+    });
+    groups[g.id] = Math.floor(sum * .95 / 10000) * 10000;
+  });
+  const team = Object.values(groups).reduce((s, v) => s + v, 0);
+  state.goal.saved[ym] = { team, groups, members };
+  state.goal.data[ym] = clone(state.goal.saved[ym]);
+}
+function goalGroups() {
+  const g = state.goal, d = g.data[g.ym];
+  return GROUPS.filter(x => state.role === 'leader' || x.id === ROLES.supervisor.groupId).map(x => {
+    const ms = AGENTS.filter(a => a.groupId === x.id && inMonth(a, g.ym));
+    return { ...x, ms, target: d.groups[x.id] || 0, sum: ms.reduce((s, a) => s + (d.members[a.id] || 0), 0) };
+  });
+}
+function changeGoalYm(v) { if (v) { state.goal.ym = v; render(); } }
+function setGoal(kind, id, v) {
+  const d = state.goal.data[state.goal.ym], n = Math.max(0, Math.round(Number(v) || 0));
+  if (kind === 'team') d.team = n; else d[kind][id] = n;
+  render();
+}
+function toggleGoalGroup(id) { const e = state.goal.expanded; e[id] = !(e[id] ?? state.role !== 'leader'); render(); }
+function goalExpandAll(open) { GROUPS.forEach(x => state.goal.expanded[x.id] = open); render(); }
+function resetGoal() {
+  const g = state.goal;
+  confirmBox('确定要重置为上次保存的结果吗？', () => { g.data[g.ym] = clone(g.saved[g.ym]); toast('重置成功'); render(); }, '重置确认');
+}
+function saveGoal() {
+  const g = state.goal, d = g.data[g.ym], groups = goalGroups();
+  const low = groups.filter(x => x.sum < x.target);
+  if (low.length) { toast(`组内人员目标之和需大于等于小组目标：${low.map(x => `${x.name}还差 ${fmtNum(x.target - x.sum)} 元`).join('；')}`, 'warning'); return; }
+  if (state.role === 'leader') {
+    const total = groups.reduce((s, x) => s + x.target, 0);
+    if (total !== d.team) { toast(`小组目标之和（${fmtNum(total)} 元）需等于团队总目标（${fmtNum(d.team)} 元）`, 'warning'); return; }
+    g.saved[g.ym] = clone(d);
+  } else {
+    groups.forEach(x => x.ms.forEach(a => { g.saved[g.ym].members[a.id] = d.members[a.id]; }));
+  }
+  toast('保存成功'); render();
+}
+function renderMonthGoal() {
+  if (state.role === 'member') {
+    return `<div class="page"><div class="card">${roleBar()}<div class="empty" style="text-align:center;color:#909399;padding:60px 0">组员无「月度目标配置」页面权限，请切换为主管或团长查看</div></div></div>`;
+  }
+  const g = state.goal; goalInit(g.ym);
+  const d = g.data[g.ym], isLeader = state.role === 'leader', editable = g.ym >= CUR_YM;
+  const groups = goalGroups();
+  const groupTotal = groups.reduce((s, x) => s + x.target, 0);
+  const headcount = groups.reduce((s, x) => s + x.ms.length, 0);
+  const numIn2 = (kind, id, v) => `<input type="number" class="el-input goal-in" min="0" step="1000" value="${v}" onclick="event.stopPropagation()" onchange="setGoal('${kind}',${id},this.value)">`;
+
+  const summary = isLeader ? `<div class="goal-summary">
+      <div class="gs-item"><span class="gs-label">团队目标总计</span>${editable
+        ? `<span><input type="number" class="el-input gs-input" min="0" step="10000" value="${d.team}" onchange="setGoal('team',null,this.value)"><span class="gs-unit" style="color:#fff">元</span></span>`
+        : `<span class="gs-value lg">${fmtNum(d.team)}<span class="gs-unit">元</span></span>`}</div>
+      <div class="gs-item"><span class="gs-label">小组目标合计</span><span class="gs-value">${fmtNum(groupTotal)}<span class="gs-unit">元</span></span>
+        ${groupTotal === d.team ? '<span class="gs-ok">与团队总目标一致</span>' : `<span class="gs-warn">与团队总目标相差 ${fmtNum(Math.abs(d.team - groupTotal))} 元</span>`}</div>
+      <div class="gs-item"><span class="gs-label">小组数量</span><span class="gs-value">${groups.length}<span class="gs-unit">个</span></span></div>
+      <div class="gs-item"><span class="gs-label">在职人数</span><span class="gs-value">${headcount}<span class="gs-unit">人</span></span></div>
+    </div>`
+    : (() => { const x = groups[0]; return `<div class="goal-sup-info"><span>小组目标：<b>${fmtNum(x.target)}</b> 元（由团长设定）</span><span>组内人员目标合计：<b class="${x.sum < x.target ? 'sum-low' : ''}">${fmtNum(x.sum)}</b> 元</span>${x.sum < x.target ? `<span class="sum-low">还差 ${fmtNum(x.target - x.sum)} 元，需大于等于小组目标</span>` : '<span style="color:#67c23a">已满足小组目标</span>'}</div>`; })();
+
+  const body = groups.map(x => {
+    const open = g.expanded[x.id] ?? !isLeader;
+    const low = x.sum < x.target;
+    return `<div class="goal-group" onclick="toggleGoalGroup(${x.id})">
+        <span class="gc-name"><span class="caret-ic">${open ? '▼' : '▶'}</span>${x.name}</span>
+        <span class="gc-count">${x.ms.length}人</span>
+        <span class="gc-sum ${low ? 'sum-low' : ''}">${fmtNum(x.sum)} 元${low ? `<small>低于小组目标 ${fmtNum(x.target - x.sum)} 元</small>` : ''}</span>
+        <span class="gc-target">${isLeader && editable ? numIn2('groups', x.id, x.target) : `<span class="val">${fmtNum(x.target)}</span>`}<span>元</span>${!isLeader ? '<span class="lock-badge">不可修改</span>' : ''}</span>
+      </div>
+      ${open ? x.ms.map(a => `<div class="goal-member">
+        <span class="gc-name" style="font-weight:400">${a.name}</span><span class="gc-count"></span><span class="gc-sum"></span>
+        <span class="gc-target">${editable ? numIn2('members', a.id, d.members[a.id] || 0) : `<span>${fmtNum(d.members[a.id])}</span>`}<span style="color:#909399;font-size:13px">元</span></span>
+      </div>`).join('') : ''}`;
+  }).join('');
+
+  return `<div class="page"><div class="card">
+    ${roleBar()}
+    <div class="form-inline"><div class="form-item"><label>选择年月：</label><input type="month" class="el-input" value="${g.ym}" max="${CUR_YM}" onchange="changeGoalYm(this.value)"></div>
+      ${editable ? '' : '<div class="form-item"><span class="lock-tip" style="margin:0">历史月份目标仅可查看，不可修改</span></div>'}</div>
+    ${summary}
+    <div class="goal-table">
+      ${isLeader ? '<div class="goal-toolbar"><span onclick="goalExpandAll(true)">全部展开</span><span onclick="goalExpandAll(false)">全部收起</span></div>' : ''}
+      <div class="goal-head"><span class="gc-name">小组 / 成员</span><span class="gc-count">在职人数</span><span class="gc-sum">组内人员目标合计（元）</span><span class="gc-target">目标（元）</span></div>
+      ${body || '<div class="empty" style="text-align:center;color:#909399;padding:60px 0">当前月份暂无在职人员数据</div>'}
+    </div>
+    <div class="footer-buttons" style="justify-content:flex-end"><button class="btn" onclick="resetGoal()">重置</button><button class="btn btn-primary" ${editable ? '' : 'disabled'} onclick="saveGoal()">保存</button></div>
+  </div></div>`;
 }
 
 /* ==================== 启动 ==================== */
