@@ -247,6 +247,11 @@
   .ds-item { font-size: 14px; line-height: 22px; }
   .ds-label { color: #303133; }
   .ds-content { color: #1c9bea; }
+  .ds-wrap .ds-title { margin: 20px 0 14px; }
+  .ds-wrap .ds-title:first-child { margin-top: 4px; }
+  .ds-wrap .ds-grid { gap: 16px 16px; margin-bottom: 4px; }
+  .ds-wrap .ds-label { color: #606266; }
+  .ds-wrap .ds-content { color: #606266; margin-left: 14px; }
   .d-tit { font-size: 20px; text-align: center; margin-bottom: 10px; color: #303133; }
   .d-date-box { width: 701px; margin: 16px auto 10px; border-top: 1px solid #ccc; border-left: 1px solid #ccc; display: flex; flex-wrap: wrap; cursor: pointer; user-select: none; position: relative; }
   .d-click { border-bottom: 1px solid #ccc; border-right: 1px solid #ccc; width: 100px; height: 50px; line-height: 50px; padding: 0 20px; display: flex; justify-content: space-between; }
@@ -878,64 +883,57 @@ function renderSalaryTab() {
 }
 function openSalaryDetail(id) {
   const row = salaryRow(AGENT_MAP[id], state.sal.searchedYm);
-  openDialog({ key: 'salDetail', title: '查看明细', width: 800, body: () => salaryDetailHtml(row) });
+  openDialog({ key: 'salDetail', title: '查看明细', width: 900, body: () => salaryDetailHtml(row) });
 }
 const di = (label, content, span = 1) => `<div class="ds-item" style="grid-column:span ${span}"><span class="ds-label">${label}</span><span class="ds-content">${content}</span></div>`;
 function salaryDetailHtml(row) {
   const d = row.d; const [y, m] = row.ym.split('-').map(Number);
   const rank = d.rankRule ? fmtRange(d.rankRule.minOp, d.rankRule.min, d.rankRule.maxOp, d.rankRule.max, '%') : '';
-  const unpassedText = `${d.unpassed.length} 次${d.unpassed.length ? `（ ${d.unpassed.map(x => `${y}/${m}/${x}`).join('、')} ）` : ''}`;
-  const kpiText = d.kpiExempt ? `0元（${d.kpiExempt}）` : d.unpassed.length ? (d.kpiDeduct ? `${d.kpiDeduct}元（当月累计${d.unpassed.length}次未达标）` : `0元（当月累计${d.unpassed.length}次未达标，仅警告）`) : '0元';
-  return `
-    <div class="ds-title" id="tgtSalaryDetail">底薪 <span style="font-size:12px;font-weight:400;color:#909399">员工阶段：${STAGE_TEXT[d.stage]}</span></div>
+  const amt = v => `${Math.round(v * 100) / 100}元`;
+  const unpassedText = `${d.unpassed.length} 次${d.unpassed.length ? `&nbsp;&nbsp;（ ${d.unpassed.map(x => `${y}/${m}/${x}`).join('、')} ）` : ''}`;
+  const custom = list => list.map(x => di(x.name + '：', `${amt(x.amount)}（${x.reason || x.description}）`, 3)).join('');
+  return `<div class="ds-wrap">
+    <div class="ds-title" id="tgtSalaryDetail">底薪</div>
     <div class="ds-grid">
-      ${di('基础薪资：', money(row.baseSalary) + '元', 3)}
-      ${di('基本薪资基数：', d.baseAmount + '元')}
+      ${di('基础薪资：', amt(row.baseSalary), 3)}
+      ${rank ? di('排名分布：', rank) : ''}
+      ${di('底薪：', amt(d.baseAmount))}
+      ${di('档位薪资：', amt(d.rankSalary))}
       ${di('应出勤天数：', d.expected + '天')}
       ${di('实际出勤天数：', d.actualDays + '天')}
-      ${di('出勤折算：', money(d.attendBase) + '元')}
       ${di('法定假日上班天数：', d.legalDays + '天')}
-      ${di('法定节假日上班薪资：', money(d.legalPay) + '元')}
-      ${d.gmvRank ? di('GMV排名：', `第${d.gmvRank.rank}名 / 共${d.gmvRank.total}人（前${d.gmvRank.pct}%）`) : di('GMV排名：', '当月未填写目标，不参与排名')}
-      ${rank ? di('排名分布：', rank) : ''}
-      ${di('排名薪资：', d.rankSalary + '元（不按出勤折算）')}
     </div>
     <div class="ds-title">绩效</div>
     <div class="ds-grid">
-      ${di('绩效结果：', money(row.performance) + '元' + (d.joinLeaveSame ? '（当月入职当月离职，不发放）' : ''))}
-      ${di('绩效基数：', d.perfBase + '元')}
-      ${di('按出勤折算：', `${money(d.perfByAtt)}元（出勤率 ${d.actualDays}/${d.expected}）`)}
+      ${di('绩效结果：', amt(row.performance))}
+      ${di('绩效基数：', amt(d.perfBase))}
       ${di('个人目标是否达标：', d.goalOk ? '是' : '否')}
       ${di('KPI未达标次数：', unpassedText, 3)}
-      ${di('KPI扣款：', kpiText, 3)}
-      ${d.perfDeds.map(x => di(x.name + '：', `${x.amount}元（${x.reason}）`, 3)).join('')}
+      ${custom(d.perfDeds)}
     </div>
     <div class="ds-title">提成</div>
     <div class="ds-grid">
-      ${di('提成：', row.commission + '元' + (d.commDelayed ? '（当月离职，提成延后一个月发放）' : ''))}
-      ${di('当月GMV：', d.totalPerf + '元')}
-      ${di('当月目标：', d.target ? d.target + '元' : '未填写')}
-      ${di('目标完成率：', d.target ? d.completion + '%' : '-')}
-      ${di('是否达标：', d.goalOk ? '是' : '否')}
-      ${di('提成系数：', d.point + '%' + (d.commRule ? `（${d.commRule}）` : ''))}
-      ${di('营收：', d.revenue + '元')}
-      ${di('退款：', `${d.refund}元 <button class="link" onclick="openCommDetail('refund',${row.workerId})">查看明细</button>`)}
-      ${di('双算业绩：', d.external + '元')}
-      ${di('上月订单本月退款：', `${d.lastMonthRefund}元 <button class="link" onclick="openCommDetail('lastMonthRefund',${row.workerId})">查看明细</button>`)}
-      ${di('上月订单本月申诉：', `${d.lastMonthAppeal}元 <button class="link" onclick="openCommDetail('lastMonthAppeal',${row.workerId})">查看明细</button>`)}
-      ${di('上月提成差值：', d.lastDiff + '元')}
+      ${di('提成：', amt(row.commission))}
+      ${di('总业绩：', amt(d.totalPerf))}
+      ${di('提成系数：', d.point + '%')}
+      ${di('营收：', amt(d.revenue))}
+      ${di('退款：', `${amt(d.refund)} <button class="link" onclick="openCommDetail('refund',${row.workerId})">查看明细</button>`)}
+      ${di('双算业绩：', amt(d.external))}
+      ${di('上月订单本月退款：', `${amt(d.lastMonthRefund)} <button class="link" onclick="openCommDetail('lastMonthRefund',${row.workerId})">查看明细</button>`)}
+      ${di('上月订单本月申诉：', `${amt(d.lastMonthAppeal)} <button class="link" onclick="openCommDetail('lastMonthAppeal',${row.workerId})">查看明细</button>`)}
+      ${di('上月提成差值：', amt(d.lastDiff))}
     </div>
     <div class="ds-title">奖金</div>
     <div class="ds-grid one">
-      ${di('新人王奖励：', d.newKingBonus + '元' + (d.isNewKing ? `（入职当月及第一个完整月GMV排名第一，当月GMV ${d.totalPerf}元）` : ''))}
-      ${di('当期转化率奖金：', `${d.conv.total}元${d.conv.items.length ? `（${AGENT_MAP[row.workerId].grade}学段，按期次单独排名，奖金累加）` : '（当月未填写目标或无结营期次，不参与）'}`)}
-      ${d.conv.items.map(x => di('', `<span style="color:#606266">· ${x.period}：转化率 ${x.rate}%（${x.orders}单，订单金额 ${x.amount}元），${x.rank ? `第${x.rank}名，${x.bonus}元` : '未达参与门槛'}</span>`)).join('')}
-      ${d.bonusDeds.map(x => di(x.name + '：', `${x.amount}元（${x.reason}）`)).join('')}
+      ${di('新人王奖励：', amt(d.newKingBonus))}
+      ${di('当期转化率奖金：', amt(d.conv.total))}
+      ${custom(d.bonusDeds)}
     </div>
     <div class="ds-title">其他</div>
     <div class="ds-grid one">
-      ${d.others.length ? d.others.map(x => di(x.name + '：', `${x.amount}元（${x.description}）`)).join('') : di('', '无')}
-    </div>`;
+      ${d.others.length ? custom(d.others) : '<div class="ds-item"><span class="ds-content" style="margin:0">无</span></div>'}
+    </div>
+  </div>`;
 }
 const COMM_TITLE = { refund: '退款明细', lastMonthRefund: '上月订单本月退款明细', lastMonthAppeal: '上月订单本月申诉明细' };
 function openCommDetail(type, id) {
@@ -2224,12 +2222,12 @@ window.DIFF_CHANGESET = {
       "level": "module",
       "type": "logic",
       "title": "新增薪酬明细弹窗",
-      "desc": "点击「查看明细」按底薪、绩效、提成、奖金、其他五部分展示每一项的取值与计算过程，退款、上月退款、上月申诉可下钻查看订单明细。",
+      "desc": "点击「查看明细」按底薪、绩效、提成、奖金、其他五部分展示，样式与电销薪酬明细一致，只展示参与计算的字段；退款、上月退款、上月申诉可下钻查看订单明细。",
       "before": "无此功能",
-      "after": "可逐项核对薪酬计算过程",
+      "after": "可逐项核对薪酬构成，各字段取值逻辑见 PRD",
       "examples": [
-        "新人入职当月：KPI扣款显示 0 元（新人入职当月不扣减）",
-        "当月完成目标：KPI扣款显示 0 元（当月已完成目标，不考核过程指标）"
+        "当月未填写目标：不展示排名分布，档位薪资为 0 元",
+        "有自定义项：按归属类别在绩效、奖金、其他下逐条展示「名称：金额（说明）」"
       ],
       "prd": {
         "section": "7.2.2 坐席查询",
