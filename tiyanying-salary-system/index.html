@@ -127,6 +127,19 @@
   .tbl .fx-right-first { box-shadow: -3px 0 6px -3px rgba(0,0,0,.15); }
   .tbl .center { text-align: center; }
   .tbl .empty { text-align: center; color: #909399; height: 80px; }
+  .tbl tfoot td { position: sticky; bottom: 0; z-index: 3; background: #fafafa; color: #303133; font-weight: 600; height: auto; padding: 8px 10px; line-height: 20px; box-shadow: 0 -1px 0 #ebeef5; }
+  .tbl tfoot tr:hover td { background: #fafafa; }
+  .tbl tfoot td.fx { z-index: 5; }
+  .tbl tfoot .avg { color: #909399; font-weight: 400; font-size: 12px; }
+  .el-input:disabled { background-color: #f5f7fa; color: #a8abb2; cursor: not-allowed; }
+  .role-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 10px 14px; margin-bottom: 18px; border: 1px dashed #b37feb; background: #f9f0ff; border-radius: 4px; font-size: 13px; color: #606266; }
+  .role-bar .btn + .btn { margin-left: 0; }
+  .role-tag { background: #722ed1; color: #fff; border-radius: 3px; padding: 1px 6px; font-size: 12px; }
+  .role-desc { color: #722ed1; margin-left: 6px; }
+  .range-sep { padding: 0 8px; color: #606266; }
+  .shortcut { margin-left: 8px; }
+  .shortcut .link { font-size: 13px; }
+  .tbl-meta { font-size: 13px; color: #909399; margin-bottom: 10px; }
   .sortable { cursor: pointer; user-select: none; display: inline-flex; align-items: center; gap: 4px; }
   .caret { display: inline-flex; flex-direction: column; font-size: 8px; line-height: 7px; color: #c0c4cc; }
   .caret .on { color: #409eff; }
@@ -265,7 +278,21 @@
     <li>实际出勤默认展示上月（10 月，已锁定，不显示编辑列），切到 11 月可体验编辑和批量编辑。</li>
     <li>坐席、小组、金额均为模拟数据。</li>
   </ul>
+  <h4>KPI看板（新增页面）</h4>
+  <ul>
+    <li>位于「薪酬体系」下第四个二级菜单。</li>
+    <li>字段：有效通话时长、有效通话次数、有效通话人数、订单金额、加微数、达标情况（绩效考核天数 / 达标天数）、坐席、所在小组；默认按订单金额倒序。</li>
+    <li>列表最后一行固定展示前五个指标的总计与均值（均值 = 总计 ÷ 列表坐席数）。</li>
+    <li>筛选：坐席、小组、时间范围（默认当天，含今天/昨天/近7天/本月快捷项）；支持导出，导出范围与当前筛选及角色权限一致。</li>
+    <li>数据范围按角色控制：组员只看自己，主管看本组，团长看全部。页面顶部紫色条为原型演示用的角色切换，线上按登录账号角色自动判断，不展示该条。</li>
+    <li>原型中「绩效考核天数」按「实际出勤」里的 班 / 半 / 法 / 0.5法 天数模拟。</li>
+  </ul>
   <h4>待确认</h4>
+  <ul>
+    <li>KPI看板：有效通话的判定标准（如单通时长阈值）、有效通话人数是否按手机号去重、订单金额是否扣除退款、加微数取数口径。</li>
+    <li>KPI看板：单日「达标」的判定规则，以及「绩效考核天数」是否按排班出勤天数计算。</li>
+    <li>KPI看板：时间范围是否限制最大跨度；主管带多个小组时是否看全部所带小组。</li>
+  </ul>
   <ul>
     <li>体验营坐席的业绩、营收、退款口径与数据来源。</li>
     <li>新人王奖励：GMV 并列第一时是否都发放。</li>
@@ -341,7 +368,8 @@ function monthsSinceJoin(a, ym) {
 const PAGES = {
   agentSalary: '坐席查询',
   actualAttendance: '实际出勤',
-  agentSalarySetting: '坐席薪酬配置'
+  agentSalarySetting: '坐席薪酬配置',
+  kpiBoard: 'KPI看板'
 };
 const state = {
   page: 'agentSalary',
@@ -613,7 +641,8 @@ function table(cols, rows, opt = {}) {
   const body = rows.length
     ? rows.map((r, i) => `<tr>${cols.map(c => `<td class="${cl(c)}" style="${st(c)}">${c.render ? c.render(r, i) : (r[c.field] ?? '')}</td>`).join('')}</tr>`).join('')
     : `<tr><td colspan="${cols.length}" class="empty">暂无数据</td></tr>`;
-  return `<div class="tbl-wrap" style="${opt.maxHeight ? `max-height:${opt.maxHeight}px;` : ''}"><table class="tbl"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+  const foot = opt.foot ? `<tfoot><tr>${cols.map((c, i) => `<td class="${cl(c)}" style="${st(c)}">${opt.foot[i] ?? ''}</td>`).join('')}</tr></tfoot>` : '';
+  return `<div class="tbl-wrap" style="${opt.maxHeight ? `max-height:${opt.maxHeight}px;` : ''}"><table class="tbl"><thead><tr>${head}</tr></thead><tbody>${body}</tbody>${foot}</table></div>`;
 }
 function pager(total, page, fn, size = 10) {
   const pages = Math.max(1, Math.ceil(total / size));
@@ -662,7 +691,7 @@ const MENU = [
   { t: '订单管理', c: ['坐席订单', '其他订单', '订单申诉'] },
   { t: '数据统计', c: ['公司个人业绩排行榜', '当期线索转化', '当期过程数据', 'SOP流程监控', '各渠道线索转化', '跟进任务数据看板', '公海线索转化', '公海线索分配', '当期线索质量', '月度转化', '月度gmv', '营收', '外呼数据统计', '线索分配结果', '月度线索分配统计', '往期线索转化', '转介绍线索转化', '转介绍业绩看板'] },
   { t: '坐席管理', c: ['架构管理', '外呼工号配置'] },
-  { t: '薪酬体系', isNew: true, c: [{ t: '坐席查询', page: 'agentSalary' }, { t: '实际出勤', page: 'actualAttendance' }, { t: '坐席薪酬配置', page: 'agentSalarySetting' }] },
+  { t: '薪酬体系', isNew: true, c: [{ t: '坐席查询', page: 'agentSalary' }, { t: '实际出勤', page: 'actualAttendance' }, { t: '坐席薪酬配置', page: 'agentSalarySetting' }, { t: 'KPI看板', page: 'kpiBoard' }] },
   { t: '小程序' }, { t: '企业微信直播' },
   { t: '配置', c: ['配置投放渠道信息', '线索投放计划', '信息流测试账号', '信息流承接配置', '加微工具配置', '月度目标配置', '月度线索目标配置', '渠道获客二维码/链接', '新销售每天可领取公海线索数', '发放公海客户的销售人员配置', 'H5投放页面配置'] }
 ];
@@ -700,7 +729,7 @@ function renderChrome() {
 }
 function render() {
   renderChrome();
-  const fn = { agentSalary: renderAgentSalary, actualAttendance: renderAttendance, agentSalarySetting: renderSetting }[state.page];
+  const fn = { agentSalary: renderAgentSalary, actualAttendance: renderAttendance, agentSalarySetting: renderSetting, kpiBoard: renderKpi }[state.page];
   $('appMain').innerHTML = fn();
 }
 
@@ -1369,9 +1398,133 @@ function saveBasic() {
   saveCfg('basic');
 }
 
+/* ==================== 页面四：KPI看板 ==================== */
+const TODAY = fmtD(NOW);
+const KPI_ROLES = {
+  member: { label: '组员', user: '张雨萱（组员）', scope: '仅可查看本人数据', agentId: AGENTS[0].id },
+  supervisor: { label: '主管', user: '周敏（体验营一组主管）', scope: '可查看本组（体验营一组）全部坐席数据', groupId: 11 },
+  leader: { label: '团长', user: '刘洋（团长）', scope: '可查看全部坐席数据' }
+};
+state.kpi = { role: 'leader', org: '', worker: '', start: TODAY, end: TODAY, sort: { f: 'order', d: -1 }, list: [] };
+
+function kpiScopeAgents() {
+  const k = state.kpi, R = KPI_ROLES[k.role];
+  if (k.role === 'member') return AGENTS.filter(a => a.id === R.agentId);
+  if (k.role === 'supervisor') return AGENTS.filter(a => a.groupId === R.groupId);
+  return AGENTS;
+}
+function rangeActive(a, start, end) {
+  return a.joinAt <= new Date(end + 'T23:59:59') && (!a.leaveAt || a.leaveAt >= new Date(start + 'T00:00:00'));
+}
+function kpiOf(a, start, end) {
+  const m = { dur: 0, calls: 0, people: 0, order: 0, wechat: 0, assess: 0, pass: 0 };
+  const e = new Date(end + 'T00:00:00');
+  for (let dt = new Date(start + 'T00:00:00'); dt <= e; dt.setDate(dt.getDate() + 1)) {
+    const ds = fmtD(dt);
+    if (ds > TODAY) break;
+    const st = attDays(a, ds.slice(0, 7))[dt.getDate() - 1];
+    if (![2, 3, 4, 6].includes(st)) continue;
+    const w = st === 3 || st === 6 ? .5 : 1;
+    const frac = ds === TODAY ? Math.max(0, (NOW.getHours() + NOW.getMinutes() / 60 - 9) / 9) : 1;
+    const r = rng('kpi' + a.id + ds);
+    const calls = Math.round((45 + r() * 90) * w * frac);
+    m.calls += calls;
+    m.people += Math.round(calls * (.6 + r() * .3));
+    m.dur += Math.round((3600 + r() * 7200) * w * frac);
+    m.wechat += Math.round((2 + r() * 12) * w * frac);
+    const orders = r() < .35 * Math.max(frac, .4) ? 1 + Math.floor(r() * 2) : 0;
+    for (let i = 0; i < orders; i++) m.order += [199, 399, 699, 1299, 2599][Math.floor(r() * 5)];
+    m.assess += 1;
+    if (r() < .8) m.pass += 1;
+  }
+  return m;
+}
+function searchKpi(fromDom = true) {
+  const k = state.kpi;
+  if (fromDom) {
+    const start = val('kpiStart') || TODAY, end = val('kpiEnd') || TODAY;
+    if (start > end) { toast('开始日期不能晚于结束日期', 'warning'); return; }
+    Object.assign(k, { start, end });
+    if (k.role === 'leader') k.org = val('kpiOrg');
+    if (k.role !== 'member') k.worker = val('kpiWorker');
+  }
+  k.list = kpiScopeAgents()
+    .filter(a => matchOrg(a, k.org) && (!k.worker || String(a.id) === k.worker) && rangeActive(a, k.start, k.end))
+    .map(a => ({ a, ...kpiOf(a, k.start, k.end) }));
+  if (fromDom) render();
+}
+function resetKpi() { Object.assign(state.kpi, { org: '', worker: '', start: TODAY, end: TODAY }); searchKpi(false); render(); }
+function kpiShortcut(type) {
+  const d = new Date(NOW); let s = TODAY, e = TODAY;
+  if (type === 'yesterday') { d.setDate(d.getDate() - 1); s = e = fmtD(d); }
+  if (type === 'week') { d.setDate(d.getDate() - 6); s = fmtD(d); }
+  if (type === 'month') s = TODAY.slice(0, 8) + '01';
+  $('kpiStart').value = s; $('kpiEnd').value = e;
+  searchKpi();
+}
+function setKpiRole(r) { Object.assign(state.kpi, { role: r, org: '', worker: '' }); searchKpi(false); render(); }
+function sortKpi(f) { const s = state.kpi.sort; if (s.f === f) s.d = -s.d; else { s.f = f; s.d = -1; } render(); }
+function fmtDur(sec) { sec = Math.round(sec); return `${pad(Math.floor(sec / 3600))}:${pad(Math.floor(sec % 3600 / 60))}:${pad(sec % 60)}`; }
+function exportKpi() {
+  const k = state.kpi;
+  toast(`导出成功：KPI看板_${k.start}至${k.end}.xlsx（${k.list.length} 名坐席，按当前筛选条件与角色数据范围导出）`);
+}
+function renderKpi() {
+  const k = state.kpi, R = KPI_ROLES[k.role];
+  const list = [...k.list].sort((x, y) => (x[k.sort.f] - y[k.sort.f]) * k.sort.d);
+  const n = list.length;
+  const sum = f => list.reduce((s, x) => s + x[f], 0);
+  const sortTitle = (f, t) => () => `<span class="sortable" onclick="sortKpi('${f}')">${t}<span class="caret"><span class="${k.sort.f === f && k.sort.d === 1 ? 'on' : ''}">▲</span><span class="${k.sort.f === f && k.sort.d === -1 ? 'on' : ''}">▼</span></span></span>`;
+  const metrics = [
+    ['dur', '有效通话时长', fmtDur, fmtDur],
+    ['calls', '有效通话次数', v => v, v => v.toFixed(1)],
+    ['people', '有效通话人数', v => v, v => v.toFixed(1)],
+    ['order', '订单金额/元', money, money],
+    ['wechat', '加微数', v => v, v => v.toFixed(1)]
+  ];
+  const cols = [
+    { title: '序号', width: 90, align: 'center', render: (r, i) => i + 1 },
+    ...metrics.map(([f, t, fmt]) => ({ title: sortTitle(f, t), minWidth: 140, render: r => fmt(r[f]) })),
+    { title: '达标情况', minWidth: 200, render: r => `考核 ${r.assess} 天 / 达标 <b style="color:${r.pass < r.assess ? '#e6a23c' : '#67c23a'}">${r.pass}</b> 天` },
+    { title: '坐席', minWidth: 100, render: r => r.a.name },
+    { title: '所在小组', minWidth: 120, render: r => groupName(r.a) }
+  ];
+  const foot = n ? ['总计/均值', ...metrics.map(([f, , fmt, avgFmt]) => `<div>总计：${fmt(sum(f))}</div><div class="avg">均值：${avgFmt(sum(f) / n)}</div>`), '', '', ''] : null;
+
+  const scopeAgents = kpiScopeAgents();
+  const orgCtrl = k.role === 'leader'
+    ? orgSelect('kpiOrg', k.org)
+    : `<select class="el-input" style="width:180px" disabled><option>${groupName(scopeAgents[0])}</option></select>`;
+  const workerCtrl = k.role === 'member'
+    ? `<select class="el-input" style="width:180px" disabled><option>${scopeAgents[0].name}</option></select>`
+    : `<select class="el-input ${k.worker ? '' : 'ph'}" id="kpiWorker" style="width:180px" onchange="this.classList.toggle('ph',!this.value)"><option value="">请选择坐席</option>${scopeAgents.map(a => `<option value="${a.id}" ${String(k.worker) === String(a.id) ? 'selected' : ''}>${a.name}</option>`).join('')}</select>`;
+
+  return `<div class="page"><div class="card">
+    <div class="role-bar"><span class="role-tag">原型演示</span><span>切换当前登录角色：</span>
+      ${Object.entries(KPI_ROLES).map(([key, v]) => `<button class="btn btn-sm ${k.role === key ? 'btn-primary' : ''}" onclick="setKpiRole('${key}')">${v.label}</button>`).join('')}
+      <span class="role-desc">${R.user}，${R.scope}</span>
+    </div>
+    <div class="form-inline">
+      <div class="form-item">${workerCtrl}</div>
+      <div class="form-item">${orgCtrl}</div>
+      <div class="form-item"><label>时间范围</label>
+        <input type="date" class="el-input" id="kpiStart" value="${k.start}" max="${TODAY}" style="width:150px">
+        <span class="range-sep">至</span>
+        <input type="date" class="el-input" id="kpiEnd" value="${k.end}" max="${TODAY}" style="width:150px">
+        <span class="shortcut"><button class="link" onclick="kpiShortcut('today')">今天</button><button class="link" onclick="kpiShortcut('yesterday')">昨天</button><button class="link" onclick="kpiShortcut('week')">近7天</button><button class="link" onclick="kpiShortcut('month')">本月</button></span>
+      </div>
+      <div class="form-item"><button class="btn btn-primary" onclick="searchKpi()">🔍 搜索</button><button class="btn" onclick="resetKpi()">重置</button></div>
+      <div class="form-item right"><button class="btn btn-primary" onclick="exportKpi()">导出</button></div>
+    </div>
+    <div class="tbl-meta">统计周期：${k.start === k.end ? k.start : `${k.start} 至 ${k.end}`}，共 ${n} 名坐席；默认按订单金额倒序，点击指标列表头可切换排序</div>
+    ${table(cols, list, { maxHeight: 560, foot })}
+  </div></div>`;
+}
+
 /* ==================== 启动 ==================== */
 searchSalary(false);
 searchAtt(false);
+searchKpi(false);
 render();
 </script>
 </body>
