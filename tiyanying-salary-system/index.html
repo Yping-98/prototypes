@@ -1043,8 +1043,8 @@ function openExtForm(id) {
     body: () => `
       <div class="f-row"><div class="f-label req">用户手机号</div><div class="f-ctrl"><input class="el-input full" id="ef_phone" placeholder="请输入用户手机号" value="${r.phone}"></div></div>
       <div class="f-row"><div class="f-label req">订单编号</div><div class="f-ctrl"><input class="el-input full" id="ef_order" placeholder="请输入订单编号" value="${r.orderNo}"></div></div>
-      <div class="f-row"><div class="f-label req">支付月份</div><div class="f-ctrl">${monthInput('ef_pay', r.payYm, '请选择支付月份', { w: 340 })}</div></div>
-      <div class="f-row"><div class="f-label req">薪资归属月份</div><div class="f-ctrl">${monthInput('ef_attr', r.attrYm, '请选择薪资归属月份', { w: 340 })}</div></div>
+      <div class="f-row"><div class="f-label req">支付月份</div><div class="f-ctrl">${monthInput('ef_pay', r.payYm, '请选择支付月份', { w: 340, max: CUR_YM })}</div></div>
+      <div class="f-row"><div class="f-label req">薪资归属月份</div><div class="f-ctrl">${monthInput('ef_attr', r.attrYm, '请选择薪资归属月份', { w: 340, max: CUR_YM })}</div></div>
       <div class="f-row"><div class="f-label req">订单金额</div><div class="f-ctrl"><input type="number" class="el-input full" id="ef_amount" placeholder="请输入订单金额" value="${r.amount}"></div></div>
       <div class="f-row"><div class="f-label req">归属坐席</div><div class="f-ctrl">${agentSelect('ef_worker', r.workerId, '请选择归属坐席', 340)}</div></div>`,
     footer: () => `<button class="btn" onclick="closeDialog('extForm')">取消</button><button class="btn btn-primary" onclick="saveExt(${id || 0})">确定</button>`
@@ -1055,6 +1055,9 @@ function saveExt(id) {
   const miss = Object.entries(f).find(([, v]) => !v);
   if (miss) { toast('请完善必填项', 'warning'); return; }
   if (!/^1\d{10}$/.test(f.phone)) { toast('请输入正确的手机号', 'warning'); return; }
+  if (EXT_LIST.some(x => x.orderNo === f.orderNo && x.id !== id)) { toast('该订单编号已录入，不可重复添加', 'warning'); return; }
+  if (f.payYm > CUR_YM || f.attrYm > CUR_YM) { toast('支付月份、薪资归属月份不能晚于当前月份', 'warning'); return; }
+  if (!/^\d+(\.\d{1,2})?$/.test(f.amount) || Number(f.amount) <= 0) { toast('订单金额需大于 0，最多两位小数', 'warning'); return; }
   if (isLocked(f.attrYm)) { toast('该薪资归属月份薪酬已生成，不可新增/编辑', 'warning'); return; }
   const data = { ...f, amount: Number(f.amount), workerId: Number(f.workerId), updatedBy: '管理员', updatedAt: new Date(NOW) };
   if (id) Object.assign(EXT_LIST.find(x => x.id === id), data);
