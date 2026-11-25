@@ -257,7 +257,7 @@
   <ul>
     <li>坐席查询：<code>salarySystem/agentSalary</code>，保留 薪酬 / 系统外业绩 两个 Tab（电销侧的「微信加成核算」Tab 体验营不需要，已去除）</li>
     <li>实际出勤：<code>salarySystem/actualAttendance</code></li>
-    <li>坐席薪酬配置：<code>salarySystem/agentSalarySetting</code>，含 底薪 / 提成 / 奖金 / 自定义项 / 基础配置 五个 Tab。其中「奖金」改为体验营规则：新人王奖励 + 当期转化率奖金（替代电销的当配排名奖、新人排名奖、新人开单奖），「基础配置」相应去掉新人排名奖区块</li>
+    <li>坐席薪酬配置：<code>salarySystem/agentSalarySetting</code>，含 底薪 / 提成 / 奖金 / 自定义项 / 基础配置 五个 Tab。按体验营规则调整：「底薪」新老员工统一排名、不区分学段；「提成」特殊规则新增新人入职当月规则；「奖金」改为新人王奖励 + 当期转化率奖金；「基础配置」仅保留老员工定义（按飞书入职时间，次月为第一个完整月），绩效新增累计未达标扣款档位</li>
   </ul>
   <h4>原型约定</h4>
   <ul>
@@ -268,8 +268,8 @@
   <h4>待确认</h4>
   <ul>
     <li>体验营坐席的业绩、营收、退款口径与数据来源。</li>
-    <li>底薪老员工排名是否保留「小学/初中/高中」学段维度。</li>
-    <li>新人王奖励：「入职当月」按 CRM 入职日期还是参培日计算；GMV 并列第一时是否都发放。</li>
+    <li>新人王奖励：GMV 并列第一时是否都发放。</li>
+    <li>底薪「排名分布」的排名依据（按业绩还是 GMV 排名）。</li>
     <li>当期转化率奖金：转化率的计算口径（分子、分母、统计周期），以及坐席所属学段的取数来源。</li>
     <li>体验营坐席排班、请假是否同样从飞书同步。</li>
     <li>「系统外业绩」是否适用于体验营。</li>
@@ -332,10 +332,9 @@ function matchOrg(a, org) {
   if (org[0] === 'd') return GROUP_MAP[a.groupId].deptId === +org.slice(1);
   return a.groupId === +org.slice(1);
 }
-function monthsSinceTrain(a, ym) {
-  const t = new Date(a.joinAt.getTime() - 7 * 86400000);
+function monthsSinceJoin(a, ym) {
   const [y, m] = ym.split('-').map(Number);
-  return (y - t.getFullYear()) * 12 + (m - 1 - t.getMonth());
+  return (y - a.joinAt.getFullYear()) * 12 + (m - 1 - a.joinAt.getMonth());
 }
 
 /* ==================== 全局状态 ==================== */
@@ -357,7 +356,6 @@ const state = {
   cust: { org: '', worker: '', ym: '', page: 1, selected: new Set() },
   cfg: {
     base: {
-      newDefault: 3000,
       rules: [
         { minOp: 'gte', min: 0, maxOp: 'lte', max: 20, base: 3500, tier: 1500 },
         { minOp: 'gt', min: 20, maxOp: 'lte', max: 50, base: 3500, tier: 1000 },
@@ -372,7 +370,7 @@ const state = {
         { minOp: 'gte', min: 60000, maxOp: 'lt', max: 100000, ok: 7, no: 6 },
         { minOp: 'gte', min: 100000, maxOp: '', max: null, ok: 9, no: 8 }
       ],
-      threshold: 20000, rate: 60
+      threshold: 20000, rate: 60, newPerf: null
     },
     bonus: {
       newKing: { gmv: null, bonus: null },
@@ -384,7 +382,10 @@ const state = {
         { grade: '高中', ranks: [1], bonus: 600 }
       ]
     },
-    basic: { newMonths: 2, oldMonths: 3, genDay: 5, perfBase: 1000 }
+    basic: {
+      oldMonths: 3, genDay: 5, perfBase: 1000,
+      kpiDeds: [{ count: 1, amount: 0 }, { count: 2, amount: 100 }, { count: 3, amount: 200 }, { count: 4, amount: 300 }, { count: 5, amount: 500 }]
+    }
   }
 };
 state.cfgSaved = clone(state.cfg);
@@ -461,7 +462,6 @@ function salaryRow(a, ym) {
   if (!inMonth(a, ym)) return null;
   const cfg = state.cfgSaved;
   const r = rng(a.id + ym);
-  const isNew = monthsSinceTrain(a, ym) < cfg.basic.newMonths;
   r();
   const revenue = gmvOf(a, ym);
   const refund = r() < .45 ? Math.round(r() * 6000 / 100) * 100 : 0;
@@ -469,7 +469,8 @@ function salaryRow(a, ym) {
   const totalPerf = revenue + external - refund;
   const goalOk = r() < .7;
   const gear = cfg.comm.gears.find(g => inRange(totalPerf, g)) || cfg.comm.gears[0];
-  const point = goalOk ? gear.ok : gear.no;
+  const newPerfRule = cfg.comm.newPerf !== null && monthsSinceJoin(a, ym) === 0 && totalPerf > cfg.comm.newPerf;
+  const point = goalOk || newPerfRule ? gear.ok : gear.no;
   const lastMonthRefund = r() < .3 ? Math.round(r() * 3000 / 100) * 100 : 0;
   const lastMonthAppeal = r() < .2 ? Math.round(r() * 2000 / 100) * 100 : 0;
   const lastDiff = Math.round((lastMonthAppeal - lastMonthRefund) * point / 100);
@@ -478,19 +479,16 @@ function salaryRow(a, ym) {
   const expected = Math.round(attExpected(a, ym));
   const actualDays = Math.max(0, expected - (r() < .3 ? 1 : 0) - (r() < .1 ? 1 : 0));
   const legalDays = ym === '2026-10' && r() < .3 ? 1 : 0;
-  let base, tier = 0, rule = null;
-  if (isNew) { base = cfg.base.newDefault; }
-  else {
-    rule = cfg.base.rules[Math.floor(r() * cfg.base.rules.length)];
-    base = rule.base; tier = rule.tier;
-  }
+  const rule = cfg.base.rules.length ? cfg.base.rules[Math.floor(r() * cfg.base.rules.length)] : null;
+  const base = rule ? rule.base : 0, tier = rule ? rule.tier : 0;
   const baseSummary = expected ? Math.round((base + tier) * actualDays / expected * 100) / 100 : 0;
 
-  const unpassed = r() < .55 ? [] : Array.from({ length: 1 + Math.floor(r() * 3) }, () => 1 + Math.floor(r() * Math.min(daysIn(ym), ym === CUR_YM ? NOW.getDate() : 31))).sort((x, y) => x - y);
+  const unpassed = r() < .45 ? [] : [...new Set(Array.from({ length: 1 + Math.floor(r() * 5) }, () => 1 + Math.floor(r() * Math.min(daysIn(ym), ym === CUR_YM ? NOW.getDate() : 31))))].sort((x, y) => x - y);
   const perfBase = cfg.basic.perfBase;
+  const kpiDeduct = kpiDeductOf(unpassed.length);
   const groupCust = CUST_LIST.filter(c => c.ym === ym && c.targets.includes(a.groupId));
   const perfDeds = groupCust.filter(c => c.category === 1).map(c => ({ name: c.name, amount: c.amount, reason: c.description }));
-  const performance = Math.max(0, perfBase - unpassed.length * 100 + perfDeds.reduce((s, x) => s + x.amount, 0));
+  const performance = Math.max(0, perfBase - kpiDeduct + perfDeds.reduce((s, x) => s + x.amount, 0));
 
   const nk = cfg.bonus.newKing;
   const nkConfigured = nk.gmv !== null && nk.bonus !== null;
@@ -507,17 +505,22 @@ function salaryRow(a, ym) {
   const actual = payable - (r() < .25 ? Math.round(r() * 300) : 0);
   return {
     workerId: a.id, ym, commission, performance, baseSalary: baseSummary, bonus, customItem, payableSalary: payable, actualSalary: actual,
-    d: { isNew, rule, base, tier, expected, actualDays, legalDays, perfBase, goalOk, unpassed, perfDeds, totalPerf, point, revenue, refund, external, lastMonthRefund, lastMonthAppeal, lastDiff, isNewKing, nkConfigured, newKingBonus, convRank, convRate: convRateOf(a, ym), convBonus, bonusDeds, others }
+    d: { rule, base, tier, expected, actualDays, legalDays, perfBase, goalOk, unpassed, kpiDeduct, perfDeds, totalPerf, point, newPerfRule, revenue, refund, external, lastMonthRefund, lastMonthAppeal, lastDiff, isNewKing, nkConfigured, newKingBonus, convRank, convRate: convRateOf(a, ym), convBonus, bonusDeds, others }
   };
 }
 function gmvOf(a, ym) {
   const partial = ym === CUR_YM ? NOW.getDate() / daysIn(ym) : 1;
   return Math.round((22000 + rng(a.id + ym)() * 115000) * partial / 100) * 100;
 }
+function kpiDeductOf(n) {
+  if (!n) return 0;
+  const tiers = [...state.cfgSaved.basic.kpiDeds].sort((x, y) => x.count - y.count);
+  const hit = tiers.filter(t => t.count <= n).pop();
+  return hit ? hit.amount : 0;
+}
 function newKingEligible(a, ym) {
-  const idx = monthsSinceTrain(a, ym);
-  const trainDay = new Date(a.joinAt.getTime() - 7 * 86400000).getDate();
-  return idx === 0 || (idx === 1 && trainDay !== 1);
+  const idx = monthsSinceJoin(a, ym);
+  return idx === 0 || idx === 1;
 }
 function newKingOf(ym) {
   const cands = AGENTS.filter(a => inMonth(a, ym) && newKingEligible(a, ym));
@@ -778,13 +781,14 @@ function salaryDetailHtml(row) {
       ${di('绩效基数：', d.perfBase + '元')}
       ${di('个人目标是否达标：', d.goalOk ? '是' : '否')}
       ${di('KPI未达标次数：', `${d.unpassed.length} 次${d.unpassed.length ? `（ ${d.unpassed.map(x => `${y}/${m}/${x}`).join('、')} ）` : ''}`, 3)}
+      ${d.unpassed.length ? di('未达标扣款：', d.kpiDeduct ? `${d.kpiDeduct}元（当月累计${d.unpassed.length}次未达标）` : `0元（当月累计${d.unpassed.length}次未达标，仅警告）`, 3) : ''}
       ${d.perfDeds.map(x => di(x.name + '：', `${x.amount}元（${x.reason}）`, 3)).join('')}
     </div>
     <div class="ds-title">提成</div>
     <div class="ds-grid">
       ${di('提成：', row.commission + '元')}
       ${di('总业绩：', d.totalPerf + '元')}
-      ${di('提成系数：', d.point + '%')}
+      ${di('提成系数：', d.point + '%' + (d.newPerfRule ? '（新人入职当月业绩达标规则）' : ''))}
       ${di('营收：', d.revenue + '元')}
       ${di('退款：', `${d.refund}元 <button class="link" onclick="openCommDetail('refund',${row.workerId})">查看明细</button>`)}
       ${di('系统外业绩：', d.external + '元')}
@@ -1134,8 +1138,7 @@ function renderBaseSalary() {
     { title: '档位薪资', minWidth: 120, render: r => r.tier + '元' },
     { title: '操作', width: 150, fixed: 'right', render: (r, i) => `<button class="link" onclick="openRangeDialog('base',${i})">编辑</button><button class="link danger" onclick="delRange('base',${i})">删除</button>` }
   ];
-  return subCard('新员工', '新员工保护期内为默认底薪', `<div class="f-row" style="margin:0"><div class="f-label" style="width:120px">默认底薪</div><div class="f-ctrl">${numIn('base.newDefault', c.newDefault, 'min="0" placeholder="请输入默认底薪"')}<span>元</span></div></div>`)
-    + subCard('老员工', '分小学、初中、高中三个学段分开排名', `<div class="flex-end"><button class="btn btn-primary" onclick="openRangeDialog('base')">＋ 新增</button></div>${table(cols, c.rules)}${footerBtns('base')}`);
+  return subCard('底薪与档位薪资', '新老员工统一排名，不区分学段', `<div class="flex-end"><button class="btn btn-primary" onclick="openRangeDialog('base')">＋ 新增</button></div>${table(cols, c.rules)}${footerBtns('base')}`);
 }
 /* --- 提成 --- */
 function renderCommission() {
@@ -1146,9 +1149,13 @@ function renderCommission() {
     { title: '业绩不达标', minWidth: 150, render: r => r.no + '%' },
     { title: '操作', width: 150, fixed: 'right', render: (r, i) => `<button class="link" onclick="openRangeDialog('comm',${i})">编辑</button><button class="link danger" onclick="delRange('comm',${i})">删除</button>` }
   ];
-  return subCard('提成档位分布', '当月业绩=当月营收+系统外业绩-当月产生的退款，以下规则对新员工全部适用，老员工需增加特殊规则判断',
+  return subCard('提成档位分布', '当月业绩=当月营收+系统外业绩-当月产生的退款',
     `<div class="flex-end"><button class="btn btn-primary" onclick="openRangeDialog('comm')">＋ 新增</button></div>${table(cols, c.gears)}`)
-    + subCard('特殊规则', '', `<div class="sentence"><span>老员工业绩低于（不含）</span>${numIn('comm.threshold', c.threshold, 'min="0"')}<span>时，若业绩完成率高于（不含）</span>${numIn('comm.rate', c.rate, 'min="0" max="100" step="0.01"', 'md')}<span><b>%</b> 则正常按区间档位提成，否则无提成</span></div>${footerBtns('comm')}`);
+    + subCard('特殊规则', '', `
+      <div class="sentence"><span>老员工业绩低于（不含）</span>${numIn('comm.threshold', c.threshold, 'min="0"')}<span>时，若业绩完成率高于（不含）</span>${numIn('comm.rate', c.rate, 'min="0" max="100" step="0.01"', 'md')}<span><b>%</b> 则正常按区间档位提成，否则无提成</span></div>
+      <div class="sentence" style="margin-top:16px"><span>新人入职当月，业绩超过（不含）</span>${numIn('comm.newPerf', c.newPerf, 'min="0" step="0.01" placeholder="请输入"')}<span>元时，按对应档位的「业绩达标」比例计算提成</span></div>
+      <div style="font-size:12px;color:#909399;margin-top:10px">新人入职当月规则未填写时不启用；入职当月按飞书系统入职时间所在月份判断</div>
+      ${footerBtns('comm')}`);
 }
 function delRange(kind, i) {
   confirmBox(kind === 'base' ? '确定要删除该配置吗？' : '确认删除该档位吗？', () => {
@@ -1197,7 +1204,7 @@ function renderBonus() {
     { title: '操作', width: 150, fixed: 'right', render: r => `<button class="link" onclick="openConv(${r._i})">编辑</button><button class="link danger" onclick="delConv(${r._i})">删除</button>` }
   ];
   const nk = c.newKing;
-  return subCard('新人王奖励', '入职当月及第一个完整月，GMV排名第一且达到门槛的坐席发放；完整月按「基础配置」中的参培日口径计算',
+  return subCard('新人王奖励', '入职当月及第一个完整月，GMV排名第一且达到门槛的坐席发放',
     `<div class="sentence"><span>入职当月及第一个完整月，GMV排名第一，且当月GMV ≥</span>${numIn('bonus.newKing.gmv', nk.gmv, 'min="0" step="0.01" placeholder="请输入，如10000"')}<span>元，奖金</span>${numIn('bonus.newKing.bonus', nk.bonus, 'min="0" step="0.01" placeholder="请输入，如600"')}<span>元</span></div>
      <div style="font-size:12px;color:#909399;margin-top:10px">GMV门槛与奖金需同时填写；均不填写时不发放新人王奖励</div>`)
     + subCard('当期转化率奖金', '按学段分别对坐席当期转化率排名，可为不同学段的不同名次配置奖金；未配置的名次不发放', table(ccols, rows), `<button class="btn btn-primary" onclick="openConv()">＋ 新增</button>`)
@@ -1323,13 +1330,11 @@ function renderBasicConfig() {
   const row = (label, ctrl) => `<div class="bc-row"><div class="bc-label">${label}</div><div class="bc-ctrl">${ctrl}</div></div>`;
   return `<div class="sub-card"><div class="sub-card-b">
     <div class="section-title">员工定义</div>
-    ${row('新员工', `<span>体验营职场，自参培日起</span>${numIn('basic.newMonths', b.newMonths, 'min="1" placeholder="请输入月数"')}<span>个完整月为新人保护期，在此期间为新员工</span>`)}
-    ${row('老员工', `<span>体验营职场，自参培日起第</span>${numIn('basic.oldMonths', b.oldMonths, 'min="1" placeholder="请输入月数"')}<span>个完整月在职的员工，即为老员工</span>`)}
+    ${row('老员工', `<span>自入职时间起第</span>${numIn('basic.oldMonths', b.oldMonths, 'min="1" placeholder="请输入月数"')}<span>个完整月在职的员工，即为老员工</span>`)}
     <div class="tip-text">
-      <div>参培之日：CRM系统入职日期-7天</div>
-      <div>• 参培之日为月初第一天，则当月为完整月</div>
-      <div>• 参培之日不是月初第一天则当月不是完整月，完整月从第二个月开始计算</div>
-      <div style="margin-left:16px">示例：<br>- CRM入职日期4/13，则参培日为4/6，5月为第一个完整月<br>- CRM入职日期4/8，则参培日为4/1，4月为第一个完整月</div>
+      <div>入职时间：飞书系统入职时间</div>
+      <div>• 入职时间的次月为第一个完整月</div>
+      <div style="margin-left:16px">示例：飞书入职时间为4/1或4/13，均以5月为第一个完整月</div>
       <div>• 未配置员工定义时，默认所有员工为老员工</div>
     </div>
     <div class="section-title">薪酬生成时间</div>
@@ -1338,8 +1343,30 @@ function renderBasicConfig() {
     <div class="section-title">绩效</div>
     ${row('绩效基数', `${numIn('basic.perfBase', b.perfBase, 'min="0" step="0.01" placeholder="请输入绩效基数"')}<span>元</span>`)}
     <div class="tip-text">未配置绩效基数时，默认绩效基数为0</div>
-    <div style="border-top:1px solid #e4e7ed;margin-top:32px;padding-top:4px">${footerBtns('basic')}</div>
+    ${row('未达标扣款', `<div style="display:flex;flex-direction:column;gap:12px">
+      ${b.kpiDeds.map((t, i) => `<div class="sentence">
+        <span>当月累计第</span>${numIn(`basic.kpiDeds.${i}.count`, t.count, 'min="1" step="1" placeholder="次数"', 'sm')}<span>次${i === b.kpiDeds.length - 1 ? '及以上' : ''}未达标，扣除绩效</span>${numIn(`basic.kpiDeds.${i}.amount`, t.amount, 'min="0" step="0.01" placeholder="金额"', 'md')}<span>元</span>
+        <button class="link danger" onclick="delKpiDed(${i})">删除</button>
+      </div>`).join('')}
+      <div><button class="btn btn-sm" onclick="addKpiDed()">＋ 新增档位</button></div>
+    </div>`)}
+    <div class="tip-text">按当月累计未达标次数匹配对应档位扣款（不叠加）；扣款金额填 0 表示仅警告不扣款；最后一档自动视为「及以上」</div>
+    <div style="border-top:1px solid #e4e7ed;margin-top:32px;padding-top:4px"><div class="footer-buttons"><button class="btn" onclick="resetCfg('basic')">重置</button><button class="btn btn-primary" onclick="saveBasic()">保存</button></div></div>
   </div></div>`;
+}
+function addKpiDed() {
+  const list = state.cfg.basic.kpiDeds;
+  const last = list[list.length - 1];
+  list.push({ count: last ? (Number(last.count) || 0) + 1 : 1, amount: null });
+  render();
+}
+function delKpiDed(i) { state.cfg.basic.kpiDeds.splice(i, 1); render(); }
+function saveBasic() {
+  const list = state.cfg.basic.kpiDeds;
+  if (list.some(t => t.count === null || t.amount === null)) { toast('请完善未达标扣款的次数和金额', 'warning'); return; }
+  if (list.some(t => !Number.isInteger(t.count) || t.count < 1)) { toast('未达标次数需为正整数', 'warning'); return; }
+  if (list.some((t, i) => i > 0 && t.count <= list[i - 1].count)) { toast('未达标次数需从小到大递增且不重复', 'warning'); return; }
+  saveCfg('basic');
 }
 
 /* ==================== 启动 ==================== */
