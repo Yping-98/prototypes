@@ -340,7 +340,8 @@
     <li>筛选：坐席、小组、时间范围（默认当天）；支持导出，导出字段与列表字段一致（含末尾总计、均值两行），导出范围与当前筛选及角色权限一致。</li>
     <li>数据范围按角色控制：组员只看自己，主管看本组，团长看全部。页面顶部紫色条为原型演示用的角色切换，线上按登录账号角色自动判断，不展示该条。</li>
     <li>原型中「绩效考核天数」按「实际出勤」里的 班 / 半 / 法 / 0.5法 天数模拟。</li>
-    <li>加微数 = 系统统计加微数 + 当天审核通过的「加微数申报」数量。</li>
+    <li>加微数 = 当天审核通过的「加微数申报」数量（不取系统统计数）；有效通话时长 = 系统电话 + 企微通话（不含私人电话）；有效通话人数 = 通话超过 10 秒的客户数（去重）。</li>
+    <li>每日达标按「基础配置 → 当日KPI达标」判定，薪酬中的 KPI 未达标次数直接取 KPI 看板每日的达标结果。</li>
   </ul>
   <h4>加微数申报（新增页面）</h4>
   <ul>
@@ -367,7 +368,8 @@
     <li>月薪 = 基本薪资 + 月度绩效 + 个人提成 + 奖金（新人王 + 当期转化率）+ 自定义项；只核算一线销售，不含主管。</li>
     <li>GMV = 净GMV（营收 − 退款）+ 双算业绩；订单实付超过 49 元计入营收，订单归属在坐席名下即计入；退款、申诉、上月提成差值与电销一致。</li>
     <li>基本薪资：4000 ÷ 应出勤 × 实际出勤 + 法定节假日上班薪资（4000 ÷ 21.75 × 3 × 天数）+ GMV排名薪资；带薪假期不计；排名薪资不按出勤折算；当月填写了目标即参与排名，不区分学段。</li>
-    <li>绩效：1000 × 出勤率 − KPI扣款 − 质检等扣款，小于 0 按 0；新人入职当月不扣 KPI；当月 GMV ÷ 目标 ≥ 100% 不考核过程指标；半天出勤、法定节假日上班均需考核，半天出勤考核减半。</li>
+    <li>绩效：1000 × 出勤率 − KPI扣款 − 质检等扣款，小于 0 按 0；新人入职当月不扣 KPI；当月 GMV ÷ 目标 ≥ 100% 不考核过程指标；半天出勤、法定节假日上班均需考核，半天出勤当天 KPI 达标标准减半（如通时 25 分钟）。</li>
+    <li>当日 KPI 达标：有效通话时长 ≥ 50 分钟为必备，且有效通话人数 ≥ 15 / 加微数 ≥ 6 / 当日营收 &gt; 2000 任一满足；有效通话只看系统电话和企微通话，不看私人电话；有效通话人数 = 通话超过 10 秒的客户数（去重）；加微数只取审核通过的申报数。</li>
     <li>提成：业绩达标 = 当月GMV ÷ 当月目标 ≥ 100%；新人保护期 = 入职当月 + 两个完整月；入职当月业绩超过 2 万按达标比例；老员工（入职第 4 个月起）业绩低于 4 万且完成率 ≤ 50% 无提成，该规则只对老员工生效。</li>
     <li>离职：提成延后一个月发，奖金正常发；核算后退费不追扣奖金。</li>
     <li>新人王：GMV = 净GMV + 双算业绩，并列第一都发。</li>
@@ -375,9 +377,7 @@
   </ul>
   <h4>待确认</h4>
   <ul>
-    <li>「半天出勤考核减半」：原型理解为半天出勤当天的 KPI 达标标准减半（如通时 25 分钟），请确认。</li>
-    <li>加微数：1124 会议纪要写「当日加微数 = 手动提报 + 截图」，是否意味着 KPI 加微数只取审核通过的申报数、不再叠加系统统计数（原型当前为相加）。</li>
-    <li>KPI：「有效沟通 15 个」是否就是「有效通话人数（通话 &gt; 10 秒去重）」；企微通话时长的接入方式；制度中「私人电话可计通时」系统无法获取，如何处理。</li>
+    <li>KPI：企微通话时长的接入方式（数据来源与同步频率）。</li>
     <li>数据来源：坐席承接期次的关系、坐席学段（含历史学段）从架构管理新增字段取；双算业绩走「坐席查询 → 双算业绩」导入；质检扣款走「自定义项（归属绩效）」；飞书入离职时间需人工导入入口。</li>
     <li>KPI看板：主管带多个小组时是否看全部所带小组。</li>
     <li>加微数申报：主管/团长本人是否也需要申报；薪酬核算日之后，上月待审核的申报是否还能审核通过；图片格式与大小限制。</li>
@@ -616,7 +616,7 @@ function salaryRow(a, ym) {
   const rankSalary = rankRule ? rankRule.salary : 0;
   const baseSummary = Math.round((attendBase + legalPay + rankSalary) * 100) / 100;
 
-  const unpassed = r() < .45 ? [] : [...new Set(Array.from({ length: 1 + Math.floor(r() * 5) }, () => 1 + Math.floor(r() * Math.min(daysIn(ym), ym === CUR_YM ? NOW.getDate() : 31))))].sort((x, y2) => x - y2);
+  const unpassed = kpiUnpassedDays(a, ym);
   const perfBase = cfg.basic.perfBase;
   const attRate = expected ? actualDays / expected : 0;
   const perfByAtt = Math.round(perfBase * attRate * 100) / 100;
@@ -1547,8 +1547,8 @@ function renderBasicConfig() {
     <div class="section-title">绩效</div>
     ${row('绩效基数', `${numIn('basic.perfBase', b.perfBase, 'min="0" step="0.01" placeholder="请输入绩效基数"')}<span>元</span>`)}
     <div class="tip-text">绩效 = 绩效基数 × 出勤率（实际出勤 ÷ 应出勤）− KPI扣款 − 质检等扣款（自定义项·绩效），结果小于 0 按 0 计；当月入职当月离职不发放；未配置绩效基数时默认为 0</div>
-    ${row('当日KPI达标', `<span>有效通话时长 ≥</span>${numIn('basic.kpiStd.minutes', b.kpiStd.minutes, 'min="0"', 'sm')}<span>分钟（必备），且 有效沟通 ≥</span>${numIn('basic.kpiStd.talks', b.kpiStd.talks, 'min="0"', 'sm')}<span>个 / 加微数 ≥</span>${numIn('basic.kpiStd.wechat', b.kpiStd.wechat, 'min="0"', 'sm')}<span>个 / 当日营收 &gt;</span>${numIn('basic.kpiStd.revenue', b.kpiStd.revenue, 'min="0"', 'md')}<span>元，任一满足</span>`)}
-    <div class="tip-text">半天出勤、法定节假日上班均需考核；半天出勤当天以上标准减半</div>
+    ${row('当日KPI达标', `<span>有效通话时长 ≥</span>${numIn('basic.kpiStd.minutes', b.kpiStd.minutes, 'min="0"', 'sm')}<span>分钟（必备），且 有效通话人数 ≥</span>${numIn('basic.kpiStd.talks', b.kpiStd.talks, 'min="0"', 'sm')}<span>个 / 加微数 ≥</span>${numIn('basic.kpiStd.wechat', b.kpiStd.wechat, 'min="0"', 'sm')}<span>个 / 当日营收 &gt;</span>${numIn('basic.kpiStd.revenue', b.kpiStd.revenue, 'min="0"', 'md')}<span>元，任一满足</span>`)}
+    <div class="tip-text">有效通话时长 = 系统电话通话时长 + 企微通话时长，不含私人电话；有效通话人数 = 通话超过 10 秒的客户数（去重）；加微数 = 当日审核通过的「加微数申报」数量<br>半天出勤、法定节假日上班均需考核；半天出勤当天以上标准减半（如通话时长 25 分钟即满足）</div>
     ${row('未达标扣款', `<div style="display:flex;flex-direction:column;gap:12px">
       ${b.kpiDeds.map((t, i) => `<div class="sentence">
         <span>当月累计第</span>${numIn(`basic.kpiDeds.${i}.count`, t.count, 'min="1" step="1" placeholder="次数"', 'sm')}<span>次${i === b.kpiDeds.length - 1 ? '及以上' : ''}未达标，扣除绩效</span>${numIn(`basic.kpiDeds.${i}.amount`, t.amount, 'min="0" step="0.01" placeholder="金额"', 'md')}<span>元</span>
@@ -1612,29 +1612,43 @@ function roleBar(extra = '') {
 function rangeActive(a, start, end) {
   return a.joinAt <= new Date(end + 'T23:59:59') && (!a.leaveAt || a.leaveAt >= new Date(start + 'T00:00:00'));
 }
+function kpiDay(a, ds) {
+  const wechat = WX_ADD[a.id + '|' + ds] || 0;
+  const st = attDays(a, ds.slice(0, 7))[Number(ds.slice(8)) - 1];
+  if (![2, 3, 4, 6].includes(st)) return { dur: 0, calls: 0, people: 0, order: 0, wechat, assess: 0, pass: 0 };
+  const w = st === 3 || st === 6 ? .5 : 1;
+  const frac = ds === TODAY ? Math.max(0, (NOW.getHours() + NOW.getMinutes() / 60 - 9) / 9) : 1;
+  const r = rng('kpi' + a.id + ds);
+  const calls = Math.round((10 + r() * 60) * w * frac);
+  const people = Math.round(calls * (.55 + r() * .35));
+  const dur = Math.round((1500 + r() * 6600) * w * frac);
+  let order = 0;
+  const orders = r() < .35 * Math.max(frac, .4) ? 1 + Math.floor(r() * 2) : 0;
+  for (let i = 0; i < orders; i++) order += [199, 399, 699, 1299, 2599][Math.floor(r() * 5)];
+  const s = state.cfgSaved.basic.kpiStd;
+  const pass = dur >= s.minutes * 60 * w && (people >= s.talks * w || wechat >= s.wechat * w || order > s.revenue * w) ? 1 : 0;
+  return { dur, calls, people, order, wechat, assess: 1, pass };
+}
 function kpiOf(a, start, end) {
   const m = { dur: 0, calls: 0, people: 0, order: 0, wechat: 0, assess: 0, pass: 0 };
   const e = new Date(end + 'T00:00:00');
   for (let dt = new Date(start + 'T00:00:00'); dt <= e; dt.setDate(dt.getDate() + 1)) {
     const ds = fmtD(dt);
     if (ds > TODAY) break;
-    m.wechat += WX_ADD[a.id + '|' + ds] || 0;
-    const st = attDays(a, ds.slice(0, 7))[dt.getDate() - 1];
-    if (![2, 3, 4, 6].includes(st)) continue;
-    const w = st === 3 || st === 6 ? .5 : 1;
-    const frac = ds === TODAY ? Math.max(0, (NOW.getHours() + NOW.getMinutes() / 60 - 9) / 9) : 1;
-    const r = rng('kpi' + a.id + ds);
-    const calls = Math.round((45 + r() * 90) * w * frac);
-    m.calls += calls;
-    m.people += Math.round(calls * (.6 + r() * .3));
-    m.dur += Math.round((3600 + r() * 7200) * w * frac);
-    m.wechat += Math.round((2 + r() * 12) * w * frac);
-    const orders = r() < .35 * Math.max(frac, .4) ? 1 + Math.floor(r() * 2) : 0;
-    for (let i = 0; i < orders; i++) m.order += [199, 399, 699, 1299, 2599][Math.floor(r() * 5)];
-    m.assess += 1;
-    if (r() < .8) m.pass += 1;
+    const d = kpiDay(a, ds);
+    Object.keys(m).forEach(k => { m[k] += d[k]; });
   }
   return m;
+}
+function kpiUnpassedDays(a, ym) {
+  const n = daysIn(ym), days = [];
+  for (let d = 1; d <= n; d++) {
+    const ds = `${ym}-${pad(d)}`;
+    if (ds > TODAY) break;
+    const k = kpiDay(a, ds);
+    if (k.assess && !k.pass) days.push(d);
+  }
+  return days;
 }
 function searchKpi(fromDom = true) {
   const k = state.kpi;
@@ -1724,6 +1738,7 @@ function renderKpi() {
       <div class="form-item right"><button class="btn btn-primary" onclick="exportKpi()">导出</button></div>
     </div>
     <div class="tbl-meta">统计周期：${k.start === k.end ? k.start : `${k.start} 至 ${k.end}`}，共 ${n} 名坐席；默认按订单金额倒序，点击指标列表头可切换排序</div>
+    <div class="tbl-meta" style="margin-top:-6px">有效通话时长 = 系统电话 + 企微通话（不含私人电话）；有效通话人数 = 通话超过 10 秒的客户数（去重）；加微数 = 当日审核通过的加微数申报；达标情况按「基础配置 → 当日KPI达标」判定</div>
     ${table(cols, list, { maxHeight: 560, foot })}
   </div></div>`;
 }
@@ -1776,6 +1791,28 @@ const DECL_LIST = [
     auditor: auditor || '', auditAt: auditAt ? new Date(auditAt.replace(' ', 'T')) : null, reason: reason || '', logs
   };
 });
+(() => {
+  const taken = new Set(DECL_LIST.map(r => r.submitter.agentId + '|' + r.date));
+  for (let dt = new Date(2026, 9, 1); fmtD(dt) < TODAY; dt.setDate(dt.getDate() + 1)) {
+    const ds = fmtD(dt);
+    AGENTS.forEach(a => {
+      if (taken.has(a.id + '|' + ds)) return;
+      const st = attDays(a, ds.slice(0, 7))[dt.getDate() - 1];
+      if (![2, 3, 4, 6].includes(st)) return;
+      const r = rng('decl' + a.id + ds);
+      if (r() > .5) return;
+      const id = DECL_ID++, auditor = a.groupId === 11 ? '周敏' : '刘洋';
+      const submitAt = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), 18 + Math.floor(r() * 3), Math.floor(r() * 60), Math.floor(r() * 60));
+      const auditAt = new Date(submitAt.getTime() + (30 + Math.floor(r() * 600)) * 60000);
+      DECL_LIST.push({
+        id, date: ds, count: 6 + Math.floor(r() * 10), status: 'approved', submitter: agentSubmitter(a), submitAt,
+        images: Array.from({ length: 1 + Math.floor(r() * 2) }, (_, k) => mockShot(`shot${id}-${k}`)),
+        auditor, auditAt, reason: '',
+        logs: [{ time: submitAt, action: '提交申报', operator: a.name, remark: '' }, { time: auditAt, action: '审核通过', operator: auditor, remark: '' }]
+      });
+    });
+  }
+})();
 DECL_LIST.filter(r => r.status === 'approved' && r.submitter.agentId).forEach(r => {
   const key = r.submitter.agentId + '|' + r.date; WX_ADD[key] = (WX_ADD[key] || 0) + r.count;
 });
