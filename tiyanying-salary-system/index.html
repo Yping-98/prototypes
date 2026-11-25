@@ -157,6 +157,31 @@
   .tag-primary { background: #ecf5ff; border-color: #d9ecff; color: #409eff; }
   .tag-dark { background: #409eff; border-color: #409eff; color: #fff; }
   .tag-info { background: #f4f4f5; border-color: #e9e9eb; color: #909399; }
+  .tag-warning { background: #fdf6ec; border-color: #faecd8; color: #e6a23c; }
+  .thumb { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; border: 1px solid #ebeef5; cursor: zoom-in; margin-right: 4px; vertical-align: middle; }
+  .thumb-more { display: inline-flex; width: 40px; height: 40px; align-items: center; justify-content: center; border-radius: 4px; background: #f4f4f5; color: #909399; font-size: 12px; vertical-align: middle; }
+  .tbl td:has(.thumb) { padding-top: 6px; padding-bottom: 6px; }
+  .up-list { display: flex; flex-wrap: wrap; gap: 10px; }
+  .up-tile { position: relative; width: 88px; height: 88px; border: 1px solid #dcdfe6; border-radius: 6px; overflow: hidden; }
+  .up-tile img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
+  .up-del { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; font-size: 11px; cursor: pointer; }
+  .up-add { width: 88px; height: 88px; border: 1px dashed #c0c4cc; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #909399; cursor: pointer; background: #fafafa; }
+  .up-add:hover { border-color: #409eff; color: #409eff; }
+  .up-add span { font-size: 26px; line-height: 1; }
+  .up-add em { font-style: normal; font-size: 12px; margin-top: 4px; }
+  .f-hint { width: 100%; font-size: 12px; color: #909399; line-height: 1.5; }
+  .reject-tip { background: #fef0f0; color: #f56c6c; border-radius: 4px; padding: 8px 12px; margin-bottom: 16px; font-size: 13px; }
+  .perm-toggle { display: inline-flex; align-items: center; gap: 4px; margin-left: 16px; padding-left: 16px; border-left: 1px solid #d3adf7; cursor: pointer; }
+  .perm-toggle.dis { color: #c0c4cc; cursor: not-allowed; }
+  .log-list { border-left: 2px solid #e4e7ed; padding-left: 14px; }
+  .log-item { position: relative; padding: 4px 0; font-size: 13px; color: #303133; }
+  .log-item::before { content: ""; position: absolute; left: -19px; top: 10px; width: 8px; height: 8px; border-radius: 50%; background: #409eff; }
+  .log-time { color: #909399; margin-right: 10px; }
+  .log-remark { color: #f56c6c; }
+  .preview-box { display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .preview-box img { max-width: 380px; max-height: 60vh; border: 1px solid #ebeef5; border-radius: 4px; }
+  .pv-nav { width: 32px; height: 32px; border-radius: 50%; border: none; background: #f4f4f5; font-size: 20px; cursor: pointer; color: #606266; }
+  .pv-nav[disabled] { opacity: .3; cursor: not-allowed; }
   .tag .close { cursor: pointer; font-size: 12px; opacity: .8; }
   .tag .close:hover { opacity: 1; }
   .sum-box { display: flex; flex-wrap: wrap; gap: 8px 40px; padding: 12px 16px; margin-bottom: 14px; background: #f5f7fa; border-radius: 4px; }
@@ -285,12 +310,26 @@
     <li>筛选：坐席、小组、时间范围（默认当天）；支持导出，导出字段与列表字段一致（含末尾总计、均值两行），导出范围与当前筛选及角色权限一致。</li>
     <li>数据范围按角色控制：组员只看自己，主管看本组，团长看全部。页面顶部紫色条为原型演示用的角色切换，线上按登录账号角色自动判断，不展示该条。</li>
     <li>原型中「绩效考核天数」按「实际出勤」里的 班 / 半 / 法 / 0.5法 天数模拟。</li>
+    <li>加微数 = 系统统计加微数 + 当天审核通过的「加微数申报」数量。</li>
+  </ul>
+  <h4>加微数申报（新增页面）</h4>
+  <ul>
+    <li>位于「薪酬体系」下第五个二级菜单。列表字段：申报日期（原型补充，便于区分申报的是哪一天）、加微数、图片、提报人、提报时间、审核状态、审核人、审核时间、操作；按提报时间倒序。</li>
+    <li>操作随状态变化：待审核 — 查看详情、审核；审核拒绝 — 查看详情、重新提交（仅提报人本人可见）；审核通过 — 查看详情。</li>
+    <li>「审核」按钮单独受权限控制，且只能审核所在组（主管）/ 所在团（团长）的数据，不能审核本人提交的数据。原型中可在紫色条里勾选/取消审核权限进行演示。</li>
+    <li>发起申报：申报日期默认当天、可选过去；加微数仅可输入 ≥6 的正整数；图片最多 5 张；加微数和图片都填写后「提交」按钮才可点击。</li>
+    <li>同一提报人同一申报日期：已有审核通过的不可再申报；已有待审核的也不可重复提交；被拒绝后可重新提交。</li>
+    <li>薪酬核算日（基础配置中的薪酬生成日）之后，不可再提交上月及之前日期的加微数。</li>
+    <li>审核通过后，加微数补充到提报人申报日期当天的 KPI 看板加微数中；拒绝时需填写拒绝原因。</li>
+    <li>数据权限按提报人控制：组员看自己，主管看本组，团长看全部。</li>
   </ul>
   <h4>待确认</h4>
   <ul>
     <li>KPI看板：有效通话的判定标准（如单通时长阈值）、有效通话人数是否按手机号去重、订单金额是否扣除退款、加微数取数口径。</li>
     <li>KPI看板：单日「达标」的判定规则，以及「绩效考核天数」是否按排班出勤天数计算。</li>
     <li>KPI看板：时间范围是否限制最大跨度；主管带多个小组时是否看全部所带小组。</li>
+    <li>加微数申报：主管/团长本人是否也需要申报；薪酬核算日之后，上月待审核的申报是否还能审核通过。</li>
+    <li>加微数申报：审核通过的数量是与系统统计的加微数相加，还是覆盖；图片格式与大小限制。</li>
   </ul>
   <ul>
     <li>体验营坐席的业绩、营收、退款口径与数据来源。</li>
@@ -368,7 +407,8 @@ const PAGES = {
   agentSalary: '坐席查询',
   actualAttendance: '实际出勤',
   agentSalarySetting: '坐席薪酬配置',
-  kpiBoard: 'KPI看板'
+  kpiBoard: 'KPI看板',
+  wechatDeclare: '加微数申报'
 };
 const state = {
   page: 'agentSalary',
@@ -690,7 +730,7 @@ const MENU = [
   { t: '订单管理', c: ['坐席订单', '其他订单', '订单申诉'] },
   { t: '数据统计', c: ['公司个人业绩排行榜', '当期线索转化', '当期过程数据', 'SOP流程监控', '各渠道线索转化', '跟进任务数据看板', '公海线索转化', '公海线索分配', '当期线索质量', '月度转化', '月度gmv', '营收', '外呼数据统计', '线索分配结果', '月度线索分配统计', '往期线索转化', '转介绍线索转化', '转介绍业绩看板'] },
   { t: '坐席管理', c: ['架构管理', '外呼工号配置'] },
-  { t: '薪酬体系', isNew: true, c: [{ t: '坐席查询', page: 'agentSalary' }, { t: '实际出勤', page: 'actualAttendance' }, { t: '坐席薪酬配置', page: 'agentSalarySetting' }, { t: 'KPI看板', page: 'kpiBoard' }] },
+  { t: '薪酬体系', isNew: true, c: [{ t: '坐席查询', page: 'agentSalary' }, { t: '实际出勤', page: 'actualAttendance' }, { t: '坐席薪酬配置', page: 'agentSalarySetting' }, { t: 'KPI看板', page: 'kpiBoard' }, { t: '加微数申报', page: 'wechatDeclare' }] },
   { t: '小程序' }, { t: '企业微信直播' },
   { t: '配置', c: ['配置投放渠道信息', '线索投放计划', '信息流测试账号', '信息流承接配置', '加微工具配置', '月度目标配置', '月度线索目标配置', '渠道获客二维码/链接', '新销售每天可领取公海线索数', '发放公海客户的销售人员配置', 'H5投放页面配置'] }
 ];
@@ -728,7 +768,7 @@ function renderChrome() {
 }
 function render() {
   renderChrome();
-  const fn = { agentSalary: renderAgentSalary, actualAttendance: renderAttendance, agentSalarySetting: renderSetting, kpiBoard: renderKpi }[state.page];
+  const fn = { agentSalary: renderAgentSalary, actualAttendance: renderAttendance, agentSalarySetting: renderSetting, kpiBoard: renderKpi, wechatDeclare: renderDeclare }[state.page];
   $('appMain').innerHTML = fn();
 }
 
@@ -1399,18 +1439,33 @@ function saveBasic() {
 
 /* ==================== 页面四：KPI看板 ==================== */
 const TODAY = fmtD(NOW);
-const KPI_ROLES = {
-  member: { label: '组员', user: '张雨萱（组员）', scope: '仅可查看本人数据', agentId: AGENTS[0].id },
-  supervisor: { label: '主管', user: '周敏（体验营一组主管）', scope: '可查看本组（体验营一组）全部坐席数据', groupId: 11 },
-  leader: { label: '团长', user: '刘洋（团长）', scope: '可查看全部坐席数据' }
+const ROLES = {
+  member: { label: '组员', name: AGENTS[0].name, user: `${AGENTS[0].name}（组员）`, scope: '仅可查看本人数据', agentId: AGENTS[0].id, groupId: AGENTS[0].groupId },
+  supervisor: { label: '主管', name: '周敏', user: '周敏（体验营一组主管）', scope: '可查看本组（体验营一组）全部数据', groupId: 11 },
+  leader: { label: '团长', name: '刘洋', user: '刘洋（团长）', scope: '可查看全部数据' }
 };
-state.kpi = { role: 'leader', org: '', worker: '', start: TODAY, end: TODAY, sort: { f: 'order', d: -1 }, list: [] };
+state.role = 'leader';
+state.kpi = { org: '', worker: '', start: TODAY, end: TODAY, sort: { f: 'order', d: -1 }, list: [] };
+const WX_ADD = {};
 
 function kpiScopeAgents() {
-  const k = state.kpi, R = KPI_ROLES[k.role];
-  if (k.role === 'member') return AGENTS.filter(a => a.id === R.agentId);
-  if (k.role === 'supervisor') return AGENTS.filter(a => a.groupId === R.groupId);
+  const R = ROLES[state.role];
+  if (state.role === 'member') return AGENTS.filter(a => a.id === R.agentId);
+  if (state.role === 'supervisor') return AGENTS.filter(a => a.groupId === R.groupId);
   return AGENTS;
+}
+function setRole(r) {
+  state.role = r;
+  Object.assign(state.kpi, { org: '', worker: '' });
+  Object.assign(state.decl, { submitter: '', start: '', end: '', status: '', page: 1, auditPerm: r !== 'member' });
+  searchKpi(false); render();
+}
+function roleBar(extra = '') {
+  const R = ROLES[state.role];
+  return `<div class="role-bar"><span class="role-tag">原型演示</span><span>切换当前登录角色：</span>
+    ${Object.entries(ROLES).map(([key, v]) => `<button class="btn btn-sm ${state.role === key ? 'btn-primary' : ''}" onclick="setRole('${key}')">${v.label}</button>`).join('')}
+    <span class="role-desc">${R.user}，${R.scope}</span>${extra}
+  </div>`;
 }
 function rangeActive(a, start, end) {
   return a.joinAt <= new Date(end + 'T23:59:59') && (!a.leaveAt || a.leaveAt >= new Date(start + 'T00:00:00'));
@@ -1421,6 +1476,7 @@ function kpiOf(a, start, end) {
   for (let dt = new Date(start + 'T00:00:00'); dt <= e; dt.setDate(dt.getDate() + 1)) {
     const ds = fmtD(dt);
     if (ds > TODAY) break;
+    m.wechat += WX_ADD[a.id + '|' + ds] || 0;
     const st = attDays(a, ds.slice(0, 7))[dt.getDate() - 1];
     if (![2, 3, 4, 6].includes(st)) continue;
     const w = st === 3 || st === 6 ? .5 : 1;
@@ -1444,8 +1500,8 @@ function searchKpi(fromDom = true) {
     const start = val('kpiStart') || TODAY, end = val('kpiEnd') || TODAY;
     if (start > end) { toast('开始日期不能晚于结束日期', 'warning'); return; }
     Object.assign(k, { start, end });
-    if (k.role === 'leader') k.org = val('kpiOrg');
-    if (k.role !== 'member') k.worker = val('kpiWorker');
+    if (state.role === 'leader') k.org = val('kpiOrg');
+    if (state.role !== 'member') k.worker = val('kpiWorker');
   }
   k.list = kpiScopeAgents()
     .filter(a => matchOrg(a, k.org) && (!k.worker || String(a.id) === k.worker) && rangeActive(a, k.start, k.end))
@@ -1453,7 +1509,6 @@ function searchKpi(fromDom = true) {
   if (fromDom) render();
 }
 function resetKpi() { Object.assign(state.kpi, { org: '', worker: '', start: TODAY, end: TODAY }); searchKpi(false); render(); }
-function setKpiRole(r) { Object.assign(state.kpi, { role: r, org: '', worker: '' }); searchKpi(false); render(); }
 function sortKpi(f) { const s = state.kpi.sort; if (s.f === f) s.d = -s.d; else { s.f = f; s.d = -1; } render(); }
 function fmtDur(sec) {
   sec = Math.round(sec);
@@ -1493,7 +1548,7 @@ function exportKpi() {
   toast(`导出成功，共 ${n} 名坐席`);
 }
 function renderKpi() {
-  const k = state.kpi, R = KPI_ROLES[k.role];
+  const k = state.kpi;
   const list = kpiSorted();
   const n = list.length;
   const sum = f => list.reduce((s, x) => s + x[f], 0);
@@ -1506,18 +1561,15 @@ function renderKpi() {
   const foot = n ? ['总计/均值', ...KPI_METRICS.map(([f, , fmt, avgFmt]) => `<div>总计：${fmt(sum(f))}</div><div class="avg">均值：${avgFmt(sum(f) / n)}</div>`), '', '', ''] : null;
 
   const scopeAgents = kpiScopeAgents();
-  const orgCtrl = k.role === 'leader'
+  const orgCtrl = state.role === 'leader'
     ? orgSelect('kpiOrg', k.org)
     : `<select class="el-input" style="width:180px" disabled><option>${groupName(scopeAgents[0])}</option></select>`;
-  const workerCtrl = k.role === 'member'
+  const workerCtrl = state.role === 'member'
     ? `<select class="el-input" style="width:180px" disabled><option>${scopeAgents[0].name}</option></select>`
     : `<select class="el-input ${k.worker ? '' : 'ph'}" id="kpiWorker" style="width:180px" onchange="this.classList.toggle('ph',!this.value)"><option value="">请选择坐席</option>${scopeAgents.map(a => `<option value="${a.id}" ${String(k.worker) === String(a.id) ? 'selected' : ''}>${a.name}</option>`).join('')}</select>`;
 
   return `<div class="page"><div class="card">
-    <div class="role-bar"><span class="role-tag">原型演示</span><span>切换当前登录角色：</span>
-      ${Object.entries(KPI_ROLES).map(([key, v]) => `<button class="btn btn-sm ${k.role === key ? 'btn-primary' : ''}" onclick="setKpiRole('${key}')">${v.label}</button>`).join('')}
-      <span class="role-desc">${R.user}，${R.scope}</span>
-    </div>
+    ${roleBar()}
     <div class="form-inline">
       <div class="form-item">${workerCtrl}</div>
       <div class="form-item">${orgCtrl}</div>
@@ -1531,6 +1583,274 @@ function renderKpi() {
     <div class="tbl-meta">统计周期：${k.start === k.end ? k.start : `${k.start} 至 ${k.end}`}，共 ${n} 名坐席；默认按订单金额倒序，点击指标列表头可切换排序</div>
     ${table(cols, list, { maxHeight: 560, foot })}
   </div></div>`;
+}
+
+/* ==================== 页面五：加微数申报 ==================== */
+const LOAD_TS = Date.now();
+const clock = () => new Date(NOW.getTime() + (Date.now() - LOAD_TS));
+const DECL_STATUS = {
+  pending: { text: '待审核', cls: 'tag-warning' },
+  approved: { text: '审核通过', cls: 'tag-success' },
+  rejected: { text: '审核拒绝', cls: 'tag-danger' }
+};
+state.decl = { submitter: '', start: '', end: '', status: '', page: 1, auditPerm: true };
+
+function mockShot(seed) {
+  const r = rng(seed); const rows = 4 + Math.floor(r() * 3);
+  let items = '';
+  for (let i = 0; i < rows; i++) {
+    const y = 64 + i * 52, hue = Math.floor(r() * 360);
+    items += `<circle cx="34" cy="${y + 18}" r="16" fill="hsl(${hue},55%,70%)"/><rect x="60" y="${y + 6}" width="${70 + Math.floor(r() * 60)}" height="10" rx="3" fill="#c9cdd4"/><rect x="60" y="${y + 22}" width="${100 + Math.floor(r() * 60)}" height="8" rx="3" fill="#e5e6eb"/><text x="252" y="${y + 22}" font-size="11" fill="#86909c" text-anchor="end" font-family="sans-serif">已添加</text>`;
+  }
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="270" height="400" viewBox="0 0 270 400"><rect width="270" height="400" fill="#f7f8fa"/><rect width="270" height="46" fill="#07c160"/><text x="135" y="29" font-size="15" fill="#fff" text-anchor="middle" font-family="sans-serif">新的客户</text>${items}</svg>`;
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+const agentSubmitter = a => ({ name: a.name, agentId: a.id, groupId: a.groupId });
+let DECL_ID = 1;
+const DECL_LIST = [
+  [0, '2026-11-20', 8, 'pending', '2026-11-20 10:12:36'],
+  [0, '2026-11-19', 12, 'approved', '2026-11-19 18:20:11', '周敏', '2026-11-19 19:05:42'],
+  [0, '2026-11-18', 7, 'rejected', '2026-11-18 18:46:03', '周敏', '2026-11-18 20:11:25', '截图未体现添加时间，请补充完整截图后重新提交'],
+  [4, '2026-11-20', 6, 'pending', '2026-11-20 09:58:17'],
+  [8, '2026-11-19', 10, 'approved', '2026-11-19 17:32:50', '刘洋', '2026-11-19 21:03:09'],
+  [12, '2026-11-17', 9, 'rejected', '2026-11-17 18:05:44', '周敏', '2026-11-17 19:40:18', '截图中的客户数量与申报数量不一致'],
+  [1, '2026-11-20', 15, 'pending', '2026-11-20 11:02:05'],
+  [2, '2026-11-19', 11, 'approved', '2026-11-19 18:55:27', '刘洋', '2026-11-19 20:16:33'],
+  [3, '2026-11-18', 6, 'approved', '2026-11-18 19:12:40', '刘洋', '2026-11-19 09:30:12'],
+  [5, '2026-11-16', 13, 'rejected', '2026-11-16 18:30:08', '刘洋', '2026-11-17 10:05:51', '图片模糊无法识别，请重新上传'],
+  [6, '2026-11-12', 9, 'approved', '2026-11-12 18:41:19', '刘洋', '2026-11-12 20:22:47'],
+  [16, '2026-10-28', 14, 'approved', '2026-10-28 18:03:31', '周敏', '2026-10-28 19:15:06'],
+  [7, '2026-11-20', 7, 'pending', '2026-11-20 10:40:52'],
+  [20, '2026-11-13', 8, 'approved', '2026-11-13 18:27:14', '周敏', '2026-11-13 19:58:39']
+].map(([ai, date, count, status, submitAt, auditor, auditAt, reason]) => {
+  const a = AGENTS[ai]; const id = DECL_ID++;
+  const n = 1 + Math.floor(rng('img' + id)() * 4);
+  const logs = [{ time: new Date(submitAt.replace(' ', 'T')), action: '提交申报', operator: a.name, remark: '' }];
+  if (auditor) logs.push({ time: new Date(auditAt.replace(' ', 'T')), action: status === 'approved' ? '审核通过' : '审核拒绝', operator: auditor, remark: reason || '' });
+  return {
+    id, date, count, status, submitter: agentSubmitter(a), submitAt: new Date(submitAt.replace(' ', 'T')),
+    images: Array.from({ length: n }, (_, k) => mockShot(`shot${id}-${k}`)),
+    auditor: auditor || '', auditAt: auditAt ? new Date(auditAt.replace(' ', 'T')) : null, reason: reason || '', logs
+  };
+});
+DECL_LIST.filter(r => r.status === 'approved' && r.submitter.agentId).forEach(r => {
+  const key = r.submitter.agentId + '|' + r.date; WX_ADD[key] = (WX_ADD[key] || 0) + r.count;
+});
+
+function currentSubmitter() {
+  const R = ROLES[state.role];
+  return state.role === 'member' ? agentSubmitter(AGENT_MAP[R.agentId]) : { name: R.name, agentId: null, groupId: R.groupId ?? null };
+}
+function declInScope(r) {
+  const R = ROLES[state.role];
+  if (state.role === 'member') return r.submitter.agentId === R.agentId;
+  if (state.role === 'supervisor') return r.submitter.groupId === R.groupId;
+  return true;
+}
+const isOwnDecl = r => r.submitter.name === ROLES[state.role].name;
+function canAudit(r) {
+  if (!state.decl.auditPerm || state.role === 'member' || r.status !== 'pending' || isOwnDecl(r)) return false;
+  return state.role === 'leader' || r.submitter.groupId === ROLES.supervisor.groupId;
+}
+function minDeclDate() {
+  const genDay = state.cfgSaved.basic.genDay;
+  const d = NOW.getDate() >= genDay ? new Date(NOW.getFullYear(), NOW.getMonth(), 1) : new Date(NOW.getFullYear(), NOW.getMonth() - 1, 1);
+  return fmtD(d);
+}
+function declFiltered() {
+  const f = state.decl;
+  return DECL_LIST.filter(declInScope)
+    .filter(r => (!f.submitter || r.submitter.name === f.submitter) && (!f.start || fmtD(r.submitAt) >= f.start) && (!f.end || fmtD(r.submitAt) <= f.end) && (!f.status || r.status === f.status))
+    .sort((a, b) => b.submitAt - a.submitAt);
+}
+function searchDecl() {
+  const start = val('dcStart'), end = val('dcEnd');
+  if (start && end && start > end) { toast('开始日期不能晚于结束日期', 'warning'); return; }
+  Object.assign(state.decl, { submitter: state.role === 'member' ? '' : val('dcSubmitter'), start, end, status: val('dcStatus'), page: 1 });
+  render();
+}
+function resetDecl() { Object.assign(state.decl, { submitter: '', start: '', end: '', status: '', page: 1 }); render(); }
+function declPage(p) { state.decl.page = p; render(); }
+const thumbs = (imgs, onclick, max = 3) => imgs.slice(0, max).map((src, i) => `<img class="thumb" src="${src}" onclick="${onclick}(${i})">`).join('') + (imgs.length > max ? `<span class="thumb-more">+${imgs.length - max}</span>` : '');
+
+function renderDeclare() {
+  const f = state.decl, R = ROLES[state.role];
+  const all = declFiltered();
+  const rows = all.slice((f.page - 1) * 10, f.page * 10);
+  const names = state.role === 'member' ? [] : [...new Set([...kpiScopeAgents().map(a => a.name), R.name, ...DECL_LIST.filter(declInScope).map(r => r.submitter.name)])];
+  const cols = [
+    { title: '申报日期', minWidth: 110, field: 'date' },
+    { title: '加微数', minWidth: 80, field: 'count' },
+    { title: '图片', minWidth: 180, render: r => thumbs(r.images, `(i=>previewImg(${r.id},i))`) },
+    { title: '提报人', minWidth: 90, render: r => r.submitter.name },
+    { title: '提报时间', minWidth: 165, render: r => fmtDT(r.submitAt) },
+    { title: '审核状态', minWidth: 100, render: r => `<span class="tag ${DECL_STATUS[r.status].cls}">${DECL_STATUS[r.status].text}</span>` },
+    { title: '审核人', minWidth: 90, render: r => r.auditor || '-' },
+    { title: '审核时间', minWidth: 165, render: r => r.auditAt ? fmtDT(r.auditAt) : '-' },
+    { title: '操作', width: 180, fixed: 'right', render: r => {
+      const ops = [`<button class="link" onclick="openDeclDetail(${r.id})">查看详情</button>`];
+      if (canAudit(r)) ops.push(`<button class="link" onclick="openAudit(${r.id})">审核</button>`);
+      if (r.status === 'rejected' && isOwnDecl(r)) ops.push(`<button class="link" onclick="openDeclForm(${r.id})">重新提交</button>`);
+      return ops.join('');
+    } }
+  ];
+  const perm = `<label class="perm-toggle ${state.role === 'member' ? 'dis' : ''}"><input type="checkbox" ${f.auditPerm ? 'checked' : ''} ${state.role === 'member' ? 'disabled' : ''} onchange="state.decl.auditPerm=this.checked;render()">拥有「审核」按钮权限</label>`;
+  return `<div class="page"><div class="card">
+    ${roleBar(perm)}
+    <div class="form-inline">
+      <div class="form-item">${state.role === 'member'
+        ? `<select class="el-input" style="width:180px" disabled><option>${R.name}</option></select>`
+        : `<select class="el-input ${f.submitter ? '' : 'ph'}" id="dcSubmitter" style="width:180px" onchange="this.classList.toggle('ph',!this.value)"><option value="">请选择提报人</option>${names.map(n => `<option ${f.submitter === n ? 'selected' : ''}>${n}</option>`).join('')}</select>`}</div>
+      <div class="form-item"><label>提报时间</label>
+        <input type="date" class="el-input" id="dcStart" value="${f.start}" max="${TODAY}" style="width:150px">
+        <span class="range-sep">至</span>
+        <input type="date" class="el-input" id="dcEnd" value="${f.end}" max="${TODAY}" style="width:150px">
+      </div>
+      <div class="form-item"><select class="el-input ${f.status ? '' : 'ph'}" id="dcStatus" style="width:160px" onchange="this.classList.toggle('ph',!this.value)"><option value="">请选择审核状态</option>${Object.entries(DECL_STATUS).map(([k, v]) => `<option value="${k}" ${f.status === k ? 'selected' : ''}>${v.text}</option>`).join('')}</select></div>
+      <div class="form-item"><button class="btn btn-primary" onclick="searchDecl()">🔍 搜索</button><button class="btn" onclick="resetDecl()">重置</button></div>
+      <div class="form-item right"><button class="btn btn-primary" onclick="openDeclForm()">发起申报</button></div>
+    </div>
+    ${table(cols, rows)}
+    ${pager(all.length, f.page, 'declPage')}
+  </div></div>`;
+}
+
+/* --- 发起申报 / 重新提交 --- */
+let DF = null;
+function openDeclForm(id) {
+  const src = id ? DECL_LIST.find(r => r.id === id) : null;
+  DF = { id: id || null, date: src ? src.date : TODAY, count: src ? String(src.count) : '', images: src ? [...src.images] : [] };
+  openDialog({
+    key: 'declForm', title: id ? '重新提交' : '发起申报', width: 600,
+    body: () => {
+      const min = minDeclDate(); const genDay = state.cfgSaved.basic.genDay;
+      return `
+      ${src ? `<div class="reject-tip">上次审核拒绝原因：${src.reason}</div>` : ''}
+      <div class="f-row"><div class="f-label req">申报日期</div><div class="f-ctrl">
+        <input type="date" class="el-input" style="width:220px" value="${DF.date}" min="${min}" max="${TODAY}" onchange="DF.date=this.value;declValidate()">
+        <div class="f-hint">默认当天，可选择过去日期；薪酬核算日（每月${genDay}号）后不可提交上月及之前日期的加微数</div>
+      </div></div>
+      <div class="f-row"><div class="f-label req">加微数</div><div class="f-ctrl">
+        <input type="text" inputmode="numeric" class="el-input" style="width:220px" placeholder="请输入大于等于6的正整数" value="${DF.count}" oninput="this.value=this.value.replace(/[^0-9]/g,'');DF.count=this.value;declValidate()">
+        <div class="f-err" id="dfCountErr"></div>
+      </div></div>
+      <div class="f-row"><div class="f-label req">上传图片</div><div class="f-ctrl">
+        <div class="up-list">
+          ${DF.images.map((src2, i) => `<div class="up-tile"><img src="${src2}" onclick="previewDraft(${i})"><span class="up-del" onclick="removeDraftImg(${i})">✕</span></div>`).join('')}
+          ${DF.images.length < 5 ? `<div class="up-add" onclick="document.getElementById('dfFile').click()"><span>＋</span><em>上传图片</em></div>` : ''}
+        </div>
+        <input type="file" id="dfFile" accept="image/*" multiple style="display:none" onchange="addDraftImgs(this)">
+        <div class="f-hint">已上传 ${DF.images.length}/5 张，最多上传 5 张</div>
+      </div></div>`;
+    },
+    footer: () => `<button class="btn" onclick="closeDialog('declForm')">取消</button><button class="btn btn-primary" id="dfSubmit" onclick="submitDecl()">提交</button>`
+  });
+  declValidate();
+}
+function declValidate() {
+  const c = DF.count, okCount = /^\d+$/.test(c) && Number(c) >= 6;
+  const err = $('dfCountErr'); if (err) err.textContent = c && !okCount ? '仅可输入大于等于6的正整数' : '';
+  const btn = $('dfSubmit'); if (btn) btn.disabled = !(okCount && DF.images.length && DF.date);
+}
+function addDraftImgs(input) {
+  const files = [...input.files].filter(f => f.type.startsWith('image/'));
+  if (files.length < input.files.length) toast('仅支持上传图片文件', 'warning');
+  const room = 5 - DF.images.length;
+  if (files.length > room) toast('最多上传5张图片', 'warning');
+  Promise.all(files.slice(0, room).map(f => new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(f); })))
+    .then(urls => { DF.images.push(...urls); refreshDialog('declForm'); declValidate(); });
+}
+function removeDraftImg(i) { DF.images.splice(i, 1); refreshDialog('declForm'); declValidate(); }
+function previewDraft(i) { openImgPreview(DF.images, i); }
+function submitDecl() {
+  const sub = currentSubmitter(); const min = minDeclDate();
+  if (!DF.date || DF.date > TODAY) { toast('请选择今天及之前的申报日期', 'warning'); return; }
+  if (DF.date < min) { toast(`薪酬核算日（每月${state.cfgSaved.basic.genDay}号）后不可提交上月及之前日期的加微数`, 'warning'); return; }
+  if (!/^\d+$/.test(DF.count) || Number(DF.count) < 6) { toast('加微数仅可输入大于等于6的正整数', 'warning'); return; }
+  if (!DF.images.length) { toast('请上传图片', 'warning'); return; }
+  const same = DECL_LIST.filter(r => r.id !== DF.id && r.submitter.name === sub.name && r.date === DF.date);
+  if (same.some(r => r.status === 'approved')) { toast('该日期已有审核通过的加微数申报，不可重复申报', 'warning'); return; }
+  if (same.some(r => r.status === 'pending')) { toast('该日期已有待审核的申报，请勿重复提交', 'warning'); return; }
+  const now = clock();
+  if (DF.id) {
+    const r = DECL_LIST.find(x => x.id === DF.id);
+    Object.assign(r, { date: DF.date, count: Number(DF.count), images: [...DF.images], status: 'pending', submitAt: now, auditor: '', auditAt: null, reason: '' });
+    r.logs.push({ time: now, action: '重新提交', operator: sub.name, remark: '' });
+  } else {
+    DECL_LIST.push({ id: DECL_ID++, date: DF.date, count: Number(DF.count), images: [...DF.images], status: 'pending', submitter: sub, submitAt: now, auditor: '', auditAt: null, reason: '', logs: [{ time: now, action: '提交申报', operator: sub.name, remark: '' }] });
+  }
+  closeDialog('declForm');
+  toast(`提交成功，等待${sub.agentId ? '所在组主管或团长' : '团长'}审核`);
+  render();
+}
+
+/* --- 查看详情 / 审核 / 图片预览 --- */
+function declInfoHtml(r) {
+  const item = (l, v) => `<div class="ds-item"><span class="ds-label">${l}：</span><span>${v}</span></div>`;
+  return `<div class="ds-grid" style="grid-template-columns:repeat(2,1fr)">
+      ${item('申报日期', r.date)}${item('加微数', r.count)}
+      ${item('提报人', r.submitter.name)}${item('所在小组', r.submitter.groupId ? GROUP_MAP[r.submitter.groupId].name : '-')}
+      ${item('提报时间', fmtDT(r.submitAt))}${item('审核状态', `<span class="tag small ${DECL_STATUS[r.status].cls}">${DECL_STATUS[r.status].text}</span>`)}
+      ${r.auditor ? item('审核人', r.auditor) + item('审核时间', fmtDT(r.auditAt)) : ''}
+      ${r.status === 'rejected' ? `<div class="ds-item" style="grid-column:span 2"><span class="ds-label">拒绝原因：</span><span style="color:#f56c6c">${r.reason}</span></div>` : ''}
+    </div>
+    <div class="ds-title" style="margin-top:14px">图片（${r.images.length}张）</div>
+    <div class="up-list">${r.images.map((src, i) => `<div class="up-tile"><img src="${src}" onclick="previewImg(${r.id},${i})"></div>`).join('')}</div>`;
+}
+function openDeclDetail(id) {
+  const r = DECL_LIST.find(x => x.id === id);
+  openDialog({
+    key: 'declDetail', title: '查看详情', width: 640,
+    body: () => `${declInfoHtml(r)}
+      <div class="ds-title" style="margin-top:16px">操作记录</div>
+      <div class="log-list">${[...r.logs].reverse().map(l => `<div class="log-item"><span class="log-time">${fmtDT(l.time)}</span><span>${l.operator} ${l.action}</span>${l.remark ? `<span class="log-remark">（${l.remark}）</span>` : ''}</div>`).join('')}</div>`
+  });
+}
+let AUDIT = null;
+function openAudit(id) {
+  const r = DECL_LIST.find(x => x.id === id);
+  AUDIT = { id, result: 'approved', reason: '' };
+  openDialog({
+    key: 'audit', title: '审核', width: 640,
+    body: () => `${declInfoHtml(r)}
+      <div class="f-row" style="margin-top:18px"><div class="f-label req">审核结果</div><div class="f-ctrl"><div class="radio-group">
+        <label><input type="radio" name="auditRes" ${AUDIT.result === 'approved' ? 'checked' : ''} onchange="AUDIT.result='approved';refreshDialog('audit')">通过</label>
+        <label><input type="radio" name="auditRes" ${AUDIT.result === 'rejected' ? 'checked' : ''} onchange="AUDIT.result='rejected';refreshDialog('audit')">拒绝</label>
+      </div></div></div>
+      ${AUDIT.result === 'rejected' ? `<div class="f-row"><div class="f-label req">拒绝原因</div><div class="f-ctrl"><textarea class="el-input full" rows="3" maxlength="200" placeholder="请输入拒绝原因，提报人可据此修改后重新提交" oninput="AUDIT.reason=this.value">${AUDIT.reason}</textarea></div></div>`
+        : `<div class="f-hint" style="padding-left:110px">审核通过后，该加微数将补充到提报人 ${r.date} 的 KPI 看板加微数中</div>`}`,
+    footer: () => `<button class="btn" onclick="closeDialog('audit')">取消</button><button class="btn btn-primary" onclick="submitAudit()">确定</button>`
+  });
+}
+function submitAudit() {
+  const r = DECL_LIST.find(x => x.id === AUDIT.id);
+  if (AUDIT.result === 'rejected' && !AUDIT.reason.trim()) { toast('请输入拒绝原因', 'warning'); return; }
+  if (AUDIT.result === 'approved' && DECL_LIST.some(x => x.id !== r.id && x.status === 'approved' && x.submitter.name === r.submitter.name && x.date === r.date)) {
+    toast('该提报人当天已有审核通过的申报，不可重复通过', 'warning'); return;
+  }
+  const R = ROLES[state.role], now = clock();
+  Object.assign(r, { status: AUDIT.result, auditor: R.name, auditAt: now, reason: AUDIT.result === 'rejected' ? AUDIT.reason.trim() : '' });
+  r.logs.push({ time: now, action: AUDIT.result === 'approved' ? '审核通过' : '审核拒绝', operator: R.name, remark: r.reason });
+  if (AUDIT.result === 'approved' && r.submitter.agentId) {
+    const key = r.submitter.agentId + '|' + r.date; WX_ADD[key] = (WX_ADD[key] || 0) + r.count;
+    searchKpi(false);
+  }
+  closeDialog('audit');
+  toast(AUDIT.result === 'approved' ? `审核通过，已将 ${r.count} 个加微数补充到 ${r.submitter.name} ${r.date} 的 KPI 看板` : '已审核拒绝');
+  render();
+}
+function previewImg(id, i) { openImgPreview(DECL_LIST.find(x => x.id === id).images, i); }
+let PREVIEW = null;
+function openImgPreview(imgs, i) {
+  PREVIEW = { imgs, i };
+  openDialog({
+    key: 'imgPreview', title: '图片预览', width: 520,
+    body: () => `<div class="preview-box">
+      <button class="pv-nav" ${PREVIEW.i <= 0 ? 'disabled' : ''} onclick="PREVIEW.i--;refreshDialog('imgPreview')">‹</button>
+      <img src="${PREVIEW.imgs[PREVIEW.i]}">
+      <button class="pv-nav" ${PREVIEW.i >= PREVIEW.imgs.length - 1 ? 'disabled' : ''} onclick="PREVIEW.i++;refreshDialog('imgPreview')">›</button>
+    </div><div style="text-align:center;color:#909399;margin-top:8px">${PREVIEW.i + 1} / ${PREVIEW.imgs.length}</div>`
+  });
 }
 
 /* ==================== 启动 ==================== */
