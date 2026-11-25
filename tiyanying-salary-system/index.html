@@ -380,7 +380,8 @@ const PAGES = {
   agentSalarySetting: '坐席薪酬配置',
   kpiBoard: 'KPI看板',
   wechatDeclare: '加微数申报',
-  monthGoal: '月度目标配置'
+  monthGoal: '月度目标配置',
+  leadPlan: '线索投放计划'
 };
 const state = {
   page: 'agentSalary',
@@ -421,7 +422,7 @@ const state = {
     },
     bonus: {
       newKing: { gmv: null, bonus: null },
-      convRate: 8, convOrders: 2, convLevels: ['S', 'A', 'B', 'C', 'E', 'I'],
+      convRate: 8, convOrders: 2,
       conv: [
         { grade: '初中', ranks: [1], bonus: 800 },
         { grade: '初中', ranks: [2], bonus: 500 },
@@ -600,12 +601,21 @@ function newKingAwarded(ym, depth = 0) {
   const best = Math.max(...pool.map(a => perfOf(a, ym)));
   return best >= nk.gmv ? pool.filter(a => perfOf(a, ym) === best).map(a => a.id) : [];
 }
+const LEAD_GRADES = ['S', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
+const LEAD_PLANS = Array.from({ length: 14 }, (_, i) => {
+  const p = 203 - i;
+  const start = new Date(2026, 10, 23 - i * 7, 0, 0, 0);
+  const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6, 23, 59, 59);
+  const close = new Date(end.getFullYear(), end.getMonth(), end.getDate() + 7, 23, 59, 59);
+  return { p, start, end, close, expects: 2000, openType: 1, levels: ['S', 'A', 'B', 'C', 'E', 'I'] };
+});
 function periodsOf(ym) {
-  const [y, m] = ym.split('-').map(Number);
-  return [7, 14, 21, 28].map((d, i) => ({ name: `${String(y).slice(2)}${pad(m)}-${i + 1}期`, end: fmtD(new Date(y, m - 1, d)) })).filter(p => p.end <= TODAY);
+  return LEAD_PLANS.filter(x => fmtD(x.close).slice(0, 7) === ym && fmtD(x.close) <= TODAY)
+    .sort((a, b) => a.p - b.p)
+    .map(x => ({ name: `第${x.p}期`, end: fmtD(x.close), levels: x.levels }));
 }
 function convStatOf(a, p) {
-  const r = rng('cv' + a.id + p.name), levels = state.cfgSaved.bonus.convLevels.length || 1;
+  const r = rng('cv' + a.id + p.name), levels = p.levels.length || 1;
   const orders = Math.floor(r() * 6);
   const leads = Math.max(orders, Math.round((18 + Math.floor(r() * 22)) * levels / 6)) || 1;
   let amount = 0; for (let i = 0; i < orders; i++) amount += [399, 699, 1299][Math.floor(r() * 3)];
@@ -771,7 +781,7 @@ const MENU = [
   { t: '坐席管理', c: ['架构管理', '外呼工号配置'] },
   { t: '薪酬体系', isNew: true, c: [{ t: '坐席查询', page: 'agentSalary' }, { t: '实际出勤', page: 'actualAttendance' }, { t: '坐席薪酬配置', page: 'agentSalarySetting' }, { t: 'KPI看板', page: 'kpiBoard' }, { t: '加微数申报', page: 'wechatDeclare' }, { t: '月度目标配置', page: 'monthGoal' }] },
   { t: '小程序' }, { t: '企业微信直播' },
-  { t: '配置', c: ['配置投放渠道信息', '线索投放计划', '信息流测试账号', '信息流承接配置', '加微工具配置', '月度线索目标配置', '渠道获客二维码/链接', '新销售每天可领取公海线索数', '发放公海客户的销售人员配置', 'H5投放页面配置'] }
+  { t: '配置', c: ['配置投放渠道信息', { t: '线索投放计划', page: 'leadPlan' }, '信息流测试账号', '信息流承接配置', '加微工具配置', '月度线索目标配置', '渠道获客二维码/链接', '新销售每天可领取公海线索数', '发放公海客户的销售人员配置', 'H5投放页面配置'] }
 ];
 function renderMenu() {
   $('sideMenu').innerHTML = MENU.map(m => {
@@ -802,13 +812,14 @@ function closeTab(p, e) {
   render();
 }
 function renderChrome() {
+  if (state.page === 'leadPlan') state.openMenus.add('配置');
   renderMenu();
-  $('breadcrumb').innerHTML = `薪酬体系 &nbsp;/&nbsp; <b>${PAGES[state.page]}</b>`;
+  $('breadcrumb').innerHTML = `${state.page === 'leadPlan' ? '配置' : '薪酬体系'} &nbsp;/&nbsp; <b>${PAGES[state.page]}</b>`;
   $('routerTabs').innerHTML = state.openedTabs.map(p => `<div class="r-tab ${p === state.page ? 'active' : ''}" onclick="goPage('${p}')">${PAGES[p]}<span class="x" onclick="closeTab('${p}',event)">✕</span></div>`).join('');
 }
 function render() {
   renderChrome();
-  const fn = { agentSalary: renderAgentSalary, actualAttendance: renderAttendance, agentSalarySetting: renderSetting, kpiBoard: renderKpi, wechatDeclare: renderDeclare, monthGoal: renderMonthGoal }[state.page];
+  const fn = { agentSalary: renderAgentSalary, actualAttendance: renderAttendance, agentSalarySetting: renderSetting, kpiBoard: renderKpi, wechatDeclare: renderDeclare, monthGoal: renderMonthGoal, leadPlan: renderLeadPlan }[state.page];
   $('appMain').innerHTML = fn();
   if (window.__diffRemeasure) setTimeout(window.__diffRemeasure, 0);
 }
@@ -1327,24 +1338,16 @@ function renderBonus() {
     { title: '操作', width: 150, fixed: 'right', render: r => `<button class="link" onclick="openConv(${r._i})">编辑</button><button class="link danger" onclick="delConv(${r._i})">删除</button>` }
   ];
   const nk = c.newKing;
-  const levelBox = ['S', 'A', 'B', 'C', 'D', 'E', 'I'].map(l => `<label><input type="checkbox" ${c.convLevels.includes(l) ? 'checked' : ''} onchange="toggleConvLevel('${l}',this.checked)">${l}</label>`).join('');
   return subCard('新人王奖励', '入职当月及第一个完整月，GMV排名第一且达到门槛的坐席发放',
     `<div class="sentence"><span>入职当月及第一个完整月，GMV排名第一，且当月GMV ≥</span>${numIn('bonus.newKing.gmv', nk.gmv, 'min="0" step="0.01" placeholder="请输入，如10000"')}<span>元，奖金</span>${numIn('bonus.newKing.bonus', nk.bonus, 'min="0" step="0.01" placeholder="请输入，如600"')}<span>元</span></div>
      <div class="tip-text" style="margin:12px 0 0">GMV = 净GMV + 双算业绩；GMV 并列第一均发放；每人仅可获得一次，获得后下个月不再参与排名<br>GMV门槛与奖金需同时填写；均不填写时不发放新人王奖励</div>`, '', 'tgtNewKing')
     + subCard('当期转化率奖金', '每个期次单独排名，同月多个期次奖金累加',
       `<div class="sentence"><span>参与门槛：当月已填写目标，且期次当期转化率 ≥</span>${numIn('bonus.convRate', c.convRate, 'min="0" max="100" step="0.01"', 'sm')}<span>% 且转化订单数 ≥</span>${numIn('bonus.convOrders', c.convOrders, 'min="0" step="1"', 'sm')}<span>单</span></div>
-       <div class="sentence" style="margin-top:14px"><span>统计线索等级：</span><span class="check-grid">${levelBox}</span></div>
-       <div class="tip-text" style="margin:12px 0 12px">结营时间落在薪酬核算月份的期次参与计算；当期转化率 = 结营组合品净付费人数 ÷ 所选等级线索数 × 100%<br>按学段（初中 / 小学）分开排名，学段以期次结营最后一天所在学段为准；转化率相同按当期线索转化订单金额排序；其他学段不参与</div>
+       <div class="tip-text" style="margin:12px 0 12px">结营时间落在薪酬核算月份的期次参与计算；当期转化率 = 结营组合品净付费人数 ÷ 该期次「当期转化考核等级」范围内的线索数 × 100%；考核等级在「配置 → 线索投放计划」中按期次配置<br>按学段（初中 / 小学）分开排名，学段以期次结营最后一天所在学段为准；转化率相同按当期线索转化订单金额排序；其他学段不参与</div>
        <div class="flex-end"><button class="btn btn-primary" onclick="openConv()">＋ 新增</button></div>${table(ccols, rows)}`, '', 'tgtConv')
     + `<div class="footer-buttons"><button class="btn" onclick="resetCfg('bonus')">重置</button><button class="btn btn-primary" onclick="saveBonus()">保存</button></div>`;
 }
-function toggleConvLevel(l, on) {
-  const list = state.cfg.bonus.convLevels;
-  if (on && !list.includes(l)) list.push(l);
-  if (!on) list.splice(list.indexOf(l), 1);
-}
 function saveBonus() {
-  if (!state.cfg.bonus.convLevels.length) { toast('请至少选择一个统计线索等级', 'warning'); return; }
   const nk = state.cfg.bonus.newKing;
   if ((nk.gmv === null) !== (nk.bonus === null)) { toast(nk.gmv === null ? '请填写新人王奖励的GMV门槛' : '请填写新人王奖励的奖金', 'warning'); return; }
   saveCfg('bonus');
@@ -2064,6 +2067,75 @@ function renderMonthGoal() {
   </div></div>`;
 }
 
+/* ==================== 配置 → 线索投放计划 ==================== */
+state.plan = { page: 1 };
+function planPage(p) { state.plan.page = p; render(); }
+function renderLeadPlan() {
+  const list = [...LEAD_PLANS].sort((a, b) => b.p - a.p);
+  const rows = list.slice((state.plan.page - 1) * 10, state.plan.page * 10);
+  const cols = [
+    { title: '线索周期', minWidth: 300, render: x => `${fmtDT(x.start)} 至 ${fmtDT(x.end)}` },
+    { title: '结营日期', minWidth: 170, render: x => fmtDT(x.close) },
+    { title: '期次', minWidth: 80, field: 'p' },
+    { title: '目标线索总量', minWidth: 110, field: 'expects' },
+    { title: '当期转化考核等级', minWidth: 200, render: x => x.levels.map(l => l + '级').join('、') },
+    { title: '操作', width: 220, fixed: 'right', render: x => `<button class="link" onclick="openPlanForm(${x.p})">编辑</button><button class="link" onclick="toast('原型不演示线索分配规则','info')">线索分配规则</button><button class="link" onclick="openPlanForm(${x.p},true)">复制</button>` }
+  ];
+  return `<div class="page"><div class="card">
+    <div style="margin-bottom:14px"><button class="btn btn-primary" onclick="openPlanForm()">＋ 新增线索投放计划</button></div>
+    <div id="tgtPlanTable">${table(cols, rows)}</div>
+    ${pager(list.length, state.plan.page, 'planPage')}
+  </div></div>`;
+}
+let PF = null;
+function openPlanForm(p, copy) {
+  const src = p ? LEAD_PLANS.find(x => x.p === p) : null;
+  const toLocal = d => `${fmtD(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  PF = {
+    editP: src && !copy ? src.p : null,
+    start: src ? toLocal(src.start) : '', end: src ? toLocal(src.end) : '',
+    p: src && !copy ? String(src.p) : '', expects: src ? String(src.expects) : '',
+    close: src ? fmtD(src.close) : '', openType: src ? src.openType : 1,
+    levels: src ? [...src.levels] : ['S', 'A', 'B', 'C', 'E', 'I']
+  };
+  openDialog({
+    key: 'planForm', title: '期数配置', width: 620,
+    body: () => `
+      <div class="f-row"><div class="f-label req">线索周期</div><div class="f-ctrl"><input type="datetime-local" class="el-input" style="width:200px" value="${PF.start}" onchange="PF.start=this.value"><span>至</span><input type="datetime-local" class="el-input" style="width:200px" value="${PF.end}" onchange="PF.end=this.value"></div></div>
+      <div class="f-row"><div class="f-label req">期次</div><div class="f-ctrl"><input class="el-input full" placeholder="请输入期次" value="${PF.p}" oninput="PF.p=this.value"></div></div>
+      <div class="f-row"><div class="f-label req">目标线索总量</div><div class="f-ctrl"><input type="number" class="el-input full" placeholder="请输入目标线索总量" value="${PF.expects}" oninput="PF.expects=this.value"></div></div>
+      <div class="f-row"><div class="f-label req">结营时间</div><div class="f-ctrl"><input type="date" class="el-input" style="width:200px" value="${PF.close}" onchange="PF.close=this.value"><input class="el-input" style="width:100px" value="23:59:59" disabled></div></div>
+      <div class="f-row"><div class="f-label">说明</div><div class="f-ctrl" style="line-height:1.6">购买信息商品在该时间段内的用户，将被系统标记为n期用户，当期计划投放线索数量；投放开始时间为当期开始时间</div></div>
+      <div class="f-row"><div class="f-label req">开课方式</div><div class="f-ctrl"><div class="radio-group">
+        <label><input type="radio" name="pfOpen" ${PF.openType === 1 ? 'checked' : ''} onchange="PF.openType=1">手动开课</label>
+        <label><input type="radio" name="pfOpen" ${PF.openType === 2 ? 'checked' : ''} onchange="PF.openType=2">定时开课</label>
+      </div></div></div>
+      <div class="f-row" id="tgtPlanLevels"><div class="f-label req">当期转化考核等级</div><div class="f-ctrl">
+        <div class="check-grid">${LEAD_GRADES.map(l => `<label><input type="checkbox" ${PF.levels.includes(l) ? 'checked' : ''} onchange="togglePlanLevel('${l}',this.checked)">${l}级</label>`).join('')}</div>
+        <div class="f-hint">薪酬统计当期转化率排名时，按所选等级范围统计该期次线索数（转化率分母）</div>
+      </div></div>`,
+    footer: () => `<button class="btn btn-primary" onclick="savePlan()">确定</button><button class="btn" onclick="closeDialog('planForm')">取消</button>`
+  });
+}
+function togglePlanLevel(l, on) {
+  if (on && !PF.levels.includes(l)) PF.levels.push(l);
+  if (!on) PF.levels = PF.levels.filter(x => x !== l);
+  PF.levels.sort((a, b) => LEAD_GRADES.indexOf(a) - LEAD_GRADES.indexOf(b));
+}
+function savePlan() {
+  if (!PF.start || !PF.end) { toast('线索周期不能为空', 'warning'); return; }
+  if (!PF.p) { toast('期次不能为空', 'warning'); return; }
+  if (!PF.expects) { toast('目标线索总量不能为空', 'warning'); return; }
+  if (!PF.close) { toast('请选择结营时间', 'warning'); return; }
+  if (!PF.levels.length) { toast('请至少选择一个当期转化考核等级', 'warning'); return; }
+  const p = Number(PF.p);
+  if (LEAD_PLANS.some(x => x.p === p && x.p !== PF.editP)) { toast('该期次已存在', 'warning'); return; }
+  const [cy, cm, cd] = PF.close.split('-').map(Number);
+  const data = { p, start: new Date(PF.start), end: new Date(PF.end), close: new Date(cy, cm - 1, cd, 23, 59, 59), expects: Number(PF.expects), openType: PF.openType, levels: [...PF.levels] };
+  if (PF.editP !== null) Object.assign(LEAD_PLANS.find(x => x.p === PF.editP), data); else LEAD_PLANS.push(data);
+  closeDialog('planForm'); if (state.sal.list.length) searchSalary(false); toast('保存成功'); render();
+}
+
 /* ==================== 启动 ==================== */
 searchSalary(false);
 searchAtt(false);
@@ -2344,7 +2416,7 @@ window.DIFF_CHANGESET = {
       "title": "新增当期转化率奖金配置",
       "desc": "结营在薪酬月份内的每个期次单独排名，初中、小学分开排名，满足转化率与订单数门槛才参与；不同学段不同名次奖金可配置，同月多个期次奖金累加。",
       "before": "无此功能",
-      "after": "参与门槛、统计线索等级、学段名次奖金可配置",
+      "after": "参与门槛、学段名次奖金可配置；统计线索等级按期次读取「线索投放计划」的当期转化考核等级",
       "examples": [
         "小学某坐席：2610-1期 转化率 26.32%（5单）第1名 800 元；2610-3期 转化率 5.56% 未达门槛"
       ],
@@ -2588,6 +2660,29 @@ window.DIFF_CHANGESET = {
         "section": "7.2.7 月度目标配置",
         "blockId": "doxcnas6IAJf795W0cp5lZBrgRe"
       }
+    },
+    {
+      "id": "chg-25",
+      "page": "线索投放计划",
+      "module": "当期转化考核等级",
+      "target": "#tgtPlanLevels",
+      "view": {
+        "page": "leadPlan",
+        "dialog": "planForm"
+      },
+      "level": "field",
+      "type": "new",
+      "title": "期数配置新增「当期转化考核等级」",
+      "desc": "「配置 → 线索投放计划」的期数配置新增必填多选字段「当期转化考核等级」，列表同步展示；薪酬统计当期转化率排名时按期次读取该等级范围统计线索数（转化率分母）。",
+      "before": "无此字段；统计线索等级在坐席薪酬配置 → 奖金中统一配置",
+      "after": "每个期次单独配置考核等级，默认 S、A、B、C、E、I",
+      "examples": [
+        "某期次只勾选 S、A、B 级：该期次转化率 = 结营组合品净付费人数 ÷ S、A、B 级线索数"
+      ],
+      "prd": {
+        "section": "7.2.8 线索投放计划",
+        "blockId": "doxcnjWfoRQi2T0rv5Dc2lfd5cf"
+      }
     }
   ]
 };
@@ -2604,7 +2699,8 @@ window.DIFF_HOOKS = {
     var dialogs = {
       salDetail: function () { if (state.sal.list.length) openSalaryDetail(state.sal.list[0].workerId); },
       declForm: function () { openDeclForm(); },
-      audit: function () { var r = DECL_LIST.filter(declInScope).filter(canAudit)[0]; if (r) openAudit(r.id); }
+      audit: function () { var r = DECL_LIST.filter(declInScope).filter(canAudit)[0]; if (r) openAudit(r.id); },
+      planForm: function () { openPlanForm(LEAD_PLANS[0].p); }
     };
     if (v.dialog && dialogs[v.dialog]) dialogs[v.dialog]();
   },
