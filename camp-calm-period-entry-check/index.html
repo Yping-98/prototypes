@@ -327,8 +327,8 @@ window.DIFF_CHANGESET = {
         "体验营服务期中：无冷静期"
       ],
       "prd": {
-        "section": "7.1 冷静期状态",
-        "blockId": "doxcnm6JQPcZEgfEOVKAfldk5se"
+        "section": "7.1.1 冷静期状态",
+        "blockId": "doxcnckuH7WLi2AbC3oG3JxSEiw"
       }
     },
     {
@@ -353,14 +353,14 @@ window.DIFF_CHANGESET = {
         "体验营服务期中：不展示该字段"
       ],
       "prd": {
-        "section": "7.2 录入判断",
-        "blockId": "doxcny5GIMCQPvxrAytq4frHZ9e"
+        "section": "7.1.2 录入判断",
+        "blockId": "doxcnWmsYEJCrS8ApSqEDCQVCPg"
       }
     },
     {
       "id": "chg-3",
       "page": "客户管理-当期客户",
-      "module": "单个录入客户",
+      "module": "当期客户单个录入",
       "target": "#tgtOneSubmit",
       "view": {
         "page": "current",
@@ -368,17 +368,17 @@ window.DIFF_CHANGESET = {
       },
       "level": "module",
       "type": "logic",
-      "title": "单个录入新增服务期冷静期拦截",
-      "desc": "当期客户、数据库的单个录入，提交时线索在服务期冷静期中则禁止录入，提示「该线索在服务期冷静期中，无法录入。」，弹窗保留不关闭。",
-      "before": "不校验服务期冷静期，录入后申领不到体验营服务期，或提示的原因不明确",
+      "title": "当期客户单个录入新增服务期冷静期拦截",
+      "desc": "提交时线索在服务期冷静期中则禁止录入，提示「该线索在服务期冷静期中，无法录入。」，弹窗保留不关闭。",
+      "before": "不校验服务期冷静期，可录入成功，但申领不到体验营服务期",
       "after": "禁止录入，提示「该线索在服务期冷静期中，无法录入。」",
       "examples": [
         "录入 13800000001：提示「该线索在服务期冷静期中，无法录入。」",
         "录入 13800000003：录入成功"
       ],
       "prd": {
-        "section": "7.3 单个录入客户",
-        "blockId": "doxcncHQ7VcDgi1E2lS1voFpfQf"
+        "section": "7.2.1 单个录入客户",
+        "blockId": "doxcnNldIjEY2j0tkXIcTMs3MSh"
       }
     },
     {
@@ -400,12 +400,35 @@ window.DIFF_CHANGESET = {
         "导入结果中 13800000001 一行为失败，原因为该线索在服务期冷静期中，无法录入。"
       ],
       "prd": {
-        "section": "7.4 批量导入",
-        "blockId": "doxcnNaSGecjSkcxHDE3zQZn9ag"
+        "section": "7.2.2 批量导入",
+        "blockId": "doxcn6OyIieixeWnfSz3MCKUHNg"
       }
     },
     {
       "id": "chg-5",
+      "page": "客户管理-数据库",
+      "module": "数据库单个录入",
+      "target": "#tgtOneSubmit",
+      "view": {
+        "page": "pool",
+        "dialog": "one"
+      },
+      "level": "module",
+      "type": "logic",
+      "title": "数据库单个录入新增服务期冷静期拦截",
+      "desc": "提交时线索在服务期冷静期中则禁止录入，提示「该线索在服务期冷静期中，无法录入。」，弹窗保留不关闭。",
+      "before": "未单独校验服务期冷静期，失败时提示的原因不明确",
+      "after": "禁止录入，提示「该线索在服务期冷静期中，无法录入。」",
+      "examples": [
+        "录入 13800000001：提示「该线索在服务期冷静期中，无法录入。」"
+      ],
+      "prd": {
+        "section": "7.3.1 单个录入客户",
+        "blockId": "doxcn8dGfYgHyoz6CjMElQReovh"
+      }
+    },
+    {
+      "id": "chg-6",
       "page": "客户管理-数据库",
       "module": "数据库批量导入",
       "target": "#tgtPoolBatchResult",
@@ -423,8 +446,8 @@ window.DIFF_CHANGESET = {
         "下载明细中 13800000001 一行导入结果为该线索在服务期冷静期中，无法录入。"
       ],
       "prd": {
-        "section": "7.4 批量导入",
-        "blockId": "doxcnNaSGecjSkcxHDE3zQZn9ag"
+        "section": "7.3.2 批量导入",
+        "blockId": "doxcnSd910JCNLCrzXoH3tKxOWf"
       }
     }
   ]
