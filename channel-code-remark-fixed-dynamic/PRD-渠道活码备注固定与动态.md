@@ -69,7 +69,7 @@ flowchart TD
 
 ## 六、可交互原型
 
-在线预览：部署完成后回填
+在线预览：[点击查看可交互原型](https://pages.yc345.tv/yping-c78bba/channel-code-remark-fixed-dynamic/)
 
 > 原型为带变更批注的可交互 HTML 页面。打开即可看到本次变更编号；收起右侧批注栏后连线隐藏，点击编号会重新打开批注。
 
