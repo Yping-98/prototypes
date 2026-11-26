@@ -112,6 +112,7 @@ body { font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans G
 .el-radio input, .el-check input { accent-color: #409eff; width: 14px; height: 14px; cursor: pointer; }
 .el-radio.checked, .el-check.checked { color: #409eff; }
 .paytype-box { display: inline-block; padding: 4px 10px; border-radius: 4px; border: 1px dashed #409eff; background: #f5faff; }
+.paytype-hint { color: #909399; font-size: 12px; line-height: 18px; margin-top: 5px; }
 .err-tip { color: #f56c6c; font-size: 12px; line-height: 18px; margin-top: 4px; }
 .sel-box { display: inline-flex; align-items: center; justify-content: space-between; min-width: 240px; height: 32px; padding: 0 10px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; color: #606266; font-size: 13px; cursor: pointer; }
 .sel-box::after { content: "⌄"; color: #c0c4cc; margin-left: 12px; }
@@ -312,6 +313,7 @@ body { font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans G
                       <div class="paytype-box">
                         <div class="check-group" data-pay-group="ts_addpad"></div>
                       </div>
+                      <div class="paytype-hint">「花呗分期」与「花呗分期（支付宝直连）」不可同时选择</div>
                       <div class="err-tip" data-err="ts_addpad"></div>
                     </div>
                   </div>
@@ -487,6 +489,7 @@ body { font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans G
                     <div class="paytype-box" id="tgtTelesaleMobilePayTypes">
                       <div class="check-group" data-pay-group="ts_mob_push"></div>
                     </div>
+                    <div class="paytype-hint">「花呗分期」与「花呗分期（支付宝直连）」不可同时选择</div>
                     <div class="err-tip" data-err="ts_mob_push"></div>
                   </div>
                 </div>
@@ -516,6 +519,7 @@ body { font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans G
                     <div class="paytype-box">
                       <div class="check-group" data-pay-group="ts_mob_qr"></div>
                     </div>
+                    <div class="paytype-hint">「花呗分期」与「花呗分期（支付宝直连）」不可同时选择</div>
                     <div class="err-tip" data-err="ts_mob_qr"></div>
                   </div>
                 </div>
@@ -751,6 +755,7 @@ body { font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans G
           <div class="paytype-box" id="tgtTelesalePayTypes">
             <div class="check-group" data-pay-group="ts_pp"></div>
           </div>
+          <div class="paytype-hint">「花呗分期」与「花呗分期（支付宝直连）」不可同时选择</div>
           <div class="err-tip" data-err="ts_pp"></div>
         </div>
       </div>
@@ -790,6 +795,7 @@ body { font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans G
           <div class="paytype-box" id="tgtTelesalePcQrcodeTypes">
             <div class="check-group" data-pay-group="ts_qr"></div>
           </div>
+          <div class="paytype-hint">「花呗分期」与「花呗分期（支付宝直连）」不可同时选择</div>
           <div class="err-tip" data-err="ts_qr"></div>
         </div>
       </div>
@@ -842,6 +848,7 @@ body { font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans G
           <div class="paytype-box" id="tgtCampPushPayTypes">
             <div class="check-group" data-pay-group="cp_pp"></div>
           </div>
+          <div class="paytype-hint">「花呗分期」与「花呗分期（支付宝直连）」不可同时选择</div>
           <div class="err-tip" data-err="cp_pp"></div>
         </div>
       </div>
@@ -878,6 +885,7 @@ body { font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans G
           <div class="paytype-box" id="tgtCampRenewalPayTypes">
             <div class="check-group" data-pay-group="cp_qr"></div>
           </div>
+          <div class="paytype-hint">「花呗分期」与「花呗分期（支付宝直连）」不可同时选择</div>
           <div class="err-tip" data-err="cp_qr"></div>
         </div>
       </div>
@@ -1325,9 +1333,9 @@ body { font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans G
         level: "field",
         type: "enum",
         title: "电销CRM支付推送弹窗分期支付方式新增枚举与互斥",
-        desc: "分期支付方式新增「花呗分期（支付宝直连）」选项，排序在「花呗分期」之后、「信用卡分期」之前；「花呗分期」与「花呗分期（支付宝直连）」互斥，勾选其一自动取消另一项，「信用卡分期」可与任意一项同时勾选。",
-        before: "仅展示「花呗分期」「信用卡分期」2个选项，可同时勾选",
-        after: "展示「花呗分期」「花呗分期（支付宝直连）」「信用卡分期」3个选项，默认仍选中「花呗分期」；前两项互斥不可同选，均支持与「信用卡分期」组合选择",
+        desc: "分期支付方式新增「花呗分期（支付宝直连）」选项，排序在「花呗分期」之后、「信用卡分期」之前，选项下方展示提示文案「「花呗分期」与「花呗分期（支付宝直连）」不可同时选择」；「花呗分期」与「花呗分期（支付宝直连）」互斥，勾选其一自动取消另一项，「信用卡分期」可与任意一项同时勾选。",
+        before: "仅展示「花呗分期」「信用卡分期」2个选项，可同时勾选，下方无互斥提示",
+        after: "展示「花呗分期」「花呗分期（支付宝直连）」「信用卡分期」3个选项，默认仍选中「花呗分期」，下方展示提示「「花呗分期」与「花呗分期（支付宝直连）」不可同时选择」；前两项互斥不可同选，均支持与「信用卡分期」组合选择",
         examples: [
           "已选「花呗分期」时点击「花呗分期（支付宝直连）」：自动取消「花呗分期」，仅保留「花呗分期（支付宝直连）」",
           "已选「花呗分期（支付宝直连）」时点击「花呗分期」：自动取消「花呗分期（支付宝直连）」",
@@ -1344,9 +1352,9 @@ body { font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans G
         level: "module",
         type: "enum",
         title: "电销CRM PC端其余7处分期入口同步新增枚举与互斥",
-        desc: "补差续购查询动态二维码弹窗（补差/会场与续购两类）、客户详情加购学习机页签、AI外呼续购动态二维码弹窗、差价查询（新）动态二维码弹窗、专属链接（新）动态二维码弹窗及创建会场链接（新）弹窗，全部同步新增「花呗分期（支付宝直连）」及互斥交互。",
-        before: "各弹窗/页签仅展示「花呗分期」「信用卡分期」2个选项",
-        after: "各弹窗/页签统一展示「花呗分期」「花呗分期（支付宝直连）」「信用卡分期」3个选项，沿用默认选中「花呗分期」及两项花呗互斥规则",
+        desc: "补差续购查询动态二维码弹窗（补差/会场与续购两类）、客户详情加购学习机页签、AI外呼续购动态二维码弹窗、差价查询（新）动态二维码弹窗、专属链接（新）动态二维码弹窗及创建会场链接（新）弹窗，全部同步新增「花呗分期（支付宝直连）」、下方互斥提示文案及互斥交互。",
+        before: "各弹窗/页签仅展示「花呗分期」「信用卡分期」2个选项，下方无互斥提示",
+        after: "各弹窗/页签统一展示「花呗分期」「花呗分期（支付宝直连）」「信用卡分期」3个选项，下方展示「「花呗分期」与「花呗分期（支付宝直连）」不可同时选择」，沿用默认选中「花呗分期」及两项花呗互斥规则",
         examples: [
           "补差续购查询-生成动态二维码弹窗：选项与互斥逻辑一致",
           "专属链接（新）-创建会场链接（新）弹窗：选项与互斥逻辑一致"
@@ -1362,9 +1370,9 @@ body { font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans G
         level: "module",
         type: "enum",
         title: "电销CRM移动端4处分期入口同步新增枚举与互斥",
-        desc: "移动端客户详情-支付推送页、客户详情-补差/续购动态二维码页、专属链接（新）-动态二维码页及创建会场链接（新）页，全部同步新增「花呗分期（支付宝直连）」及与「花呗分期」互斥逻辑。",
-        before: "移动端各页面仅展示「花呗分期」「信用卡分期」2个选项",
-        after: "移动端各页面统一展示「花呗分期」「花呗分期（支付宝直连）」「信用卡分期」3个选项，两项花呗互斥",
+        desc: "移动端客户详情-支付推送页、客户详情-补差/续购动态二维码页、专属链接（新）-动态二维码页及创建会场链接（新）页，全部同步新增「花呗分期（支付宝直连）」、下方互斥提示文案及与「花呗分期」互斥逻辑。",
+        before: "移动端各页面仅展示「花呗分期」「信用卡分期」2个选项，下方无互斥提示",
+        after: "移动端各页面统一展示「花呗分期」「花呗分期（支付宝直连）」「信用卡分期」3个选项，下方展示「「花呗分期」与「花呗分期（支付宝直连）」不可同时选择」，两项花呗互斥",
         examples: [
           "移动端支付推送页：勾选「花呗分期（支付宝直连）」自动取消「花呗分期」"
         ],
@@ -1379,9 +1387,9 @@ body { font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans G
         level: "field",
         type: "enum",
         title: "体验营CRM支付推送弹窗同步新增枚举与互斥",
-        desc: "体验营客户管理与线索查询共用的支付推送弹窗中，当分期支付选「支持」时，分期支付方式（页签内标签为「支付方式」）新增「花呗分期（支付宝直连）」，并与「花呗分期」互斥。",
-        before: "仅展示「花呗分期」「信用卡分期」2个选项，默认不勾选",
-        after: "展示「花呗分期」「花呗分期（支付宝直连）」「信用卡分期」3个选项，保持默认不勾选，两项花呗互斥",
+        desc: "体验营客户管理与线索查询共用的支付推送弹窗中，当分期支付选「支持」时，分期支付方式（页签内标签为「支付方式」）新增「花呗分期（支付宝直连）」，下方展示互斥提示文案，并与「花呗分期」互斥。",
+        before: "仅展示「花呗分期」「信用卡分期」2个选项，默认不勾选，下方无互斥提示",
+        after: "展示「花呗分期」「花呗分期（支付宝直连）」「信用卡分期」3个选项，保持默认不勾选，下方展示「「花呗分期」与「花呗分期（支付宝直连）」不可同时选择」，两项花呗互斥",
         examples: [
           "点击「支持」分期后默认均未勾选，必须至少选1项才可提交",
           "勾选「花呗分期（支付宝直连）」后再点「花呗分期」：自动切换为「花呗分期」"
@@ -1397,9 +1405,9 @@ body { font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans G
         level: "module",
         type: "enum",
         title: "体验营CRM补差续购与专属售卖链接弹窗同步更新",
-        desc: "体验营补差续购查询（补差/会场动态二维码弹窗、续购动态二维码弹窗）以及专属售卖链接（动态二维码弹窗、创建动态会场二维码弹窗）全部同步新增「花呗分期（支付宝直连）」及互斥规则。",
-        before: "各弹窗仅展示「花呗分期」「信用卡分期」2个选项",
-        after: "各弹窗统一展示「花呗分期」「花呗分期（支付宝直连）」「信用卡分期」3个选项，沿用各自默认值与必填校验，两项花呗互斥",
+        desc: "体验营补差续购查询（补差/会场动态二维码弹窗、续购动态二维码弹窗）以及专属售卖链接（动态二维码弹窗、创建动态会场二维码弹窗）全部同步新增「花呗分期（支付宝直连）」、下方互斥提示文案及互斥规则。",
+        before: "各弹窗仅展示「花呗分期」「信用卡分期」2个选项，下方无互斥提示",
+        after: "各弹窗统一展示「花呗分期」「花呗分期（支付宝直连）」「信用卡分期」3个选项，下方展示「「花呗分期」与「花呗分期（支付宝直连）」不可同时选择」，沿用各自默认值与必填校验，两项花呗互斥",
         examples: [
           "补差续购-续购动态二维码弹窗：默认选中「花呗分期」，点击直连后自动切换",
           "专属售卖链接-创建动态会场二维码弹窗：实付大于100元且选支持后展示3个选项"
