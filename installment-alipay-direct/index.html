@@ -3,439 +3,890 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>分期支付方式新增花呗直连 - 交互原型</title>
+<title>电销CRM / 体验营CRM - 分期支付方式新增花呗直连</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 14px; color: #303133; background: #f0f2f5; }
-.app-shell { display: flex; flex-direction: column; min-height: 100vh; }
-.sys-nav { background: #fff; border-bottom: 1px solid #e4e7ed; padding: 0 20px; display: flex; align-items: center; gap: 8px; height: 48px; flex-wrap: wrap; position: sticky; top: 0; z-index: 100; }
-.sys-brand { font-weight: 600; color: #1d2129; margin-right: 12px; font-size: 15px; }
-.sys-tab { height: 32px; padding: 0 14px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; color: #606266; cursor: pointer; font-size: 13px; transition: all .15s; }
-.sys-tab:hover { color: #409eff; border-color: #c6e2ff; background: #ecf5ff; }
-.sys-tab.active { background: #409eff; color: #fff; border-color: #409eff; }
-#diffPage { flex: 1; padding: 20px; position: relative; overflow: auto; }
-.view-panel { display: none; max-width: 980px; }
-.view-panel.active { display: block; }
+body { font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif; font-size: 14px; color: #303133; background: #f0f2f5; }
+.crm-layout { display: flex; min-height: 100vh; }
 
-/* Dialog / Card Wireframe matching Element Plus */
-.el-dialog-card { background: #fff; border-radius: 4px; box-shadow: 0 2px 12px rgba(0,0,0,.08); border: 1px solid #ebeef5; overflow: hidden; }
-.el-dialog-hd { padding: 16px 20px; font-size: 16px; color: #303133; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f2f6fc; }
-.el-dialog-hd .close-x { color: #909399; font-size: 16px; cursor: default; }
-.el-tabs-bar { display: flex; border-bottom: 2px solid #e4e7ed; padding: 0 20px; background: #fff; }
-.el-tab-item { padding: 10px 18px 10px 0; margin-right: 16px; font-size: 14px; color: #303133; cursor: pointer; position: relative; }
-.el-tab-item.active { color: #409eff; font-weight: 500; }
-.el-tab-item.active::after { content: ""; position: absolute; left: 0; right: 18px; bottom: -2px; height: 2px; background: #409eff; }
-.el-dialog-bd { padding: 16px 24px 20px; }
-.notice-bar { background: #ecf5fd; color: #303133; padding: 10px 14px; font-size: 13px; font-weight: 600; border-radius: 2px; margin-bottom: 18px; line-height: 1.5; }
-.form-row { display: flex; align-items: flex-start; margin-bottom: 16px; min-height: 32px; }
-.form-lb { width: 170px; text-align: right; padding-right: 12px; color: #606266; line-height: 32px; flex-shrink: 0; font-size: 14px; }
-.form-lb .req { color: #f56c6c; margin-right: 4px; }
-.form-ctl { flex: 1; min-width: 0; line-height: 32px; }
-.el-input-ro { width: 100%; max-width: 560px; height: 32px; line-height: 30px; padding: 0 12px; background: #f5f7fa; border: 1px solid #e4e7ed; border-radius: 4px; color: #a8abb2; font-size: 13px; }
-.el-select-ro { display: inline-flex; align-items: center; justify-content: space-between; min-width: 240px; height: 32px; padding: 0 12px; border: 1px solid #dcdfe6; border-radius: 4px; color: #606266; background: #fff; font-size: 13px; }
-.el-select-ro::after { content: "▾"; color: #c0c4cc; margin-left: 12px; }
+/* Left Sidebar matching wuhan__telesale-web_v2 (#001529 & #002140 & #4091f7) */
+.sidebar { width: 210px; background: #001529; color: rgba(254,254,254,.65); flex-shrink: 0; display: flex; flex-direction: column; user-select: none; }
+.sidebar-logo { height: 48px; background: #002140; display: flex; align-items: center; padding: 0 14px; gap: 10px; color: #fff; font-weight: 600; font-size: 15px; }
+.logo-mark { width: 26px; height: 26px; border-radius: 6px; background: linear-gradient(135deg,#409eff,#2563eb); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; color: #fff; font-weight: 700; }
+.sys-switch-side { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; gap: 4px; }
+.sys-pill { flex: 1; height: 26px; border: 1px solid rgba(255,255,255,.18); border-radius: 4px; background: transparent; color: rgba(255,255,255,.72); font-size: 11px; cursor: pointer; }
+.sys-pill.active { background: #4091f7; border-color: #4091f7; color: #fff; font-weight: 600; }
+.menu-scroll { flex: 1; padding: 6px 0; overflow-y: auto; }
+.menu-group-title { height: 44px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; color: rgba(254,254,254,.78); font-size: 13px; cursor: default; }
+.menu-item { height: 42px; padding: 0 16px 0 34px; display: flex; align-items: center; font-size: 13px; color: rgba(254,254,254,.65); cursor: pointer; transition: background .15s, color .15s; }
+.menu-item:hover { color: #fff; background: rgba(64,145,247,.18); }
+.menu-item.active { background: #4091f7; color: #fff; font-weight: 500; }
 
-.radio-group, .check-group { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; min-height: 32px; }
-.el-radio, .el-check { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; color: #606266; user-select: none; }
+/* Main Container */
+.main-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.navbar { height: 48px; background: #fff; border-bottom: 1px solid #ebeef5; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
+.nav-left { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #606266; }
+.hamburger { font-size: 16px; color: #606266; cursor: default; }
+.breadcrumb { display: flex; align-items: center; gap: 6px; color: #97a8be; }
+.breadcrumb .cur { color: #303133; }
+.nav-right { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #606266; }
+.nav-chip { background: #ecf5ff; color: #409eff; border: 1px solid #d9ecff; border-radius: 12px; padding: 2px 10px; font-size: 12px; cursor: pointer; }
+.nav-chip.on { background: #409eff; color: #fff; border-color: #409eff; }
+.tags-view { height: 34px; background: #fff; border-bottom: 1px solid #d8dce5; padding: 0 16px; display: flex; align-items: center; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.tag-item { height: 26px; padding: 0 10px; border: 1px solid #d8dce5; border-radius: 2px; font-size: 12px; color: #495060; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; background: #fff; }
+.tag-item.active { background: #409eff; border-color: #409eff; color: #fff; }
+.tag-item.active::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #fff; display: inline-block; }
+
+#diffPage { flex: 1; padding: 14px; position: relative; overflow: auto; }
+.page-view { display: none; }
+.page-view.active { display: block; }
+
+/* Element Plus Authentic Components */
+.el-card { background: #fff; border: 1px solid #ebeef5; border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,.04); margin-bottom: 12px; }
+.el-card-hd { padding: 12px 18px; border-bottom: 1px solid #ebeef5; font-size: 15px; font-weight: 600; color: #303133; display: flex; align-items: center; justify-content: space-between; }
+.el-card-bd { padding: 16px 18px; }
+
+.btn { height: 32px; padding: 0 14px; border-radius: 4px; border: 1px solid #dcdfe6; background: #fff; color: #606266; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; }
+.btn:hover { color: #409eff; border-color: #c6e2ff; background: #ecf5ff; }
+.btn.primary { background: #409eff; border-color: #409eff; color: #fff; }
+.btn.primary:hover { background: #66b1ff; border-color: #66b1ff; color: #fff; }
+.btn.plain-primary { background: #ecf5ff; border-color: #b3d8ff; color: #409eff; }
+.btn.plain-primary:hover { background: #409eff; border-color: #409eff; color: #fff; }
+.btn.link { border: 0; background: transparent; color: #409eff; height: auto; padding: 2px 6px; }
+.btn.link:hover { color: #66b1ff; background: transparent; }
+.btn.sm { height: 26px; padding: 0 10px; font-size: 12px; }
+
+/* ButtonBar in Customer Detail V2 */
+.button-bar { background: #fff; border: 1px solid #ebeef5; border-radius: 4px; padding: 8px 16px; margin-bottom: 10px; display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.bb-group { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bb-label { font-weight: 700; color: #606266; font-size: 13px; }
+
+/* Descriptions Grid */
+.desc-grid { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid #ebeef5; border-left: 1px solid #ebeef5; }
+.desc-cell { border-right: 1px solid #ebeef5; border-bottom: 1px solid #ebeef5; padding: 9px 12px; font-size: 13px; display: flex; gap: 8px; }
+.desc-cell .dlb { color: #909399; width: 108px; flex-shrink: 0; }
+.desc-cell .dval { color: #303133; min-width: 0; }
+
+/* Tabs */
+.el-tabs-line { display: flex; border-bottom: 2px solid #e4e7ed; padding: 0 16px; background: #fff; gap: 22px; overflow-x: auto; }
+.el-tab { height: 40px; line-height: 40px; font-size: 14px; color: #303133; cursor: pointer; position: relative; white-space: nowrap; }
+.el-tab.active { color: #409eff; font-weight: 500; }
+.el-tab.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; background: #409eff; }
+.tab-pane { padding: 16px 18px; }
+.sub-inner-tabs { padding: 10px 18px 0; background: #fff; }
+
+/* Filter Form & Table */
+.filter-form { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-bottom: 14px; }
+.ff-item { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #606266; }
+.el-ipt, .el-sel { height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 10px; font-size: 13px; color: #606266; background: #fff; min-width: 155px; }
+.el-ipt.ro { background: #f5f7fa; color: #a8abb2; width: 100%; max-width: 520px; }
+.el-tbl { width: 100%; border-collapse: collapse; font-size: 13px; border: 1px solid #ebeef5; }
+.el-tbl th, .el-tbl td { border: 1px solid #ebeef5; padding: 9px 10px; text-align: left; }
+.el-tbl th { background: #f5f7fa; color: #606266; font-weight: 600; }
+.el-tbl td.center, .el-tbl th.center { text-align: center; }
+.el-tag { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 12px; border: 1px solid; }
+.el-tag.warning { background: #fdf6ec; border-color: #f5dab1; color: #e6a23c; }
+.el-tag.success { background: #f0f9eb; border-color: #c2e7b0; color: #67c23a; }
+.el-tag.primary { background: #ecf5ff; border-color: #b3d8ff; color: #409eff; }
+
+/* Dialog Modal Overlay (real CRM modal inside workspace) */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 4000; display: none; align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto; }
+.modal-backdrop.open { display: flex; }
+.el-dialog { background: #fff; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,.18); width: 780px; max-width: calc(100vw - 400px); overflow: hidden; margin-right: 160px; }
+.el-dialog.sm { width: 620px; }
+.el-dialog-hd { padding: 15px 20px; font-size: 16px; color: #303133; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f2f6fc; }
+.el-dialog-close { border: 0; background: transparent; color: #909399; font-size: 16px; cursor: pointer; padding: 2px 6px; }
+.el-dialog-close:hover { color: #409eff; }
+.el-dialog-tabs { display: flex; border-bottom: 2px solid #e4e7ed; padding: 0 20px; gap: 22px; }
+.el-dialog-bd { padding: 16px 22px 18px; max-height: 72vh; overflow-y: auto; }
+.el-dialog-ft { padding: 12px 22px 16px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f2f6fc; }
+
+/* Form inside dialogs & AddPad tab */
+.notice-banner { background: #ecf5fd; padding: 10px 12px; font-size: 13px; font-weight: 700; color: #303133; margin-bottom: 16px; line-height: 1.5; border-radius: 2px; }
+.form-row { display: flex; align-items: flex-start; margin-bottom: 15px; }
+.form-lb { width: 158px; text-align: right; padding-right: 12px; color: #606266; line-height: 32px; flex-shrink: 0; font-size: 13px; }
+.form-lb .req { color: #f56c6c; margin-right: 3px; }
+.form-ctl { flex: 1; min-width: 0; line-height: 32px; font-size: 13px; }
+.radio-group, .check-group { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; min-height: 32px; }
+.el-radio, .el-check { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; color: #606266; user-select: none; }
 .el-radio input, .el-check input { accent-color: #409eff; width: 14px; height: 14px; cursor: pointer; }
 .el-radio.checked, .el-check.checked { color: #409eff; }
-.highlight-box { display: inline-block; padding: 4px 10px; border-radius: 4px; border: 1px dashed #409eff; background: #f5faff; }
+.paytype-box { display: inline-block; padding: 4px 10px; border-radius: 4px; border: 1px dashed #409eff; background: #f5faff; }
 .err-tip { color: #f56c6c; font-size: 12px; line-height: 18px; margin-top: 4px; }
-.param-preview { margin-top: 8px; padding: 6px 10px; background: #f4f4f5; border-radius: 4px; font-size: 12px; color: #606266; display: inline-block; }
+.sel-box { display: inline-flex; align-items: center; justify-content: space-between; min-width: 240px; height: 32px; padding: 0 10px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; color: #606266; font-size: 13px; cursor: pointer; }
+.sel-box::after { content: "⌄"; color: #c0c4cc; margin-left: 12px; }
 
-.el-dialog-ft { padding: 12px 24px 18px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f2f6fc; }
-.btn { height: 32px; padding: 0 16px; border-radius: 4px; border: 1px solid #dcdfe6; background: #fff; color: #606266; font-size: 13px; cursor: pointer; }
-.btn.primary { background: #409eff; border-color: #409eff; color: #fff; }
-.btn.primary:hover { background: #66b1ff; }
-.btn:hover { border-color: #c6e2ff; color: #409eff; }
-.btn.primary:hover { color: #fff; }
-
-/* Entry Switcher bar */
-.sub-switcher { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; background: #fff; padding: 12px 16px; border-radius: 4px; border: 1px solid #ebeef5; align-items: center; }
-.sub-switcher .sub-lbl { font-size: 13px; color: #909399; margin-right: 4px; }
-.pill-btn { padding: 5px 12px; border: 1px solid #dcdfe6; border-radius: 16px; background: #fff; color: #606266; font-size: 12px; cursor: pointer; }
-.pill-btn.active { background: #ecf5ff; border-color: #409eff; color: #409eff; font-weight: 500; }
-
-/* Table for location coverage */
-.loc-table-wrap { margin-top: 16px; background: #fff; border: 1px solid #ebeef5; border-radius: 4px; padding: 14px 16px; }
-.loc-table-title { font-size: 14px; font-weight: 600; color: #303133; margin-bottom: 10px; }
-table.loc-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
-table.loc-tbl th, table.loc-tbl td { border: 1px solid #ebeef5; padding: 8px 10px; text-align: left; }
-table.loc-tbl th { background: #f5f7fa; color: #606266; font-weight: 500; }
-table.loc-tbl tr.row-click { cursor: pointer; }
-table.loc-tbl tr.row-click:hover td { background: #f5faff; }
-table.loc-tbl tr.row-active td { background: #ecf5ff; }
-
-/* Mobile Wireframe */
-.mobile-stage { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
-.phone-frame { width: 375px; background: #f7f8fa; border: 10px solid #1f2329; border-radius: 28px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,.12); flex-shrink: 0; }
-.phone-hd { background: #fff; height: 44px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; border-bottom: 1px solid #ebedf0; }
-.phone-notice { background: #ecf5fd; padding: 10px 12px; font-size: 12px; font-weight: 600; line-height: 1.45; color: #323233; }
-.van-group { margin: 12px; background: #fff; border-radius: 8px; overflow: hidden; }
-.van-cell { padding: 11px 14px; border-bottom: 1px solid #f2f3f5; display: flex; align-items: flex-start; gap: 10px; font-size: 13px; }
-.van-cell:last-child { border-bottom: 0; }
-.van-lb { width: 92px; color: #646566; flex-shrink: 0; line-height: 22px; }
+/* Mobile Vant Preview */
+.mobile-wrap { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.phone-shell { width: 375px; background: #f7f8fa; border: 10px solid #1f2329; border-radius: 28px; overflow: hidden; box-shadow: 0 10px 28px rgba(0,0,0,.16); flex-shrink: 0; }
+.phone-nav { height: 44px; background: #fff; border-bottom: 1px solid #ebedf0; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 14px; font-weight: 600; color: #323233; }
+.phone-notice { background: #ecf5fd; padding: 10px 12px; font-size: 12px; font-weight: 700; line-height: 1.45; color: #323233; }
+.van-cell-group { margin: 12px; background: #fff; border-radius: 8px; overflow: hidden; }
+.van-field { padding: 11px 14px; border-bottom: 1px solid #f2f3f5; display: flex; align-items: flex-start; gap: 10px; font-size: 13px; }
+.van-field:last-child { border-bottom: 0; }
+.van-lb { width: 92px; color: #646566; flex-shrink: 0; line-height: 24px; }
 .van-lb .req { color: #ee0a24; margin-right: 2px; }
-.van-val { flex: 1; color: #323233; line-height: 22px; }
-.van-btn-wrap { padding: 14px 16px 20px; }
-.van-btn { width: 100%; height: 40px; border-radius: 20px; border: 0; background: #1989fa; color: #fff; font-size: 14px; cursor: pointer; }
-.mobile-side-list { flex: 1; min-width: 280px; }
+.van-val { flex: 1; color: #323233; line-height: 24px; }
+.van-submit-bar { padding: 14px 16px 18px; display: flex; gap: 10px; }
+.van-btn { flex: 1; height: 40px; border-radius: 20px; border: 0; background: #1989fa; color: #fff; font-size: 14px; cursor: pointer; }
+.van-btn.plain { background: #fff; color: #1989fa; border: 1px solid #1989fa; }
+.phone-bottom-bar { background: #fff; border-top: 1px solid #ebedf0; height: 52px; display: flex; align-items: center; justify-content: space-around; font-size: 12px; color: #646a73; }
+.phone-bottom-bar .act { cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.phone-bottom-bar .act.hi { color: #1989fa; font-weight: 600; }
+.mob-route-card { flex: 1; min-width: 300px; }
+
+/* Experience Camp Descriptions */
+.camp-desc { background: #fff; border: 1px solid #ebeef5; padding: 14px 18px; }
+.camp-desc-row { display: flex; padding: 8px 0; border-bottom: 1px solid #f5f7fa; font-size: 13px; align-items: center; }
+.camp-desc-row:last-child { border-bottom: 0; }
+.camp-desc-lb { width: 110px; color: #909399; flex-shrink: 0; }
 
 /* Toast */
-.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.78); color: #fff; padding: 9px 18px; border-radius: 4px; font-size: 13px; z-index: 9999; display: none; }
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.8); color: #fff; padding: 9px 18px; border-radius: 4px; font-size: 13px; z-index: 9999; display: none; }
 .toast.show { display: block; }
 </style>
 </head>
 <body>
-<div class="app-shell">
-  <header class="sys-nav">
-    <span class="sys-brand">分期支付方式新增「花呗分期（支付宝直连）」</span>
-    <button type="button" class="sys-tab active" data-view="telesale-paypush">电销CRM · 支付推送</button>
-    <button type="button" class="sys-tab" data-view="telesale-others">电销CRM · 其余PC入口 (7处)</button>
-    <button type="button" class="sys-tab" data-view="telesale-mobile">电销CRM · 移动端 (4处)</button>
-    <button type="button" class="sys-tab" data-view="camp-paypush">体验营CRM · 支付推送</button>
-    <button type="button" class="sys-tab" data-view="camp-others">体验营CRM · 续购与售卖链接 (4处)</button>
-  </header>
+<div class="crm-layout">
+  <!-- 左侧导航栏（按电销CRM / 体验营CRM还原） -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-mark" id="sideLogoMark">电</span>
+      <span id="sideLogoText">电销CRM</span>
+    </div>
+    <div class="sys-switch-side">
+      <button type="button" class="sys-pill active" data-sys="telesale">电销CRM</button>
+      <button type="button" class="sys-pill" data-sys="camp">体验营CRM</button>
+    </div>
+    <div class="menu-scroll" id="sideMenuBox">
+      <!-- 动态渲染菜单 -->
+    </div>
+  </aside>
 
-  <main id="diffPage">
-    <!-- 视图1：电销CRM 支付推送弹窗（还原截图） -->
-    <section id="view-telesale-paypush" class="view-panel active">
-      <div class="el-dialog-card">
-        <div class="el-dialog-hd">
-          <span>支付推送-1369664155</span>
-          <span class="close-x">✕</span>
-        </div>
-        <div class="el-tabs-bar">
-          <div class="el-tab-item active" data-pp-tab="push">支付推送</div>
-          <div class="el-tab-item" data-pp-tab="logs">推送记录</div>
-        </div>
-        <div class="el-dialog-bd" id="telesalePushBody">
-          <div class="notice-bar">
-            说明：一天只能推送3次，当日推送的所有商品都会展示在APP【我的购买】中，最新的一条商品会同时展示在【发现页】，推送的商品链接当天24点后过期
-          </div>
-          <div class="form-row">
-            <div class="form-lb"><span class="req">*</span>洋葱ID：</div>
-            <div class="form-ctl"><div class="el-input-ro">206545257</div></div>
-          </div>
-          <div class="form-row">
-            <div class="form-lb"><span class="req">*</span>购买类型：</div>
-            <div class="form-ctl">
-              <div class="radio-group">
-                <label class="el-radio"><input type="radio" name="ts_buyType" disabled> 专属链接</label>
-                <label class="el-radio checked"><input type="radio" name="ts_buyType" checked disabled> 会场链接（新）</label>
-                <label class="el-radio"><input type="radio" name="ts_buyType" disabled> 续购</label>
-              </div>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-lb"><span class="req">*</span>年级：</div>
-            <div class="form-ctl">
-              <div class="radio-group">
-                <label class="el-radio"><input type="radio" name="ts_grade" disabled> 一至三年级</label>
-                <label class="el-radio"><input type="radio" name="ts_grade" disabled> 四年级</label>
-                <label class="el-radio"><input type="radio" name="ts_grade" disabled> 五年级</label>
-                <label class="el-radio checked"><input type="radio" name="ts_grade" checked disabled> 六年级</label>
-                <label class="el-radio"><input type="radio" name="ts_grade" disabled> 七年级</label>
-                <label class="el-radio"><input type="radio" name="ts_grade" disabled> 八年级</label>
-                <label class="el-radio"><input type="radio" name="ts_grade" disabled> 九年级</label>
-                <label class="el-radio"><input type="radio" name="ts_grade" disabled> 高一</label>
-                <label class="el-radio"><input type="radio" name="ts_grade" disabled> 高二</label>
-                <label class="el-radio"><input type="radio" name="ts_grade" disabled> 高三</label>
-                <label class="el-radio"><input type="radio" name="ts_grade" disabled> 多孩家庭包</label>
-              </div>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-lb"><span class="req">*</span>商品：</div>
-            <div class="form-ctl"><div class="el-select-ro">小初全面进阶课（新六年）</div></div>
-          </div>
-          <div class="form-row">
-            <div class="form-lb">加购学习机：</div>
-            <div class="form-ctl">
-              <div class="radio-group">
-                <label class="el-radio checked"><input type="radio" name="ts_pad" checked disabled> 不加购</label>
-                <label class="el-radio"><input type="radio" name="ts_pad" disabled> Q20学习机</label>
-                <label class="el-radio"><input type="radio" name="ts_pad" disabled> P30学习机</label>
-              </div>
-            </div>
-          </div>
-          <div class="form-row"><div class="form-lb">商品原价：</div><div class="form-ctl">¥ 6198.00</div></div>
-          <div class="form-row"><div class="form-lb">商品售价：</div><div class="form-ctl">¥ 4898.00</div></div>
-          <div class="form-row"><div class="form-lb">用户实付价：</div><div class="form-ctl">¥ 4898.00</div></div>
-          <div class="form-row">
-            <div class="form-lb"><span class="req">*</span>分期支付：</div>
-            <div class="form-ctl">
-              <div class="radio-group" data-inst-radio="ts_pp">
-                <label class="el-radio"><input type="radio" name="ts_pp_inst" value="0"> 否</label>
-                <label class="el-radio checked"><input type="radio" name="ts_pp_inst" value="1" checked> 是</label>
-              </div>
-            </div>
-          </div>
-          <div class="form-row" data-inst-row="ts_pp">
-            <div class="form-lb"><span class="req">*</span>分期支付方式：</div>
-            <div class="form-ctl">
-              <div class="highlight-box" id="tgtTelesalePayTypes">
-                <div class="check-group" data-pay-group="ts_pp"></div>
-              </div>
-              <div class="err-tip" data-err="ts_pp"></div>
-              <div class="param-preview" data-preview="ts_pp"></div>
-            </div>
-          </div>
-        </div>
-        <div class="el-dialog-bd" id="telesaleLogsBody" style="display:none; color:#909399; padding: 36px 24px; text-align:center;">
-          当日推送记录列表（本次无变更）
-        </div>
-        <div class="el-dialog-ft">
-          <button type="button" class="btn primary" id="tgtTelesaleSubmitBtn" data-submit="ts_pp">确定</button>
-          <button type="button" class="btn">取消</button>
+  <!-- 右侧主内容区 -->
+  <div class="main-wrap">
+    <header class="navbar">
+      <div class="nav-left">
+        <span class="hamburger">☰</span>
+        <div class="breadcrumb" id="breadcrumbBox">
+          <span>客户管理</span> / <span class="cur">客户详情</span>
         </div>
       </div>
-    </section>
-
-    <!-- 视图2：电销CRM 其余PC入口 -->
-    <section id="view-telesale-others" class="view-panel">
-      <div class="sub-switcher" id="tsOtherPills">
-        <span class="sub-lbl">切换预览入口：</span>
-        <button type="button" class="pill-btn active" data-ts-other="diffQr">补差续购-补差/会场动态二维码弹窗</button>
-        <button type="button" class="pill-btn" data-ts-other="renewalQr">补差续购-续购动态二维码弹窗</button>
-        <button type="button" class="pill-btn" data-ts-other="addPad">客户详情-加购学习机页签</button>
-        <button type="button" class="pill-btn" data-ts-other="aiRenewalQr">AI外呼详情-续购动态二维码弹窗</button>
-        <button type="button" class="pill-btn" data-ts-other="newDiffQr">差价查询(新)-动态二维码弹窗</button>
-        <button type="button" class="pill-btn" data-ts-other="excQr">专属链接(新)-动态二维码弹窗</button>
-        <button type="button" class="pill-btn" data-ts-other="excVenue">专属链接(新)-创建会场链接(新)弹窗</button>
+      <div class="nav-right">
+        <button type="button" class="nav-chip on" data-mode="pc">PC端</button>
+        <button type="button" class="nav-chip" data-mode="mobile" id="btnMobileMode">移动端（企微侧边栏）</button>
+        <span>坐席演示</span>
       </div>
+    </header>
 
-      <div class="el-dialog-card">
-        <div class="el-dialog-hd">
-          <span id="tsOtherTitle">生成动态二维码（补差续购查询-补差/会场行）</span>
-          <span class="close-x">✕</span>
+    <div class="tags-view" id="tagsBar">
+      <!-- 动态标签栏 -->
+    </div>
+
+    <main id="diffPage">
+      <!-- ==================== 电销CRM 1：客户详情 V2 ==================== -->
+      <section id="page-ts-detail" class="page-view active">
+        <div class="button-bar">
+          <div class="bb-group">
+            <span class="bb-label">线索：</span>
+            <button type="button" class="btn sm">释放</button>
+            <button type="button" class="btn sm">转线索</button>
+            <button type="button" class="btn sm">收藏</button>
+          </div>
+          <div class="bb-group">
+            <span class="bb-label">运营：</span>
+            <button type="button" class="btn sm plain-primary">赠送资料</button>
+            <button type="button" class="btn sm plain-primary">体验赠送</button>
+            <button type="button" class="btn sm plain-primary">邀约短信</button>
+          </div>
+          <div class="bb-group">
+            <span class="bb-label">沟通：</span>
+            <button type="button" class="btn sm primary" id="btnOpenTsPushPay">支付推送</button>
+            <button type="button" class="btn sm plain-primary">外呼</button>
+            <button type="button" class="btn sm">返回</button>
+          </div>
         </div>
-        <div class="el-dialog-bd">
-          <div class="form-row">
-            <div class="form-lb" id="tsOtherGoodsLabel">商品名称：</div>
-            <div class="form-ctl" id="tsOtherGoodsVal">小初全面进阶课（补差升档）</div>
-          </div>
-          <div class="form-row" id="tsOtherAmountRow">
-            <div class="form-lb">商品实付价：</div>
-            <div class="form-ctl">¥ 2498.00</div>
-          </div>
-          <div class="form-row">
-            <div class="form-lb"><span class="req">*</span>分期支付：</div>
-            <div class="form-ctl">
-              <div class="radio-group" data-inst-radio="ts_other">
-                <label class="el-radio"><input type="radio" name="ts_other_inst" value="0"> 否</label>
-                <label class="el-radio checked"><input type="radio" name="ts_other_inst" value="1" checked> 是</label>
-              </div>
+
+        <div class="el-card">
+          <div class="sub-inner-tabs">
+            <div class="el-tabs-line" style="padding:0;">
+              <div class="el-tab" data-detail-mode="ai">AI辅助</div>
+              <div class="el-tab active" data-detail-mode="info">客户信息</div>
             </div>
           </div>
-          <div class="form-row" data-inst-row="ts_other">
-            <div class="form-lb"><span class="req">*</span>分期支付方式：</div>
-            <div class="form-ctl">
-              <div class="highlight-box" id="tgtTelesalePcQrcodeTypes">
-                <div class="check-group" data-pay-group="ts_other"></div>
-              </div>
-              <div class="err-tip" data-err="ts_other"></div>
-              <div class="param-preview" data-preview="ts_other"></div>
-            </div>
-          </div>
-        </div>
-        <div class="el-dialog-ft">
-          <button type="button" class="btn primary" data-submit="ts_other" id="tsOtherSubmitText">生成二维码</button>
-          <button type="button" class="btn">取消</button>
-        </div>
-      </div>
 
-      <div class="loc-table-wrap">
-        <div class="loc-table-title">电销CRM PC端变更位置清单（点击行可切换上方预览）</div>
-        <table class="loc-tbl">
-          <thead>
-            <tr><th>页面 / 模块路径</th><th>交互载体</th><th>分期支付方式默认选项</th></tr>
-          </thead>
-          <tbody>
-            <tr class="row-click" data-jump-view="telesale-paypush"><td>客户池 / 已成交 / 线索查询 / 客户详情 → 支付推送</td><td>支付推送弹窗（「支付推送」页签）</td><td>默认选中「花呗分期」</td></tr>
-            <tr class="row-click row-active" data-ts-jump="diffQr"><td>客户详情 / 线索查询 → 补差续购查询页签（补差/会场行）</td><td>生成动态二维码弹窗</td><td>默认选中「花呗分期」</td></tr>
-            <tr class="row-click" data-ts-jump="renewalQr"><td>客户详情 / 线索查询 → 补差续购查询页签（续购行）</td><td>生成动态二维码弹窗</td><td>默认选中「花呗分期」</td></tr>
-            <tr class="row-click" data-ts-jump="addPad"><td>客户详情（含AI外呼详情）→ 加购学习机页签</td><td>表单页签</td><td>默认选中「花呗分期」</td></tr>
-            <tr class="row-click" data-ts-jump="aiRenewalQr"><td>AI外呼客户详情 → 续购页签</td><td>生成动态二维码弹窗</td><td>默认选中「花呗分期」</td></tr>
-            <tr class="row-click" data-ts-jump="newDiffQr"><td>客户管理 → 差价查询（新）</td><td>生成动态二维码弹窗</td><td>默认选中「花呗分期」</td></tr>
-            <tr class="row-click" data-ts-jump="excQr"><td>客户管理 → 专属链接（新）→ 列表操作列</td><td>生成动态二维码弹窗</td><td>默认选中「花呗分期」</td></tr>
-            <tr class="row-click" data-ts-jump="excVenue"><td>客户管理 → 专属链接（新）→ 顶部按钮</td><td>创建会场链接（新）弹窗</td><td>默认选中「花呗分期」</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- 视图3：电销CRM 移动端 -->
-    <section id="view-telesale-mobile" class="view-panel">
-      <div class="sub-switcher" id="tsMobPills">
-        <span class="sub-lbl">切换移动端页面：</span>
-        <button type="button" class="pill-btn active" data-ts-mob="mPush">客户详情 → 支付推送页</button>
-        <button type="button" class="pill-btn" data-ts-mob="mQr">客户详情 → 补差/续购动态二维码页</button>
-        <button type="button" class="pill-btn" data-ts-mob="mExcQr">专属链接（新）→ 动态二维码页</button>
-        <button type="button" class="pill-btn" data-ts-mob="mExcVenue">专属链接（新）→ 创建会场链接（新）页</button>
-      </div>
-      <div class="mobile-stage">
-        <div class="phone-frame">
-          <div class="phone-hd" id="tsMobTitle">支付推送</div>
-          <div class="phone-notice" id="tsMobNotice">
-            说明：一天只能推送3次，当日推送的所有商品都会展示在APP【我的购买】中，最新的一条商品会同时展示在【发现页】，推送的商品链接当天24点后过期
-          </div>
-          <div class="van-group">
-            <div class="van-cell"><div class="van-lb" id="tsMobGoodsLb">洋葱ID</div><div class="van-val" id="tsMobGoodsVal">206545257</div></div>
-            <div class="van-cell"><div class="van-lb" id="tsMobSubLb">购买类型</div><div class="van-val" id="tsMobSubVal">会场链接（新）</div></div>
-            <div class="van-cell">
-              <div class="van-lb"><span class="req">*</span>分期支付</div>
-              <div class="van-val">
-                <div class="radio-group" data-inst-radio="ts_mob">
-                  <label class="el-radio"><input type="radio" name="ts_mob_inst" value="0"> 否</label>
-                  <label class="el-radio checked"><input type="radio" name="ts_mob_inst" value="1" checked> 是</label>
+          <div class="tab-pane" id="tsInfoModeBox">
+            <div class="el-card" style="margin-bottom:12px;">
+              <div class="el-card-hd"><span>基础信息</span></div>
+              <div class="el-card-bd" style="padding:12px;">
+                <div class="desc-grid">
+                  <div class="desc-cell"><span class="dlb">洋葱ID</span><span class="dval">206545257</span></div>
+                  <div class="desc-cell"><span class="dlb">手机号</span><span class="dval">13696644155</span></div>
+                  <div class="desc-cell"><span class="dlb">学段 / 年级</span><span class="dval">小学 / 六年级</span></div>
+                  <div class="desc-cell"><span class="dlb">线索来源</span><span class="dval">观看教材同步课视频</span></div>
+                  <div class="desc-cell"><span class="dlb">最近看课时间</span><span class="dval">2026-11-26 16:40:12</span></div>
+                  <div class="desc-cell"><span class="dlb">所在地区</span><span class="dval">湖北省武汉市</span></div>
                 </div>
               </div>
             </div>
-            <div class="van-cell" data-inst-row="ts_mob">
-              <div class="van-lb"><span class="req">*</span>分期支付方式</div>
-              <div class="van-val">
-                <div class="highlight-box" id="tgtTelesaleMobilePayTypes">
-                  <div class="check-group" data-pay-group="ts_mob"></div>
+
+            <div class="el-card" style="margin-bottom:0;">
+              <div class="el-tabs-line">
+                <div class="el-tab" data-ts-tab="order">订单记录</div>
+                <div class="el-tab active" data-ts-tab="renewalDiff">补差续购查询</div>
+                <div class="el-tab" data-ts-tab="addPad">加购学习机</div>
+                <div class="el-tab" data-ts-tab="follow">跟单记录</div>
+                <div class="el-tab" data-ts-tab="report">学情报告</div>
+              </div>
+              <div class="tab-pane">
+                <!-- 补差续购查询 Tab -->
+                <div id="tsTabRenewalDiff">
+                  <div class="filter-form">
+                    <div class="ff-item"><span>商品名称</span><input class="el-ipt" placeholder="请输入商品名称" value=""></div>
+                    <div class="ff-item"><span>学段</span><select class="el-sel"><option>全部</option><option>小学</option><option>初中</option><option>高中</option></select></div>
+                    <div class="ff-item"><span>续购策略</span><select class="el-sel"><option>全部</option><option>高净值用户</option><option>学习机加购</option></select></div>
+                    <button type="button" class="btn primary sm">查询</button>
+                    <button type="button" class="btn sm">重置</button>
+                  </div>
+                  <table class="el-tbl">
+                    <thead>
+                      <tr>
+                        <th>商品名称</th>
+                        <th class="center" width="90">类型</th>
+                        <th>商品售价</th>
+                        <th>优惠金额</th>
+                        <th>活动优惠</th>
+                        <th>商品实付价</th>
+                        <th class="center" width="130">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td rowspan="2">小初全面进阶课（新六年）</td>
+                        <td class="center"><span class="el-tag warning">补差</span></td>
+                        <td>¥ 4898.00</td>
+                        <td><button type="button" class="btn link">¥ 1200.00</button></td>
+                        <td>¥ 200.00</td>
+                        <td><b>¥ 3498.00</b></td>
+                        <td class="center"><button type="button" class="btn link" data-open-qr="tsDiffQr">动态二维码</button></td>
+                      </tr>
+                      <tr>
+                        <td class="center"><span class="el-tag primary">续购</span></td>
+                        <td>¥ 4898.00</td>
+                        <td>¥ 800.00</td>
+                        <td>¥ 0.00</td>
+                        <td><b>¥ 4098.00</b></td>
+                        <td class="center"><button type="button" class="btn link" data-open-qr="tsRenewalQr">动态二维码</button></td>
+                      </tr>
+                      <tr>
+                        <td>全科3年大会员（会场直降）</td>
+                        <td class="center"><span class="el-tag success">会场</span></td>
+                        <td>¥ 5198.00</td>
+                        <td><button type="button" class="btn link">¥ 900.00</button></td>
+                        <td>¥ 100.00</td>
+                        <td><b>¥ 4198.00</b></td>
+                        <td class="center"><button type="button" class="btn link" data-open-qr="tsVenueQr">动态二维码</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-                <div class="err-tip" data-err="ts_mob"></div>
-                <div class="param-preview" data-preview="ts_mob"></div>
-              </div>
-            </div>
-          </div>
-          <div class="van-btn-wrap">
-            <button type="button" class="van-btn" data-submit="ts_mob" id="tsMobBtnText">提交</button>
-          </div>
-        </div>
-        <div class="mobile-side-list loc-table-wrap" style="margin-top:0;">
-          <div class="loc-table-title">电销CRM 移动端变更位置清单</div>
-          <table class="loc-tbl">
-            <thead><tr><th>页面入口</th><th>页面名称</th></tr></thead>
-            <tbody>
-              <tr class="row-click row-active" data-mob-jump="mPush"><td>客户详情底部操作栏 → 支付推送</td><td>支付推送页</td></tr>
-              <tr class="row-click" data-mob-jump="mQr"><td>客户详情 → 补差价查询（新）/ 续购 → 动态二维码</td><td>动态二维码页</td></tr>
-              <tr class="row-click" data-mob-jump="mExcQr"><td>客户管理 → 专属链接（新）→ 列表项</td><td>生成动态二维码页</td></tr>
-              <tr class="row-click" data-mob-jump="mExcVenue"><td>客户管理 → 专属链接（新）→ 创建动态会场链接（新）</td><td>创建会场链接（新）页</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
 
-    <!-- 视图4：体验营CRM 支付推送弹窗 -->
-    <section id="view-camp-paypush" class="view-panel">
-      <div class="el-dialog-card">
-        <div class="el-dialog-hd">
-          <span>支付推送（体验营CRM）</span>
-          <span class="close-x">✕</span>
-        </div>
-        <div class="el-tabs-bar">
-          <div class="el-tab-item active">支付推送</div>
-          <div class="el-tab-item">推送记录</div>
-        </div>
-        <div class="el-dialog-bd">
-          <div class="form-row"><div class="form-lb"><span class="req">*</span>洋葱ID：</div><div class="form-ctl"><div class="el-input-ro">206545257</div></div></div>
-          <div class="form-row">
-            <div class="form-lb"><span class="req">*</span>推送类型：</div>
-            <div class="form-ctl">
-              <div class="radio-group">
-                <label class="el-radio checked"><input type="radio" name="cp_type" checked disabled> 续购</label>
-                <label class="el-radio"><input type="radio" name="cp_type" disabled> 专属链接</label>
-                <label class="el-radio"><input type="radio" name="cp_type" disabled> 会场链接（新）</label>
-              </div>
-            </div>
-          </div>
-          <div class="form-row"><div class="form-lb"><span class="req">*</span>商品：</div><div class="form-ctl"><div class="el-select-ro">小初全面进阶课</div></div></div>
-          <div class="form-row"><div class="form-lb">商品售价：</div><div class="form-ctl">¥ 4898.00</div></div>
-          <div class="form-row"><div class="form-lb">商品实付价格：</div><div class="form-ctl">¥ 4898.00</div></div>
-          <div class="form-row">
-            <div class="form-lb"><span class="req">*</span>分期支付：</div>
-            <div class="form-ctl">
-              <div class="radio-group" data-inst-radio="cp_pp">
-                <label class="el-radio"><input type="radio" name="cp_pp_inst" value="0"> 不支持</label>
-                <label class="el-radio checked"><input type="radio" name="cp_pp_inst" value="1" checked> 支持</label>
-              </div>
-            </div>
-          </div>
-          <div class="form-row" data-inst-row="cp_pp">
-            <div class="form-lb"><span class="req">*</span>支付方式：</div>
-            <div class="form-ctl">
-              <div class="highlight-box" id="tgtCampPushPayTypes">
-                <div class="check-group" data-pay-group="cp_pp"></div>
-              </div>
-              <div class="err-tip" data-err="cp_pp"></div>
-              <div class="param-preview" data-preview="cp_pp"></div>
-            </div>
-          </div>
-        </div>
-        <div class="el-dialog-ft">
-          <button type="button" class="btn">取消</button>
-          <button type="button" class="btn primary" data-submit="cp_pp">确定</button>
-        </div>
-      </div>
-    </section>
+                <!-- 加购学习机 Tab -->
+                <div id="tsTabAddPad" style="display:none;">
+                  <div class="form-row">
+                    <div class="form-lb"><span class="req">*</span>加购商品：</div>
+                    <div class="form-ctl"><div class="sel-box">Q20学习机（加购）</div></div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-lb"><span class="req">*</span>分期支付：</div>
+                    <div class="form-ctl">
+                      <div class="radio-group" data-inst-radio="ts_addpad">
+                        <label class="el-radio"><input type="radio" name="ts_addpad_inst" value="0"> 否</label>
+                        <label class="el-radio checked"><input type="radio" name="ts_addpad_inst" value="1" checked> 是</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-row" data-inst-row="ts_addpad">
+                    <div class="form-lb"><span class="req">*</span>分期支付方式：</div>
+                    <div class="form-ctl">
+                      <div class="paytype-box">
+                        <div class="check-group" data-pay-group="ts_addpad"></div>
+                      </div>
+                      <div class="err-tip" data-err="ts_addpad"></div>
+                    </div>
+                  </div>
+                  <div class="form-row"><div class="form-lb">商品售价：</div><div class="form-ctl">¥ 1999.00</div></div>
+                  <div class="form-row">
+                    <div class="form-lb"></div>
+                    <div class="form-ctl"><button type="button" class="btn primary" data-submit="ts_addpad">生成二维码</button></div>
+                  </div>
+                </div>
 
-    <!-- 视图5：体验营CRM 续购与专属售卖链接 -->
-    <section id="view-camp-others" class="view-panel">
-      <div class="sub-switcher" id="cpOtherPills">
-        <span class="sub-lbl">切换体验营弹窗：</span>
-        <button type="button" class="pill-btn active" data-cp-other="cpRenewal">补差续购查询 → 续购动态二维码弹窗</button>
-        <button type="button" class="pill-btn" data-cp-other="cpDiffQr">补差续购查询 → 补差/会场动态二维码弹窗</button>
-        <button type="button" class="pill-btn" data-cp-other="cpSaleQr">专属售卖链接 → 动态二维码弹窗</button>
-        <button type="button" class="pill-btn" data-cp-other="cpVenueQr">专属售卖链接 → 创建动态会场二维码弹窗</button>
-      </div>
-
-      <div class="el-dialog-card">
-        <div class="el-dialog-hd">
-          <span id="cpOtherTitle">生成动态二维码（补差续购查询-续购行）</span>
-          <span class="close-x">✕</span>
-        </div>
-        <div class="el-dialog-bd">
-          <div class="form-row"><div class="form-lb">商品名称：</div><div class="form-ctl" id="cpOtherGoodsVal">小初全面进阶课（续购）</div></div>
-          <div class="form-row" id="cpOtherAmountRow"><div class="form-lb">商品实付价格：</div><div class="form-ctl">¥ 4898.00</div></div>
-          <div class="form-row">
-            <div class="form-lb"><span class="req">*</span>分期支付：</div>
-            <div class="form-ctl">
-              <div class="radio-group" data-inst-radio="cp_other">
-                <label class="el-radio"><input type="radio" name="cp_other_inst" value="0"> <span id="cpInstNoLb">否</span></label>
-                <label class="el-radio checked"><input type="radio" name="cp_other_inst" value="1" checked> <span id="cpInstYesLb">是</span></label>
+                <!-- 其余占位 Tab -->
+                <div id="tsTabPlaceholder" style="display:none; padding:24px; text-align:center; color:#909399;">
+                  当前页签本次无变更
+                </div>
               </div>
             </div>
           </div>
-          <div class="form-row" data-inst-row="cp_other">
-            <div class="form-lb"><span class="req">*</span><span id="cpPayTypeLb">分期支付方式</span>：</div>
-            <div class="form-ctl">
-              <div class="highlight-box" id="tgtCampRenewalPayTypes">
-                <div class="check-group" data-pay-group="cp_other"></div>
+
+          <!-- AI辅助 Mode（含 续购 与 加购学习机） -->
+          <div class="tab-pane" id="tsAiModeBox" style="display:none;">
+            <div class="el-tabs-line" style="padding:0; margin-bottom:14px;">
+              <div class="el-tab active">续购</div>
+              <div class="el-tab">加购学习机（同客户信息加购页签）</div>
+            </div>
+            <table class="el-tbl">
+              <thead>
+                <tr><th>商品名称</th><th>商品原价</th><th>商品实付</th><th class="center" width="140">操作</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>初中同步进阶课（续购）</td>
+                  <td>¥ 4698.00</td>
+                  <td><b>¥ 3698.00</b></td>
+                  <td class="center"><button type="button" class="btn link" data-open-qr="tsAiRenewalQr">动态二维码</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 电销CRM 2：差价查询（新） ==================== -->
+      <section id="page-ts-newdiff" class="page-view">
+        <div class="el-card">
+          <div class="el-card-bd">
+            <div class="filter-form">
+              <div class="ff-item"><input class="el-ipt" value="13696644155" placeholder="请输入手机号"></div>
+              <button type="button" class="btn primary">搜索</button>
+              <button type="button" class="btn">重置</button>
+            </div>
+            <div class="radio-group" style="margin-bottom:14px;">
+              <label class="el-radio checked"><input type="radio" name="nd_stage" checked> 全部</label>
+              <label class="el-radio"><input type="radio" name="nd_stage"> 小学</label>
+              <label class="el-radio"><input type="radio" name="nd_stage"> 初中</label>
+              <label class="el-radio"><input type="radio" name="nd_stage"> 高中</label>
+            </div>
+            <table class="el-tbl">
+              <thead>
+                <tr>
+                  <th>商品名称</th>
+                  <th>商品原价</th>
+                  <th>商品直降</th>
+                  <th>活动优惠</th>
+                  <th>补差优惠合计</th>
+                  <th>最高抵扣金额</th>
+                  <th>商品实付</th>
+                  <th class="center" width="130">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>高中数学同步进阶班</td>
+                  <td>¥ 5298.00</td>
+                  <td>¥ 500.00</td>
+                  <td>¥ 300.00</td>
+                  <td><button type="button" class="btn link">¥ 800.00</button></td>
+                  <td>¥ 1000.00</td>
+                  <td><b>¥ 3698.00</b></td>
+                  <td class="center"><button type="button" class="btn link" data-open-qr="tsNewDiffQr">动态二维码</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 电销CRM 3：专属链接（新） ==================== -->
+      <section id="page-ts-exlink" class="page-view">
+        <div class="el-card">
+          <div class="el-card-bd">
+            <div class="filter-form" style="justify-content:space-between;">
+              <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <input class="el-ipt" placeholder="请输入课程名称">
+                <select class="el-sel"><option>请选择课程标签</option></select>
+                <input class="el-ipt" placeholder="请输入课程金额">
+                <button type="button" class="btn primary">搜索</button>
+                <button type="button" class="btn">重置</button>
               </div>
-              <div class="err-tip" data-err="cp_other"></div>
-              <div class="param-preview" data-preview="cp_other"></div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button type="button" class="btn plain-primary">优惠金额配置</button>
+                <button type="button" class="btn primary" id="btnOpenTsNewVenue">创建动态会场链接（新）</button>
+                <button type="button" class="btn primary">添加商品</button>
+              </div>
+            </div>
+            <table class="el-tbl">
+              <thead>
+                <tr>
+                  <th>商品ID</th>
+                  <th>商品名称</th>
+                  <th>商品金额</th>
+                  <th>课程标签</th>
+                  <th>可见人员</th>
+                  <th>状态</th>
+                  <th class="center" width="160">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>10842</td>
+                  <td>全科三年大会员课程</td>
+                  <td>¥ 3998.00</td>
+                  <td>电销-三年卡</td>
+                  <td>全部可见</td>
+                  <td>已上架</td>
+                  <td class="center"><button type="button" class="btn link" data-open-qr="tsExcQr">动态二维码</button></td>
+                </tr>
+                <tr>
+                  <td>10915</td>
+                  <td>初中全科冲刺大礼包</td>
+                  <td>¥ 2898.00</td>
+                  <td>电销-冲刺包</td>
+                  <td>全部可见</td>
+                  <td>已上架</td>
+                  <td class="center"><button type="button" class="btn link" data-open-qr="tsExcQr">动态二维码</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 电销CRM 4：移动端（企微侧边栏） ==================== -->
+      <section id="page-ts-mobile" class="page-view">
+        <div class="mobile-wrap">
+          <div class="phone-shell">
+            <div class="phone-nav">
+              <span>‹</span>
+              <span id="mobPageTitle">支付推送</span>
+              <span>···</span>
+            </div>
+
+            <!-- 移动端：支付推送页 -->
+            <div id="mobViewPush">
+              <div class="phone-notice">
+                说明：一天只能推送3次，当日推送的所有商品都会展示在APP【我的购买】中，最新的一条商品会同时展示在【发现页】，推送的商品链接当天24点后过期
+              </div>
+              <div class="van-cell-group">
+                <div class="van-field"><div class="van-lb">洋葱ID</div><div class="van-val">206545257</div></div>
+                <div class="van-field"><div class="van-lb"><span class="req">*</span>购买类型</div><div class="van-val">会场链接（新）</div></div>
+                <div class="van-field"><div class="van-lb"><span class="req">*</span>商品</div><div class="van-val">小初全面进阶课（新六年）</div></div>
+                <div class="van-field">
+                  <div class="van-lb"><span class="req">*</span>分期支付</div>
+                  <div class="van-val">
+                    <div class="radio-group" data-inst-radio="ts_mob_push">
+                      <label class="el-radio"><input type="radio" name="ts_mob_push_inst" value="0"> 否</label>
+                      <label class="el-radio checked"><input type="radio" name="ts_mob_push_inst" value="1" checked> 是</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="van-field" data-inst-row="ts_mob_push">
+                  <div class="van-lb"><span class="req">*</span>分期支付方式</div>
+                  <div class="van-val">
+                    <div class="paytype-box" id="tgtTelesaleMobilePayTypes">
+                      <div class="check-group" data-pay-group="ts_mob_push"></div>
+                    </div>
+                    <div class="err-tip" data-err="ts_mob_push"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="van-submit-bar">
+                <button type="button" class="van-btn" data-submit="ts_mob_push">提交</button>
+              </div>
+            </div>
+
+            <!-- 移动端：动态二维码 / 会场链接页 -->
+            <div id="mobViewQrcode" style="display:none;">
+              <div class="van-cell-group">
+                <div class="van-field"><div class="van-lb" id="mobQrLb1">商品名称</div><div class="van-val" id="mobQrVal1">小初全面进阶课（续购）</div></div>
+                <div class="van-field"><div class="van-lb" id="mobQrLb2">商品实付价</div><div class="van-val" id="mobQrVal2">¥ 4098.00</div></div>
+                <div class="van-field">
+                  <div class="van-lb"><span class="req">*</span>分期支付</div>
+                  <div class="van-val">
+                    <div class="radio-group" data-inst-radio="ts_mob_qr">
+                      <label class="el-radio"><input type="radio" name="ts_mob_qr_inst" value="0"> 否</label>
+                      <label class="el-radio checked"><input type="radio" name="ts_mob_qr_inst" value="1" checked> 是</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="van-field" data-inst-row="ts_mob_qr">
+                  <div class="van-lb"><span class="req">*</span>分期支付方式</div>
+                  <div class="van-val">
+                    <div class="paytype-box">
+                      <div class="check-group" data-pay-group="ts_mob_qr"></div>
+                    </div>
+                    <div class="err-tip" data-err="ts_mob_qr"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="van-submit-bar">
+                <button type="button" class="van-btn" data-submit="ts_mob_qr">生成二维码</button>
+                <button type="button" class="van-btn plain">复制短链</button>
+              </div>
+            </div>
+
+            <div class="phone-bottom-bar">
+              <div class="act hi" data-mob-switch="push">支付推送页</div>
+              <div class="act" data-mob-switch="diffQr">补差/续购二维码页</div>
+              <div class="act" data-mob-switch="excQr">专属链接二维码页</div>
+              <div class="act" data-mob-switch="excVenue">会场链接(新)页</div>
+            </div>
+          </div>
+
+          <div class="el-card mob-route-card">
+            <div class="el-card-hd"><span>电销CRM 移动端变更位置（共 4 处）</span></div>
+            <div class="el-card-bd">
+              <table class="el-tbl">
+                <thead><tr><th>入口路径</th><th>页面名称</th></tr></thead>
+                <tbody>
+                  <tr style="cursor:pointer;" data-mob-switch="push"><td>客户详情底部操作栏 → 支付推送</td><td>支付推送页</td></tr>
+                  <tr style="cursor:pointer;" data-mob-switch="diffQr"><td>客户详情 → 补差价查询（新）/ 续购 → 动态二维码</td><td>动态二维码页</td></tr>
+                  <tr style="cursor:pointer;" data-mob-switch="excQr"><td>客户管理 → 专属链接（新）→ 列表课程</td><td>生成动态二维码页</td></tr>
+                  <tr style="cursor:pointer;" data-mob-switch="excVenue"><td>客户管理 → 专属链接（新）→ 创建动态会场链接（新）</td><td>创建会场链接（新）页</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
-        <div class="el-dialog-ft">
-          <button type="button" class="btn">取消</button>
-          <button type="button" class="btn primary" data-submit="cp_other">生成二维码</button>
+      </section>
+
+      <!-- ==================== 体验营CRM 1：线索查询 & 客户详情 ==================== -->
+      <section id="page-camp-clue" class="page-view">
+        <div class="el-card">
+          <div class="el-card-bd">
+            <div class="filter-form">
+              <select class="el-sel" style="min-width:100px;"><option>手机号</option><option>洋葱ID</option></select>
+              <input class="el-ipt" value="13696644155">
+              <button type="button" class="btn primary">查询</button>
+            </div>
+            <div class="el-tabs-line" style="padding:0;">
+              <div class="el-tab active" data-camp-tab="hit">撞单查询</div>
+              <div class="el-tab" data-camp-tab="report">学情报告</div>
+              <div class="el-tab" data-camp-tab="renewal">补差续购查询</div>
+            </div>
+            <div id="campTabHit" class="tab-pane" style="padding:12px 0 0;">
+              <div class="camp-desc">
+                <div class="camp-desc-row"><span class="camp-desc-lb">手机号</span><span>13696644155</span></div>
+                <div class="camp-desc-row"><span class="camp-desc-lb">洋葱ID</span><span>206545257</span></div>
+                <div class="camp-desc-row"><span class="camp-desc-lb">坐席归属</span><span>体验营坐席A</span></div>
+                <div class="camp-desc-row"><span class="camp-desc-lb">当前服务期</span><span style="color:#f56c6c;">体验营第128期服务期中</span></div>
+                <div class="camp-desc-row">
+                  <span class="camp-desc-lb">支付推送</span>
+                  <div>
+                    <button type="button" class="btn primary sm" id="btnOpenCampPushPay">支付推送</button>
+                    <div style="font-size:12px; color:#909399; margin-top:4px;">注：若线索不在体验营服务期，请慎重推送</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="campTabRenewal" class="tab-pane" style="display:none; padding:12px 0 0;">
+              <div class="filter-form">
+                <div class="ff-item"><span>商品名称：</span><input class="el-ipt" placeholder="请输入商品名称"></div>
+                <div class="ff-item"><span>学段：</span><select class="el-sel"><option>全部</option></select></div>
+                <div class="ff-item"><span>续购策略：</span><select class="el-sel"><option>全部</option></select></div>
+                <button type="button" class="btn primary sm">查询</button>
+                <button type="button" class="btn sm">重置</button>
+              </div>
+              <table class="el-tbl">
+                <thead>
+                  <tr>
+                    <th>商品名称</th>
+                    <th class="center" width="90">类型</th>
+                    <th>商品售价</th>
+                    <th>优惠金额</th>
+                    <th>活动优惠</th>
+                    <th>实付金额</th>
+                    <th class="center" width="130">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td rowspan="2">小初全面进阶课（新六年）</td>
+                    <td class="center"><span class="el-tag warning">补差</span></td>
+                    <td>¥ 4898.00</td>
+                    <td><span style="color:#409eff;">¥ 1200.00</span></td>
+                    <td>¥ 200.00</td>
+                    <td>¥ 3498.00</td>
+                    <td class="center"><button type="button" class="btn plain-primary sm" data-open-qr="cpDiffQr">动态二维码</button></td>
+                  </tr>
+                  <tr>
+                    <td class="center"><span class="el-tag primary">续购</span></td>
+                    <td>¥ 4898.00</td>
+                    <td>¥ 800.00</td>
+                    <td>¥ 0.00</td>
+                    <td>¥ 4098.00</td>
+                    <td class="center"><button type="button" class="btn plain-primary sm" data-open-qr="cpRenewalQr">动态二维码</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 体验营CRM 2：专属售卖链接 ==================== -->
+      <section id="page-camp-sales" class="page-view">
+        <div class="el-card">
+          <div class="el-card-bd">
+            <div class="filter-form" style="justify-content:space-between;">
+              <div style="display:flex; gap:10px; align-items:center;">
+                <input class="el-ipt" placeholder="请输入商品ID">
+                <button type="button" class="btn primary">搜索</button>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="btn primary">添加商品</button>
+                <button type="button" class="btn primary" id="btnOpenCampVenueQr">创建动态会场二维码</button>
+              </div>
+            </div>
+            <table class="el-tbl">
+              <thead>
+                <tr>
+                  <th>商品id</th>
+                  <th>商品名称</th>
+                  <th>商品状态</th>
+                  <th>售卖渠道</th>
+                  <th>商品金额</th>
+                  <th>可见人员</th>
+                  <th class="center" width="140">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>20031</td>
+                  <td>小初全面进阶课（体验营专享）</td>
+                  <td>已上架</td>
+                  <td>体验营</td>
+                  <td>¥2998-4898</td>
+                  <td>全部可见</td>
+                  <td class="center"><button type="button" class="btn link" data-open-qr="cpSaleQr">动态二维码</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- ==================== 弹窗 1：电销CRM 支付推送弹窗（默认打开还原截图） ==================== -->
+<div class="modal-backdrop open" id="modalTsPushPay">
+  <div class="el-dialog">
+    <div class="el-dialog-hd">
+      <span>支付推送-1369664155</span>
+      <button type="button" class="el-dialog-close" data-close-modal="modalTsPushPay">✕</button>
+    </div>
+    <div class="el-dialog-tabs">
+      <div class="el-tab active" data-ts-pp-tab="push">支付推送</div>
+      <div class="el-tab" data-ts-pp-tab="logs">推送记录</div>
+    </div>
+    <div class="el-dialog-bd" id="tsPpBodyPush">
+      <div class="notice-banner">
+        说明：一天只能推送3次，当日推送的所有商品都会展示在APP【我的购买】中，最新的一条商品会同时展示在【发现页】，推送的商品链接当天24点后过期
+      </div>
+      <div class="form-row">
+        <div class="form-lb"><span class="req">*</span>洋葱ID：</div>
+        <div class="form-ctl"><input class="el-ipt ro" value="206545257" readonly></div>
+      </div>
+      <div class="form-row">
+        <div class="form-lb"><span class="req">*</span>购买类型：</div>
+        <div class="form-ctl">
+          <div class="radio-group" id="tsPpBuyTypeGroup">
+            <label class="el-radio"><input type="radio" name="ts_pp_buytype" value="link"> 专属链接</label>
+            <label class="el-radio checked"><input type="radio" name="ts_pp_buytype" value="blocksGood" checked> 会场链接（新）</label>
+            <label class="el-radio"><input type="radio" name="ts_pp_buytype" value="repurchase"> 续购</label>
+          </div>
         </div>
       </div>
-
-      <div class="loc-table-wrap">
-        <div class="loc-table-title">体验营CRM变更位置清单（点击行可切换上方预览）</div>
-        <table class="loc-tbl">
-          <thead>
-            <tr><th>页面 / 模块路径</th><th>交互载体</th><th>默认勾选状态</th></tr>
-          </thead>
-          <tbody>
-            <tr class="row-click" data-jump-view="camp-paypush"><td>客户管理（客户详情）/ 线索查询（撞单查询）→ 支付推送</td><td>支付推送弹窗（「支付推送」页签）</td><td>默认不勾选（标签：支付方式）</td></tr>
-            <tr class="row-click" data-cp-jump="cpDiffQr"><td>客户管理（客户详情）/ 线索查询 → 补差续购查询（补差/会场行）</td><td>动态二维码分期配置弹窗</td><td>默认不勾选（标签：支付方式）</td></tr>
-            <tr class="row-click row-active" data-cp-jump="cpRenewal"><td>客户管理（客户详情）/ 线索查询 → 补差续购查询（续购行）</td><td>生成动态二维码弹窗</td><td>默认选中「花呗分期」（标签：分期支付方式）</td></tr>
-            <tr class="row-click" data-cp-jump="cpSaleQr"><td>专属售卖链接 → 列表操作列「动态二维码」</td><td>动态二维码分期配置弹窗</td><td>默认不勾选（标签：支付方式）</td></tr>
-            <tr class="row-click" data-cp-jump="cpVenueQr"><td>专属售卖链接 → 右上角「创建动态会场二维码」</td><td>创建动态会场二维码弹窗</td><td>默认不勾选（标签：支付方式）</td></tr>
-          </tbody>
-        </table>
+      <div id="tsPpSubFields">
+        <div class="form-row">
+          <div class="form-lb"><span class="req">*</span>年级：</div>
+          <div class="form-ctl">
+            <div class="radio-group">
+              <label class="el-radio"><input type="radio" name="ts_pp_grade" disabled> 一至三年级</label>
+              <label class="el-radio"><input type="radio" name="ts_pp_grade" disabled> 四年级</label>
+              <label class="el-radio"><input type="radio" name="ts_pp_grade" disabled> 五年级</label>
+              <label class="el-radio checked"><input type="radio" name="ts_pp_grade" checked disabled> 六年级</label>
+              <label class="el-radio"><input type="radio" name="ts_pp_grade" disabled> 七年级</label>
+              <label class="el-radio"><input type="radio" name="ts_pp_grade" disabled> 八年级</label>
+              <label class="el-radio"><input type="radio" name="ts_pp_grade" disabled> 九年级</label>
+              <label class="el-radio"><input type="radio" name="ts_pp_grade" disabled> 高一</label>
+              <label class="el-radio"><input type="radio" name="ts_pp_grade" disabled> 高二</label>
+              <label class="el-radio"><input type="radio" name="ts_pp_grade" disabled> 高三</label>
+              <label class="el-radio"><input type="radio" name="ts_pp_grade" disabled> 多孩家庭包</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-lb"><span class="req">*</span>商品：</div>
+          <div class="form-ctl"><div class="sel-box">小初全面进阶课（新六年）</div></div>
+        </div>
+        <div class="form-row">
+          <div class="form-lb">加购学习机：</div>
+          <div class="form-ctl">
+            <div class="radio-group">
+              <label class="el-radio checked"><input type="radio" name="ts_pp_pad" checked disabled> 不加购</label>
+              <label class="el-radio"><input type="radio" name="ts_pp_pad" disabled> Q20学习机</label>
+              <label class="el-radio"><input type="radio" name="ts_pp_pad" disabled> P30学习机</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-row"><div class="form-lb">商品原价：</div><div class="form-ctl">¥ 6198.00</div></div>
+        <div class="form-row"><div class="form-lb">商品售价：</div><div class="form-ctl">¥ 4898.00</div></div>
+        <div class="form-row"><div class="form-lb">用户实付价：</div><div class="form-ctl">¥ 4898.00</div></div>
       </div>
-    </section>
-  </main>
+      <div class="form-row">
+        <div class="form-lb"><span class="req">*</span>分期支付：</div>
+        <div class="form-ctl">
+          <div class="radio-group" data-inst-radio="ts_pp">
+            <label class="el-radio"><input type="radio" name="ts_pp_inst" value="0"> 否</label>
+            <label class="el-radio checked"><input type="radio" name="ts_pp_inst" value="1" checked> 是</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-row" data-inst-row="ts_pp">
+        <div class="form-lb"><span class="req">*</span>分期支付方式：</div>
+        <div class="form-ctl">
+          <div class="paytype-box" id="tgtTelesalePayTypes">
+            <div class="check-group" data-pay-group="ts_pp"></div>
+          </div>
+          <div class="err-tip" data-err="ts_pp"></div>
+        </div>
+      </div>
+    </div>
+    <div class="el-dialog-bd" id="tsPpBodyLogs" style="display:none; text-align:center; color:#909399; padding:32px;">
+      当日支付推送记录（本次无变更）
+    </div>
+    <div class="el-dialog-ft">
+      <button type="button" class="btn primary" id="tgtTelesaleSubmitBtn" data-submit="ts_pp">确定</button>
+      <button type="button" class="btn" data-close-modal="modalTsPushPay">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗 2：电销CRM 通用动态二维码 / 创建会场链接(新) 弹窗 ==================== -->
+<div class="modal-backdrop" id="modalTsQr">
+  <div class="el-dialog sm">
+    <div class="el-dialog-hd">
+      <span id="tsQrTitle">生成动态二维码</span>
+      <button type="button" class="el-dialog-close" data-close-modal="modalTsQr">✕</button>
+    </div>
+    <div class="el-dialog-bd">
+      <div class="form-row"><div class="form-lb" id="tsQrNameLb">商品名称：</div><div class="form-ctl" id="tsQrNameVal">小初全面进阶课（补差升档）</div></div>
+      <div class="form-row" id="tsQrAmtRow"><div class="form-lb">商品实付价：</div><div class="form-ctl" id="tsQrAmtVal">¥ 3498.00</div></div>
+      <div class="form-row">
+        <div class="form-lb"><span class="req">*</span>分期支付：</div>
+        <div class="form-ctl">
+          <div class="radio-group" data-inst-radio="ts_qr">
+            <label class="el-radio"><input type="radio" name="ts_qr_inst" value="0"> 否</label>
+            <label class="el-radio checked"><input type="radio" name="ts_qr_inst" value="1" checked> 是</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-row" data-inst-row="ts_qr">
+        <div class="form-lb"><span class="req">*</span>分期支付方式：</div>
+        <div class="form-ctl">
+          <div class="paytype-box" id="tgtTelesalePcQrcodeTypes">
+            <div class="check-group" data-pay-group="ts_qr"></div>
+          </div>
+          <div class="err-tip" data-err="ts_qr"></div>
+        </div>
+      </div>
+    </div>
+    <div class="el-dialog-ft">
+      <button type="button" class="btn primary" data-submit="ts_qr">生成二维码</button>
+      <button type="button" class="btn" data-close-modal="modalTsQr">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗 3：体验营CRM 支付推送弹窗 ==================== -->
+<div class="modal-backdrop" id="modalCampPushPay">
+  <div class="el-dialog">
+    <div class="el-dialog-hd">
+      <span>支付推送</span>
+      <button type="button" class="el-dialog-close" data-close-modal="modalCampPushPay">✕</button>
+    </div>
+    <div class="el-dialog-tabs">
+      <div class="el-tab active">支付推送</div>
+      <div class="el-tab">推送记录</div>
+    </div>
+    <div class="el-dialog-bd">
+      <div class="form-row"><div class="form-lb"><span class="req">*</span>洋葱ID：</div><div class="form-ctl"><input class="el-ipt ro" value="206545257" readonly></div></div>
+      <div class="form-row">
+        <div class="form-lb"><span class="req">*</span>推送类型：</div>
+        <div class="form-ctl">
+          <div class="radio-group">
+            <label class="el-radio checked"><input type="radio" name="cp_pp_type" checked disabled> 续购</label>
+            <label class="el-radio"><input type="radio" name="cp_pp_type" disabled> 专属链接</label>
+            <label class="el-radio"><input type="radio" name="cp_pp_type" disabled> 会场链接（新）</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-row"><div class="form-lb"><span class="req">*</span>商品名称：</div><div class="form-ctl"><div class="sel-box">小初全面进阶课（续购）</div></div></div>
+      <div class="form-row"><div class="form-lb">商品售价：</div><div class="form-ctl">¥4898</div></div>
+      <div class="form-row"><div class="form-lb">商品实付价格：</div><div class="form-ctl">¥4098</div></div>
+      <div class="form-row">
+        <div class="form-lb"><span class="req">*</span>分期支付：</div>
+        <div class="form-ctl">
+          <div class="radio-group" data-inst-radio="cp_pp">
+            <label class="el-radio"><input type="radio" name="cp_pp_inst" value="0"> 不支持</label>
+            <label class="el-radio checked"><input type="radio" name="cp_pp_inst" value="1" checked> 支持</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-row" data-inst-row="cp_pp">
+        <div class="form-lb"><span class="req">*</span>支付方式：</div>
+        <div class="form-ctl">
+          <div class="paytype-box" id="tgtCampPushPayTypes">
+            <div class="check-group" data-pay-group="cp_pp"></div>
+          </div>
+          <div class="err-tip" data-err="cp_pp"></div>
+        </div>
+      </div>
+    </div>
+    <div class="el-dialog-ft">
+      <button type="button" class="btn" data-close-modal="modalCampPushPay">取消</button>
+      <button type="button" class="btn primary" data-submit="cp_pp">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗 4：体验营CRM 补差续购/专属售卖链接动态二维码弹窗 ==================== -->
+<div class="modal-backdrop" id="modalCampQr">
+  <div class="el-dialog sm">
+    <div class="el-dialog-hd">
+      <span id="cpQrTitle">生成动态二维码</span>
+      <button type="button" class="el-dialog-close" data-close-modal="modalCampQr">✕</button>
+    </div>
+    <div class="el-dialog-bd">
+      <div class="form-row"><div class="form-lb">商品名称：</div><div class="form-ctl" id="cpQrNameVal">小初全面进阶课（续购）</div></div>
+      <div class="form-row" id="cpQrAmtRow"><div class="form-lb">商品实付价格：</div><div class="form-ctl">¥4098</div></div>
+      <div class="form-row">
+        <div class="form-lb"><span class="req">*</span>分期支付：</div>
+        <div class="form-ctl">
+          <div class="radio-group" data-inst-radio="cp_qr">
+            <label class="el-radio"><input type="radio" name="cp_qr_inst" value="0"> <span id="cpQrNoLb">否</span></label>
+            <label class="el-radio checked"><input type="radio" name="cp_qr_inst" value="1" checked> <span id="cpQrYesLb">是</span></label>
+          </div>
+        </div>
+      </div>
+      <div class="form-row" data-inst-row="cp_qr">
+        <div class="form-lb"><span class="req">*</span><span id="cpQrPayLb">分期支付方式</span>：</div>
+        <div class="form-ctl">
+          <div class="paytype-box" id="tgtCampRenewalPayTypes">
+            <div class="check-group" data-pay-group="cp_qr"></div>
+          </div>
+          <div class="err-tip" data-err="cp_qr"></div>
+        </div>
+      </div>
+    </div>
+    <div class="el-dialog-ft">
+      <button type="button" class="btn" data-close-modal="modalCampQr">取消</button>
+      <button type="button" class="btn primary" data-submit="cp_qr">生成二维码</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="protoToast"></div>
@@ -449,16 +900,66 @@ table.loc-tbl tr.row-active td { background: #ecf5ff; }
   ];
 
   var state = {
-    view: "telesale-paypush",
-    tsOtherKey: "diffQr",
-    tsMobKey: "mPush",
-    cpOtherKey: "cpRenewal",
+    sys: "telesale", // "telesale" | "camp"
+    page: "ts-detail", // "ts-detail" | "ts-newdiff" | "ts-exlink" | "ts-mobile" | "camp-clue" | "camp-sales"
     forms: {
       ts_pp: { isInst: true, selected: ["alipayFq"], err: "", defaultSelected: ["alipayFq"], errMsg: "请选择分期支付方式" },
-      ts_other: { isInst: true, selected: ["alipayFq"], err: "", defaultSelected: ["alipayFq"], errMsg: "请选择分期支付方式" },
-      ts_mob: { isInst: true, selected: ["alipayFq"], err: "", defaultSelected: ["alipayFq"], errMsg: "请选择分期支付方式" },
+      ts_qr: { isInst: true, selected: ["alipayFq"], err: "", defaultSelected: ["alipayFq"], errMsg: "请选择分期支付方式" },
+      ts_addpad: { isInst: true, selected: ["alipayFq"], err: "", defaultSelected: ["alipayFq"], errMsg: "请选择分期支付方式" },
+      ts_mob_push: { isInst: true, selected: ["alipayFq"], err: "", defaultSelected: ["alipayFq"], errMsg: "请选择分期支付方式" },
+      ts_mob_qr: { isInst: true, selected: ["alipayFq"], err: "", defaultSelected: ["alipayFq"], errMsg: "请选择分期支付方式" },
       cp_pp: { isInst: true, selected: [], err: "", defaultSelected: [], errMsg: "请选择支付方式" },
-      cp_other: { isInst: true, selected: ["alipayFq"], err: "", defaultSelected: ["alipayFq"], errMsg: "请选择分期支付方式" }
+      cp_qr: { isInst: true, selected: ["alipayFq"], err: "", defaultSelected: ["alipayFq"], errMsg: "请选择分期支付方式" }
+    }
+  };
+
+  var MENUS = {
+    telesale: {
+      logoMark: "电",
+      logoText: "电销CRM",
+      groups: [
+        {
+          title: "客户管理",
+          items: [
+            { id: "ts-detail", label: "客户池 → 客户详情" },
+            { id: "ts-newdiff", label: "差价查询（新）" },
+            { id: "ts-exlink", label: "专属链接（新）" },
+            { id: "ts-mobile", label: "移动端（企微侧边栏）" }
+          ]
+        }
+      ],
+      tags: [
+        { id: "ts-detail", label: "客户详情" },
+        { id: "ts-newdiff", label: "差价查询（新）" },
+        { id: "ts-exlink", label: "专属链接（新）" }
+      ],
+      crumbs: {
+        "ts-detail": "客户管理 / 客户详情",
+        "ts-newdiff": "客户管理 / 差价查询（新）",
+        "ts-exlink": "客户管理 / 专属链接（新）",
+        "ts-mobile": "移动端 / 企微侧边栏"
+      }
+    },
+    camp: {
+      logoMark: "体",
+      logoText: "体验营CRM",
+      groups: [
+        {
+          title: "体验营工作台",
+          items: [
+            { id: "camp-clue", label: "线索查询 / 客户详情" },
+            { id: "camp-sales", label: "专属售卖链接" }
+          ]
+        }
+      ],
+      tags: [
+        { id: "camp-clue", label: "线索查询" },
+        { id: "camp-sales", label: "专属售卖链接" }
+      ],
+      crumbs: {
+        "camp-clue": "体验营 / 线索查询",
+        "camp-sales": "体验营 / 专属售卖链接"
+      }
     }
   };
 
@@ -470,21 +971,84 @@ table.loc-tbl tr.row-active td { background: #ecf5ff; }
     t._timer = setTimeout(function () { t.classList.remove("show"); }, 2200);
   }
 
+  function closeAllModals() {
+    document.querySelectorAll(".modal-backdrop").forEach(function (m) { m.classList.remove("open"); });
+  }
+  function openModal(id) {
+    closeAllModals();
+    var m = document.getElementById(id);
+    if (m) m.classList.add("open");
+    setTimeout(function () { if (window.__diffRemeasure) window.__diffRemeasure(); }, 20);
+  }
+
+  function renderChrome() {
+    var cfg = MENUS[state.sys];
+    document.getElementById("sideLogoMark").textContent = cfg.logoMark;
+    document.getElementById("sideLogoText").textContent = cfg.logoText;
+    document.querySelectorAll(".sys-pill").forEach(function (b) {
+      b.classList.toggle("active", b.getAttribute("data-sys") === state.sys);
+    });
+
+    var menuBox = document.getElementById("sideMenuBox");
+    menuBox.innerHTML = "";
+    cfg.groups.forEach(function (g) {
+      var gt = document.createElement("div");
+      gt.className = "menu-group-title";
+      gt.innerHTML = "<span>" + g.title + "</span><span>▾</span>";
+      menuBox.appendChild(gt);
+      g.items.forEach(function (it) {
+        var mi = document.createElement("div");
+        mi.className = "menu-item" + (state.page === it.id ? " active" : "");
+        mi.textContent = it.label;
+        mi.onclick = function () { switchPage(it.id); };
+        menuBox.appendChild(mi);
+      });
+    });
+
+    var tagsBar = document.getElementById("tagsBar");
+    tagsBar.innerHTML = "";
+    cfg.tags.forEach(function (tg) {
+      var el = document.createElement("div");
+      el.className = "tag-item" + (state.page === tg.id ? " active" : "");
+      el.textContent = tg.label;
+      el.onclick = function () { switchPage(tg.id); };
+      tagsBar.appendChild(el);
+    });
+
+    document.getElementById("breadcrumbBox").innerHTML = '<span>' + cfg.crumbs[state.page] + '</span>';
+    document.querySelectorAll("[data-mode]").forEach(function (b) {
+      var isMob = state.page === "ts-mobile";
+      b.classList.toggle("on", (b.getAttribute("data-mode") === "mobile") === isMob);
+    });
+    document.getElementById("btnMobileMode").style.display = state.sys === "telesale" ? "" : "none";
+  }
+
+  function switchSystem(sys, targetPage) {
+    state.sys = sys;
+    closeAllModals();
+    switchPage(targetPage || (sys === "telesale" ? "ts-detail" : "camp-clue"));
+  }
+
+  function switchPage(pageId) {
+    state.page = pageId;
+    document.querySelectorAll(".page-view").forEach(function (p) {
+      p.classList.toggle("active", p.id === "page-" + pageId);
+    });
+    renderChrome();
+    if (window.__diffRemeasure) window.__diffRemeasure();
+  }
+
   function describeSelection(arr) {
-    if (!arr.length) return "当前已选：未选择";
-    var labels = OPTIONS.filter(function (o) { return arr.indexOf(o.value) >= 0; }).map(function (o) { return o.label; });
-    return "当前已选：" + labels.join(" + ");
+    if (!arr.length) return "未选择";
+    return OPTIONS.filter(function (o) { return arr.indexOf(o.value) >= 0; }).map(function (o) { return o.label; }).join(" + ");
   }
 
   function toggleOption(formKey, val, checked) {
     var f = state.forms[formKey];
     var list = f.selected.slice();
     if (checked) {
-      if (val === "alipayFq") {
-        list = list.filter(function (v) { return v !== "alipayDirect"; });
-      } else if (val === "alipayDirect") {
-        list = list.filter(function (v) { return v !== "alipayFq"; });
-      }
+      if (val === "alipayFq") list = list.filter(function (v) { return v !== "alipayDirect"; });
+      else if (val === "alipayDirect") list = list.filter(function (v) { return v !== "alipayFq"; });
       if (list.indexOf(val) < 0) list.push(val);
     } else {
       list = list.filter(function (v) { return v !== val; });
@@ -526,10 +1090,6 @@ table.loc-tbl tr.row-active td { background: #ecf5ff; }
 
     var errEl = document.querySelector('[data-err="' + formKey + '"]');
     if (errEl) errEl.textContent = f.err || "";
-
-    var prevEl = document.querySelector('[data-preview="' + formKey + '"]');
-    if (prevEl) prevEl.textContent = f.isInst ? describeSelection(f.selected) : "分期支付已关闭";
-
     if (window.__diffRemeasure) window.__diffRemeasure();
   }
 
@@ -537,110 +1097,176 @@ table.loc-tbl tr.row-active td { background: #ecf5ff; }
     Object.keys(state.forms).forEach(renderForm);
   }
 
-  function switchView(viewId) {
-    state.view = viewId;
-    document.querySelectorAll(".sys-tab").forEach(function (b) {
-      b.classList.toggle("active", b.getAttribute("data-view") === viewId);
-    });
-    document.querySelectorAll(".view-panel").forEach(function (p) {
-      p.classList.toggle("active", p.id === "view-" + viewId);
+  // Open specific QR dialogs with authentic context
+  var QR_CONFIG = {
+    tsDiffQr: { modal: "modalTsQr", title: "生成动态二维码（补差续购查询-补差行）", lb: "商品名称：", val: "小初全面进阶课（新六年）", amt: true, amtVal: "¥ 3498.00" },
+    tsRenewalQr: { modal: "modalTsQr", title: "生成动态二维码（补差续购查询-续购行）", lb: "商品名称：", val: "小初全面进阶课（新六年）", amt: true, amtVal: "¥ 4098.00" },
+    tsVenueQr: { modal: "modalTsQr", title: "生成动态二维码（补差续购查询-会场行）", lb: "商品名称：", val: "全科3年大会员（会场直降）", amt: true, amtVal: "¥ 4198.00" },
+    tsAiRenewalQr: { modal: "modalTsQr", title: "生成动态二维码（AI辅助-续购页签）", lb: "商品名称：", val: "初中同步进阶课（续购）", amt: true, amtVal: "¥ 3698.00" },
+    tsNewDiffQr: { modal: "modalTsQr", title: "生成动态二维码（差价查询（新））", lb: "商品名称：", val: "高中数学同步进阶班", amt: false },
+    tsExcQr: { modal: "modalTsQr", title: "生成动态二维码（专属链接（新））", lb: "课程名称：", val: "全科三年大会员课程", amt: false },
+    tsExcVenue: { modal: "modalTsQr", title: "创建会场链接（新）", lb: "商品：", val: "小初全面进阶课（新六年）", amt: true, amtVal: "¥ 4898.00" },
+    cpRenewalQr: { modal: "modalCampQr", title: "生成动态二维码（补差续购查询-续购行）", val: "小初全面进阶课（新六年）", amt: true, noLb: "否", yesLb: "是", payLb: "分期支付方式", def: ["alipayFq"], errMsg: "请选择分期支付方式" },
+    cpDiffQr: { modal: "modalCampQr", title: "补差价动态二维码", val: "小初全面进阶课（新六年）", amt: true, noLb: "不支持", yesLb: "支持", payLb: "支付方式", def: [], errMsg: "请选择支付方式" },
+    cpSaleQr: { modal: "modalCampQr", title: "动态二维码（专属售卖链接）", val: "小初全面进阶课（体验营专享）", amt: false, noLb: "不支持", yesLb: "支持", payLb: "支付方式", def: [], errMsg: "请选择支付方式" },
+    cpVenueQr: { modal: "modalCampQr", title: "创建动态会场二维码", val: "小初全面进阶课（新六年）", amt: true, noLb: "不支持", yesLb: "支持", payLb: "支付方式", def: [], errMsg: "请选择支付方式" }
+  };
+
+  function openConfiguredQr(key) {
+    var c = QR_CONFIG[key];
+    if (!c) return;
+    if (c.modal === "modalTsQr") {
+      document.getElementById("tsQrTitle").textContent = c.title;
+      document.getElementById("tsQrNameLb").textContent = c.lb;
+      document.getElementById("tsQrNameVal").textContent = c.val;
+      document.getElementById("tsQrAmtRow").style.display = c.amt ? "" : "none";
+      if (c.amt) document.getElementById("tsQrAmtVal").textContent = c.amtVal;
+      openModal("modalTsQr");
+    } else {
+      document.getElementById("cpQrTitle").textContent = c.title;
+      document.getElementById("cpQrNameVal").textContent = c.val;
+      document.getElementById("cpQrAmtRow").style.display = c.amt ? "" : "none";
+      document.getElementById("cpQrNoLb").textContent = c.noLb;
+      document.getElementById("cpQrYesLb").textContent = c.yesLb;
+      document.getElementById("cpQrPayLb").textContent = c.payLb;
+      state.forms.cp_qr.defaultSelected = c.def.slice();
+      state.forms.cp_qr.selected = c.def.slice();
+      state.forms.cp_qr.err = "";
+      state.forms.cp_qr.errMsg = c.errMsg;
+      renderForm("cp_qr");
+      openModal("modalCampQr");
+    }
+  }
+
+  function switchMobileSub(k) {
+    var isPush = k === "push";
+    document.getElementById("mobViewPush").style.display = isPush ? "" : "none";
+    document.getElementById("mobViewQrcode").style.display = isPush ? "none" : "";
+    if (k === "push") document.getElementById("mobPageTitle").textContent = "支付推送";
+    else if (k === "diffQr") {
+      document.getElementById("mobPageTitle").textContent = "动态二维码";
+      document.getElementById("mobQrLb1").textContent = "商品名称";
+      document.getElementById("mobQrVal1").textContent = "小初全面进阶课（新六年）";
+      document.getElementById("mobQrLb2").textContent = "商品实付价";
+      document.getElementById("mobQrVal2").textContent = "¥ 4098.00";
+    } else if (k === "excQr") {
+      document.getElementById("mobPageTitle").textContent = "生成动态二维码";
+      document.getElementById("mobQrLb1").textContent = "商品名称";
+      document.getElementById("mobQrVal1").textContent = "全科三年大会员课程";
+      document.getElementById("mobQrLb2").textContent = "业务线";
+      document.getElementById("mobQrVal2").textContent = "电销";
+    } else if (k === "excVenue") {
+      document.getElementById("mobPageTitle").textContent = "创建会场链接（新）";
+      document.getElementById("mobQrLb1").textContent = "年级";
+      document.getElementById("mobQrVal1").textContent = "六年级";
+      document.getElementById("mobQrLb2").textContent = "商品";
+      document.getElementById("mobQrVal2").textContent = "小初全面进阶课（新六年）";
+    }
+    document.querySelectorAll(".phone-bottom-bar .act").forEach(function (a) {
+      a.classList.toggle("hi", a.getAttribute("data-mob-switch") === k);
     });
     if (window.__diffRemeasure) window.__diffRemeasure();
   }
 
-  var TS_OTHER_META = {
-    diffQr: { title: "生成动态二维码（补差续购查询-补差/会场行）", lb: "商品名称：", val: "小初全面进阶课（补差升档）", showAmt: true, btn: "生成二维码" },
-    renewalQr: { title: "生成动态二维码（补差续购查询-续购行）", lb: "商品名称：", val: "小初全面进阶课（续购）", showAmt: true, btn: "生成二维码" },
-    addPad: { title: "客户详情 → 加购学习机页签", lb: "加购商品：", val: "Q20学习机（加购）", showAmt: true, btn: "生成二维码" },
-    aiRenewalQr: { title: "生成动态二维码（AI外呼详情-续购页签）", lb: "商品名称：", val: "初中同步进阶课（续购）", showAmt: true, btn: "生成二维码" },
-    newDiffQr: { title: "生成动态二维码（差价查询（新））", lb: "商品名称：", val: "高中数学进阶课（补差）", showAmt: false, btn: "生成二维码" },
-    excQr: { title: "生成动态二维码（专属链接（新）-列表）", lb: "课程名称：", val: "全科三年大会员课程", showAmt: false, btn: "生成二维码" },
-    excVenue: { title: "创建会场链接（新）", lb: "商品：", val: "小初全面进阶课（新六年）", showAmt: true, btn: "生成二维码" }
-  };
+  // Bindings
+  document.querySelectorAll(".sys-pill").forEach(function (b) {
+    b.onclick = function () { switchSystem(b.getAttribute("data-sys")); };
+  });
+  document.querySelectorAll("[data-mode]").forEach(function (b) {
+    b.onclick = function () {
+      if (state.sys !== "telesale") return;
+      closeAllModals();
+      switchPage(b.getAttribute("data-mode") === "mobile" ? "ts-mobile" : "ts-detail");
+    };
+  });
+  document.getElementById("btnOpenTsPushPay").onclick = function () { openModal("modalTsPushPay"); };
+  document.getElementById("btnOpenTsNewVenue").onclick = function () { openConfiguredQr("tsExcVenue"); };
+  document.getElementById("btnOpenCampPushPay").onclick = function () { openModal("modalCampPushPay"); };
+  document.getElementById("btnOpenCampVenueQr").onclick = function () { openConfiguredQr("cpVenueQr"); };
 
-  function selectTsOther(key) {
-    state.tsOtherKey = key;
-    var m = TS_OTHER_META[key];
-    document.getElementById("tsOtherTitle").textContent = m.title;
-    document.getElementById("tsOtherGoodsLabel").textContent = m.lb;
-    document.getElementById("tsOtherGoodsVal").textContent = m.val;
-    document.getElementById("tsOtherAmountRow").style.display = m.showAmt ? "" : "none";
-    document.getElementById("tsOtherSubmitText").textContent = m.btn;
-    document.querySelectorAll("[data-ts-other]").forEach(function (b) {
-      b.classList.toggle("active", b.getAttribute("data-ts-other") === key);
-    });
-    document.querySelectorAll("[data-ts-jump]").forEach(function (tr) {
-      tr.classList.toggle("row-active", tr.getAttribute("data-ts-jump") === key);
-    });
-    if (window.__diffRemeasure) window.__diffRemeasure();
-  }
-
-  var TS_MOB_META = {
-    mPush: { title: "支付推送", notice: true, lb: "洋葱ID", val: "206545257", slb: "购买类型", sval: "会场链接（新）", btn: "提交" },
-    mQr: { title: "动态二维码", notice: false, lb: "商品名称", val: "小初全面进阶课（续购）", slb: "商品实付价", sval: "¥ 2498.00", btn: "生成二维码" },
-    mExcQr: { title: "生成动态二维码", notice: false, lb: "商品名称", val: "全科三年大会员课程", slb: "业务线", sval: "电销", btn: "生成二维码" },
-    mExcVenue: { title: "创建会场链接（新）", notice: false, lb: "年级", val: "六年级", slb: "商品", sval: "小初全面进阶课（新六年）", btn: "生成二维码" }
-  };
-
-  function selectTsMob(key) {
-    state.tsMobKey = key;
-    var m = TS_MOB_META[key];
-    document.getElementById("tsMobTitle").textContent = m.title;
-    document.getElementById("tsMobNotice").style.display = m.notice ? "" : "none";
-    document.getElementById("tsMobGoodsLb").textContent = m.lb;
-    document.getElementById("tsMobGoodsVal").textContent = m.val;
-    document.getElementById("tsMobSubLb").textContent = m.slb;
-    document.getElementById("tsMobSubVal").textContent = m.sval;
-    document.getElementById("tsMobBtnText").textContent = m.btn;
-    document.querySelectorAll("[data-ts-mob]").forEach(function (b) {
-      b.classList.toggle("active", b.getAttribute("data-ts-mob") === key);
-    });
-    document.querySelectorAll("[data-mob-jump]").forEach(function (tr) {
-      tr.classList.toggle("row-active", tr.getAttribute("data-mob-jump") === key);
-    });
-    if (window.__diffRemeasure) window.__diffRemeasure();
-  }
-
-  var CP_OTHER_META = {
-    cpRenewal: { title: "生成动态二维码（补差续购查询-续购行）", val: "小初全面进阶课（续购）", amt: true, noLb: "否", yesLb: "是", payLb: "分期支付方式", def: ["alipayFq"], errMsg: "请选择分期支付方式" },
-    cpDiffQr: { title: "动态二维码（补差续购查询-补差/会场行）", val: "小初全面进阶课（补差）", amt: true, noLb: "不支持", yesLb: "支持", payLb: "支付方式", def: [], errMsg: "请选择支付方式" },
-    cpSaleQr: { title: "动态二维码（专属售卖链接）", val: "全科三年大会员课程", amt: false, noLb: "不支持", yesLb: "支持", payLb: "支付方式", def: [], errMsg: "请选择支付方式" },
-    cpVenueQr: { title: "创建动态会场二维码（专属售卖链接）", val: "小初全面进阶课（新六年）", amt: true, noLb: "不支持", yesLb: "支持", payLb: "支付方式", def: [], errMsg: "请选择支付方式" }
-  };
-
-  function selectCpOther(key) {
-    state.cpOtherKey = key;
-    var m = CP_OTHER_META[key];
-    document.getElementById("cpOtherTitle").textContent = m.title;
-    document.getElementById("cpOtherGoodsVal").textContent = m.val;
-    document.getElementById("cpOtherAmountRow").style.display = m.amt ? "" : "none";
-    document.getElementById("cpInstNoLb").textContent = m.noLb;
-    document.getElementById("cpInstYesLb").textContent = m.yesLb;
-    document.getElementById("cpPayTypeLb").textContent = m.payLb;
-    state.forms.cp_other.defaultSelected = m.def.slice();
-    state.forms.cp_other.selected = m.def.slice();
-    state.forms.cp_other.err = "";
-    state.forms.cp_other.errMsg = m.errMsg;
-    document.querySelectorAll("[data-cp-other]").forEach(function (b) {
-      b.classList.toggle("active", b.getAttribute("data-cp-other") === key);
-    });
-    document.querySelectorAll("[data-cp-jump]").forEach(function (tr) {
-      tr.classList.toggle("row-active", tr.getAttribute("data-cp-jump") === key);
-    });
-    renderForm("cp_other");
-  }
-
-  // Event bindings
-  document.querySelectorAll(".sys-tab").forEach(function (b) {
-    b.onclick = function () { switchView(b.getAttribute("data-view")); };
+  document.querySelectorAll("[data-open-qr]").forEach(function (b) {
+    b.onclick = function () { openConfiguredQr(b.getAttribute("data-open-qr")); };
+  });
+  document.querySelectorAll("[data-close-modal]").forEach(function (b) {
+    b.onclick = function () {
+      document.getElementById(b.getAttribute("data-close-modal")).classList.remove("open");
+      if (window.__diffRemeasure) window.__diffRemeasure();
+    };
+  });
+  document.querySelectorAll("[data-mob-switch]").forEach(function (el) {
+    el.onclick = function () { switchMobileSub(el.getAttribute("data-mob-switch")); };
   });
 
-  document.querySelectorAll("[data-pp-tab]").forEach(function (t) {
+  // Detail mode & Tabs
+  document.querySelectorAll("[data-detail-mode]").forEach(function (t) {
     t.onclick = function () {
-      var k = t.getAttribute("data-pp-tab");
-      document.querySelectorAll("[data-pp-tab]").forEach(function (x) { x.classList.toggle("active", x === t); });
-      document.getElementById("telesalePushBody").style.display = k === "push" ? "" : "none";
-      document.getElementById("telesaleLogsBody").style.display = k === "logs" ? "" : "none";
+      var m = t.getAttribute("data-detail-mode");
+      document.querySelectorAll("[data-detail-mode]").forEach(function (x) { x.classList.toggle("active", x === t); });
+      document.getElementById("tsInfoModeBox").style.display = m === "info" ? "" : "none";
+      document.getElementById("tsAiModeBox").style.display = m === "ai" ? "" : "none";
+      if (window.__diffRemeasure) window.__diffRemeasure();
+    };
+  });
+  document.querySelectorAll("[data-ts-tab]").forEach(function (t) {
+    t.onclick = function () {
+      var k = t.getAttribute("data-ts-tab");
+      document.querySelectorAll("[data-ts-tab]").forEach(function (x) { x.classList.toggle("active", x === t); });
+      document.getElementById("tsTabRenewalDiff").style.display = k === "renewalDiff" ? "" : "none";
+      document.getElementById("tsTabAddPad").style.display = k === "addPad" ? "" : "none";
+      document.getElementById("tsTabPlaceholder").style.display = (k !== "renewalDiff" && k !== "addPad") ? "" : "none";
+      if (window.__diffRemeasure) window.__diffRemeasure();
+    };
+  });
+  document.querySelectorAll("[data-ts-pp-tab]").forEach(function (t) {
+    t.onclick = function () {
+      var k = t.getAttribute("data-ts-pp-tab");
+      document.querySelectorAll("[data-ts-pp-tab]").forEach(function (x) { x.classList.toggle("active", x === t); });
+      document.getElementById("tsPpBodyPush").style.display = k === "push" ? "" : "none";
+      document.getElementById("tsPpBodyLogs").style.display = k === "logs" ? "" : "none";
+      if (window.__diffRemeasure) window.__diffRemeasure();
+    };
+  });
+  document.querySelectorAll("[data-camp-tab]").forEach(function (t) {
+    t.onclick = function () {
+      var k = t.getAttribute("data-camp-tab");
+      document.querySelectorAll("[data-camp-tab]").forEach(function (x) { x.classList.toggle("active", x === t); });
+      document.getElementById("campTabHit").style.display = k === "hit" ? "" : "none";
+      document.getElementById("campTabRenewal").style.display = k === "renewal" ? "" : "none";
+      if (window.__diffRemeasure) window.__diffRemeasure();
+    };
+  });
+  document.querySelectorAll('input[name="ts_pp_buytype"]').forEach(function (r) {
+    r.onchange = function () {
+      document.querySelectorAll('input[name="ts_pp_buytype"]').forEach(function (x) {
+        x.parentElement.classList.toggle("checked", x.checked);
+      });
+      var box = document.getElementById("tsPpSubFields");
+      if (r.value === "link") {
+        box.innerHTML = '<div class="form-row"><div class="form-lb"><span class="req">*</span>课程名称：</div><div class="form-ctl"><div class="sel-box" style="width:100%;max-width:520px;">全科三年大会员课程</div></div></div>';
+      } else if (r.value === "repurchase") {
+        box.innerHTML =
+          '<div class="form-row"><div class="form-lb">续购类型：</div><div class="form-ctl"><div class="radio-group"><label class="el-radio checked"><input type="radio" checked disabled> 活动续购</label><label class="el-radio"><input type="radio" disabled> 普通续购</label></div></div></div>' +
+          '<div class="form-row"><div class="form-lb"><span class="req">*</span>课程名称：</div><div class="form-ctl"><div class="sel-box" style="width:100%;max-width:520px;">小初全面进阶课（续购）</div></div></div>' +
+          '<div class="form-row"><div class="form-lb">商品售价：</div><div class="form-ctl">¥ 4898.00</div></div>' +
+          '<div class="form-row"><div class="form-lb"><span class="req">*</span>商品实付价：</div><div class="form-ctl">¥ 4098.00</div></div>';
+      } else {
+        box.innerHTML =
+          '<div class="form-row"><div class="form-lb"><span class="req">*</span>年级：</div><div class="form-ctl"><div class="radio-group">' +
+          '<label class="el-radio"><input type="radio" disabled> 一至三年级</label><label class="el-radio"><input type="radio" disabled> 四年级</label>' +
+          '<label class="el-radio"><input type="radio" disabled> 五年级</label><label class="el-radio checked"><input type="radio" checked disabled> 六年级</label>' +
+          '<label class="el-radio"><input type="radio" disabled> 七年级</label><label class="el-radio"><input type="radio" disabled> 八年级</label>' +
+          '<label class="el-radio"><input type="radio" disabled> 九年级</label><label class="el-radio"><input type="radio" disabled> 高一</label>' +
+          '<label class="el-radio"><input type="radio" disabled> 高二</label><label class="el-radio"><input type="radio" disabled> 高三</label>' +
+          '<label class="el-radio"><input type="radio" disabled> 多孩家庭包</label></div></div></div>' +
+          '<div class="form-row"><div class="form-lb"><span class="req">*</span>商品：</div><div class="form-ctl"><div class="sel-box">小初全面进阶课（新六年）</div></div></div>' +
+          '<div class="form-row"><div class="form-lb">加购学习机：</div><div class="form-ctl"><div class="radio-group">' +
+          '<label class="el-radio checked"><input type="radio" checked disabled> 不加购</label>' +
+          '<label class="el-radio"><input type="radio" disabled> Q20学习机</label>' +
+          '<label class="el-radio"><input type="radio" disabled> P30学习机</label></div></div></div>' +
+          '<div class="form-row"><div class="form-lb">商品原价：</div><div class="form-ctl">¥ 6198.00</div></div>' +
+          '<div class="form-row"><div class="form-lb">商品售价：</div><div class="form-ctl">¥ 4898.00</div></div>' +
+          '<div class="form-row"><div class="form-lb">用户实付价：</div><div class="form-ctl">¥ 4898.00</div></div>';
+      }
       if (window.__diffRemeasure) window.__diffRemeasure();
     };
   });
@@ -674,31 +1300,10 @@ table.loc-tbl tr.row-active td { background: #ecf5ff; }
     };
   });
 
-  document.querySelectorAll("[data-ts-other]").forEach(function (b) {
-    b.onclick = function () { selectTsOther(b.getAttribute("data-ts-other")); };
-  });
-  document.querySelectorAll("[data-ts-jump]").forEach(function (tr) {
-    tr.onclick = function () { selectTsOther(tr.getAttribute("data-ts-jump")); };
-  });
-  document.querySelectorAll("[data-ts-mob]").forEach(function (b) {
-    b.onclick = function () { selectTsMob(b.getAttribute("data-ts-mob")); };
-  });
-  document.querySelectorAll("[data-mob-jump]").forEach(function (tr) {
-    tr.onclick = function () { selectTsMob(tr.getAttribute("data-mob-jump")); };
-  });
-  document.querySelectorAll("[data-cp-other]").forEach(function (b) {
-    b.onclick = function () { selectCpOther(b.getAttribute("data-cp-other")); };
-  });
-  document.querySelectorAll("[data-cp-jump]").forEach(function (tr) {
-    tr.onclick = function () { selectCpOther(tr.getAttribute("data-cp-jump")); };
-  });
-  document.querySelectorAll("[data-jump-view]").forEach(function (tr) {
-    tr.onclick = function () { switchView(tr.getAttribute("data-jump-view")); };
-  });
-
+  renderChrome();
   renderAllForms();
 
-  // Annotator integration
+  // Annotator integration (preserving PRD deep links)
   window.DIFF_CHANGESET = {
     meta: {
       slug: "installment-alipay-direct",
@@ -716,7 +1321,7 @@ table.loc-tbl tr.row-active td { background: #ecf5ff; }
         page: "电销CRM-支付推送",
         module: "新增枚举与互斥规则",
         target: "#tgtTelesalePayTypes",
-        view: { sys: "telesale-pc", tab: "payPush" },
+        view: { sys: "telesale", page: "ts-detail", modal: "modalTsPushPay" },
         level: "field",
         type: "enum",
         title: "电销CRM支付推送弹窗分期支付方式新增枚举与互斥",
@@ -735,7 +1340,7 @@ table.loc-tbl tr.row-active td { background: #ecf5ff; }
         page: "电销CRM-其余PC入口",
         module: "补差/专属链接/加购同步",
         target: "#tgtTelesalePcQrcodeTypes",
-        view: { sys: "telesale-pc", tab: "otherEntries" },
+        view: { sys: "telesale", page: "ts-detail", tab: "renewalDiff", modal: "modalTsQr", qr: "tsDiffQr" },
         level: "module",
         type: "enum",
         title: "电销CRM PC端其余7处分期入口同步新增枚举与互斥",
@@ -753,7 +1358,7 @@ table.loc-tbl tr.row-active td { background: #ecf5ff; }
         page: "电销CRM-移动端",
         module: "移动端H5页同步",
         target: "#tgtTelesaleMobilePayTypes",
-        view: { sys: "telesale-mobile", tab: "mobilePush" },
+        view: { sys: "telesale", page: "ts-mobile" },
         level: "module",
         type: "enum",
         title: "电销CRM移动端4处分期入口同步新增枚举与互斥",
@@ -770,7 +1375,7 @@ table.loc-tbl tr.row-active td { background: #ecf5ff; }
         page: "体验营CRM-支付推送",
         module: "支付方式新增枚举与互斥",
         target: "#tgtCampPushPayTypes",
-        view: { sys: "camp-pc", tab: "campPush" },
+        view: { sys: "camp", page: "camp-clue", campTab: "hit", modal: "modalCampPushPay" },
         level: "field",
         type: "enum",
         title: "体验营CRM支付推送弹窗同步新增枚举与互斥",
@@ -788,7 +1393,7 @@ table.loc-tbl tr.row-active td { background: #ecf5ff; }
         page: "体验营CRM-续购与会场",
         module: "续购/会场/专属链接同步",
         target: "#tgtCampRenewalPayTypes",
-        view: { sys: "camp-pc", tab: "campQrcode" },
+        view: { sys: "camp", page: "camp-clue", campTab: "renewal", qr: "cpRenewalQr" },
         level: "module",
         type: "enum",
         title: "体验营CRM补差续购与专属售卖链接弹窗同步更新",
@@ -806,7 +1411,7 @@ table.loc-tbl tr.row-active td { background: #ecf5ff; }
         page: "电销CRM-支付推送",
         module: "提交校验与组合口径",
         target: "#tgtTelesaleSubmitBtn",
-        view: { sys: "telesale-pc", tab: "payPush" },
+        view: { sys: "telesale", page: "ts-detail", modal: "modalTsPushPay" },
         level: "module",
         type: "logic",
         title: "提交校验及分期方式组合传递口径调整",
@@ -825,22 +1430,22 @@ table.loc-tbl tr.row-active td { background: #ecf5ff; }
   window.DIFF_HOOKS = {
     locate: function (change) {
       var v = change.view || {};
-      if (v.sys === "telesale-pc" && v.tab === "payPush") {
-        switchView("telesale-paypush");
-        document.querySelector('[data-pp-tab="push"]').click();
-        if (!state.forms.ts_pp.isInst) {
-          state.forms.ts_pp.isInst = true;
-          state.forms.ts_pp.selected = ["alipayFq"];
-          renderForm("ts_pp");
-        }
-      } else if (v.sys === "telesale-pc" && v.tab === "otherEntries") {
-        switchView("telesale-others");
-      } else if (v.sys === "telesale-mobile") {
-        switchView("telesale-mobile");
-      } else if (v.sys === "camp-pc" && v.tab === "campPush") {
-        switchView("camp-paypush");
-      } else if (v.sys === "camp-pc" && v.tab === "campQrcode") {
-        switchView("camp-others");
+      switchSystem(v.sys || "telesale", v.page || "ts-detail");
+      if (v.tab) {
+        var tabEl = document.querySelector('[data-ts-tab="' + v.tab + '"]');
+        if (tabEl) tabEl.click();
+      }
+      if (v.campTab) {
+        var ctEl = document.querySelector('[data-camp-tab="' + v.campTab + '"]');
+        if (ctEl) ctEl.click();
+      }
+      if (v.qr) {
+        openConfiguredQr(v.qr);
+      } else if (v.modal) {
+        openModal(v.modal);
+      } else {
+        closeAllModals();
+        if (v.page === "ts-mobile") switchMobileSub("push");
       }
     },
     setDemoState: function (id) {
@@ -848,13 +1453,10 @@ table.loc-tbl tr.row-active td { background: #ecf5ff; }
         var f = state.forms[k];
         f.isInst = true;
         f.err = "";
-        if (id === "normal") {
-          f.selected = f.defaultSelected.slice();
-        } else if (id === "direct") {
-          f.selected = ["alipayDirect"];
-        } else if (id === "combo") {
-          f.selected = ["alipayDirect", "cardFq"];
-        } else if (id === "emptyErr") {
+        if (id === "normal") f.selected = f.defaultSelected.slice();
+        else if (id === "direct") f.selected = ["alipayDirect"];
+        else if (id === "combo") f.selected = ["alipayDirect", "cardFq"];
+        else if (id === "emptyErr") {
           f.selected = [];
           f.err = f.errMsg;
         }
