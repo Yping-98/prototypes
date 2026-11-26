@@ -3,483 +3,1208 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>渠道活码备注固定与动态 - 可交互原型</title>
+  <title>编辑活码场景 - 渠道活码备注固定与动态</title>
   <style>
     :root {
-      --bg: #f5f6f8;
-      --card: #fff;
-      --line: #e8e8e8;
-      --text: #262626;
-      --muted: #8c8c8c;
-      --primary: #1677ff;
-      --side: #001529;
-      --ok: #52c41a;
-      --danger: #ff4d4f;
+      --el-color-primary: #409eff;
+      --el-color-primary-light-3: #79bbff;
+      --el-color-primary-light-9: #ecf5ff;
+      --el-color-success: #67c23a;
+      --el-color-warning: #e6a23c;
+      --el-color-danger: #f56c6c;
+      --el-text-primary: #303133;
+      --el-text-regular: #606266;
+      --el-text-secondary: #909399;
+      --el-text-placeholder: #a8abb2;
+      --el-border-color: #dcdfe6;
+      --el-border-light: #e4e7ed;
+      --el-border-lighter: #ebeef5;
+      --el-fill-light: #f5f7fa;
+      --side-bg: #001529;
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
       font-size: 14px;
+      color: var(--el-text-regular);
+      background: #f0f2f5;
+      min-height: 100vh;
     }
-    .layout { display: flex; min-height: 100vh; }
-    .side {
-      width: 200px;
-      background: var(--side);
-      color: rgba(255,255,255,.75);
-      padding: 16px 0;
-      flex: none;
+    button, input, textarea { font-family: inherit; font-size: 14px; }
+
+    /* 左侧菜单（还原电销 CRM 后台） */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 210px;
+      background: var(--side-bg);
+      color: rgba(255, 255, 255, .65);
+      overflow-y: auto;
+      z-index: 20;
     }
-    .side .brand { color: #fff; font-weight: 600; padding: 0 16px 16px; }
-    .side .item { padding: 10px 20px; font-size: 13px; }
-    .side .item.active { background: #1677ff; color: #fff; }
-    .main { flex: 1; min-width: 0; }
-    .topbar {
-      background: #fff;
-      border-bottom: 1px solid var(--line);
-      padding: 12px 20px;
+    .sidebar .logo {
+      height: 48px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      gap: 8px;
+      padding: 0 20px;
+      color: #fff;
+      font-weight: 600;
+      font-size: 16px;
+      background: #002140;
     }
-    .topbar h1 { margin: 0; font-size: 16px; font-weight: 600; }
-    .content { padding: 16px 20px 40px; }
-    #diffPage { position: relative; max-width: 920px; }
-    .card {
-      background: var(--card);
-      border-radius: 8px;
-      padding: 20px 24px 28px;
-      box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    .sidebar .logo-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: #409eff;
+      color: #fff;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
-    .form-row {
+    .sidebar .menu-item {
+      height: 44px;
+      padding: 0 20px;
       display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-      align-items: flex-start;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      white-space: nowrap;
     }
-    .form-label {
-      width: 96px;
+    .sidebar .menu-item:hover { color: #fff; }
+    .sidebar .menu-item.open { color: #fff; }
+    .sidebar .menu-item .caret { margin-left: auto; font-size: 11px; opacity: .75; }
+    .sidebar .badge {
+      min-width: 16px;
+      height: 16px;
+      padding: 0 5px;
+      border-radius: 8px;
+      background: #f56c6c;
+      color: #fff;
+      font-size: 11px;
+      line-height: 16px;
+      margin-left: 4px;
+    }
+    .sidebar .sub-item {
+      height: 40px;
+      padding: 0 20px 0 46px;
+      display: flex;
+      align-items: center;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .sidebar .sub-item:hover { color: #fff; }
+    .sidebar .sub-item.active { color: #fff; background: #409eff; }
+
+    /* 右侧主区 */
+    .main {
+      margin-left: 210px;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .topbar {
+      height: 48px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      border-bottom: 1px solid #f0f0f0;
+      gap: 12px;
+    }
+    .topbar .collapse { font-size: 16px; color: #606266; cursor: pointer; }
+    .topbar .crumb { color: var(--el-text-primary); font-size: 14px; }
+    .topbar .notice {
+      flex: 1;
+      text-align: center;
+      color: #e6423a;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .topbar .user {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--el-text-regular);
+      white-space: nowrap;
+    }
+    .topbar .avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #409eff;
+      color: #fff;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 多标签栏 */
+    .tags-view {
+      background: #fff;
+      padding: 6px 12px;
+      border-bottom: 1px solid var(--el-border-light);
+      display: flex;
+      gap: 6px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+    }
+    .tags-view .tab {
+      height: 26px;
+      line-height: 24px;
+      padding: 0 10px;
+      border: 1px solid var(--el-border-light);
+      border-radius: 3px;
+      font-size: 12px;
+      color: var(--el-text-regular);
+      background: #fff;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .tags-view .tab.active {
+      color: var(--el-color-primary);
+      border-color: var(--el-color-primary);
+      background: var(--el-color-primary-light-9);
+    }
+
+    /* 内容区：还原 .g-margin-20 + el-card */
+    .g-margin-20 { padding: 20px; }
+    #diffPage { position: relative; max-width: 1080px; }
+    .el-card {
+      background: #fff;
+      border: 1px solid var(--el-border-lighter);
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0, 21, 41, .08);
+      padding: 22px 24px 26px;
+    }
+
+    /* Element Plus Form（label-width="140px"） */
+    .el-form-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+    .el-form-item__label {
+      width: 140px;
       flex: none;
       text-align: right;
-      color: var(--text);
+      padding-right: 12px;
       line-height: 32px;
-      padding-right: 4px;
-    }
-    .form-label .req { color: var(--danger); margin-right: 2px; }
-    .form-body { flex: 1; min-width: 0; }
-    .input, .select-like {
-      height: 32px;
-      border: 1px solid #d9d9d9;
-      border-radius: 6px;
-      padding: 0 11px;
-      width: 100%;
-      max-width: 420px;
-      background: #fff;
+      color: var(--el-text-regular);
       font-size: 14px;
     }
-    .select-like {
-      color: var(--muted);
-      display: flex;
+    .el-form-item__label.is-required::before {
+      content: "*";
+      color: var(--el-color-danger);
+      margin-right: 4px;
+    }
+    .el-form-item__content {
+      flex: 1;
+      min-width: 0;
+      position: relative;
+    }
+
+    /* Element Plus Input & Select */
+    .el-input {
+      display: inline-flex;
+      align-items: center;
+      height: 32px;
+      padding: 0 11px;
+      border: 1px solid var(--el-border-color);
+      border-radius: 4px;
+      background: #fff;
+      transition: border-color .2s;
+      width: 220px;
+      position: relative;
+    }
+    .el-input:focus-within { border-color: var(--el-color-primary); }
+    .el-input.is-error { border-color: var(--el-color-danger); }
+    .el-input.is-disabled { background: var(--el-fill-light); cursor: not-allowed; }
+    .el-input input {
+      border: none;
+      outline: none;
+      width: 100%;
+      background: transparent;
+      color: var(--el-text-primary);
+      line-height: 30px;
+    }
+    .el-input input::placeholder { color: var(--el-text-placeholder); }
+    .el-input .clear-icon {
+      display: none;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      border: 1px solid #c0c4cc;
+      color: #c0c4cc;
+      font-size: 10px;
+      line-height: 13px;
+      text-align: center;
+      cursor: pointer;
+      flex: none;
+      margin-left: 6px;
+    }
+    .el-input:hover .clear-icon.visible { display: inline-block; }
+    .el-input .clear-icon:hover { border-color: #909399; color: #909399; }
+
+    .el-select {
+      display: inline-flex;
       align-items: center;
       justify-content: space-between;
-    }
-    .hint { color: var(--muted); font-size: 12px; margin-top: 6px; line-height: 1.5; }
-    .switch {
-      width: 44px;
-      height: 22px;
-      border-radius: 11px;
-      background: #bfbfbf;
-      position: relative;
+      height: 32px;
+      width: 220px;
+      padding: 0 11px;
+      border: 1px solid var(--el-border-color);
+      border-radius: 4px;
+      background: #fff;
+      color: var(--el-text-primary);
       cursor: pointer;
-      border: 0;
-      margin-top: 5px;
-      transition: background .2s;
+      user-select: none;
+      position: relative;
     }
-    .switch.on { background: var(--ok); }
-    .switch::after {
+    .el-select.open { border-color: var(--el-color-primary); }
+    .el-select::after {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-right: 1px solid #c0c4cc;
+      border-bottom: 1px solid #c0c4cc;
+      transform: rotate(45deg);
+      margin-top: -3px;
+    }
+    .el-select .ph { color: var(--el-text-placeholder); }
+    .el-select-dropdown {
+      position: absolute;
+      top: 36px;
+      left: 0;
+      min-width: 220px;
+      background: #fff;
+      border: 1px solid var(--el-border-light);
+      border-radius: 4px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .1);
+      padding: 6px 0;
+      z-index: 30;
+      display: none;
+    }
+    .el-select-dropdown.show { display: block; }
+    .el-select-dropdown .opt {
+      height: 34px;
+      line-height: 34px;
+      padding: 0 16px;
+      cursor: pointer;
+      color: var(--el-text-regular);
+    }
+    .el-select-dropdown .opt:hover { background: var(--el-fill-light); }
+    .el-select-dropdown .opt.selected { color: var(--el-color-primary); font-weight: 600; }
+
+    /* Element Plus Checkbox */
+    .el-checkbox-group {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 24px;
+      min-height: 32px;
+    }
+    .el-checkbox {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+      color: var(--el-text-regular);
+    }
+    .el-checkbox.is-disabled { cursor: not-allowed; opacity: .6; }
+    .el-checkbox__inner {
+      width: 14px;
+      height: 14px;
+      border: 1px solid var(--el-border-color);
+      border-radius: 2px;
+      background: #fff;
+      position: relative;
+      transition: all .15s;
+      flex: none;
+    }
+    .el-checkbox:hover:not(.is-disabled) .el-checkbox__inner { border-color: var(--el-color-primary); }
+    .el-checkbox.is-checked .el-checkbox__inner {
+      background: var(--el-color-primary);
+      border-color: var(--el-color-primary);
+    }
+    .el-checkbox.is-checked .el-checkbox__inner::after {
       content: "";
       position: absolute;
-      width: 18px;
-      height: 18px;
+      left: 4px;
+      top: 1px;
+      width: 4px;
+      height: 8px;
+      border: 1.5px solid #fff;
+      border-left: 0;
+      border-top: 0;
+      transform: rotate(45deg);
+    }
+    .el-checkbox.is-checked .el-checkbox__label { color: var(--el-color-primary); }
+
+    /* Element Plus Button & Tag */
+    .el-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      height: 32px;
+      padding: 0 15px;
+      border: 1px solid var(--el-border-color);
+      border-radius: 4px;
+      background: #fff;
+      color: var(--el-text-regular);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .15s;
+    }
+    .el-button:hover { color: var(--el-color-primary); border-color: #c6e2ff; background: var(--el-color-primary-light-9); }
+    .el-button--primary { background: var(--el-color-primary); border-color: var(--el-color-primary); color: #fff; }
+    .el-button--primary:hover { background: #66b1ff; border-color: #66b1ff; color: #fff; }
+    .el-button.is-plain { color: var(--el-text-regular); background: #fff; }
+    .el-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 24px;
+      padding: 0 9px;
+      border-radius: 4px;
+      background: var(--el-color-primary);
+      color: #fff;
+      font-size: 12px;
+    }
+    .el-tag .close { cursor: pointer; opacity: .85; font-style: normal; }
+    .el-tag .close:hover { opacity: 1; }
+    .g-margin-rb-10 { margin-right: 10px; margin-bottom: 6px; }
+
+    /* Element Plus Switch */
+    .el-switch {
+      width: 40px;
+      height: 20px;
+      border-radius: 10px;
+      background: var(--el-border-color);
+      position: relative;
+      cursor: pointer;
+      display: inline-block;
+      margin-top: 6px;
+      transition: background .2s;
+    }
+    .el-switch.on { background: var(--el-color-primary); }
+    .el-switch::after {
+      content: "";
+      position: absolute;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       background: #fff;
       top: 2px;
       left: 2px;
       transition: left .2s;
-      box-shadow: 0 1px 3px rgba(0,0,0,.2);
     }
-    .switch.on::after { left: 24px; }
-    .type-group {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 12px;
-      background: #fafafa;
-      border: 1px solid var(--line);
-      border-radius: 8px;
+    .el-switch.on::after { left: 22px; }
+
+    /* Textarea */
+    .el-textarea {
+      position: relative;
+      max-width: 360px;
+    }
+    .el-textarea textarea {
+      width: 100%;
+      min-height: 132px;
+      padding: 8px 11px 24px;
+      border: 1px solid var(--el-border-color);
+      border-radius: 4px;
+      outline: none;
+      resize: vertical;
+      line-height: 1.5;
+      color: var(--el-text-primary);
+    }
+    .el-textarea textarea:focus { border-color: var(--el-color-primary); }
+    .el-textarea .word-limit {
+      position: absolute;
+      right: 10px;
+      bottom: 6px;
+      font-size: 12px;
+      color: var(--el-text-secondary);
+      background: #fff;
+      padding: 0 2px;
+    }
+    .d-emoji-close {
+      position: absolute;
+      right: -36px;
+      bottom: 6px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid #c0c4cc;
+      color: #909399;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      cursor: pointer;
+      opacity: .65;
+    }
+    .d-emoji-close:hover { opacity: 1; }
+
+    /* 提示与报错 */
+    .form-tip {
+      color: var(--el-text-secondary);
+      font-size: 12px;
+      line-height: 20px;
+      margin-top: 4px;
+    }
+    .form-err {
+      color: var(--el-color-danger);
+      font-size: 12px;
+      line-height: 18px;
+      margin-top: 4px;
+      display: none;
+    }
+    .form-err.show { display: block; }
+
+    /* 添加备注联动区域 */
+    .remark-type-wrap { display: inline-block; }
+    .remark-dynamic-box {
+      margin-top: 6px;
+      padding: 8px 12px;
+      border-radius: 4px;
+      background: var(--el-fill-light);
+      border: 1px solid var(--el-border-lighter);
+      font-size: 12px;
+      color: var(--el-text-regular);
+      line-height: 1.6;
       max-width: 520px;
     }
-    .check {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      user-select: none;
-    }
-    .check input { width: 16px; height: 16px; accent-color: var(--primary); }
-    .sub-field { margin: 4px 0 0 24px; }
-    .preview {
-      margin-top: 12px;
-      padding: 10px 12px;
-      background: #f0f7ff;
-      border: 1px dashed #91caff;
-      border-radius: 6px;
+    .remark-preview-box {
+      margin-top: 8px;
+      padding: 9px 12px;
+      border-radius: 4px;
+      background: var(--el-color-primary-light-9);
+      border: 1px solid #d9ecff;
       max-width: 520px;
       font-size: 13px;
       line-height: 1.6;
+      color: var(--el-text-primary);
     }
-    .preview b { color: var(--primary); font-weight: 600; }
-    .preview .label { color: var(--muted); }
-    .footer-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-top: 28px;
-      max-width: 640px;
+    .remark-preview-box .muted {
+      color: var(--el-text-secondary);
+      font-size: 12px;
+      margin-bottom: 2px;
     }
-    .btn {
-      height: 32px;
-      border-radius: 6px;
-      border: 1px solid #d9d9d9;
-      background: #fff;
-      padding: 0 16px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
-    .btn:disabled { opacity: .45; cursor: not-allowed; }
-    .toast {
-      position: fixed;
-      top: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,.78);
-      color: #fff;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-size: 13px;
-      z-index: 9500;
-      display: none;
-    }
-    .toast.show { display: block; }
-    .sim {
-      margin-top: 16px;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      max-width: 520px;
-    }
-    .sim h3 { margin: 0 0 8px; font-size: 13px; color: var(--muted); font-weight: 500; }
-    .sim .result {
-      font-size: 15px;
+    .remark-preview-box .val {
+      color: var(--el-color-primary);
       font-weight: 600;
-      color: var(--text);
       word-break: break-all;
     }
-    .tag-chip {
-      display: inline-flex;
+    .sim-bar {
+      display: flex;
       align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--el-text-secondary);
+    }
+    .sim-bar input {
       height: 24px;
       padding: 0 8px;
-      border-radius: 4px;
-      background: #f5f5f5;
-      border: 1px solid #d9d9d9;
-      color: var(--muted);
+      border: 1px solid var(--el-border-color);
+      border-radius: 3px;
       font-size: 12px;
+      width: 96px;
+      color: var(--el-text-primary);
+      background: #fff;
+      outline: none;
     }
-    .err { color: var(--danger); font-size: 12px; margin-top: 6px; display: none; }
-    .err.show { display: block; }
+
+    /* 欢迎语素材表格（贴近 WelcomeMaterial.vue） */
+    .g-table-box { max-width: 620px; }
+    .g-table-box .d-btn-cont { margin-bottom: 10px; }
+    .el-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--el-border-lighter);
+      font-size: 13px;
+    }
+    .el-table td, .el-table th {
+      border: 1px solid var(--el-border-lighter);
+      padding: 10px 12px;
+      text-align: left;
+      color: var(--el-text-regular);
+    }
+    .el-table .empty { text-align: center; color: var(--el-text-secondary); padding: 18px; }
+
+    /* Toast */
+    .el-message {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9500;
+      padding: 10px 18px;
+      border-radius: 4px;
+      font-size: 14px;
+      display: none;
+      box-shadow: 0 2px 12px rgba(0,0,0,.1);
+    }
+    .el-message.show { display: block; }
+    .el-message.success { background: #f0f9eb; border: 1px solid #e1f3d8; color: #67c23a; }
+    .el-message.warning { background: #fdf6ec; border: 1px solid #faecd8; color: #e6a23c; }
+
+    /* 弹窗（选择标签） */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      z-index: 9400;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 14vh;
+    }
+    .overlay.show { display: flex; }
+    .dialog {
+      width: 460px;
+      max-width: calc(100vw - 32px);
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, .18);
+    }
+    .dialog-hd {
+      padding: 16px 20px 10px;
+      font-size: 16px;
+      color: var(--el-text-primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .dialog-hd .x { cursor: pointer; color: var(--el-text-secondary); }
+    .dialog-bd { padding: 8px 20px 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-opt {
+      height: 28px;
+      line-height: 26px;
+      padding: 0 10px;
+      border: 1px solid var(--el-border-color);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .tag-opt.on { background: var(--el-color-primary); border-color: var(--el-color-primary); color: #fff; }
+    .dialog-ft { padding: 0 20px 16px; display: flex; justify-content: flex-end; gap: 8px; }
   </style>
 </head>
 <body>
-  <div class="layout">
-    <aside class="side">
-      <div class="brand">电销 CRM</div>
-      <div class="item">活动管理</div>
-      <div class="item active">渠道活码</div>
-    </aside>
-    <div class="main">
-      <div class="topbar">
-        <h1>编辑活码场景</h1>
-        <div style="color:#8c8c8c;font-size:12px;">原型 · 备注固定与动态</div>
-      </div>
-      <div class="content">
-        <div id="diffPage" class="page">
-          <div class="card">
-            <div class="form-row">
-              <div class="form-label"><span class="req">*</span>活码名称</div>
-              <div class="form-body">
-                <input class="input" value="春季投放活码-A" />
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-dot">电</span>电销CRM</div>
+    <div class="menu-item">🔍 搜线索</div>
+    <div class="menu-item">🏠 个人工作台 <span class="badge">3</span> <span class="caret">⌄</span></div>
+    <div class="menu-item">💬 公海池 <span class="caret">⌄</span></div>
+    <div class="menu-item">👤 客户管理 <span class="caret">⌄</span></div>
+    <div class="menu-item">📋 订单管理 <span class="caret">⌄</span></div>
+    <div class="menu-item">📊 数据统计 <span class="caret">⌄</span></div>
+    <div class="menu-item open">🚩 活动管理 <span class="caret">⌃</span></div>
+    <div class="sub-item">转介绍</div>
+    <div class="sub-item active">渠道活码</div>
+    <div class="sub-item">活码类型管理</div>
+    <div class="sub-item">活码分配规则</div>
+    <div class="sub-item">活码配置</div>
+    <div class="sub-item">抽奖活动</div>
+    <div class="sub-item">裂变活动</div>
+    <div class="sub-item">分时段欢迎语</div>
+    <div class="sub-item">引流页主题配置</div>
+  </aside>
+
+  <section class="main">
+    <header class="topbar">
+      <span class="collapse">☰</span>
+      <span class="crumb">编辑活码场景</span>
+      <div class="notice">今日已领0，优质线索池上限60/日；今日已领0，自助线索池上限20/日</div>
+      <div class="user"><span class="avatar">李</span>李莹萍</div>
+    </header>
+    <div class="tags-view">
+      <span class="tab">首页</span>
+      <span class="tab">线索查询</span>
+      <span class="tab">渠道活码</span>
+      <span class="tab active">编辑活码场景</span>
+    </div>
+
+    <div class="g-margin-20">
+      <div id="diffPage" class="page">
+        <div class="el-card">
+          <div class="el-form-item">
+            <div class="el-form-item__label is-required">场景名称：</div>
+            <div class="el-form-item__content">
+              <div class="el-input" style="width: 250px;">
+                <input id="sceneName" value="春季投放-高中注册活码" placeholder="请输入场景名称" />
+                <span class="clear-icon visible" onclick="clearField('sceneName')">×</span>
               </div>
             </div>
-            <div class="form-row">
-              <div class="form-label"><span class="req">*</span>使用成员</div>
-              <div class="form-body">
-                <div class="select-like" style="max-width:420px;">请选择成员 <span>▾</span></div>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-label">添加标签</div>
-              <div class="form-body">
-                <span class="tag-chip">+ 添加客户标签</span>
-                <div class="hint">客户通过该活码添加时，会自动打上配置的标签</div>
-              </div>
-            </div>
+          </div>
 
-            <div class="form-row" id="remarkSwitchRow">
-              <div class="form-label">添加备注</div>
-              <div class="form-body">
-                <button type="button" class="switch on" id="remarkSwitch" aria-label="添加备注开关"></button>
-                <div class="hint">开启后，客户通过该活码添加时，会自动加上备注</div>
-              </div>
-            </div>
-
-            <div class="form-row" id="remarkConfigRow">
-              <div class="form-label"></div>
-              <div class="form-body">
-                <div class="type-group" id="remarkTypeGroup">
-                  <label class="check"><input type="checkbox" id="chkFixed" checked /> 固定备注</label>
-                  <div class="sub-field" id="fixedRemarkField">
-                    <input class="input" id="fixedRemarkInput" maxlength="40" placeholder="请输入固定备注" value="春季投放" />
-                    <div class="err" id="fixedErr">请填写固定备注</div>
-                  </div>
-                  <label class="check"><input type="checkbox" id="chkDynamic" checked /> 动态备注</label>
-                  <div class="sub-field" id="dynamicRemarkHint">
-                    <div class="hint" style="margin-top:0;">按客户添加成功当天写入日期，格式为年月日八位数字，例如 20260606。无需手工填写。</div>
-                  </div>
-                  <div class="err" id="typeErr">请至少选择一种备注类型</div>
-                </div>
-
-                <div class="preview" id="remarkPreview">
-                  <div class="label">最终备注预览（示例昵称：张三，示例日期：20260606）</div>
-                  <div>将写入：<b id="previewText">20260606春季投放-张三</b></div>
-                </div>
-
-                <div class="sim" id="addSuccessSim">
-                  <h3>添加成功写入模拟</h3>
-                  <div class="result" id="simResult">20260606春季投放-张三</div>
-                  <div class="hint" style="margin-top:8px;">假设客户「张三」于 2026-06-06 通过该活码添加成功。</div>
+          <div class="el-form-item">
+            <div class="el-form-item__label is-required">活码场景类型：</div>
+            <div class="el-form-item__content">
+              <div class="el-select" onclick="toggleSelect(event, 'dropGroup')">
+                <span id="valGroup">投放引流</span>
+                <div class="el-select-dropdown" id="dropGroup">
+                  <div class="opt selected" onclick="pickSelect(event,'valGroup','dropGroup','投放引流')">投放引流</div>
+                  <div class="opt" onclick="pickSelect(event,'valGroup','dropGroup','AI机器人')">AI机器人</div>
+                  <div class="opt" onclick="pickSelect(event,'valGroup','dropGroup','公海承接')">公海承接</div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <div class="footer-actions">
-              <button type="button" class="btn" id="btnCancel">取消</button>
-              <button type="button" class="btn primary" id="btnSave">保存</button>
+          <div class="el-form-item">
+            <div class="el-form-item__label is-required">资源位入口：</div>
+            <div class="el-form-item__content">
+              <div class="el-select" onclick="toggleSelect(event, 'dropEntry')">
+                <span id="valEntry">新用户注册</span>
+                <div class="el-select-dropdown" id="dropEntry">
+                  <div class="opt selected" onclick="pickSelect(event,'valEntry','dropEntry','新用户注册')">新用户注册</div>
+                  <div class="opt" onclick="pickSelect(event,'valEntry','dropEntry','APP弹窗')">APP弹窗</div>
+                  <div class="opt" onclick="pickSelect(event,'valEntry','dropEntry','信息流落地页')">信息流落地页</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="el-form-item">
+            <div class="el-form-item__label">线索等级：</div>
+            <div class="el-form-item__content">
+              <div class="el-select" onclick="toggleSelect(event, 'dropLevel')">
+                <span id="valLevel">A类线索</span>
+                <div class="el-select-dropdown" id="dropLevel">
+                  <div class="opt selected" onclick="pickSelect(event,'valLevel','dropLevel','A类线索')">A类线索</div>
+                  <div class="opt" onclick="pickSelect(event,'valLevel','dropLevel','B类线索')">B类线索</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="el-form-item">
+            <div class="el-form-item__label is-required">选择企微账号：</div>
+            <div class="el-form-item__content">
+              <div class="el-select" onclick="toggleSelect(event, 'dropAccount')">
+                <span id="valAccount">洋葱学园</span>
+                <div class="el-select-dropdown" id="dropAccount">
+                  <div class="opt selected" onclick="pickSelect(event,'valAccount','dropAccount','洋葱学园')">洋葱学园</div>
+                  <div class="opt" onclick="pickSelect(event,'valAccount','dropAccount','洋葱中学')">洋葱中学</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="el-form-item">
+            <div class="el-form-item__label is-required">分配规则类型：</div>
+            <div class="el-form-item__content">
+              <div class="el-checkbox-group">
+                <label class="el-checkbox"><span class="el-checkbox__inner"></span><span class="el-checkbox__label">新逻辑</span></label>
+                <label class="el-checkbox is-checked"><span class="el-checkbox__inner"></span><span class="el-checkbox__label">原逻辑</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="el-form-item">
+            <div class="el-form-item__label is-required">选择分配规则：</div>
+            <div class="el-form-item__content">
+              <div class="el-select" onclick="toggleSelect(event, 'dropRule')">
+                <span id="valRule">高中投放默认轮询规则</span>
+                <div class="el-select-dropdown" id="dropRule">
+                  <div class="opt selected" onclick="pickSelect(event,'valRule','dropRule','高中投放默认轮询规则')">高中投放默认轮询规则</div>
+                  <div class="opt" onclick="pickSelect(event,'valRule','dropRule','体验营承接规则')">体验营承接规则</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="el-form-item">
+            <div class="el-form-item__label">选择标签：</div>
+            <div class="el-form-item__content">
+              <div style="display:flex;align-items:center;flex-wrap:wrap;">
+                <button type="button" class="el-button is-plain g-margin-rb-10" onclick="openTagDialog()">+ 选择标签</button>
+                <span id="selectedTags" style="display:inline-flex;flex-wrap:wrap;"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 本次改造核心区域：添加备注 -->
+          <div class="el-form-item" id="remarkItem">
+            <div class="el-form-item__label">添加备注：</div>
+            <div class="el-form-item__content">
+              <div class="remark-type-wrap" id="remarkTypeGroup">
+                <div class="el-checkbox-group">
+                  <label class="el-checkbox is-checked" id="chkFixedWrap" onclick="toggleRemarkType(event, 'fixed')">
+                    <span class="el-checkbox__inner"></span>
+                    <span class="el-checkbox__label">固定备注</span>
+                  </label>
+                  <label class="el-checkbox is-checked" id="chkDynamicWrap" onclick="toggleRemarkType(event, 'dynamic')">
+                    <span class="el-checkbox__inner"></span>
+                    <span class="el-checkbox__label">动态备注</span>
+                  </label>
+                </div>
+                <div class="form-tip">非必填，可自主选择固定备注、动态备注或同时使用；均不勾选则不添加备注</div>
+              </div>
+
+              <div id="dynamicRemarkHint" class="remark-dynamic-box">
+                动态备注规则：客户通过该活码添加企微成功当天，自动写入年月日八位数字（例如 <b>20260606</b>）；无需手工填写。
+              </div>
+            </div>
+          </div>
+
+          <div class="el-form-item" id="fixedRemarkRow">
+            <div class="el-form-item__label is-required">固定备注：</div>
+            <div class="el-form-item__content">
+              <div id="fixedRemarkField" style="display:inline-block;">
+                <div class="el-input" id="fixedInputBox" style="width: 300px;">
+                  <input id="fixedRemarkInput" value="春季投放" maxlength="40" placeholder="请输入固定备注" oninput="onFixedInput()" />
+                  <span class="clear-icon visible" id="fixedClearBtn" onclick="clearFixedRemark()">×</span>
+                </div>
+                <div class="form-err" id="fixedErr">请输入固定备注</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="el-form-item" id="previewRow">
+            <div class="el-form-item__label"></div>
+            <div class="el-form-item__content">
+              <div class="remark-preview-box" id="remarkPreview">
+                <div class="muted">最终写入备注预览（同时使用时动态日期在前、固定备注在后，无分隔符，末尾保留「-客户昵称」）</div>
+                <div>将写入客户备注：<span class="val" id="previewText">20260606春季投放-张三</span></div>
+                <div class="sim-bar">
+                  <span>模拟添加成功日：</span>
+                  <input id="simDate" value="20260606" maxlength="8" oninput="renderRemark()" />
+                  <span>模拟客户昵称：</span>
+                  <input id="simNick" value="张三" maxlength="20" oninput="renderRemark()" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 核心区域结束 -->
+
+          <div class="el-form-item">
+            <div class="el-form-item__label">设置欢迎语：</div>
+            <div class="el-form-item__content">
+              <div class="el-textarea">
+                <textarea id="welcomeText" maxlength="1000" oninput="updateWelcomeCount()">你好，欢迎来到洋葱学园，请回复年级领取专属学习资料～</textarea>
+                <span class="word-limit" id="welcomeCount">26 / 1000</span>
+                <span class="d-emoji-close" id="welcomeClear" onclick="clearWelcome()" title="清空">×</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="el-form-item">
+            <div class="el-form-item__label">欢迎语素材：</div>
+            <div class="el-form-item__content">
+              <div class="g-table-box">
+                <div class="d-btn-cont">
+                  <button type="button" class="el-button is-plain" onclick="showMsg('当前演示仅聚焦添加备注改造','warning')">+ 添加素材</button>
+                </div>
+                <table class="el-table">
+                  <tbody>
+                    <tr><td class="empty">暂无数据</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="el-form-item">
+            <div class="el-form-item__label">分时段欢迎语</div>
+            <div class="el-form-item__content">
+              <span class="el-switch" id="periodSwitch" onclick="this.classList.toggle('on')"></span>
+            </div>
+          </div>
+
+          <div class="el-form-item">
+            <div class="el-form-item__label is-required">首次活码主题：</div>
+            <div class="el-form-item__content">
+              <div class="el-select" onclick="toggleSelect(event, 'dropTheme')">
+                <span id="valTheme">高中注册默认主题</span>
+                <div class="el-select-dropdown" id="dropTheme">
+                  <div class="opt selected" onclick="pickSelect(event,'valTheme','dropTheme','高中注册默认主题')">高中注册默认主题</div>
+                  <div class="opt" onclick="pickSelect(event,'valTheme','dropTheme','通用引流白底主题')">通用引流白底主题</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="el-form-item">
+            <div class="el-form-item__label">多次活码主题：</div>
+            <div class="el-form-item__content">
+              <div class="el-select"><span class="ph">请选择</span></div>
+            </div>
+          </div>
+
+          <div class="el-form-item">
+            <div class="el-form-item__label is-required">选择活码类型：</div>
+            <div class="el-form-item__content">
+              <div class="el-select"><span id="valFetchType">小程序</span></div>
+            </div>
+          </div>
+
+          <div class="el-form-item">
+            <div class="el-form-item__label is-required">选择小程序</div>
+            <div class="el-form-item__content">
+              <div class="el-select"><span>洋葱学园学习助手</span></div>
+            </div>
+          </div>
+
+          <div class="el-form-item">
+            <div class="el-form-item__label">福利赠送</div>
+            <div class="el-form-item__content">
+              <div class="el-checkbox-group">
+                <label class="el-checkbox"><span class="el-checkbox__inner"></span><span class="el-checkbox__label">课程</span></label>
+                <label class="el-checkbox"><span class="el-checkbox__inner"></span><span class="el-checkbox__label">洋葱币</span></label>
+              </div>
+              <div class="form-tip">非必填，可多选</div>
+            </div>
+          </div>
+
+          <div class="el-form-item" style="margin-top: 24px; margin-bottom: 0;">
+            <div class="el-form-item__label"></div>
+            <div class="el-form-item__content" style="display: flex; gap: 10px;">
+              <button type="button" class="el-button" onclick="showMsg('已返回渠道活码列表','warning')">返回</button>
+              <button type="button" class="el-button el-button--primary" onclick="submitForm()">确定</button>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </section>
+
+  <div class="overlay" id="tagOverlay" onclick="closeTagDialog()">
+    <div class="dialog" onclick="event.stopPropagation()">
+      <div class="dialog-hd">选择标签 <span class="x" onclick="closeTagDialog()">×</span></div>
+      <div class="dialog-bd" id="tagOptList"></div>
+      <div class="dialog-ft">
+        <button type="button" class="el-button" onclick="closeTagDialog()">取消</button>
+        <button type="button" class="el-button el-button--primary" onclick="confirmTags()">确定</button>
+      </div>
+    </div>
   </div>
-  <div class="toast" id="toast"></div>
+
+  <div class="el-message" id="toast"></div>
 
   <script>
     window.DIFF_CHANGESET = {
-      meta: {
-        slug: "channel-code-remark-fixed-dynamic",
-        prdUrl: "https://guanghe.feishu.cn/docx/XiwKd3WDwoXcEsxLc4ScWo1unhf",
-        demoControls: [
-          { id: "both", label: "同时使用" },
-          { id: "fixedOnly", label: "仅固定" },
-          { id: "dynamicOnly", label: "仅动态" },
-          { id: "off", label: "关闭备注" }
-        ]
+      "meta": {
+            "slug": "channel-code-remark-fixed-dynamic",
+            "prdUrl": "https://guanghe.feishu.cn/docx/XiwKd3WDwoXcEsxLc4ScWo1unhf",
+            "demoControls": [
+                  {
+                        "id": "both",
+                        "label": "同时使用"
+                  },
+                  {
+                        "id": "fixedOnly",
+                        "label": "仅固定"
+                  },
+                  {
+                        "id": "dynamicOnly",
+                        "label": "仅动态"
+                  },
+                  {
+                        "id": "none",
+                        "label": "都不选"
+                  }
+            ]
       },
-      changes: [
-        {
-          id: "chg-1",
-          page: "渠道活码编辑",
-          pageKey: "channelEdit",
-          module: "添加备注",
-          target: "#remarkTypeGroup",
-          level: "field",
-          type: "new",
-          title: "备注类型可勾选固定与动态",
-          desc: "开启「添加备注」后，新增固定备注、动态备注两类勾选项，可单选或同时勾选。",
-          before: "无此功能；开启后仅可填写一段固定文案",
-          after: "可勾选固定备注、动态备注，或同时勾选；至少勾选一类才可保存",
-          examples: [
-            "只勾固定备注：按固定文案写入",
-            "只勾动态备注：按添加成功日写入日期",
-            "两类都勾：日期在前、固定文案在后，中间无分隔符"
-          ],
-          prd: { section: "7.1 【新增】备注类型选择", blockId: "doxcncvC7b3yrCRQUxkNxCJeQfT" }
-        },
-        {
-          id: "chg-2",
-          page: "渠道活码编辑",
-          pageKey: "channelEdit",
-          module: "固定备注",
-          target: "#fixedRemarkField",
-          level: "field",
-          type: "logic",
-          title: "固定备注仅在勾选后填写",
-          desc: "勾选固定备注后展示原备注输入框；未勾选时不展示、不写入固定文案。",
-          before: "开启添加备注后始终展示备注输入框",
-          after: "仅勾选固定备注时展示输入框；勾选后文案必填",
-          examples: [
-            "勾选固定备注且未填文案：提示填写固定备注后不可保存",
-            "取消勾选固定备注：隐藏输入框，提交时不带固定文案"
-          ],
-          prd: { section: "7.2 【修改】固定备注填写时机", blockId: "doxcnkcV58OxiPpSMxQmH5kbZ4b" }
-        },
-        {
-          id: "chg-3",
-          page: "渠道活码编辑",
-          pageKey: "channelEdit",
-          module: "动态备注",
-          target: "#dynamicRemarkHint",
-          level: "field",
-          type: "new",
-          title: "动态备注按添加成功日写入",
-          desc: "勾选动态备注后，客户添加成功当天按年月日八位数字写入备注，例如 20260606；配置页只展示规则说明，无需人工填写日期。",
-          before: "无此功能",
-          after: "勾选即启用；日期取客户通过该活码添加企微成功当天，格式为年月日八位数字",
-          examples: [
-            "2026年6月6日添加成功 → 写入 20260606",
-            "仅勾动态备注且客户昵称为张三 → 最终备注为 20260606-张三"
-          ],
-          prd: { section: "7.1 【新增】动态备注", blockId: "doxcn2R7HNKkkpqf7bNtjLUawee" }
-        },
-        {
-          id: "chg-4",
-          page: "渠道活码编辑",
-          pageKey: "channelEdit",
-          module: "备注预览",
-          target: "#remarkPreview",
-          level: "module",
-          type: "new",
-          title: "展示最终备注拼接预览",
-          desc: "开启添加备注并完成类型勾选后，展示最终写入客户备注的拼接预览；同时使用时日期在前、固定文案在后且无分隔符，末尾仍拼接客户昵称。",
-          before: "无预览；输入框旁仅提示会拼接客户昵称",
-          after: "按当前勾选实时预览最终备注形态，并保留客户昵称后缀",
-          examples: [
-            "固定=春季投放、动态开启、昵称=张三 → 20260606春季投放-张三",
-            "仅固定=春季投放、昵称=张三 → 春季投放-张三",
-            "仅动态、昵称=张三 → 20260606-张三"
-          ],
-          prd: { section: "7.1 【新增】备注拼接预览", blockId: "doxcnikIkYZZGrzZkuHM24BAje5" }
-        }
+      "changes": [
+            {
+                  "id": "chg-1",
+                  "page": "编辑活码场景",
+                  "pageKey": "channelEdit",
+                  "module": "添加备注",
+                  "target": "#remarkTypeGroup",
+                  "level": "field",
+                  "type": "new",
+                  "title": "新增固定与动态备注勾选项",
+                  "desc": "「添加备注：」下新增「固定备注」「动态备注」多选框，可自主单选、同时勾选，或均不勾选（不添加备注）。",
+                  "before": "无勾选项；仅提供单个固定备注输入框（末尾固定展示 - 客户昵称）",
+                  "after": "提供「固定备注」「动态备注」复选框，支持单选、双选或均不选",
+                  "examples": [
+                        "只勾固定备注：按固定文案写入并拼客户昵称",
+                        "只勾动态备注：按添加成功日写入八位日期并拼客户昵称",
+                        "两项都勾：日期在前、固定文案在后，无分隔符，末尾拼客户昵称",
+                        "两项都不勾：不写入客户备注"
+                  ],
+                  "prd": {
+                        "section": "7.1 【新增】备注类型选择",
+                        "blockId": "doxcnu0G6FehpyY9TFW84AALiqb"
+                  }
+            },
+            {
+                  "id": "chg-2",
+                  "page": "编辑活码场景",
+                  "pageKey": "channelEdit",
+                  "module": "固定备注",
+                  "target": "#fixedRemarkField",
+                  "level": "field",
+                  "type": "logic",
+                  "title": "勾选固定备注后展示输入框并校验必填",
+                  "desc": "仅勾选「固定备注」时展开固定备注输入框；取消勾选后隐藏且不写入固定文案。",
+                  "before": "进入页面即展示备注输入框，非必填，留空即不写备注",
+                  "after": "仅勾选「固定备注」后展开输入框，且输入内容必填；不勾选时不展示",
+                  "examples": [
+                        "勾选固定备注但未填文案点击确定：输入框下方提示「请输入固定备注」",
+                        "取消勾选固定备注：输入框收起，保存时不写入固定文案"
+                  ],
+                  "prd": {
+                        "section": "7.2 【修改】固定备注填写与校验",
+                        "blockId": "doxcnpCaR7d1NSHSmLdekVabtkd"
+                  }
+            },
+            {
+                  "id": "chg-3",
+                  "page": "编辑活码场景",
+                  "pageKey": "channelEdit",
+                  "module": "动态备注",
+                  "target": "#dynamicRemarkHint",
+                  "level": "field",
+                  "type": "new",
+                  "title": "勾选动态备注按添加成功日写入八位日期",
+                  "desc": "勾选「动态备注」后，客户添加成功当天按年月日八位数字写入备注，例如 20260606；配置页仅展示规则提示，无需手工填日期。",
+                  "before": "无此功能",
+                  "after": "勾选即启用；客户添加企微成功时取当天日期按 20260606 格式写入",
+                  "examples": [
+                        "2026年6月6日添加成功 → 写入 20260606",
+                        "仅勾动态备注且客户昵称为张三 → 最终备注为 20260606-张三"
+                  ],
+                  "prd": {
+                        "section": "7.1 【新增】动态备注",
+                        "blockId": "doxcne74E0IZCr9rm0CTUJybnDf"
+                  }
+            },
+            {
+                  "id": "chg-4",
+                  "page": "编辑活码场景",
+                  "pageKey": "channelEdit",
+                  "module": "备注预览",
+                  "target": "#remarkPreview",
+                  "level": "module",
+                  "type": "new",
+                  "title": "展示最终备注拼接预览",
+                  "desc": "勾选至少一种备注类型时展示最终写入预览；同时使用时动态日期在前、固定文案在后且无分隔符，末尾保留「-客户昵称」后缀。",
+                  "before": "输入框右侧仅以灰底追加块展示「- 客户昵称」",
+                  "after": "按当前勾选与固定文案实时展示最终备注格式，保留「-客户昵称」后缀",
+                  "examples": [
+                        "固定=春季投放、动态勾选、昵称=张三 → 20260606春季投放-张三",
+                        "仅固定=春季投放、昵称=张三 → 春季投放-张三",
+                        "仅动态、昵称=张三 → 20260606-张三"
+                  ],
+                  "prd": {
+                        "section": "7.1 【新增】备注拼接预览",
+                        "blockId": "doxcnK8ZjY2EwmuknUpzwbHxp8c"
+                  }
+            }
       ]
-    };
+};
 
     var state = {
-      remarkOn: true,
       fixedOn: true,
       dynamicOn: true,
       fixedText: "春季投放",
-      sampleDate: "20260606",
-      sampleNick: "张三"
+      tags: ["高一", "新注册"],
+      allTags: ["高一", "高二", "高三", "新注册", "信息流渠道", "体验营待跟进"],
+      tempTags: []
     };
 
     function $(id) { return document.getElementById(id); }
 
-    function toast(msg) {
+    function showMsg(text, kind) {
       var el = $("toast");
-      el.textContent = msg;
-      el.classList.add("show");
-      clearTimeout(window.__toastTimer);
-      window.__toastTimer = setTimeout(function () { el.classList.remove("show"); }, 1800);
+      el.textContent = text;
+      el.className = "el-message show " + (kind || "success");
+      clearTimeout(window.__msgTimer);
+      window.__msgTimer = setTimeout(function () { el.classList.remove("show"); }, 2200);
     }
 
-    function buildRemark() {
-      if (!state.remarkOn) return "（未开启添加备注，不写入）";
+    function closeDrops() {
+      document.querySelectorAll(".el-select-dropdown").forEach(function (d) { d.classList.remove("show"); });
+      document.querySelectorAll(".el-select").forEach(function (s) { s.classList.remove("open"); });
+    }
+    document.addEventListener("click", closeDrops);
+
+    function toggleSelect(e, dropId) {
+      e.stopPropagation();
+      var drop = $(dropId);
+      var was = drop.classList.contains("show");
+      closeDrops();
+      if (!was) {
+        drop.classList.add("show");
+        e.currentTarget.classList.add("open");
+      }
+    }
+
+    function pickSelect(e, valId, dropId, label) {
+      e.stopPropagation();
+      $(valId).textContent = label;
+      var drop = $(dropId);
+      drop.querySelectorAll(".opt").forEach(function (o) {
+        o.classList.toggle("selected", o.textContent === label);
+      });
+      closeDrops();
+    }
+
+    function clearField(id) {
+      $(id).value = "";
+    }
+
+    function renderTags() {
+      var box = $("selectedTags");
+      box.innerHTML = "";
+      state.tags.forEach(function (t, idx) {
+        var tag = document.createElement("span");
+        tag.className = "el-tag g-margin-rb-10";
+        tag.innerHTML = t + ' <i class="close" onclick="removeTag(' + idx + ')">×</i>';
+        box.appendChild(tag);
+      });
+      if (window.__diffRemeasure) window.__diffRemeasure();
+    }
+    function removeTag(idx) {
+      state.tags.splice(idx, 1);
+      renderTags();
+    }
+    function openTagDialog() {
+      state.tempTags = state.tags.slice();
+      var list = $("tagOptList");
+      list.innerHTML = "";
+      state.allTags.forEach(function (t) {
+        var btn = document.createElement("span");
+        btn.className = "tag-opt" + (state.tempTags.indexOf(t) > -1 ? " on" : "");
+        btn.textContent = t;
+        btn.onclick = function () {
+          var i = state.tempTags.indexOf(t);
+          if (i > -1) state.tempTags.splice(i, 1);
+          else state.tempTags.push(t);
+          btn.classList.toggle("on", state.tempTags.indexOf(t) > -1);
+        };
+        list.appendChild(btn);
+      });
+      $("tagOverlay").classList.add("show");
+    }
+    function closeTagDialog() { $("tagOverlay").classList.remove("show"); }
+    function confirmTags() {
+      state.tags = state.tempTags.slice();
+      closeTagDialog();
+      renderTags();
+    }
+
+    function toggleRemarkType(e, kind) {
+      e.preventDefault();
+      if (kind === "fixed") state.fixedOn = !state.fixedOn;
+      if (kind === "dynamic") state.dynamicOn = !state.dynamicOn;
+      renderRemark();
+    }
+
+    function onFixedInput() {
+      state.fixedText = $("fixedRemarkInput").value;
+      if (state.fixedText.trim()) {
+        $("fixedErr").classList.remove("show");
+        $("fixedInputBox").classList.remove("is-error");
+      }
+      renderRemark(true);
+    }
+
+    function clearFixedRemark() {
+      state.fixedText = "";
+      $("fixedRemarkInput").value = "";
+      renderRemark();
+    }
+
+    function buildFinalRemark() {
+      var dateStr = (($("simDate").value || "").trim()) || "20260606";
+      var nickStr = (($("simNick").value || "").trim()) || "张三";
       var parts = [];
-      if (state.dynamicOn) parts.push(state.sampleDate);
+      if (state.dynamicOn) parts.push(dateStr);
       if (state.fixedOn) parts.push((state.fixedText || "").trim());
-      var body = parts.join("");
-      if (!body) return "（请至少选择一种备注类型）";
-      return body + "-" + state.sampleNick;
+      var prefix = parts.join("");
+      if (!state.fixedOn && !state.dynamicOn) return "（未勾选任何备注类型，不写入客户备注）";
+      if (state.fixedOn && !(state.fixedText || "").trim() && !state.dynamicOn) return "（请填写固定备注）-" + nickStr;
+      return prefix + "-" + nickStr;
     }
 
-    function render() {
-      $("remarkSwitch").classList.toggle("on", state.remarkOn);
-      $("remarkConfigRow").style.display = state.remarkOn ? "" : "none";
-      $("chkFixed").checked = state.fixedOn;
-      $("chkDynamic").checked = state.dynamicOn;
-      $("fixedRemarkField").style.display = state.fixedOn ? "" : "none";
+    function renderRemark(fromTyping) {
+      $("chkFixedWrap").classList.toggle("is-checked", state.fixedOn);
+      $("chkDynamicWrap").classList.toggle("is-checked", state.dynamicOn);
+
+      $("fixedRemarkRow").style.display = state.fixedOn ? "" : "none";
       $("dynamicRemarkHint").style.display = state.dynamicOn ? "" : "none";
-      $("fixedRemarkInput").value = state.fixedText;
-      var text = buildRemark();
-      $("previewText").textContent = text;
-      $("simResult").textContent = text;
-      $("fixedErr").classList.remove("show");
-      $("typeErr").classList.remove("show");
+      $("previewRow").style.display = (state.fixedOn || state.dynamicOn) ? "" : "none";
+
+      if (!fromTyping) $("fixedRemarkInput").value = state.fixedText;
+      $("fixedClearBtn").classList.toggle("visible", !!state.fixedText);
+
+      if (!state.fixedOn) {
+        $("fixedErr").classList.remove("show");
+        $("fixedInputBox").classList.remove("is-error");
+      }
+
+      $("previewText").textContent = buildFinalRemark();
       if (window.__diffRemeasure) window.__diffRemeasure();
     }
 
-    function validate() {
-      $("fixedErr").classList.remove("show");
-      $("typeErr").classList.remove("show");
-      if (!state.remarkOn) return true;
-      if (!state.fixedOn && !state.dynamicOn) {
-        $("typeErr").classList.add("show");
-        return false;
+    function updateWelcomeCount() {
+      var v = $("welcomeText").value || "";
+      $("welcomeCount").textContent = v.length + " / 1000";
+      $("welcomeClear").style.display = v ? "inline-flex" : "none";
+    }
+    function clearWelcome() {
+      $("welcomeText").value = "";
+      updateWelcomeCount();
+    }
+
+    function submitForm() {
+      if (!$("sceneName").value.trim()) {
+        showMsg("场景名称不能为空", "warning");
+        return;
       }
       if (state.fixedOn && !(state.fixedText || "").trim()) {
         $("fixedErr").classList.add("show");
-        return false;
-      }
-      return true;
-    }
-
-    $("remarkSwitch").onclick = function () {
-      state.remarkOn = !state.remarkOn;
-      render();
-    };
-    $("chkFixed").onchange = function () {
-      state.fixedOn = this.checked;
-      render();
-    };
-    $("chkDynamic").onchange = function () {
-      state.dynamicOn = this.checked;
-      render();
-    };
-    $("fixedRemarkInput").oninput = function () {
-      state.fixedText = this.value;
-      render();
-    };
-    $("btnSave").onclick = function () {
-      if (!validate()) {
-        toast("请完善备注配置后再保存");
+        $("fixedInputBox").classList.add("is-error");
+        showMsg("请输入固定备注", "warning");
         if (window.__diffRemeasure) window.__diffRemeasure();
         return;
       }
-      toast("保存成功");
-    };
-    $("btnCancel").onclick = function () { toast("已取消"); };
+      $("fixedErr").classList.remove("show");
+      $("fixedInputBox").classList.remove("is-error");
+      showMsg("保存成功", "success");
+    }
 
     window.DIFF_HOOKS = {
       locate: function () {},
       setDemoState: function (id) {
         if (id === "both") {
-          state.remarkOn = true; state.fixedOn = true; state.dynamicOn = true; state.fixedText = "春季投放";
+          state.fixedOn = true; state.dynamicOn = true; state.fixedText = "春季投放";
         } else if (id === "fixedOnly") {
-          state.remarkOn = true; state.fixedOn = true; state.dynamicOn = false; state.fixedText = "春季投放";
+          state.fixedOn = true; state.dynamicOn = false; state.fixedText = "春季投放";
         } else if (id === "dynamicOnly") {
-          state.remarkOn = true; state.fixedOn = false; state.dynamicOn = true; state.fixedText = "春季投放";
-        } else if (id === "off") {
-          state.remarkOn = false; state.fixedOn = true; state.dynamicOn = true; state.fixedText = "春季投放";
+          state.fixedOn = false; state.dynamicOn = true; state.fixedText = "春季投放";
+        } else if (id === "none") {
+          state.fixedOn = false; state.dynamicOn = false; state.fixedText = "";
         }
-        render();
+        renderRemark();
       }
     };
 
-    render();
+    window.addEventListener("scroll", function () {
+      if (window.__diffRemeasure) window.__diffRemeasure();
+    }, { passive: true });
+
+    renderTags();
+    updateWelcomeCount();
+    renderRemark();
   </script>
   <script>
 (function () {
