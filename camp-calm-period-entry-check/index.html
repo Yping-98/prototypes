@@ -8,27 +8,27 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 14px; color: #303133; background: #f0f2f5; }
 .layout { display: flex; min-height: 100vh; }
-.side { width: 224px; background: #001529; color: rgba(255,255,255,.75); flex-shrink: 0; }
-.side .logo { height: 52px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; font-weight: 600; background: #002140; }
-.side .menu-item { height: 50px; display: flex; align-items: center; padding: 0 24px; cursor: pointer; gap: 10px; }
+.side { width: 200px; background: #001529; color: rgba(255,255,255,.75); flex-shrink: 0; }
+.side .logo { height: 50px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; font-weight: 600; background: #002140; }
+.side .menu-item { height: 46px; display: flex; align-items: center; padding: 0 20px; cursor: pointer; gap: 10px; font-size: 13px; }
 .side .menu-item:hover { color: #fff; }
 .side .menu-item.active { color: #fff; background: #1890ff; }
-.side .sub { background: #000c17; }
-.side .sub .menu-item { padding-left: 48px; height: 44px; }
-.side .ico { width: 14px; height: 14px; border: 1.5px solid currentColor; border-radius: 50%; display: inline-block; }
+.side .ico { width: 13px; height: 13px; border: 1.5px solid currentColor; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.side .arrow { margin-left: auto; font-size: 10px; }
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.topbar { height: 46px; background: #fff; display: flex; align-items: center; padding: 0 16px; color: #909399; border-bottom: 1px solid #ebeef5; }
-.tags { background: #fff; padding: 12px 40px; border-bottom: 1px solid #dcdfe6; display: flex; }
-.tags .tag { border: 1px solid #dcdfe6; padding: 6px 20px; margin-right: -1px; cursor: pointer; background: #fff; }
+.topbar { height: 40px; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; color: #97a8be; font-size: 13px; border-bottom: 1px solid #ebeef5; }
+.topbar .user { color: #606266; font-size: 12px; }
+.tags { background: #fff; padding: 8px 40px; border-bottom: 1px solid #dcdfe6; display: flex; }
+.tags .tag { border: 1px solid #dcdfe6; padding: 5px 18px; margin-right: -1px; cursor: pointer; background: #fff; font-size: 13px; color: #303133; }
 .tags .tag.active { color: #409eff; }
 #diffPage { flex: 1; padding: 20px; position: relative; overflow: auto; }
 .card { background: #fff; border-radius: 6px; padding: 15px; }
 .search-bar { display: flex; align-items: center; gap: 10px; }
 .sel, .ipt { height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 10px; font-size: 14px; color: #606266; background: #fff; }
 .ipt:focus, .sel:focus { outline: none; border-color: #409eff; }
-.btn { height: 32px; padding: 0 15px; border-radius: 4px; border: 1px solid #dcdfe6; background: #fff; cursor: pointer; font-size: 14px; color: #606266; }
+.btn { height: 32px; padding: 0 15px; border-radius: 4px; border: 1px solid #dcdfe6; background: #fff; cursor: pointer; font-size: 14px; color: #606266; white-space: nowrap; }
 .btn.primary { background: #409eff; border-color: #409eff; color: #fff; }
-.btn.light { background: #ecf5ff; border-color: #b3d8ff; color: #409eff; }
+.btn.light, .btn.plain { background: #ecf5ff; border-color: #b3d8ff; color: #409eff; }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 .tabs { margin-top: 20px; border: 1px solid #dcdfe6; }
 .tabs-head { display: flex; background: #f5f7fa; border-bottom: 1px solid #e4e7ed; }
@@ -47,44 +47,77 @@ body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
 .tip { margin-top: 10px; color: #909399; font-size: 13px; }
 .empty { text-align: center; color: #909399; padding: 60px 0; }
 .loading { text-align: center; color: #409eff; padding: 60px 0; }
-.filter { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 14px; }
-.filter label { color: #606266; }
-.toolbar { display: flex; justify-content: space-between; margin-bottom: 12px; }
-.toolbar .right { display: flex; gap: 10px; }
-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+/* 客户管理（el-tabs 线条样式 + 小尺寸表单） */
+.el-tabs-line { display: flex; border-bottom: 2px solid #e4e7ed; margin-bottom: 15px; }
+.el-tabs-line div { padding: 0 20px 0 0; height: 40px; line-height: 40px; font-size: 14px; color: #303133; cursor: pointer; position: relative; margin-right: 20px; }
+.el-tabs-line div.active { color: #409eff; }
+.el-tabs-line div.active::after { content: ""; position: absolute; left: 0; right: 20px; bottom: -2px; height: 2px; background: #409eff; }
+.yc-form { display: flex; flex-wrap: wrap; align-items: center; font-size: 12px; color: #606266; }
+.yc-form .fi { display: inline-flex; align-items: center; margin: 0 14px 12px 0; }
+.yc-form .fi > label { color: #606266; margin-right: 4px; white-space: nowrap; }
+.yc-form .s-ipt, .yc-form .s-sel { height: 26px; border: 1px solid #dcdfe6; border-radius: 3px; padding: 0 8px; font-size: 12px; color: #a8abb2; background: #fff; display: inline-flex; align-items: center; justify-content: space-between; }
+.yc-form .s-sel::after { content: "⌄"; color: #c0c4cc; margin-left: 6px; }
+.yc-form .radio { display: inline-flex; align-items: center; margin-right: 12px; }
+.yc-form .radio i { width: 12px; height: 12px; border: 1px solid #dcdfe6; border-radius: 50%; display: inline-block; margin-right: 4px; }
+.yc-form .range { height: 26px; border: 1px solid #dcdfe6; border-radius: 3px; display: inline-flex; align-items: center; gap: 14px; padding: 0 10px; color: #a8abb2; font-size: 12px; }
+.yc-form .range b { color: #606266; font-weight: normal; }
+.btn-row { display: flex; justify-content: space-between; width: 100%; margin-bottom: 12px; }
+.btn-row .btn { height: 28px; padding: 0 12px; font-size: 12px; margin-right: 8px; }
+.btn-row > div:last-child .btn { margin: 0 0 0 8px; }
+.tbl-wrap { overflow-x: auto; border: 1px solid #ebeef5; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
 th, td { border-bottom: 1px solid #ebeef5; padding: 10px 8px; text-align: left; }
-th { background: #f5f7fa; color: #909399; font-weight: 500; }
-.mask { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-start; justify-content: center; padding-top: 10vh; z-index: 50; }
-.dialog { background: #fff; border-radius: 4px; width: 560px; max-width: 94vw; position: relative; }
+.yc-tbl th, .yc-tbl td { border-right: 1px solid #ebeef5; text-align: center; white-space: nowrap; min-width: 92px; }
+th { background: #fafafa; color: #909399; font-weight: 500; }
+.yc-tbl tr.cur td { background: #ecf5ff; }
+.yc-tbl td.op { min-width: 200px; }
+.yc-tbl .op .btn { height: 24px; padding: 0 8px; font-size: 12px; margin: 2px; }
+.yc-tbl .ck { min-width: 40px; }
+.pager { display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding: 14px 0 0; font-size: 12px; color: #606266; }
+.pager span.on { color: #409eff; }
+
+.mask { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-start; justify-content: center; padding-top: 8vh; z-index: 50; overflow: auto; }
+.dialog { background: #fff; border-radius: 4px; width: 600px; max-width: 94vw; position: relative; margin-bottom: 40px; }
 .dialog.wide { width: 760px; }
-.dialog .hd { padding: 18px 20px 10px; font-size: 16px; display: flex; justify-content: space-between; }
-.dialog .hd .x { cursor: pointer; color: #909399; }
-.dialog .bd { padding: 10px 20px 20px; }
+.dialog .hd { padding: 18px 20px 10px; font-size: 18px; color: #303133; display: flex; justify-content: space-between; }
+.dialog .hd .x { cursor: pointer; color: #909399; font-size: 14px; }
+.dialog .bd { padding: 10px 20px 20px; font-size: 14px; color: #606266; }
 .dialog .ft { padding: 10px 20px 20px; display: flex; justify-content: flex-end; gap: 10px; align-items: center; }
-.form-row { display: flex; align-items: center; margin-bottom: 18px; }
-.form-row .lb { width: 96px; text-align: right; padding-right: 12px; color: #606266; }
-.form-row .lb i { color: #f56c6c; font-style: normal; margin-right: 2px; }
-.form-row .ipt, .form-row .sel { flex: 1; }
-.form-err { color: #f56c6c; font-size: 13px; margin-right: auto; }
-.upload { border: 1px dashed #d9d9d9; border-radius: 6px; padding: 26px; text-align: center; color: #606266; cursor: pointer; }
-.upload.has { border-color: #409eff; color: #409eff; }
-.note { background: #f4f4f5; color: #606266; font-size: 13px; padding: 10px 12px; border-radius: 4px; margin-top: 14px; line-height: 20px; }
+.dialog .ft.center { justify-content: center; }
+.fr { display: flex; align-items: flex-start; margin-bottom: 18px; }
+.fr .lb { width: 150px; text-align: right; padding-right: 12px; color: #606266; line-height: 32px; flex-shrink: 0; }
+.fr .lb.w100 { width: 100px; }
+.fr .lb i { color: #f56c6c; font-style: normal; margin-right: 4px; }
+.fr .ctl { flex: 1; min-width: 0; }
+.fr .ctl .ipt, .fr .ctl .sel { width: 100%; }
+.fr .ctl textarea { width: 100%; border: 1px solid #dcdfe6; border-radius: 4px; padding: 6px 10px; font-size: 14px; font-family: inherit; resize: none; height: 54px; }
+.fr .err { color: #f56c6c; font-size: 12px; line-height: 18px; }
+.fr .radio-line { line-height: 32px; display: flex; gap: 24px; }
+.fr .radio-line label { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.pic-card { width: 100px; height: 100px; border: 1px dashed #cdd0d6; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; color: #8c939d; cursor: pointer; margin-right: 8px; background: #fafafa; vertical-align: top; }
+.pic-card.has { border-style: solid; font-size: 12px; color: #67c23a; background: #f0f9eb; }
+.line { width: 100%; line-height: 24px; }
+.link { color: #409eff; cursor: pointer; text-decoration: none; }
+.step-block { margin-bottom: 24px; }
+.step-title { font-size: 14px; font-weight: bold; margin-bottom: 8px; color: #303133; }
+.step-desc { color: #606266; font-size: 13px; line-height: 1.6; margin-bottom: 10px; }
+.no-file-tip { margin-left: 12px; color: #f53f3f; font-size: 12px; }
+.fail-reason { color: #f56c6c; }
+.import-content { text-align: center; font-size: 15px; color: #303133; padding: 10px 0; }
+.file-preview { margin-top: 14px; }
+.file-preview .cap { font-size: 12px; color: #909399; margin-bottom: 6px; }
 .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 10px 18px; border-radius: 4px; font-size: 14px; z-index: 99; box-shadow: 0 2px 12px rgba(0,0,0,.1); }
 .toast.error { background: #fef0f0; color: #f56c6c; border: 1px solid #fde2e2; }
 .toast.success { background: #f0f9eb; color: #67c23a; border: 1px solid #e1f3d8; }
-.pill { display: inline-block; padding: 0 8px; border-radius: 3px; font-size: 12px; line-height: 20px; }
-.pill.fail { background: #fef0f0; color: #f56c6c; }
-.pill.succ { background: #f0f9eb; color: #67c23a; }
-.link { color: #409eff; cursor: pointer; }
-.sum { margin-bottom: 12px; color: #606266; }
-@media (max-width: 760px) { .side { display: none; } .tags { padding: 10px; } }
+@media (max-width: 760px) { .side { display: none; } .tags { padding: 8px 10px; } }
 </style>
 </head>
 <body>
 <div class="layout">
   <aside class="side" id="side"></aside>
   <div class="main">
-    <div class="topbar" id="crumb">线索查询</div>
+    <div class="topbar"><span id="crumb">线索查询</span><span class="user">李莹萍</span></div>
     <div class="tags" id="tags"></div>
     <div id="diffPage"><div id="view"></div></div>
   </div>
@@ -107,40 +140,56 @@ var LEADS = {
 var DEMO_PHONE = {};
 Object.keys(LEADS).forEach(function (p) { DEMO_PHONE[LEADS[p].key] = p; });
 var SVC_CALM = ['13800000001', '13800000006'];
+var SVC_CALM_MSG = '该线索在服务期冷静期中，无法录入。';
+var SEATS = ['李莹萍', '王晓雨', '李明', '赵磊'];
+var CHANNELS = ['ABhao', 'rengongluru', 'xiaohongshusixin-qiwei', 'changyuliebian', 'wangyi'];
 
-var PAGES = { current: '客户管理-当期客户', pool: '客户管理-数据库', clueSearch: '线索查询' };
+var CUR_COLS = ['期数', '洋葱ID', '手机号', '家庭标签', '跟进状态', '微信昵称', '剩余在库时长', '分配后累计学习时长', '当天累计学习时长', '客户类型', '跟进备注', '跟进时间', '意向度', '当前所在业务线', '服务期到期时间', '身份'];
+var CUR_ROWS = [
+  ['203', '109209754', '13735295762', '-', '新线索', 'wansheng-xin', '24天6时59分', '0时0分', '0时0分', '新用户', '', '', '', '体验营', '2027-05-25 14:52:19', '妈妈'],
+  ['203', '108712231', '18977551116', '二胎家庭', '已建联', 'qingkong', '20天3时12分', '1时25分', '0时18分', '老用户', '已加微，约周末试听', '2026-11-25 19:20', '高', '体验营', '2027-05-03 10:12:40', '爸爸']
+];
+var POOL_COLS = ['剩余在库时长', '洋葱ID', '手机号', '家庭标签', '今日是否拨打电话', '是否轻课客户', '跟进状态', '微信昵称', '最近一次登录时间', '分配后累计学习时长', '当天累计学习时长', '客户类型', '跟进备注', '跟进时间', '意向度', '线索分配时间', '当前所在业务线', '服务期到期时间'];
+var POOL_ROWS = [
+  ['3天10时2分', '108700004', '13800000004', '-', '否', '非轻课客户', '待跟进', 'xiaoyu', '2026-11-24 21:03', '2时10分', '0时0分', '老用户', '', '', '', '2026-11-23 10:20', '体验营', '2027-05-22 10:20:00']
+];
+
+var PAGES = { customer: '客户管理', plan: '线索投放计划', clueSearch: '线索查询' };
+var CUST_TABS = [{ k: 'current', t: '当期客户' }, { k: 'pool', t: '数据库' }, { k: 'converted', t: '已转化客户' }, { k: 'history', t: '往期非转化' }];
 var state = {
-  page: 'clueSearch', opened: ['current', 'clueSearch'], qType: 'phone', qValue: '15971423839', info: null, loading: false, errMsg: '',
-  dialog: null, one: { phone: '', channel: '人工录入', seat: '', err: '' }, batchFile: '', poolTab: 'tpl', poolDetail: false
+  page: 'clueSearch', custTab: 'current', qType: 'phone', qValue: '15971423839', info: null, loading: false, errMsg: '',
+  dialog: null, one: null, curFile: '', curFail: false, poolTab: 'template', poolFile: '', poolDetail: false
 };
 
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 function remeasure() { if (window.__diffRemeasure) window.__diffRemeasure(); }
-function toast(type, msg) {
+function toast(type, msg, sticky) {
   var host = document.getElementById('toastHost');
   host.innerHTML = '<div class="toast ' + type + '">' + esc(msg) + '</div>';
-  clearTimeout(toast.t); toast.t = setTimeout(function () { host.innerHTML = ''; }, 2600);
+  clearTimeout(toast.t);
+  if (!sticky) toast.t = setTimeout(function () { host.innerHTML = ''; }, 2600);
 }
 
 function renderSide() {
-  var html = '<div class="logo">体验营</div>';
-  var custActive = state.page === 'current' || state.page === 'pool';
-  html += '<div class="menu-item' + (custActive ? '' : '') + '"><span class="ico"></span>客户管理</div><div class="sub">';
-  html += '<div class="menu-item' + (state.page === 'current' ? ' active' : '') + '" onclick="go(\'current\')">当期客户</div>';
-  html += '<div class="menu-item' + (state.page === 'pool' ? ' active' : '') + '" onclick="go(\'pool\')">数据库</div></div>';
-  html += '<div class="menu-item"><span class="ico"></span>AB号审核</div>';
-  html += '<div class="menu-item' + (state.page === 'clueSearch' ? ' active' : '') + '" onclick="go(\'clueSearch\')"><span class="ico"></span>线索查询</div>';
-  html += '<div class="menu-item"><span class="ico"></span>线索追溯</div><div class="menu-item"><span class="ico"></span>专属售卖链接</div><div class="menu-item"><span class="ico"></span>转介绍</div><div class="menu-item"><span class="ico"></span>裂变活动</div>';
-  document.getElementById('side').innerHTML = html;
+  var items = [['customer', '客户管理'], ['', 'AB号审核'], ['clueSearch', '线索查询'], ['', '线索追溯'], ['', '专属售卖链接'], ['', '转介绍', 1], ['', '裂变活动', 1], ['', '非服务期客户'], ['', '抖音小店']];
+  document.getElementById('side').innerHTML = '<div class="logo">体验营</div>' + items.map(function (it) {
+    var active = it[0] && state.page === it[0];
+    return '<div class="menu-item' + (active ? ' active' : '') + '"' + (it[0] ? ' onclick="go(\'' + it[0] + '\')"' : '') + '><span class="ico"></span>' + it[1] + (it[2] ? '<span class="arrow">⌄</span>' : '') + '</div>';
+  }).join('');
 }
 function renderTags() {
   document.getElementById('crumb').textContent = PAGES[state.page];
-  document.getElementById('tags').innerHTML = state.opened.map(function (p) {
+  document.getElementById('tags').innerHTML = ['customer', 'plan', 'clueSearch'].map(function (p) {
     return '<div class="tag' + (p === state.page ? ' active' : '') + '" onclick="go(\'' + p + '\')">' + PAGES[p] + '</div>';
   }).join('');
 }
-function go(p) { state.page = p; if (state.opened.indexOf(p) < 0) state.opened.push(p); state.dialog = null; render(); }
+function go(p, tab) {
+  if (p === 'current' || p === 'pool') { tab = p; p = 'customer'; }
+  if (p === 'plan') return;
+  state.page = p; if (tab) state.custTab = tab; state.dialog = null; render();
+}
 
+/* ---------- 线索查询 ---------- */
 function calmHtml(info) {
   if (info.calm === null) return '<span class="remind">冷静期查询失败，请稍后重试</span>';
   if (!info.calm.length) return '<span>无冷静期</span>';
@@ -188,94 +237,137 @@ function search(sync) {
   state.loading = true; render(); setTimeout(finish, 300);
 }
 
+/* ---------- 客户管理 ---------- */
+function ipt(label, ph, w) { return '<span class="fi"><label>' + label + '</label><span class="s-ipt" style="width:' + w + 'px">' + ph + '</span></span>'; }
+function sel(label, ph, w) { return '<span class="fi"><label>' + label + '</label><span class="s-sel" style="width:' + w + 'px">' + ph + '</span></span>'; }
+function radio(label) { return '<span class="fi" style="margin-right:25px"><label>' + label + '</label><span class="radio"><i></i>是</span><span class="radio"><i></i>否</span></span>'; }
+function range(label, a, b) { return '<span class="fi"><label>' + label + '</label><span class="range" style="width:340px">' + a + '<b>至</b>' + b + '</span></span>'; }
+function table(cols, rows, opHtml, redIdx) {
+  var h = '<div class="tbl-wrap"><table class="yc-tbl"><thead><tr><th class="ck">☐</th>' + cols.map(function (c) { return '<th>' + c + '</th>'; }).join('') + '<th class="op">操作 ⚙</th></tr></thead><tbody>';
+  rows.forEach(function (r, i) {
+    h += '<tr class="' + (i === 0 ? 'cur' : '') + '"><td class="ck">☐</td>' + r.map(function (v, j) { return '<td' + (redIdx.indexOf(j) >= 0 ? ' class="remind"' : '') + '>' + esc(v) + '</td>'; }).join('') + '<td class="op">' + opHtml + '</td></tr>';
+  });
+  return h + '</tbody></table></div><div class="pager"><span>‹</span><span class="on">1</span><span>›</span><span>共 ' + rows.length + ' 条</span><span>前往 1 页</span></div>';
+}
 function renderCurrent() {
-  return '<div class="card"><div class="filter"><label>手机号</label><input class="ipt" style="width:180px" placeholder="请输入"><label>坐席</label><select class="sel" style="width:140px"><option>全部</option></select><button class="btn primary">查询</button><button class="btn">重置</button></div>' +
-    '<div class="toolbar"><div></div><div class="right"><button class="btn primary" onclick="openDialog(\'curBatchUpload\')">批量导入</button><button class="btn primary" onclick="openDialog(\'one\')">单个录入客户</button></div></div>' +
-    '<table><thead><tr><th>手机号</th><th>洋葱ID</th><th>获客渠道</th><th>归属坐席</th><th>服务期</th><th>入库时间</th></tr></thead><tbody>' +
-    '<tr><td>138****0009</td><td>108700009</td><td>人工录入</td><td>王晓雨</td><td>2026-11-01 ~ 2027-01-31</td><td>2026-11-01 09:00</td></tr>' +
-    '<tr><td>139****2231</td><td>108712231</td><td>抖店</td><td>李明</td><td>2026-11-03 ~ 2027-02-02</td><td>2026-11-03 14:12</td></tr>' +
-    '</tbody></table></div>';
+  var form = ipt('手机号：', '请输入手机号', 120) + ipt('洋葱ID：', '请输入洋葱ID', 120) + ipt('微信昵称：', '请输入微信昵称', 130) + sel('期数:', '请选择', 100) + sel('组织架构:', '请选择', 180) + sel('坐席归属：', '请选择', 100) + sel('锁定：', '请选择是否锁定', 140) + radio('加微：') + radio('学习：') + radio('当前是否注册：') +
+    radio('是否有转介绍：') + sel('任务状态:', '请选择', 100) + sel('任务名称：', '请选择', 130) + sel('家庭标签：', '请选择', 130) + range('分配时间:', '开始时间', '结束时间') + range('跟进时间:', '开始时间', '结束时间');
+  var btns = '<div class="btn-row"><div><button class="btn primary">查询</button><button class="btn">重置</button><button class="btn">高级筛选</button><button class="btn">一键导出</button></div>' +
+    '<div><button class="btn primary" onclick="openDialog(\'curBatchUpload\')">批量导入</button><button class="btn primary" onclick="openDialog(\'one\')">单个录入客户</button><button class="btn primary">批量转线索</button></div></div>';
+  var op = '<button class="btn plain">复制激活链接</button><button class="btn plain">一键外呼</button><button class="btn plain">用户详情</button><button class="btn plain">激活</button><button class="btn plain">锁定</button><button class="btn plain">修改</button><button class="btn plain">发送短信</button>';
+  return '<div class="yc-form">' + form + btns + '</div>' + table(CUR_COLS, CUR_ROWS, op, [6, 13]);
 }
 function renderPool() {
-  return '<div class="card"><div class="filter"><label>手机号</label><input class="ipt" style="width:180px" placeholder="请输入"><button class="btn primary">查询</button><button class="btn">重置</button></div>' +
-    '<div class="toolbar"><div></div><div class="right"><button class="btn primary">申请客户</button><button class="btn primary">添加冷静期客户</button><button class="btn primary" onclick="openDialog(\'one\')">单个录入客户</button><button class="btn primary" onclick="openDialog(\'poolBatch\')">批量导入</button></div></div>' +
-    '<table><thead><tr><th>手机号</th><th>洋葱ID</th><th>获客渠道</th><th>最近跟进坐席</th><th>入库时间</th></tr></thead><tbody>' +
-    '<tr><td>138****0004</td><td>108700004</td><td>人工录入</td><td>赵磊</td><td>2026-07-12 10:20</td></tr>' +
-    '</tbody></table></div>';
+  var form = ipt('手机号：', '请输入手机号', 120) + ipt('洋葱ID：', '请输入洋葱ID', 120) + ipt('微信昵称：', '请输入微信昵称', 130) + sel('组织架构:', '请选择', 180) + sel('坐席归属：', '请选择', 100) + sel('锁定：', '请选择是否锁定', 140) + radio('加微：') +
+    sel('城市:', '请选择', 250) + sel('APP内年级:', '请选择年级', 152) + radio('24小时内掉库:') + sel('家庭标签：', '请选择', 152) + range('分配时间:', '开始创建时间', '结束创建时间') + range('跟进时间:', '开始时间', '结束时间');
+  var btns = '<div class="btn-row"><div><button class="btn primary">查询</button><button class="btn">重置</button><button class="btn">一键导出</button></div>' +
+    '<div><button class="btn primary">申请客户</button><button class="btn primary">添加冷静期客户</button><button class="btn primary" onclick="openDialog(\'one\')">单个录入客户</button><button class="btn primary" onclick="openDialog(\'poolBatch\')">批量导入</button><button class="btn primary">批量转线索</button></div></div>';
+  var op = '<button class="btn plain">一键外呼</button><button class="btn plain">用户详情</button><button class="btn plain">锁定</button>';
+  return '<div class="yc-form">' + form + btns + '</div>' + table(POOL_COLS, POOL_ROWS, op, [0, 16]);
+}
+function renderCustomer() {
+  var tabs = '<div class="el-tabs-line">' + CUST_TABS.map(function (t) {
+    return '<div class="' + (state.custTab === t.k ? 'active' : '') + '" onclick="go(\'customer\',\'' + t.k + '\')">' + t.t + '</div>';
+  }).join('') + '</div>';
+  var body = state.custTab === 'current' ? renderCurrent() : state.custTab === 'pool' ? renderPool() : '<div class="empty">本次不涉及</div>';
+  return '<div class="card">' + tabs + body + '</div>';
 }
 
+/* ---------- 弹窗 ---------- */
+function defaultOne() { return { method: 'phone', phone: '', channel: '', seat: '李莹萍', shots: 0, doc: '', errs: {} }; }
 function openDialog(d) {
   state.dialog = d;
-  if (d === 'one') state.one = { phone: '', channel: '人工录入', seat: '', err: '' };
-  if (d === 'curBatchUpload') state.batchFile = '';
-  if (d === 'poolBatch') { state.poolTab = 'tpl'; state.batchFile = ''; state.poolDetail = false; }
+  if (d === 'one') state.one = defaultOne();
+  if (d === 'curBatchUpload') state.curFile = '';
+  if (d === 'curBatch') state.curFail = false;
+  if (d === 'poolBatch') { state.poolTab = 'template'; state.poolFile = ''; state.poolDetail = false; }
   renderDialogs();
 }
-function closeDialog() { state.dialog = null; renderDialogs(); }
+function closeDialog() { state.dialog = null; document.getElementById('toastHost').innerHTML = ''; renderDialogs(); }
 function submitOne() {
-  var o = state.one;
-  if (!o.phone || !o.seat) { o.err = !o.phone ? '请输入手机号' : '请选择坐席'; renderDialogs(); return; }
-  if (SVC_CALM.indexOf(o.phone) >= 0) {
-    o.err = '该线索在服务期冷静期中，无法录入。';
-    toast('error', o.err); renderDialogs(); return;
+  var o = state.one, cur = state.custTab === 'current', e = {};
+  if (o.method === 'phone' && !o.phone) e.phone = '请输入客户手机号';
+  if (o.method === 'onionId' && !o.phone) e.phone = '请输入客户洋葱ID';
+  if (cur && !o.channel) e.channel = '请选择渠道';
+  if (!o.seat) e.seat = '请选择坐席归属';
+  if (cur && !o.shots) e.shots = '请上传线索来源截图';
+  if (!o.doc) e.doc = '请输入备注信息';
+  o.errs = e;
+  if (Object.keys(e).length) { renderDialogs(); return; }
+  var lead = o.method === 'phone' ? o.phone : (findLead(o.phone) || {}).phone;
+  if (SVC_CALM.indexOf(lead) >= 0) { toast('error', SVC_CALM_MSG); renderDialogs(); return; }
+  closeDialog(); toast('success', '操作成功');
+}
+function fr(label, required, ctl, err) {
+  return '<div class="fr"><span class="lb">' + (required ? '<i>*</i>' : '') + label + '</span><div class="ctl">' + ctl + (err ? '<div class="err">' + err + '</div>' : '') + '</div></div>';
+}
+function renderOne() {
+  var o = state.one, cur = state.custTab === 'current', er = o.errs || {};
+  var body = fr('录入方式：', true, '<div class="radio-line"><label><input type="radio" name="im"' + (o.method === 'phone' ? ' checked' : '') + ' onclick="state.one.method=\'phone\';state.one.phone=\'\';renderDialogs()">手机号</label><label><input type="radio" name="im"' + (o.method === 'onionId' ? ' checked' : '') + ' onclick="state.one.method=\'onionId\';state.one.phone=\'\';renderDialogs()">洋葱ID</label></div>') +
+    fr(o.method === 'phone' ? '客户手机号：' : '客户洋葱ID：', true, '<input class="ipt" value="' + esc(o.phone) + '" oninput="state.one.phone=this.value.trim()">', er.phone);
+  if (cur) body += fr('渠道：', true, '<select class="sel" onchange="state.one.channel=this.value"><option value="">请选择</option>' + CHANNELS.map(function (c) { return '<option' + (o.channel === c ? ' selected' : '') + '>' + c + '</option>'; }).join('') + '</select>', er.channel);
+  body += fr('坐席归属：', true, '<select class="sel" onchange="state.one.seat=this.value"><option value="">请选择</option>' + SEATS.map(function (s) { return '<option' + (o.seat === s ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select>', er.seat);
+  if (cur) {
+    var pics = ''; for (var i = 0; i < o.shots; i++) pics += '<span class="pic-card has">截图' + (i + 1) + '</span>';
+    body += fr('线索来源截图：', true, pics + (o.shots < 9 ? '<span class="pic-card" onclick="state.one.shots++;state.one.errs.shots=\'\';renderDialogs()">+</span>' : '') + '<div class="tip" style="margin-top:6px">应公司要求人工录入的线索需要上传与用户沟通的线索来源截图</div>', er.shots);
   }
-  toast('success', '录入成功'); closeDialog();
+  body += fr('备注：', true, '<textarea maxlength="50" placeholder="请输入备注信息，最多50个字" oninput="state.one.doc=this.value">' + esc(o.doc) + '</textarea>', er.doc);
+  body += '<div class="fr" id="' + (cur ? 'tgtOneSubmit' : 'tgtPoolOneSubmit') + '"><span class="lb"></span><div class="ctl"><button class="btn" onclick="closeDialog()">取消</button> <button class="btn primary" onclick="submitOne()">提交</button></div></div>';
+  return '<div class="mask"><div class="dialog"><div class="hd">单个录入客户</div><div class="bd">' + body + '</div></div></div>';
+}
+function renderCurUpload() {
+  var body = '<div class="fr"><span class="lb w100">导入客户：</span><div class="ctl" style="line-height:32px"><button class="btn primary" onclick="state.curFile=\'当期客户导入-1126.xlsx\';renderDialogs()">选择文件</button> ' +
+    (state.curFile ? '<span>' + state.curFile + '</span> ' : '') + '<a class="link" style="margin-left:8px">下载导入模版</a></div></div>' +
+    '<div class="fr" id="tgtCurBatchNote"><span class="lb w100" style="line-height:24px">导入说明：</span><div class="ctl">' +
+    '<div class="line">未注册洋葱账号的手机号将自动注册，注册成功后按现有规则申领体验营服务期并分配销售。</div><div class="line">以下情况无法导入成功：</div>' +
+    '<div class="line">1、当导入的手机号已经存在客户管理中</div><div class="line">2、填写的渠道、订单号、第三订单号不在洋葱系统中</div><div class="line">3、洋葱账号注册失败，可下载导入失败信息查看原因后重试</div>' +
+    '<div class="line remind">4、该线索在服务期冷静期中</div></div></div>' +
+    '<div class="fr"><span class="lb w100"></span><div class="ctl"><button class="btn" onclick="closeDialog()">取消</button> <button class="btn primary" onclick="if(!state.curFile){toast(\'error\',\'请选择文件\');return}openDialog(\'curBatch\')">提交</button></div></div>';
+  return '<div class="mask"><div class="dialog"><div class="hd">导入客户<span class="x" onclick="closeDialog()">✕</span></div><div class="bd">' + body + '</div></div></div>';
+}
+function renderCurResult() {
+  var preview = state.curFail ? '<div class="file-preview" id="tgtCurBatchResult"><div class="cap">导入失败信息（下载文件内容）</div><table><thead><tr><th>手机号</th><th>线索渠道（channel）</th><th>channelid</th><th>收货地址</th><th>年级</th><th>失败原因</th></tr></thead><tbody>' +
+    '<tr><td>13800000001</td><td>doudian</td><td>dd-1126</td><td></td><td>七年级</td><td class="remind">该线索在服务期冷静期中，无法录入。</td></tr>' +
+    '<tr><td>13900000010</td><td>doudian</td><td>dd-1126</td><td></td><td>八年级</td><td class="remind">洋葱账号注册失败，请稍后重试</td></tr></tbody></table></div>' : '';
+  return '<div class="mask"><div class="dialog"><div class="hd">导入结果<span class="x" onclick="closeDialog()">✕</span></div><div class="bd"><div class="import-content">1条导入成功，2条导入失败</div>' + preview + '</div>' +
+    '<div class="ft center"><button class="btn" onclick="state.curFail=true;renderDialogs()">下载导入失败信息</button></div></div></div>';
+}
+function renderPoolBatch() {
+  var head = '<div class="el-tabs-line">' + [['template', '导入模版'], ['result', '导入结果']].map(function (t) {
+    return '<div class="' + (state.poolTab === t[0] ? 'active' : '') + '" onclick="state.poolTab=\'' + t[0] + '\';state.poolDetail=false;renderDialogs()">' + t[1] + '</div>';
+  }).join('') + '</div>';
+  var body;
+  if (state.poolTab === 'template') {
+    body = '<div class="step-block"><div class="step-title">第一步</div><div class="step-desc">点击下方按钮打开在线模板，根据模板提示填写信息，并将其导出为 Excel 文件。</div><button class="btn primary">查看模板</button></div>' +
+      '<div class="step-block"><div class="step-title">第二步</div><div class="step-desc">上传 Excel 文件</div><div style="display:flex;align-items:center"><button class="btn primary" onclick="state.poolFile=\'数据库导入-1126.xlsx\';renderDialogs()">选择文件</button>' +
+      (state.poolFile ? '<span style="margin-left:12px;font-size:13px">' + state.poolFile + '</span>' : '<span class="no-file-tip">未选择任何文件</span>') + '</div></div>' +
+      '<div style="text-align:right;margin-top:10px"><button class="btn" onclick="closeDialog()">取消</button> <button class="btn primary"' + (state.poolFile ? '' : ' disabled') + ' onclick="toast(\'success\',\'提交成功，正在后台处理\');state.poolTab=\'result\';renderDialogs()">确定</button></div>';
+  } else {
+    body = '<table><thead><tr><th>导入时间</th><th>导入人</th><th>导入结果</th><th>下载结果</th></tr></thead><tbody>' +
+      '<tr><td>2026-11-26 15:10:02</td><td>李莹萍</td><td>1 用户成功导入、1 用户导入失败</td><td><button class="btn plain" style="height:26px;font-size:12px" onclick="state.poolDetail=true;renderDialogs()">下载</button></td></tr></tbody></table>';
+    if (state.poolDetail) body += '<div class="file-preview" id="tgtPoolBatchResult"><div class="cap">批量导入结果（下载文件内容）</div><table><thead><tr><th>手机号</th><th>分配坐席</th><th>导入结果</th></tr></thead><tbody>' +
+      '<tr><td>13800000004</td><td>赵磊</td><td>成功</td></tr><tr><td>13800000001</td><td>李明</td><td class="remind">该线索在服务期冷静期中，无法录入。</td></tr></tbody></table></div>';
+  }
+  return '<div class="mask"><div class="dialog wide"><div class="hd">批量导入<span class="x" onclick="closeDialog()">✕</span></div><div class="bd">' + head + body + '</div></div></div>';
 }
 function renderDialogs() {
-  var host = document.getElementById('dialogHost');
   var d = state.dialog, html = '';
-  if (d === 'one') {
-    var o = state.one;
-    html = '<div class="mask"><div class="dialog"><div class="hd">单个录入客户<span class="x" onclick="closeDialog()">✕</span></div><div class="bd">' +
-      '<div class="form-row"><span class="lb"><i>*</i>手机号</span><input class="ipt" placeholder="请输入手机号" value="' + esc(o.phone) + '" oninput="state.one.phone=this.value.trim()"></div>' +
-      '<div class="form-row"><span class="lb"><i>*</i>获客渠道</span><select class="sel" onchange="state.one.channel=this.value"><option>人工录入</option><option>畅游裂变</option><option>转介绍</option></select></div>' +
-      '<div class="form-row"><span class="lb"><i>*</i>坐席</span><select class="sel" onchange="state.one.seat=this.value"><option value="">请选择</option>' +
-      ['王晓雨', '李明', '赵磊'].map(function (s) { return '<option' + (o.seat === s ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select></div>' +
-      '<div class="form-row"><span class="lb">备注</span><input class="ipt" placeholder="请输入"></div></div>' +
-      '<div class="ft" id="tgtOneSubmit"><span class="form-err">' + esc(o.err) + '</span><button class="btn" onclick="closeDialog()">取消</button><button class="btn primary" onclick="submitOne()">确定</button></div></div></div>';
-  } else if (d === 'curBatchUpload') {
-    html = '<div class="mask"><div class="dialog"><div class="hd">批量导入<span class="x" onclick="closeDialog()">✕</span></div><div class="bd">' +
-      '<div class="upload' + (state.batchFile ? ' has' : '') + '" onclick="state.batchFile=\'当期客户导入-1126.xlsx\';renderDialogs()">' + (state.batchFile ? '已选择：' + state.batchFile : '点击选择 Excel 文件') + '</div>' +
-      '<div class="note">以下情况无法导入：手机号已在客户管理中；渠道或订单不在洋葱系统；洋葱账号注册失败；该线索在服务期冷静期中。</div></div>' +
-      '<div class="ft"><button class="btn" onclick="closeDialog()">取消</button><button class="btn primary"' + (state.batchFile ? '' : ' disabled') + ' onclick="state.dialog=\'curBatch\';renderDialogs()">确定</button></div></div></div>';
-  } else if (d === 'curBatch') {
-    html = '<div class="mask"><div class="dialog wide"><div class="hd">导入结果<span class="x" onclick="closeDialog()">✕</span></div><div class="bd">' +
-      '<div class="sum">共 3 条，成功 1 条，失败 2 条</div><div id="tgtCurBatchResult"><table><thead><tr><th>手机号</th><th>洋葱ID</th><th>分配销售</th><th>申请手机号</th><th>结果</th></tr></thead><tbody>' +
-      '<tr><td>13800000003</td><td>108700003</td><td>李明</td><td>已申请</td><td><span class="pill succ">导入成功</span></td></tr>' +
-      '<tr><td>13800000001</td><td>108700001</td><td></td><td>未申请</td><td><span class="pill fail">该线索在服务期冷静期中，无法录入。</span></td></tr>' +
-      '<tr><td>13900000010</td><td></td><td></td><td>未申请</td><td><span class="pill fail">洋葱账号注册失败</span></td></tr>' +
-      '</tbody></table></div><div style="margin-top:12px"><span class="link">下载失败明细</span></div></div>' +
-      '<div class="ft"><button class="btn primary" onclick="closeDialog()">关闭</button></div></div></div>';
-  } else if (d === 'poolBatch') {
-    var tabs = '<div class="tabs" style="margin-top:0"><div class="tabs-head"><div class="' + (state.poolTab === 'tpl' ? 'active' : '') + '" onclick="state.poolTab=\'tpl\';state.poolDetail=false;renderDialogs()">导入模版</div><div class="' + (state.poolTab === 'res' ? 'active' : '') + '" onclick="state.poolTab=\'res\';renderDialogs()">导入结果</div></div><div class="tabs-body" style="min-height:180px">';
-    if (state.poolTab === 'tpl') {
-      tabs += '<div style="margin-bottom:12px"><span class="link">查看模板</span></div><div class="upload' + (state.batchFile ? ' has' : '') + '" onclick="state.batchFile=\'数据库导入-1126.xlsx\';renderDialogs()">' + (state.batchFile ? '已选择：' + state.batchFile : '点击上传 Excel 文件') + '</div>' +
-        '<div style="text-align:right;margin-top:14px"><button class="btn primary"' + (state.batchFile ? '' : ' disabled') + ' onclick="state.poolTab=\'res\';renderDialogs()">确定</button></div>';
-    } else if (!state.poolDetail) {
-      tabs += '<table><thead><tr><th>文件名</th><th>状态</th><th>成功/失败</th><th>导入时间</th><th>操作</th></tr></thead><tbody>' +
-        '<tr><td>数据库导入-1126.xlsx</td><td>已完成</td><td>1 / 1</td><td>2026-11-26 15:10:02</td><td><span class="link" onclick="state.poolDetail=true;renderDialogs()">下载</span></td></tr></tbody></table>';
-    } else {
-      tabs += '<div class="sum">结果明细（下载文件内容）· <span class="link" onclick="state.poolDetail=false;renderDialogs()">返回列表</span></div><div id="tgtPoolBatchResult"><table><thead><tr><th>手机号</th><th>分配坐席</th><th>导入结果</th></tr></thead><tbody>' +
-        '<tr><td>13800000004</td><td>赵磊</td><td>成功</td></tr>' +
-        '<tr><td>13800000001</td><td>李明</td><td class="remind">该线索在服务期冷静期中，无法录入。</td></tr></tbody></table></div>';
-    }
-    tabs += '</div></div>';
-    html = '<div class="mask"><div class="dialog wide"><div class="hd">批量导入<span class="x" onclick="closeDialog()">✕</span></div><div class="bd">' + tabs + '</div></div></div>';
-  }
-  host.innerHTML = html;
+  if (d === 'one') html = renderOne();
+  else if (d === 'curBatchUpload') html = renderCurUpload();
+  else if (d === 'curBatch') html = renderCurResult();
+  else if (d === 'poolBatch') html = renderPoolBatch();
+  document.getElementById('dialogHost').innerHTML = html;
   remeasure();
 }
 
 function render() {
   renderSide(); renderTags();
-  var v = state.page === 'clueSearch' ? renderClueSearch() : state.page === 'current' ? renderCurrent() : renderPool();
-  document.getElementById('view').innerHTML = v;
+  document.getElementById('view').innerHTML = state.page === 'clueSearch' ? renderClueSearch() : renderCustomer();
   renderDialogs();
 }
 
 function loadDemo(key) {
-  state.page = 'clueSearch'; if (state.opened.indexOf('clueSearch') < 0) state.opened.push('clueSearch');
-  state.dialog = null; state.qType = 'phone'; state.qValue = DEMO_PHONE[key] || ''; search(true);
+  state.page = 'clueSearch'; state.dialog = null; state.qType = 'phone'; state.qValue = DEMO_PHONE[key] || ''; search(true);
 }
 search(true);
 </script>
@@ -372,7 +464,7 @@ window.DIFF_CHANGESET = {
       "level": "module",
       "type": "logic",
       "title": "当期客户单个录入新增服务期冷静期拦截",
-      "desc": "提交时线索在服务期冷静期中则禁止录入，提示「该线索在服务期冷静期中，无法录入。」，弹窗保留不关闭。",
+      "desc": "点击「提交」时线索在服务期冷静期中则禁止录入，页面顶部报错提示「该线索在服务期冷静期中，无法录入。」，弹窗保留不关闭。",
       "before": "不校验服务期冷静期，可录入成功，但申领不到体验营服务期",
       "after": "禁止录入，提示「该线索在服务期冷静期中，无法录入。」",
       "examples": [
@@ -396,11 +488,12 @@ window.DIFF_CHANGESET = {
       "level": "module",
       "type": "logic",
       "title": "当期客户批量导入新增服务期冷静期拦截",
-      "desc": "逐条校验时，在服务期冷静期中的手机号导入失败、不入库、不分配销售，失败原因「该线索在服务期冷静期中，无法录入。」，其余行继续导入；导入说明同步补充该情况。",
+      "desc": "逐条校验时，在服务期冷静期中的手机号导入失败、不入库、不分配销售，计入导入结果的失败条数，失败原因写入「下载导入失败信息」文件；导入说明新增第 4 条「该线索在服务期冷静期中」。",
       "before": "服务期冷静期内的手机号仍导入成功，但没有体验营服务期",
       "after": "该行导入失败，失败原因「该线索在服务期冷静期中，无法录入。」",
       "examples": [
-        "导入结果中 13800000001 一行为失败，原因为该线索在服务期冷静期中，无法录入。"
+        "导入结果：1条导入成功，2条导入失败",
+        "导入失败信息中 13800000001 的失败原因为「该线索在服务期冷静期中，无法录入。」"
       ],
       "prd": {
         "section": "7.2.2 批量导入",
@@ -411,7 +504,7 @@ window.DIFF_CHANGESET = {
       "id": "chg-5",
       "page": "客户管理-数据库",
       "module": "数据库单个录入",
-      "target": "#tgtOneSubmit",
+      "target": "#tgtPoolOneSubmit",
       "view": {
         "page": "pool",
         "dialog": "one"
@@ -419,7 +512,7 @@ window.DIFF_CHANGESET = {
       "level": "module",
       "type": "logic",
       "title": "数据库单个录入新增服务期冷静期拦截",
-      "desc": "提交时线索在服务期冷静期中则禁止录入，提示「该线索在服务期冷静期中，无法录入。」，弹窗保留不关闭。",
+      "desc": "点击「提交」时线索在服务期冷静期中则禁止录入，页面顶部报错提示「该线索在服务期冷静期中，无法录入。」，弹窗保留不关闭。",
       "before": "未单独校验服务期冷静期，失败时提示的原因不明确",
       "after": "禁止录入，提示「该线索在服务期冷静期中，无法录入。」",
       "examples": [
@@ -446,7 +539,7 @@ window.DIFF_CHANGESET = {
       "before": "无服务期，申领体验营服务期失败",
       "after": "该线索在服务期冷静期中，无法录入。",
       "examples": [
-        "下载明细中 13800000001 一行导入结果为该线索在服务期冷静期中，无法录入。"
+        "导入结果-下载文件中 13800000001 一行导入结果为「该线索在服务期冷静期中，无法录入。」"
       ],
       "prd": {
         "section": "7.3.2 批量导入",
@@ -458,6 +551,7 @@ window.DIFF_CHANGESET = {
 window.DIFF_HOOKS = {
   locate: function (change) {
     var v = change.view || {};
+    document.getElementById('toastHost').innerHTML = '';
     if (v.page === 'clueSearch') {
       if (!state.info || state.info.inCamp || state.page !== 'clueSearch') loadDemo('svcCalm');
       return;
@@ -465,11 +559,14 @@ window.DIFF_HOOKS = {
     go(v.page);
     if (v.dialog === 'one') {
       state.dialog = 'one';
-      state.one = { phone: '13800000001', channel: '人工录入', seat: '李明', err: '该线索在服务期冷静期中，无法录入。' };
+      state.one = defaultOne();
+      state.one.phone = '13800000001'; state.one.doc = '家长主动咨询';
+      if (v.page === 'current') { state.one.channel = 'rengongluru'; state.one.shots = 1; }
+      toast('error', SVC_CALM_MSG, true);
     } else if (v.dialog === 'curBatch') {
-      state.dialog = 'curBatch';
+      state.dialog = 'curBatch'; state.curFail = true;
     } else if (v.dialog === 'poolBatch') {
-      state.dialog = 'poolBatch'; state.poolTab = 'res'; state.poolDetail = true;
+      state.dialog = 'poolBatch'; state.poolTab = 'result'; state.poolDetail = true;
     }
     renderDialogs();
   },
