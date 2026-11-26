@@ -1084,8 +1084,12 @@
     function buildFinalRemark() {
       var parts = [];
       if (state.dynamicOn) parts.push("20260606");
-      if (state.fixedOn) parts.push((state.fixedText || "").trim() || "固定备注");
-      if (!parts.length) return "";
+      if (state.fixedOn) {
+        var fixedVal = (state.fixedText || "").trim();
+        if (fixedVal) parts.push(fixedVal);
+      }
+      if (!state.dynamicOn && !state.fixedOn) return "";
+      if (!parts.length) return "效果预览：";
       return "效果预览：" + parts.join("") + "-张三";
     }
 
@@ -1105,7 +1109,7 @@
         $("fixedInputBox").classList.remove("is-error");
       }
 
-      $("previewText").textContent = buildFinalRemark();
+      $("remarkPreview").textContent = buildFinalRemark();
       if (window.__diffRemeasure) window.__diffRemeasure();
     }
 
