@@ -130,14 +130,14 @@ th { background: #fafafa; color: #909399; font-weight: 500; }
 <script>
 var LEADS = {
   '13800000009': { key: 'inService', phone: '13800000009', onionId: '108700009', name: '王晓雨', period: '体验营 2026-11-01 09:00:00 ~ 2027-01-31 23:59:59', inCamp: true, calm: [], entry: null },
-  '13800000001': { key: 'svcCalm', phone: '13800000001', onionId: '108700001', name: '', period: '', calm: [{ t: '服务期冷静期', end: '2026-12-20 14:20:51' }], entry: { cur: { ok: false, msg: '不可录入，该线索在服务期冷静期中，无法录入。' }, pool: { ok: false, msg: '不可录入，该线索在服务期冷静期中，无法录入。' } } },
-  '13800000002': { key: 'followCalm', phone: '13800000002', onionId: '108700002', name: '', period: '', calm: [{ t: '跟进冷静期', end: '2026-12-05 10:00:00' }], entry: { cur: { ok: false, msg: '不可录入，该线索在跟进冷静期中，无法录入' }, pool: { ok: false, msg: '不可录入，该线索在跟进冷静期中，无法录入' } } },
-  '13800000006': { key: 'bothCalm', phone: '13800000006', onionId: '108700006', name: '', period: '', calm: [{ t: '服务期冷静期', end: '2026-12-20 14:20:51' }, { t: '跟进冷静期', end: '2026-12-05 10:00:00' }], entry: { cur: { ok: false, msg: '不可录入，该线索在服务期冷静期中，无法录入。' }, pool: { ok: false, msg: '不可录入，该线索在服务期冷静期中，无法录入。' } } },
-  '15971423839': { key: 'otherTeam', phone: '15971423839', onionId: '108743046', name: '', period: '电销/网销 2026-09-01 13:45:31 ~ 2027-02-28 14:20:51', calm: [], entry: { cur: { ok: false, msg: '不可录入，该客户在其他业务线服务期，无法录入' }, pool: { ok: false, msg: '不可录入，该客户在其他业务线服务期，无法录入' } } },
-  '13800000003': { key: 'newLead', phone: '13800000003', onionId: '108700003', name: '', period: '', calm: [], entry: { cur: { ok: true, msg: '可录入' }, pool: { ok: false, msg: '不可录入，该客户为新用户，请在当期客户里录入' } } },
-  '13800000004': { key: 'oldLead', phone: '13800000004', onionId: '108700004', name: '', period: '', calm: [], entry: { cur: { ok: true, msg: '可录入（仅支持单个录入，渠道选择人工录入或畅游裂变）' }, pool: { ok: true, msg: '可录入（仅支持批量导入）' } } },
-  '13800000007': { key: 'locked', phone: '13800000007', onionId: '108700007', name: '', period: '', calm: [], entry: { cur: { ok: true, msg: '可录入（仅支持单个录入，渠道选择人工录入或畅游裂变）' }, pool: { ok: false, msg: '不可录入，该线索锁定时间未过期' } } },
-  '13800000008': { key: 'queryFail', phone: '13800000008', onionId: '108700008', name: '', period: '', calm: null, entry: { cur: { ok: false, msg: '暂无法判断是否可录入，请稍后重试' }, pool: { ok: false, msg: '暂无法判断是否可录入，请稍后重试' } } }
+  '13800000001': { key: 'svcCalm', phone: '13800000001', onionId: '108700001', name: '', period: '', calm: [{ t: '服务期冷静期', end: '2026-12-20 14:20:51' }], entry: { ok: false, msg: '不可录入，该线索在服务期冷静期中，无法录入。' } },
+  '13800000002': { key: 'followCalm', phone: '13800000002', onionId: '108700002', name: '', period: '', calm: [{ t: '跟进冷静期', end: '2026-12-05 10:00:00' }], entry: { ok: false, msg: '不可录入，该线索在跟进冷静期中，无法录入' } },
+  '13800000006': { key: 'bothCalm', phone: '13800000006', onionId: '108700006', name: '', period: '', calm: [{ t: '服务期冷静期', end: '2026-12-20 14:20:51' }, { t: '跟进冷静期', end: '2026-12-05 10:00:00' }], entry: { ok: false, msg: '不可录入，该线索在服务期冷静期中，无法录入。' } },
+  '15971423839': { key: 'otherTeam', phone: '15971423839', onionId: '108743046', name: '', period: '电销/网销 2026-09-01 13:45:31 ~ 2027-02-28 14:20:51', calm: [], entry: { ok: false, msg: '不可录入，该客户在其他业务线服务期，无法录入' } },
+  '13800000003': { key: 'newLead', phone: '13800000003', onionId: '108700003', name: '', period: '', calm: [], entry: { ok: true, msg: '【当期客户】可录入' } },
+  '13800000004': { key: 'oldLead', phone: '13800000004', onionId: '108700004', name: '', period: '', calm: [], entry: { ok: true, msg: '【当期客户】可录入（仅支持单个录入，渠道选择rengongluru）' } },
+  '13800000007': { key: 'locked', phone: '13800000007', onionId: '108700007', name: '', period: '', calm: [], entry: { ok: true, msg: '【当期客户】可录入（仅支持单个录入，渠道选择rengongluru）' } },
+  '13800000008': { key: 'queryFail', phone: '13800000008', onionId: '108700008', name: '', period: '', calm: null, entry: { ok: false, msg: '暂无法判断是否可录入，请稍后重试' } }
 };
 var DEMO_PHONE = {};
 Object.keys(LEADS).forEach(function (p) { DEMO_PHONE[LEADS[p].key] = p; });
@@ -203,7 +203,7 @@ function renderClueSearch() {
   if (state.loading) body = '<div class="loading">加载中…</div>';
   else if (!info) body = '<div class="empty">' + esc(state.errMsg || '暂无数据') + '</div>';
   else {
-    body = (info.inCamp ? '' : '<div class="entry-tips" id="tgtEntryCheck">' + [['当期客户', info.entry.cur], ['数据库', info.entry.pool]].map(function (x) { return '<div class="entry-tip ' + (x[1].ok ? 'pass' : 'block') + '">提示：【' + x[0] + '】' + esc(x[1].msg) + '</div>'; }).join('') + '</div>') +
+    body = (info.inCamp ? '' : '<div class="entry-tips" id="tgtEntryCheck"><div class="entry-tip ' + (info.entry.ok ? 'pass' : 'block') + '">提示：' + esc(info.entry.msg) + '</div></div>') +
       '<div class="desc-row"><span class="lb">手机号</span><span class="ct">' + info.phone + '</span></div>' +
       '<div class="desc-row"><span class="lb">洋葱ID</span><span class="ct">' + info.onionId + '</span></div>' +
       '<div class="desc-row"><span class="lb">坐席归属</span><span class="ct">' + esc(info.name) + '</span></div>' +
@@ -389,16 +389,16 @@ window.DIFF_CHANGESET = {
         "label": "服务冷静"
       },
       {
+        "id": "followCalm",
+        "label": "跟进冷静"
+      },
+      {
         "id": "newLead",
         "label": "新线索"
       },
       {
         "id": "oldLead",
         "label": "往期线索"
-      },
-      {
-        "id": "locked",
-        "label": "往期锁定"
       }
     ]
   },
@@ -438,16 +438,16 @@ window.DIFF_CHANGESET = {
       },
       "level": "module",
       "type": "new",
-      "title": "撞单查询新增当期客户、数据库两条录入提示条",
-      "desc": "线索不在体验营服务期时，在查询结果上方固定展示两条提示条，分别判断能否录入当期客户、数据库：可录入为浅绿底绿字，不可录入为浅红底红字并带原因；命中灰产、其他业务线服务期、冷静期等公共拦截时两条都标红。在体验营服务期时不展示。",
+      "title": "撞单查询新增录入判断提示条",
+      "desc": "线索不在体验营服务期时，在查询结果上方展示一条提示条：先判断当期客户，能录入则绿色提示【当期客户】可录入；不能再判断数据库，能录入则绿色提示【数据库】可录入；两边都不能则红色提示不可录入及原因。服务期冷静期中两边都不可录入。在体验营服务期时不展示。",
       "before": "无此提示",
-      "after": "展示「提示：【当期客户】……」「提示：【数据库】……」两条提示条，各自判断、各自着色",
+      "after": "按「当期客户 → 数据库」顺序判断，只展示最终结果：绿色可录入去向，或红色不可录入原因",
       "examples": [
-        "其他业务线服务期：两条均为红色「不可录入，该客户在其他业务线服务期，无法录入」",
-        "服务期冷静期：两条均为红色「不可录入，该线索在服务期冷静期中，无法录入。」",
-        "新线索：当期客户绿色「可录入」，数据库红色「不可录入，该客户为新用户，请在当期客户里录入」",
-        "往期线索：当期客户绿色「可录入（仅支持单个录入，渠道选择人工录入或畅游裂变）」，数据库绿色「可录入（仅支持批量导入）」",
-        "往期锁定：当期客户绿色，数据库红色「不可录入，该线索锁定时间未过期」"
+        "其他业务线服务期：红色「提示：不可录入，该客户在其他业务线服务期，无法录入」",
+        "服务期冷静期：红色「提示：不可录入，该线索在服务期冷静期中，无法录入。」",
+        "跟进冷静期：红色「提示：不可录入，该线索在跟进冷静期中，无法录入」",
+        "新线索：绿色「提示：【当期客户】可录入」",
+        "往期线索：绿色「提示：【当期客户】可录入（仅支持单个录入，渠道选择rengongluru）」"
       ],
       "prd": {
         "section": "7.1.2 录入判断",
