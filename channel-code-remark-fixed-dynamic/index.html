@@ -745,7 +745,7 @@
           <div class="el-form-item" id="previewRow">
             <div class="el-form-item__label"></div>
             <div class="el-form-item__content">
-              <div class="remark-inline-preview" id="remarkPreview">20260606春季投放-客户昵称</div>
+              <div class="remark-inline-preview" id="remarkPreview">效果预览：20260606春季投放-张三</div>
             </div>
           </div>
                     <!-- 核心区域结束 -->
@@ -937,7 +937,7 @@
                   "after": "勾选即启用；客户添加企微成功时取当天日期按 20260606 格式写入",
                   "examples": [
                         "2026年6月6日添加成功 → 写入 20260606",
-                        "仅勾动态备注 → 展示拼接形态 20260606-客户昵称"
+                        "仅勾动态备注 → 效果预览：20260606-张三"
                   ],
                   "prd": {
                         "section": "7.1 【新增】动态备注",
@@ -952,14 +952,14 @@
                   "target": "#remarkPreview",
                   "level": "module",
                   "type": "new",
-                  "title": "直接拼接展示备注最终形态",
-                  "desc": "勾选至少一种备注类型时，直接将已选备注规则与「-客户昵称」拼在一起展示，不写多余说明文案；同时使用时日期在前、固定文案在后且无分隔符。",
+                  "title": "直接展示效果预览",
+                  "desc": "勾选至少一种备注类型时，直接展示「效果预览：20260606春季投放-张三」形式，不写多余说明文案；同时使用时日期在前、固定文案在后且无分隔符，末尾保留客户昵称。",
                   "before": "输入框右侧仅以灰底追加块展示「- 客户昵称」",
-                  "after": "按当前勾选直接一行拼接展示最终备注形态，如 20260606春季投放-客户昵称",
+                  "after": "按当前勾选直接展示「效果预览：...」，如 效果预览：20260606春季投放-张三",
                   "examples": [
-                        "同时勾选且固定=春季投放 → 20260606春季投放-客户昵称",
-                        "仅固定且固定=春季投放 → 春季投放-客户昵称",
-                        "仅动态 → 20260606-客户昵称"
+                        "同时勾选且固定=春季投放 → 效果预览：20260606春季投放-张三",
+                        "仅固定且固定=春季投放 → 效果预览：春季投放-张三",
+                        "仅动态 → 效果预览：20260606-张三"
                   ],
                   "prd": {
                         "section": "7.1 【新增】备注拼接预览",
@@ -1086,7 +1086,7 @@
       if (state.dynamicOn) parts.push("20260606");
       if (state.fixedOn) parts.push((state.fixedText || "").trim() || "固定备注");
       if (!parts.length) return "";
-      return parts.join("") + "-客户昵称";
+      return "效果预览：" + parts.join("") + "-张三";
     }
 
     function renderRemark(fromTyping) {
