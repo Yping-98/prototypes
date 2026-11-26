@@ -36,6 +36,9 @@ body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
 .tabs-head div.active { background: #fff; color: #409eff; border-right: 1px solid #e4e7ed; border-left: 1px solid #e4e7ed; margin-bottom: -1px; }
 .tabs-body { padding: 15px 20px; min-height: 260px; }
 .desc-row { display: flex; padding: 9px 0; line-height: 22px; }
+.entry-tip { margin: -15px -20px 12px; padding: 6px 24px; font-size: 13px; line-height: 20px; }
+.entry-tip.block { background: #fef0f0; color: #f56c6c; }
+.entry-tip.pass { background: #f0f9eb; color: #67c23a; }
 .desc-row .lb { width: 96px; color: #303133; flex-shrink: 0; }
 .desc-row .ct { color: #606266; }
 .remind, .desc-row .ct.remind, .desc-row .remind { color: #f56c6c; }
@@ -149,12 +152,12 @@ function renderClueSearch() {
   if (state.loading) body = '<div class="loading">加载中…</div>';
   else if (!info) body = '<div class="empty">' + esc(state.errMsg || '暂无数据') + '</div>';
   else {
-    body = '<div class="desc-row"><span class="lb">手机号</span><span class="ct">' + info.phone + '</span></div>' +
+    body = (info.inCamp ? '' : '<div class="entry-tip ' + (info.entry.ok ? 'pass' : 'block') + '" id="tgtEntryCheck">提示：' + esc(info.entry.msg) + '</div>') +
+      '<div class="desc-row"><span class="lb">手机号</span><span class="ct">' + info.phone + '</span></div>' +
       '<div class="desc-row"><span class="lb">洋葱ID</span><span class="ct">' + info.onionId + '</span></div>' +
       '<div class="desc-row"><span class="lb">坐席归属</span><span class="ct">' + esc(info.name) + '</span></div>' +
       '<div class="desc-row"><span class="lb">当前服务期</span><span class="ct remind">' + esc(info.period) + '</span></div>' +
       '<div class="desc-row" id="tgtCalm"><span class="lb">冷静期状态</span><span class="ct">' + calmHtml(info) + '</span></div>' +
-      (info.inCamp ? '' : '<div class="desc-row" id="tgtEntryCheck"><span class="lb">录入判断</span><span class="ct ' + (info.entry.ok ? 'ok' : 'remind') + '">' + esc(info.entry.msg) + '</span></div>') +
       '<div class="desc-row"><span class="lb">封禁状态</span><span class="ct">否</span></div>' +
       '<div class="desc-row"><span class="lb">支付推送</span><span class="ct"><button class="btn light">支付推送</button><div class="tip">注：若线索不在体验营服务期，请慎重推送</div></span></div>';
   }
@@ -339,18 +342,18 @@ window.DIFF_CHANGESET = {
       "view": {
         "page": "clueSearch"
       },
-      "level": "field",
+      "level": "module",
       "type": "new",
-      "title": "撞单查询新增「录入判断」",
-      "desc": "线索不在体验营服务期时展示：不可录入用红色提示拦截原因，可录入用绿色提示可录入至当期客户或数据库；在体验营服务期时不展示。",
-      "before": "无此字段",
-      "after": "红色展示拦截原因，或绿色展示「该线索可录入至当期客户」「该线索可录入至数据库」",
+      "title": "撞单查询新增录入判断提示条",
+      "desc": "线索不在体验营服务期时，在查询结果上方展示通栏提示条：不可录入为浅红底红字「提示：拦截原因」，可录入为浅绿底绿字「提示：该线索可录入至当期客户/数据库」；在体验营服务期时不展示。",
+      "before": "无此提示",
+      "after": "查询结果上方展示「提示：……」通栏提示条，红色为拦截原因，绿色为可录入去向",
       "examples": [
-        "服务期冷静期：红色「该线索在服务期冷静期中，无法录入。」",
-        "其他业务线服务期：红色「该客户在其他业务线服务期，无法录入」",
-        "新线索：绿色「该线索可录入至当期客户」",
-        "往期线索：绿色「该线索可录入至数据库」",
-        "体验营服务期中：不展示该字段"
+        "服务期冷静期：红色「提示：该线索在服务期冷静期中，无法录入。」",
+        "其他业务线服务期：红色「提示：该客户在其他业务线服务期，无法录入」",
+        "新线索：绿色「提示：该线索可录入至当期客户」",
+        "往期线索：绿色「提示：该线索可录入至数据库」",
+        "体验营服务期中：不展示提示条"
       ],
       "prd": {
         "section": "7.1.2 录入判断",
