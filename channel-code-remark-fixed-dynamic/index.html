@@ -474,60 +474,31 @@
 
     /* 添加备注联动区域 */
     .remark-type-wrap { display: inline-block; }
-    .remark-dynamic-box {
-      margin-top: 6px;
-      padding: 8px 12px;
+    .dynamic-inline-tag {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 8px;
       border-radius: 4px;
       background: var(--el-fill-light);
       border: 1px solid var(--el-border-lighter);
-      font-size: 12px;
-      color: var(--el-text-regular);
-      line-height: 1.6;
-      max-width: 520px;
-    }
-    .remark-preview-box {
-      margin-top: 8px;
-      padding: 9px 12px;
-      border-radius: 4px;
-      background: var(--el-color-primary-light-9);
-      border: 1px solid #d9ecff;
-      max-width: 520px;
-      font-size: 13px;
-      line-height: 1.6;
-      color: var(--el-text-primary);
-    }
-    .remark-preview-box .muted {
       color: var(--el-text-secondary);
       font-size: 12px;
-      margin-bottom: 2px;
     }
-    .remark-preview-box .val {
-      color: var(--el-color-primary);
-      font-weight: 600;
-      word-break: break-all;
-    }
-    .sim-bar {
-      display: flex;
+    .remark-inline-preview {
+      display: inline-flex;
       align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--el-text-secondary);
-    }
-    .sim-bar input {
-      height: 24px;
-      padding: 0 8px;
+      min-width: 300px;
+      height: 32px;
+      padding: 0 11px;
+      border-radius: 4px;
+      background: var(--el-fill-light);
       border: 1px solid var(--el-border-color);
-      border-radius: 3px;
-      font-size: 12px;
-      width: 96px;
       color: var(--el-text-primary);
-      background: #fff;
-      outline: none;
+      font-size: 14px;
     }
 
-    /* 欢迎语素材表格（贴近 WelcomeMaterial.vue） */
+        /* 欢迎语素材表格（贴近 WelcomeMaterial.vue） */
     .g-table-box { max-width: 620px; }
     .g-table-box .d-btn-cont { margin-bottom: 10px; }
     .el-table {
@@ -752,12 +723,8 @@
                     <span class="el-checkbox__inner"></span>
                     <span class="el-checkbox__label">动态备注</span>
                   </label>
+                  <span id="dynamicRemarkHint" class="dynamic-inline-tag">添加成功日（如 20260606）</span>
                 </div>
-                <div class="form-tip">非必填，可自主选择固定备注、动态备注或同时使用；均不勾选则不添加备注</div>
-              </div>
-
-              <div id="dynamicRemarkHint" class="remark-dynamic-box">
-                动态备注规则：客户通过该活码添加企微成功当天，自动写入年月日八位数字（例如 <b>20260606</b>）；无需手工填写。
               </div>
             </div>
           </div>
@@ -778,19 +745,10 @@
           <div class="el-form-item" id="previewRow">
             <div class="el-form-item__label"></div>
             <div class="el-form-item__content">
-              <div class="remark-preview-box" id="remarkPreview">
-                <div class="muted">最终写入备注预览（同时使用时动态日期在前、固定备注在后，无分隔符，末尾保留「-客户昵称」）</div>
-                <div>将写入客户备注：<span class="val" id="previewText">20260606春季投放-张三</span></div>
-                <div class="sim-bar">
-                  <span>模拟添加成功日：</span>
-                  <input id="simDate" value="20260606" maxlength="8" oninput="renderRemark()" />
-                  <span>模拟客户昵称：</span>
-                  <input id="simNick" value="张三" maxlength="20" oninput="renderRemark()" />
-                </div>
-              </div>
+              <div class="remark-inline-preview" id="remarkPreview">20260606春季投放-客户昵称</div>
             </div>
           </div>
-          <!-- 核心区域结束 -->
+                    <!-- 核心区域结束 -->
 
           <div class="el-form-item">
             <div class="el-form-item__label">设置欢迎语：</div>
@@ -974,12 +932,12 @@
                   "level": "field",
                   "type": "new",
                   "title": "勾选动态备注按添加成功日写入八位日期",
-                  "desc": "勾选「动态备注」后，客户添加成功当天按年月日八位数字写入备注，例如 20260606；配置页仅展示规则提示，无需手工填日期。",
+                  "desc": "勾选「动态备注」后，客户添加成功当天按年月日八位数字写入备注，例如 20260606；配置页无需手工填日期。",
                   "before": "无此功能",
                   "after": "勾选即启用；客户添加企微成功时取当天日期按 20260606 格式写入",
                   "examples": [
                         "2026年6月6日添加成功 → 写入 20260606",
-                        "仅勾动态备注且客户昵称为张三 → 最终备注为 20260606-张三"
+                        "仅勾动态备注 → 展示拼接形态 20260606-客户昵称"
                   ],
                   "prd": {
                         "section": "7.1 【新增】动态备注",
@@ -994,14 +952,14 @@
                   "target": "#remarkPreview",
                   "level": "module",
                   "type": "new",
-                  "title": "展示最终备注拼接预览",
-                  "desc": "勾选至少一种备注类型时展示最终写入预览；同时使用时动态日期在前、固定文案在后且无分隔符，末尾保留「-客户昵称」后缀。",
+                  "title": "直接拼接展示备注最终形态",
+                  "desc": "勾选至少一种备注类型时，直接将已选备注规则与「-客户昵称」拼在一起展示，不写多余说明文案；同时使用时日期在前、固定文案在后且无分隔符。",
                   "before": "输入框右侧仅以灰底追加块展示「- 客户昵称」",
-                  "after": "按当前勾选与固定文案实时展示最终备注格式，保留「-客户昵称」后缀",
+                  "after": "按当前勾选直接一行拼接展示最终备注形态，如 20260606春季投放-客户昵称",
                   "examples": [
-                        "固定=春季投放、动态勾选、昵称=张三 → 20260606春季投放-张三",
-                        "仅固定=春季投放、昵称=张三 → 春季投放-张三",
-                        "仅动态、昵称=张三 → 20260606-张三"
+                        "同时勾选且固定=春季投放 → 20260606春季投放-客户昵称",
+                        "仅固定且固定=春季投放 → 春季投放-客户昵称",
+                        "仅动态 → 20260606-客户昵称"
                   ],
                   "prd": {
                         "section": "7.1 【新增】备注拼接预览",
@@ -1124,15 +1082,11 @@
     }
 
     function buildFinalRemark() {
-      var dateStr = (($("simDate").value || "").trim()) || "20260606";
-      var nickStr = (($("simNick").value || "").trim()) || "张三";
       var parts = [];
-      if (state.dynamicOn) parts.push(dateStr);
-      if (state.fixedOn) parts.push((state.fixedText || "").trim());
-      var prefix = parts.join("");
-      if (!state.fixedOn && !state.dynamicOn) return "（未勾选任何备注类型，不写入客户备注）";
-      if (state.fixedOn && !(state.fixedText || "").trim() && !state.dynamicOn) return "（请填写固定备注）-" + nickStr;
-      return prefix + "-" + nickStr;
+      if (state.dynamicOn) parts.push("20260606");
+      if (state.fixedOn) parts.push((state.fixedText || "").trim() || "固定备注");
+      if (!parts.length) return "";
+      return parts.join("") + "-客户昵称";
     }
 
     function renderRemark(fromTyping) {
